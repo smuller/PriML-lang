@@ -24,7 +24,7 @@ val (src, output, morefiles, moreopts) =
         (src, output, morefiles, moreopts)
       | src::output::[] =>
         (src, output, "", [])
-      | _ => raise (Input "c72s: usage: ./c72s source output [more files] [more options]"))
+      | _ => raise (Input "primlc: usage: ./primlc source output [more files] [more options]"))
     handle Input s => (print (s ^ "\n");
                        OS.Process.exit OS.Process.failure)
 
@@ -35,17 +35,17 @@ val (deps, src) =
             val (deps, src) = (List.take (files, n - 1), List.last files)
             val _ =
                 if String.isSuffix ".prm" src then ()
-                else raise (Input "c72s: Main file must have extension .prm")
+                else raise (Input "primlc: Main file must have extension .prm")
             val _ =
                 if List.all (fn s => not (String.isSuffix ".prm" s)) deps
                 then ()
-                else raise (Input "c72s: only one .prm file permitted")
+                else raise (Input "primlc: only one .prm file permitted")
         in
             (deps, src)
         end
     else if String.isSuffix ".prm" src then
         ([], src)
-    else raise (Input "c72s: unknown file extension")
+    else raise (Input "primlc: unknown file extension")
 
 val el = parse src
         handle Parse.Parse s => (print ("Parse error: " ^ s ^ "\n");
@@ -65,5 +65,6 @@ val s = Layout.tostring (ELPrint.progtol dp)
 val () = StringUtil.writefile "temp.sml" s
 
 val _ = Compile.compile (deps, "temp.sml") morefiles output moreopts
-        handle Compile.Compile s => (print ("c72s: " ^ s ^ "\n");
+        handle Compile.Compile s => (print ("primlc: " ^ s ^ "\n");
                                      OS.Process.exit OS.Process.failure)
+val _ = OS.Process.system ("rm temp.sml")

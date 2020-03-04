@@ -10,11 +10,12 @@ type input = file list * file
 val basefiles = ["$(SML_LIB)/basis/basis.mlb",
                  "$(SML_LIB)/basis/mlton.mlb",
                  (* "../x/graphics.mlb", *)
-                 "$(SML_LIB)/basis/schedulers/interactive-pprio.mlb"]
+                 "$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb"]
 
 val mlton = case OS.Process.getEnv "MLTON_PARMEM" of
                 SOME s => s
-              | NONE => raise (Compile "mlton-parmem not found: make sure MLTON_PARMEM environment variable is set.")
+              | NONE => (print "primlc: mlton-parmem not found: make sure MLTON_PARMEM environment variable is set.\n";
+                        OS.Process.exit OS.Process.failure)
 
 val opts = ["-default-ann 'allowFFI true'", "-cc-opt -g"]
 
@@ -37,7 +38,7 @@ fun compile inp morefiles out moreopts =
          val stat = OS.Process.system cmd
      in
          if OS.Process.isSuccess stat then
-             ()
+             (OS.Process.system ("rm " ^ mlbname))
          else raise (Compile "mlton-parmem returned failure")
      end)
     handle OS.SysErr (s, _) =>

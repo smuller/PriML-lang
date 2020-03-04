@@ -309,7 +309,8 @@ fun workOnTask p (w, d, _) =
                      raise ShouldntGetHere)
        | Task.Thread t =>
            ( incrementCounter (switchCounter, p)
-           ; T.switch (fn _ => t)))
+           ; T.switch (fn _ => t))
+       | Task.Empty => raise ShouldntGetHere)
 
 fun newNextSwitch () =
     Tm.+ (Tm.now (), switchInterval)
