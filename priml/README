@@ -1,0 +1,6 @@
+Stefan Muller
+June 2017 - March 2020
+
+This is the front-end parser and type-checker for the PriML language.
+It is based on the ML5/pgh compiler for ML5 by Tom Murphy VII.
+ML5/pgh is distributed under the GNU General Public License, v.2.

@@ -1,0 +1,43 @@
+group is
+
+(* to compile with sml/nj.
+   not likely to work! *)
+#if (defined(SMLNJ_VERSION))
+ $/basis.cm
+ ../port/nj.sml
+#else
+ (* assume we are using mlton then *)
+ ../port/mlton.sml
+#endif
+
+ ../njlib/lib-base-sig.sml
+ ../njlib/lib-base.sml
+ ../njlib/ord-key-sig.sml
+ ../njlib/ord-map-sig.sml
+ ../njlib/splaytree-sig.sml
+ ../njlib/splaytree.sml
+ ../njlib/splay-map-fn.sml
+
+ ../util/stream-sig.sml
+ ../util/stream.sml
+
+ ../util/stringutil-sig.sml
+ ../util/stringutil.sml
+
+ ../util/listutil-sig.sml
+ ../util/listutil.sml
+
+ ../parse/pos-sig.sml
+ ../parse/pos.sml
+
+ ../parse/parse-sig.sml
+ ../parse/parse.sml
+
+ ../parse/simpletok-sig.sml
+ ../parse/simpletok.sml
+
+ ../misc/params-sig.sml
+ ../misc/params.sml
+
+ description-parser.sml
+ tfcompiler.sml

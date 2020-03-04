@@ -1,0 +1,25 @@
+
+message N (node) =
+  field id : int
+  field x : int
+  field y : int
+  field n (name) : string
+  field awesome : bool
+  field r (root) : (int * int) option
+  field p (parent) : tesselation option
+  (* These are the IDs of the other nodes. *)
+  field t (triangles) : (int * int) list
+
+message S (tesselation) =
+  field ns (nodes) : node list
+    hint vertical
+  field c (conclusion) : string
+
+message T (test) =
+  field a : (int list * int)
+  field b : int list * int option
+  field t : (int * int) list list option list
+  field self : (test list * int * (int * test option) * (test list list))
+
+message Z (zzz) =
+  field f : int

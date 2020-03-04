@@ -1,0 +1,18 @@
+(* Combinator parsing *)
+Group is
+
+#if (defined(SMLNJ_VERSION))
+ $/basis.cm
+#endif
+
+(* We need streams *)
+../util/stream.cm
+
+pos-sig.sml
+pos.sml
+
+parse-sig.sml
+parse.sml
+
+simpletok-sig.sml
+simpletok.sml

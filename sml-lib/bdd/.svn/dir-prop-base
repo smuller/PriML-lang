@@ -1,0 +1,12 @@
+K 10
+svn:ignore
+V 32
+.cm
+CM
+test
+bdd
+*.exe
+metautil
+
+
+END

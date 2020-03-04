@@ -1,0 +1,175 @@
+10
+
+dir
+2599
+svn://svn.code.sf.net/p/tom7misc/svn/trunk/sml-lib
+svn://svn.code.sf.net/p/tom7misc/svn
+
+
+
+2015-08-08T23:08:53.972559Z
+2564
+tom7
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+be8137f2-001b-0410-b4be-9de0ac3fc846
+
+algo
+dir
+
+text
+dir
+
+port
+dir
+
+geom
+dir
+
+sound
+dir
+
+mlton
+dir
+
+bdd
+dir
+
+misc
+dir
+
+textformat
+dir
+
+README
+file
+
+
+
+
+2015-09-01T01:22:01.523741Z
+47f95707d00bd0d833d150274066cd54
+2013-09-22T15:17:50.458914Z
+2052
+tom7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3214
+
+njlib
+dir
+
+crypt
+dir
+
+files
+dir
+
+TODO
+file
+
+
+
+
+2015-09-01T01:22:01.523741Z
+ad8f54220479a3f4954ba26ba001822e
+2007-07-25T20:00:20.211265Z
+376
+tom7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+165
+
+COPYING
+file
+
+
+
+
+2015-09-01T01:22:01.523741Z
+d32239bcb673463ab874e80d47fae504
+2010-05-15T17:13:18.387605Z
+1270
+tom7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+35147
+
+data
+dir
+
+parse
+dir
+
+util
+dir
+

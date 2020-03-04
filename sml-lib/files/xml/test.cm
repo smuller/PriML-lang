@@ -1,0 +1,19 @@
+
+group is
+
+#if (defined(SMLNJ_VERSION))
+ $/basis.cm
+#endif
+
+  fxlib.cm
+  xml-sig.sml
+  xml.sml
+
+  ../../parse/parse.cm
+  xml-chunk-sig.sml
+  xml-chunk.sml
+
+  ../../util/stringutil-sig.sml
+  ../../util/stringutil.sml
+
+  test.sml

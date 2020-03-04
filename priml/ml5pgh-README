@@ -1,0 +1,22 @@
+
+    README         Tom Murphy VII          15 Nov 2007
+
+This is ML5/pgh, the compiler for ML5. It is also known
+as "lambdac." The program compiles ML5 code to client side
+Javascript and server-side bytecode. Its lineage is complex:
+    mtex -> hemlock -> aphasia2 -> humlock -> ML5/pgh.
+
+Hemlock is documented in "ML Grid Programming in ConCert" by Tom
+Murphy VII in the SIGPLAN ML Workshop 2006. Humlock is described in
+the 2006 Tech Report "The Cult of the Bound Variable: The 9th Annual
+ICFP Programming Contest" (CMU-CS-06-163) and documented briefly in
+the corresponding source release (http://boundvarible.org/).
+
+ML5/pgh is documented in my upcoming dissertation and in the paper
+"Type-safe Distributed Programming with ML5" at Trustworthy Global
+Computing 2007.
+
+Currently the CPS representation in the middle-end is engineered for
+correctness, not speed. I've put some effort into improving its
+performance, but on large ASTs this may take a very long time to
+compile. (Large ASTs can arise from medium-sized programs, sorry.)

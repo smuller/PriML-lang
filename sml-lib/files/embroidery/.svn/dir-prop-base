@@ -1,0 +1,11 @@
+K 10
+svn:ignore
+V 42
+.cm
+CM
+*.exe
+PesFile.cs
+pes0001.html
+test
+
+END

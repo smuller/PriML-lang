@@ -1,0 +1,12 @@
+(* General-purpose streams. *)
+Group is
+
+#if (defined(SMLNJ_VERSION))
+ $/basis.cm
+#endif
+
+stream-sig.sml
+stream.sml
+
+streamutil-sig.sml
+streamutil.sml

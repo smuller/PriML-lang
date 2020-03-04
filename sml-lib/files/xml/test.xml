@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+  <simple></simple>
+	<name>Something</name>
+  <simple one="hello">HI</simple>
+	<fact id="" idea='uhhhh'>
+    <br/>
+    <link attr="1" second='2' third="zoo"/>
+    <b>Some bold text</b>
+	</fact>
+</Document>

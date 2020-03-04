@@ -1,0 +1,219 @@
+
+    textformat                Tom 7           18 Jan 2013
+
+textformat is a metautility for generating human-readable and editable
+text files that can be transformed to and from SML data structures. It
+includes a compiler, tfcompiler, that turns description files (.tfdesc) into
+standalone SML that contains a predictable API based on that description,
+including ways to read and write the textfile format.
+
+Basically you use it like this:
+
+ - Write a file like data.tfdesc that describes your data.
+
+ - Run tfcompiler (in this directory) on data.tfdesc to generate a
+   single standalone SML file called data-tf.sml. This code only
+   requires the SML Basis so you can just include it in any project.
+   You'd usually build this step into a makefile rule that depends on
+   tfcompiler.exe; this directory contains an example.
+
+ - Convert your own internal data structures to the types defined in
+   data-tf.sml, or just use them directly if they are suitable. Each
+   of the types can be turned into a string and written to a file and
+   vice versa and so on. See the API reference below.
+
+Comparison:
+
+ - Google Protocol Buffers are nice, but the binary format is completely
+   uneditable and the text format is way too verbose. They also are more
+   suitable for curly-style languages. Someone should make a protocol
+   buffer implemetation for SML though, maybe me.
+
+ - It is not XML because XML is awful in so many ways. You can use the
+   XML parser in ../files/xml. Good luck.
+
+Description language reference:
+
+   A description file contains a series of messages. Each message contains
+   a series of fields. Here's an example:
+
+   message V (vertex) =
+     field name : string
+     field c (coords) : int * int
+     field g (neighbors) : int list
+
+   (* Graphs are made up of vertices. *)
+   message G (graph) =
+     field vs (vertices) : vertex list
+       hint vertical
+     field name : string option
+     field f (finished) : bool
+
+   SML-style comments are allowed anywhere.
+
+   The first message is compiled to a type called vertex in SML. The
+   character V is used to name a structure with utilities for the type,
+   the constructor in the type (which is always a datatype with a single
+   arm containing a record of the fields) and in the serialized format.
+   The type name in parentheses doesn't affect the serialization format.
+   
+   Each field in a message corresponds to a field in the record of that
+   datatype. The vertex type becomes
+
+      datatype vertex = V of {
+        name : string,
+        coords : int * int,
+        neighbors: int list
+      }
+
+   Again, the names in parentheses only affect the generated code's API,
+   not the serialization format. You can safely change the name of a field
+   at any time. The tags "name", "c", and "g" are used in the serialization
+   format to identify that field. If a parenthesized name isn't used, the
+   tag becomes the name as well. Tags have to be unique, of course, as
+   well as names.
+
+   The hint keyword is intended to provide hints to the compiler or API
+   without affecting the semantics. Currently the only supported hint is
+   on a field: vertical. If you write "hint vertical" after a field, then
+   any list in that message will be output with newlines instead of spaces
+   separating the elements. This is useful on a toplevel message that
+   contains a long list of submessages. The intention is that the compiler
+   be somewhat heuristic about this in the future, without sacrificing
+   performance. It should also indent nested lists properly.
+
+   Not all SML types are supported. Currently allowed are int, string,
+   bool, tuples, lists, and options. It makes sense to add some more base
+   types like char and real. It is not the intention to support all SML
+   types.
+
+Design considerations:
+
+ - This is not a general serialization format; you will often need to
+   do additional processing to transform to your own internal SML
+   representation.
+
+ - Backwards and forwards compatibility are supported, like in protocol
+   buffers, by having the description include the names of the tags.
+   Unlike protocol buffers, we don't support round-trip compatibility.
+   If you parse it, you discard the fields that you don't understand.
+
+ - It's very important that the generated code by completely standalone
+   and not require anything other than the well-supported subset of the
+   Standard Basis library. This is so that it can be easily dropped
+   into an SML program without adding dependencies or interfering with
+   its compilation management system.
+
+ - The text format is designed to support efficient diffs and feasible
+   merges in revision control systems, yay.
+
+ - When possible I favor simplicity of usage over stuff like complexity
+   of the internal code or performance.
+
+ - When possible I favor performance of the generated code over
+   simplicity of its internals.
+
+ - Things are assumed to fit in memory and there's no support for
+   recovering from corruption.
+
+
+API reference:
+
+   Each message has a structure whose name is the token for that message
+   (typically this is a single capital letter). It looks like this:
+
+   structure V : sig
+     (* To facilitate functorization or other generated code. *)
+     type t = vertex
+     (* Serialize to the string representation. *)
+     val tostring : t -> string
+     (* Deserialize, or raise Parse *)
+     val fromstring : string -> t
+     (* Deserialize or return NONE *)
+     val maybefromstring : string -> t option
+
+     (* Write the serialized data over the named file. *)
+     val tofile : string -> t -> unit
+     (* Read from the file, raising Parse or IO exceptions on failure *)
+     val fromfile : string -> t
+     (* Read from the file, returning NONE if the contents can't be
+        parsed. Still returns regular IO exceptions on file issues. *)
+     val maybefromfile : string -> t option
+
+     (* The default instance of this message; see below. *)
+     val default : t
+   end
+
+Format reference:
+
+   A message is not delimited (though when it is contained in a parent
+   message, it is); it is just its series of fields. Every field and
+   message in a description has a unique token; by convention the
+   messages are a single capital letter and the fields a single
+   lowercase letter (but it can be anything).
+
+   A field is encoded by its token followed by the data it contains.
+   Because we need to skip fields we don't understand, the data is
+   in a format that is self-delimiting.
+
+   Ints are encoded as decimal numbers. Negative numbers have a leading -.
+   Strings are encoded as "quoted data" which may include escaped bytes,
+   always written \NN where NN is two hexadecimal digits.
+   Lists are enclosed in square brackets and separated by whitespace.
+   Tuples are encoded the same way as lists.
+   An optional type is written the same way, with the expectation that
+   there is just zero or one element. If there is more than one element,
+   parsing succeeds and ignores all but the first. 
+   A sub-message is written as a curly brace {, then the token representing
+   that message, then the message as here, then the closing brace }.
+
+   (This is not yet implemented:)
+   When the text file format is output, fields with the following values
+   may not be encoded as anything (the field simply doesn't appear):
+     List []
+     Tuple ()
+     Option NONE
+
+   Note that this is not hereditary: A list of 5 NONEs is still written
+   as [[], [], [], [], []].
+
+   At parse time, there may be missing fields. This happens if the
+   description does not match the version used to generate the textfile
+   data, or in the cases above. Each type has a default value which
+   is assumed if the field isn't found.
+
+     int         0
+     string      ""
+     list        []
+     option      NONE
+   
+   For tuples, each element is given its default value, inductively.
+   For messages, the default instance of the message. In this, each
+   field has its default value given inductively. This default instance
+   is also accessible in the API.
+
+   Since any field may be missing, the empty string parses as the
+   default instance of every message.
+
+   It is illegal (a parse error) for a field to appear multiple times
+   in the same message.
+
+   Whitespace basically never matters, except inside of strings and
+   when separating tokens from integers, since a token may end
+   with digits.
+
+   TODO: 
+     - Reject programs at tfcompiler time that contain impossible cyclic
+       references. These currently produce SML code that doesn't compile.
+     - Implement the representation optimization where we don't output
+       a field with certain default values at all.
+     - Human-readable debug output (though we should strive to make the
+       text format itself pretty readable...)
+     - Could make the parsed description available at runtime;
+       maybe some limited reflection is possible.
+     - Improve the quality of layout, especially with hints. List fields
+       should be indented, etc.
+     - More base types like char, intinf, and real. If adding intinf,
+       insist that the generated code does not contain references to
+       intinf unless the tf description does.
+
