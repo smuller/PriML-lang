@@ -1,0 +1,106 @@
+(* Copyright (C) 1999-2007 Henry Cejtin, Matthew Fluet, Suresh
+ *    Jagannathan, and Stephen Weeks.
+ * Copyright (C) 1997-2000 NEC Research Institute.
+ *
+ * MLton is released under a BSD-style license.
+ * See the file MLton-LICENSE for details.
+ *)
+
+Group
+
+signature HANDLER
+signature RETURN
+signature SSA
+signature SSA2
+
+functor FlatLattice
+functor Ssa
+functor Ssa2
+functor SsaToSsa2
+
+is
+
+../../lib/mlton/sources.cm
+../atoms/sources.cm
+../control/sources.cm
+
+equatable.sig
+equatable.sml
+ssa-tree.sig
+ssa-tree2.sig
+ssa-tree.fun
+ssa-tree2.fun
+direct-exp.sig
+direct-exp.fun
+analyze.sig
+analyze2.sig
+analyze.fun
+analyze2.fun
+type-check.sig
+type-check2.sig
+type-check.fun
+type-check2.fun
+prepasses.sig
+prepasses2.sig
+prepasses.fun
+prepasses2.fun
+shrink.sig
+shrink2.sig
+shrink.fun
+shrink2.fun
+flat-lattice.sig
+flat-lattice.fun
+n-point-lattice.sig
+n-point-lattice.fun
+two-point-lattice.sig
+two-point-lattice.fun
+three-point-lattice.sig
+three-point-lattice.fun
+restore.sig
+restore.fun
+
+ssa-transform.sig
+ssa2-transform.sig
+common-arg.fun
+common-block.fun
+common-subexp.fun
+global.sig
+global.fun
+multi.sig
+multi.fun
+combine-conversions.fun
+constant-propagation.fun
+contify.fun
+deep-flatten.fun
+flatten.fun
+inline.sig
+inline.fun
+introduce-loops.fun
+known-case.fun
+local-flatten.fun
+local-ref.fun
+loop-invariant.fun
+poly-equal.fun
+poly-hash.fun
+profile.sig
+profile.fun
+profile2.sig
+profile2.fun
+redundant-tests.fun
+redundant.fun
+ref-flatten.fun
+remove-unused.fun
+remove-unused2.fun
+simplify-types.fun
+useless.fun
+zone.fun
+simplify.sig
+simplify2.sig
+simplify.fun
+simplify2.fun
+ssa.sig
+ssa2.sig
+ssa.fun
+ssa2.fun
+ssa-to-ssa2.sig
+ssa-to-ssa2.fun
