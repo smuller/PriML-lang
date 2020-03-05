@@ -1,0 +1,105 @@
+priority fg
+priority smallfib
+priority medfib
+priority largefib
+(* priority alert *)
+
+(* largefib < medfib < smallfib *)
+(* fg and alert incomparable *)
+order largefib < medfib
+order medfib < smallfib
+order smallfib < fg
+(* order smallfib < alert *)
+
+fairness fg 10
+(*fairness alert 15*)
+fairness smallfib 8
+fairness medfib 4
+fairness largefib 1
+
+val stdin = ref (TextIO.getInstream TextIO.stdIn)
+
+fun inputLine () =
+    let fun iL_int line =
+            case IO.input1 (!stdin) of
+                NONE => NONE
+              | SOME (c, is') =>
+                (upd (stdin, is');
+                 if eq (c, ?\n) then
+                     SOME line
+                 else
+                     iL_int (cat (line, str c)))
+    in
+        iL_int ""
+    end
+
+(* Sequential base case for fib *)
+fun seqfib n =
+    if le (n, 1) then 1
+    else let val (r1, r2) = (seqfib (minus (n, 1)), seqfib (minus (n, 2)))
+         in plus (r1, r2)
+         end
+
+(* Priority-polymorphic parallel fib *)
+fun[w] fib n =
+         let fun fib_int n : int cmd[w] =
+                 if le (n, 1) then cmd[w] {ret 1}
+                 else if le (n, 20) then cmd[w] {ret (seqfib n)}
+                 else
+                     cmd[w]
+                        { bt <- spawn[w] {do (fib_int (minus (n, 1)))};
+                          a <- do (fib_int (minus (n, 2)));
+                          b <- sync bt;
+                          plus (a, b)}
+         in
+             cmd[w]
+             {
+               f <- do (fib_int n);
+               print (cat (Int.toString f, "\n"))
+             }
+         end
+
+(* Read request from user and compute if needed. *)
+fun fib_server () =
+    let fun loop threads =
+        let val _ = print "Enter a number.\n"
+            val request = inputLine ()
+        in case request of
+               NONE => cmd[fg] {ret threads}
+             | SOME s =>
+               if eq (s, "done") then
+                   cmd[fg] {spawn[(*alert*)fg] {ret (print "cleaning up\n")};
+                            threads}
+               else
+              (case Int.fromString s of
+                   NONE => loop threads
+                 | SOME n =>
+                   let val _ = print (cat ("Computing fib(", cat (Int.toString n, ")\n")))
+                   in
+                       if lt (n, 15) then (* small number *)
+                           cmd[fg] {td <- spawn[smallfib] {do ([smallfib]fib n)};
+                                    do (loop (cons (td, threads)))}
+                       else if lt (n, 25) then (* medium number *)
+                           cmd[fg] {td <- spawn[medfib] {do ([medfib]fib n)};
+                                    do (loop (cons (td, threads)))}
+                       else (* large number *)
+                           cmd[fg] {td <- spawn[largefib] {do ([largefib]fib n)};
+                                    do (loop (cons (td, threads)))}
+                   end)
+        end
+    in loop nil
+    end
+
+fun cleanup threads =
+    if List.null threads then
+        cmd[bot] {()}
+    else
+        cmd[bot] {sync (List.hd threads);
+                  do (cleanup (List.tl threads)) }
+
+main
+{
+  loopthread  <- spawn[fg] {do (fib_server ())};
+  bgthreads   <- sync loopthread;
+  do (cleanup bgthreads)
+}

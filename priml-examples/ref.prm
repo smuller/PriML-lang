@@ -1,0 +1,20 @@
+priority loop_p
+priority sort_p
+order sort_p < loop_p
+
+datatype 'a ref =
+Ref of 'a
+
+fun ref (x) = Ref x
+fun deref ((Ref x)) = x
+fun ('a) upd (r : 'a ref, x : 'a) = ()
+
+main
+{
+    x1 <- spawn[loop_p] {ret ()};
+    r <- ret (ref x1);
+    x <- spawn[loop_p] {ret ()};
+    ret (r := x);
+    ret (3 < 5);
+    spawn[sort_p] {sync (deref r)}
+}

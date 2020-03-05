@@ -1,0 +1,36 @@
+priority loop_p
+priority sort_p
+order sort_p < loop_p
+
+fun[p] qsort compare s  =
+  if Seq.isEmpty s then
+    cmd[p] {ret Seq.empty}
+  else
+    let val pivot = Seq.sub(s, dv (Seq.length s, 2))
+        val (s_l, s_e, s_g) = Seq.partition (compare pivot) s
+    in
+      cmd[p]
+      {
+        quicksort_l <- spawn[p] {do ([p]qsort compare s_l)};
+        quicksort_g <- spawn[p] {do ([p]qsort compare s_g)};
+        ss_l <- sync quicksort_l;
+        ss_g <- sync quicksort_g;
+        ret (Seq.append nil)
+      }
+    end
+
+fun loop emails : unit cmd[loop_p] =
+  case next_event () of
+  SORT_BY_DATE =>
+    cmd[loop_p]
+    {
+      t <- spawn[sort_p]
+           {do ([sort_p]qsort date emails)};
+      l <- sync t;
+      ret (display_ordered l)
+    }
+
+main
+{
+ret ()
+}

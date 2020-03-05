@@ -1,0 +1,231 @@
+priority loop_p
+priority sort_p
+priority alert_p
+priority send_p
+
+order sort_p < alert_p
+order send_p < alert_p
+order loop_p < alert_p
+order send_p < loop_p
+order sort_p < loop_p
+
+type mail = { from : string,
+              to : string,
+              date : string,
+              subject : string,
+              message : string }
+
+datatype ord =
+         LESS
+         | EQUAL
+         | GREATER
+
+fun cp (s1, s2) =
+    if eq (s1, s2) then EQUAL
+    else if slt (s1, s2) then LESS
+    else GREATER
+
+fun frm m1 m2 = (cp (#from/mail m1, #from/mail m2))
+fun dat m1 m2 = (cp (#date/mail m1, #date/mail m2))
+fun subj m1 m2 = (cp (#subject/mail m1, #subject/mail m2))
+
+fun print_headrow { from, to, date, subject, message } =
+    print (cat (from, cat ("\t", cat (date, cat ("\t", cat (subject, "\n"))))))
+
+datatype event =
+         SORT_BY of (mail -> mail -> ord)
+         | SEND of string
+         | QUIT
+
+fun alert s = print s
+
+val stdin = ref (TextIO.getInstream TextIO.stdIn)
+
+fun inputLine () =
+    let fun iL_int line =
+            case IO.input1 (!stdin) of
+                NONE => NONE
+              | SOME (c, is') =>
+                (upd (stdin, is');
+                 if eq (c, ?\n) then
+                     SOME line
+                 else
+                     iL_int (cat (line, str c)))
+    in
+        iL_int ""
+    end
+
+fun next_event () =
+    (print "$ ";
+    case inputLine () of
+        SOME line =>
+        if eq (line, "s date") then SORT_BY dat
+        else if String.isPrefix line "s from" then SORT_BY frm
+        else if String.isPrefix line "s subject" then SORT_BY subj
+        else if String.isPrefix line "quit" then QUIT
+        else if String.isPrefix "send " line then
+            SEND (String.extract (line, 5, NONE))
+        else
+            next_event ()
+      | NONE => QUIT)
+
+val length = Array.length
+val sub = Array.sub
+fun partition (a, f) =
+    let val (l1, l2, l3) = Array.foldl (fn (x, (l1, l2, l3)) =>
+                                           case f x of
+                                               LESS =>
+                                               (cons (x, l1), l2, l3)
+                                             | EQUAL =>
+                                               (l1, cons (x, l2), l3)
+                                             | GREATER =>
+                                               (l1, l2, cons (x, l3))
+                                   )
+                                   (nil, nil, nil)
+                                   a
+    in
+        (Array.fromList l1, Array.fromList l2, Array.fromList l3)
+    end
+val app = Array.app
+fun isEmpty a = eq (length a, 0)
+(* val empty = Array.fromList nil *)
+
+fun append (s1, s2) =
+    let val l1 = length s1
+        val l2 = length s2
+    in
+        Array.tabulate (plus (l1, l2), fn i => if lt (i, l1) then
+                                                   sub (s1, i)
+                                               else
+                                                   sub (s2, minus (i, l1)))
+    end
+
+fun blank s =
+    List.all Char.isSpace (String.explode s)
+
+fun strip s =
+    String.substring (s, 0, minus (String.size s, 1))
+
+fun parsemails s =
+    let val is = TextIO.openIn s
+        fun hdr tb f t d s is =
+            case TextIO.inputLine is of
+                SOME line =>
+                let val tokens = String.tokens (fn c => eq (c, ?:)) line
+                    val _ = print (cat (Int.toString (List.length tokens), " tokens\n"))
+                in
+                    if blank line then
+                        if tb then
+                            (print "email\n";
+                            cons ({ from = strip f,
+                                    to = strip t,
+                                    date = strip d,
+                                    subject = strip s,
+                                    message = msg is },
+                                  hdr false "" "" "" "" is))
+                        else
+                            hdr true f t d s is
+                    else
+                        let val fld = List.hd tokens
+                            val rest = List.tl tokens
+                            val v = String.concatWith ":" rest
+                        in
+                            if eq (fld, "Date") then
+                                hdr false f t v s is
+                            else if eq (fld, "From") then
+                                hdr false v t d s is
+                            else if eq (fld, "To") then
+                                hdr false f v d s is
+                            else if eq (fld, "Subject") then
+                                hdr false f t d v is
+                            else
+                                hdr false f t d s is
+                        end
+                end
+              | NONE => nil
+        and msg is =
+            case TextIO.inputLine is of
+                SOME line =>
+                if String.isPrefix "Return-Path" line
+                then ""
+                else cat (line, cat ("\n", msg is))
+              | NONE => ""
+    in
+        hdr false "" "" "" "" is
+    end
+
+fun send s =
+    (*let val mails = parsemails s
+    in
+        if eq (List.length mails, 0) then (print "no email\n"; false)
+        else
+            let val m = List.hd mails
+            in *)
+                (print (cat ("sendmail ",  cat ("smuller@cs.cmu.edu", cat (" < ", cat (s, "\n")))));
+                OS.Process.system (cat ("sendmail ",  cat ("smuller@cs.cmu.edu", cat (" < ", s))));
+                true)
+(*            end
+            handle _ => false
+    end
+*)
+
+fun[p] quicksort compare s =
+  if le (length s, 2) then
+      cmd[p] { ret s }
+  else
+      let val pivot = sub(s, dv (length s, 2))
+          val (sl, se, sr) = partition (s, (fn v => compare v pivot))
+      in
+          cmd[p]
+             {
+               quicksortl <- spawn[p] {do ([p]quicksort compare sl)};
+               quicksortr <- spawn[p] {do ([p]quicksort compare sr)};
+               ssl <- sync quicksortl;
+               ssr <- sync quicksortr;
+               ret (append (ssl, append (se, ssr)))
+             }
+      end
+
+fun display_ordered s : unit =
+    app print_headrow s
+
+fun loop emails : unit cmd[loop_p] =
+    case next_event () of
+        SORT_BY field =>
+        cmd[loop_p]
+           {
+             spawn[alert_p] { ret (print (cat ("Sorting ", cat (Int.toString (length emails), " ...\n"))))};
+             spawn[sort_p]
+                  {
+                    s <- do ([sort_p]quicksort field emails);
+                    spawn[alert_p] { ret (print "Sorted!\n") };
+                    ret (display_ordered s)
+                  };
+             do (loop emails)
+           }
+      | SEND mail =>
+        cmd[loop_p]
+           {
+             spawn[send_p]
+                  {
+                    mret <- ret (send mail);
+                    do (if mret then
+                            cmd[send_p] {ret ()}
+                        else
+                            cmd[send_p]
+                               {spawn[alert_p]
+                                     {ret (alert "Mail didn't send!")};
+                                ret ()}
+                       )
+                  };
+             do (loop emails)
+           }
+      | QUIT =>
+        cmd[loop_p]
+           { ret () }
+
+main
+{
+  t <- spawn[loop_p] {do (loop (Array.fromList (parsemails "mails")))};
+  sync t
+}

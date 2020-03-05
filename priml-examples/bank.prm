@@ -1,0 +1,71 @@
+priority query_p
+priority debit_p
+priority credit_p
+priority loop_p
+
+order debit_p < credit_p
+order credit_p < loop_p
+order query_p < loop_p
+
+val stdin = ref (TextIO.getInstream TextIO.stdIn)
+
+fun inputLine () =
+    let fun iL_int line =
+            case IO.input1 (!stdin) of
+                NONE => NONE
+              | SOME (c, is') =>
+                (upd (stdin, is');
+                 if eq (c, ?\n) then
+                     SOME line
+                 else
+                     iL_int (cat (line, str c)))
+    in
+        iL_int ""
+    end
+
+val accounts = Array.array (10, 0)
+
+fun loop () =
+    case inputLine () of
+        SOME line =>
+        let val tokens = String.tokens Char.isSpace line
+            val c = List.hd tokens
+            val acct = case Int.fromString (List.nth (tokens, 1))
+                        of SOME n => n
+                         | NONE => 0
+        in
+            if String.isPrefix "credit" c then
+                cmd[loop_p] {
+                    spawn[credit_p]
+                         { ret (Array.update (accounts, acct,
+                                              plus (Array.sub (accounts, acct),
+                                                    case Int.fromString (List.nth (tokens, 2))
+                        of SOME n => n
+                         | NONE => 0)))};
+                    do (loop ())
+                }
+            else if String.isPrefix "debit" c then
+                cmd[loop_p] {
+                    spawn[credit_p]
+                         { ret (Array.update (accounts, acct,
+                                              minus (Array.sub (accounts, acct),
+                                                    case Int.fromString (List.nth (tokens, 2))
+                        of SOME n => n
+                         | NONE => 0)))};
+                    do (loop ())
+                }
+            else if String.isPrefix "query" c then
+                cmd[loop_p] {
+                    spawn[query_p]
+                         { ret (print (cat (Int.toString (Array.sub (accounts, acct)), "\n"))) };
+                    do (loop ())
+                }
+            else loop ()
+        end
+      | NONE => loop ()
+
+main
+{
+  t <- spawn[loop_p] {do (loop ())};
+  sync t
+}

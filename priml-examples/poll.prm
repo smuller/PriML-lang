@@ -1,0 +1,44 @@
+priority loop_p
+priority sort_p
+order sort_p < loop_p
+
+fun[p] qsort s =
+  if le (length s, 2) then
+      cmd[p] { ret s }
+  else
+      let val pivot = sub(s, dv (length s, 2))
+          val (sl, se, sr) = partition (s, (fn v => lt v pivot))
+      in
+          cmd[p]
+             {
+               quicksortl <- spawn[p] {do ([p]qsort sl)};
+               quicksortr <- spawn[p] {do ([p]qsort sr)};
+               ssl <- sync quicksortl;
+               ssr <- sync quicksortr;
+               ret (append (ssl, append (se, ssr)))
+             }
+      end
+
+
+fun loop emails bgt : unit cmd[loop_p] =
+  cmd[loop_p]
+  {
+    r <- poll bgt;
+    x <- ret (case r of
+               SOME l => display_ordered l
+             | NONE => ());
+    (* Handle events... *)
+    do (loop emails bgt)
+  }
+
+fun startloop emails : unit cmd[loop_p] =
+  cmd[loop_p]
+  {
+    t <- spawn[sort_p] {do ([sort_p]qsort emails)};
+    do (loop emails t)
+  }
+
+main
+{
+spawn[loop_p] {do (startloop nil)}
+}
