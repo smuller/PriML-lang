@@ -7,10 +7,17 @@ type file = string
 
 type input = file list * file
 
+val stdlib = case OS.Process.getEnv "PRIML_LIB" of
+                SOME s => s
+              | NONE => (print "primlc: standard library not found: make sure PRIML_LIB environment variable is set.\n";
+                        OS.Process.exit OS.Process.failure)
+
 val basefiles = ["$(SML_LIB)/basis/basis.mlb",
                  "$(SML_LIB)/basis/mlton.mlb",
                  (* "../x/graphics.mlb", *)
-                 "$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb"]
+                 "$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb",
+                 stdlib ^ "/std.sml",
+                 stdlib ^ "/stdlib.sml"]
 
 val mlton = case OS.Process.getEnv "MLTON_PARMEM" of
                 SOME s => s
@@ -20,7 +27,7 @@ val mlton = case OS.Process.getEnv "MLTON_PARMEM" of
 val opts = ["-default-ann 'allowFFI true'", "-cc-opt -g"]
 
 fun build_mlb file (deps, comp) =
-    let val fs = basefiles @ deps @ [comp]
+    let val fs = deps @ basefiles @ [comp]
         val s = String.concatWith "\n" fs
     in
         StringUtil.writefile file s

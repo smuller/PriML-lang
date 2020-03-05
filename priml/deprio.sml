@@ -163,14 +163,17 @@ fun deprio p prios cons fs =
     let val l = Pos.initpos
     in
         (List.map (priotosml l) prios) @
-        [(Val ([], PWild, (App ((Var "Basic.finalizePriorities", l),
+        [(Val ([], PWild, (App ((Var "Basic.initPriorities", l),
                                 (Record [], l),
                                 false), l)), l)] @
         (List.map (constosml l) cons) @
         (List.map (fn s => constosml l ("bot", s))
                   (List.filter (fn s => s <> "bot") prios)) @
         (List.map (fn s => constosml l (s, "(Priority.top ())")) prios) @
-        (fairtosml l fs) @
+        [(Val ([], PWild, (App ((Var "Basic.finalizePriorities", l),
+                                (Record [], l),
+                                false), l)), l)] @
+        (case fs of [] => [] | _ => fairtosml l fs) @
         [(Val ([], PWild, (App ((Var "Basic.init", l),
                                 (Record [], l),
                                 false), l)), l)] @
