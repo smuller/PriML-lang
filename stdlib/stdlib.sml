@@ -1,0 +1,12 @@
+fun le (a, b) = a <= b
+fun lt (a, b) = a < b
+fun gt (a, b) = a > b
+fun eq (a, b) = a = b
+fun minus (a, b) = a - b
+fun plus (a, b) = a + b
+fun mult (a, b) = a * b
+fun cat (a, b) = a ^ b
+fun upd (a, b) = a := b
+fun cons (a, b) = a :: b
+fun dv (a, b) = Int.div (a, b)
+fun slt (a, b) = String.< (a, b)
