@@ -34,7 +34,7 @@ processors as follows:
 ## Compiling PriML programs
 
 The input to `primlc` can be either a single source file with the .prm extension,
-or can be a MLton Basis (.mlb) file (see [http://www.mlton.org/MLBasis]).
+or can be a MLton Basis (.mlb) file (see <http://www.mlton.org/MLBasis>).
 PriML programs can freely interface with SML code using the ML Basis system.
 A .mlb file input to `primlc` can provide any number of SML files on which the
 PriML program depends, but must end with exactly one .prm file. PriML currently
