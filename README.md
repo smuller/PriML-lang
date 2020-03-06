@@ -69,3 +69,20 @@ Computes the 45th Fibonacci numbers while echoing console input.
 
 Opens a simple web server (serving the page in the `www` directory) on
 `localhost:8000`.
+
+## See also
+
+For background information on the theory behind PriML and more code and syntax
+examples:
+
+My PhD thesis, [*Responsive Parallel Computation*](http://www.cs.cmu.edu/~smuller/thesis/thesis-final.pdf)
+
+Stefan K. Muller, Umut A. Acar and Robert Harper. Competitive Parallelism: Getting Your Priorities Right. ICFP 2018.
+
+
+For algorithmic and implementation details on the runtime scheduler, and a
+description of the "fairness" properties of PriML:
+
+Stefan K. Muller, Sam Westrick and Umut A. Acar. Fairness in Responsive Parallelism. ICFP 2019.
+ 
+
