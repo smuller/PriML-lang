@@ -16,6 +16,13 @@ fun readlines file =
         String.tokens (fn c => c = #"\n") s
     end
 
+fun concatfiles files = 
+    let val read = map readlines files
+        val concattedfiles = map (String.concatWith "\n") read
+        val concatted = String.concatWith "\n" concattedfiles
+    in StringUtil.writefile "concatted.sml" concatted
+    end
+
 exception Input of string
 
 val (src, output, morefiles, moreopts) =
@@ -32,10 +39,13 @@ val (deps, src) =
     if String.isSuffix ".mlb" src then
         let val files = readlines src
             val n = List.length files
-            val (deps, src) = (List.take (files, n - 1), List.last files)
+            val srcfiles = List.filter (fn x => String.isSuffix ".prm" x) files
+            val libfiles = List.filter (fn x => not (String.isSuffix ".prm" x)) files
+            val _ = concatfiles srcfiles
+            val (deps, src) = (libfiles, "concatted.sml")
             val _ =
-                if String.isSuffix ".prm" src then ()
-                else raise (Input "primlc: Main file must have extension .prm")
+                if List.length srcfiles <> 0 then ()
+                else raise (Input "primlc: Main files must exist and have extension .prm")
             val _ =
                 if List.all (fn s => not (String.isSuffix ".prm" s)) deps
                 then ()
