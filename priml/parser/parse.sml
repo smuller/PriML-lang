@@ -612,6 +612,12 @@ struct
 
                  $bindword -- punt "expected bind declaration after VAL",
 
+                 `STRUCTURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
+                 `STRUCTURE -- punt "expected ID after STRUCTURE", 
+
+                 `SIGNATURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
+                 `SIGNATURE -- punt "expected ID after SIGNATURE",
+
                  `DO >> "expected EXP after DO" ** 
                    (call G exp wth Do),
 
@@ -685,15 +691,6 @@ struct
                  << `RBRACE
                  wth Cmd)
 
-      and meta G =
-        !!(alt [
-
-              `STRUCTURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
-              `STRUCTURE -- punt "expected ID after STRUCTURE", 
-
-              `SIGNATURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
-              `SIGNATURE -- punt "expected ID after SIGNATURE"
-          ])
 (*      fun export G =
         alt [`EXPORT >> `TYPE >> alt[tyvars && id, succeed nil && id]
              && opt(`EQUALS >> typ) wth (fn ((atv,i),to) => ExportType (atv, i, to)),
