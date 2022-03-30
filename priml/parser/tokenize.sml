@@ -187,6 +187,8 @@ struct
        ("inline", INLINE),
        ("sig", SIG),
        ("signature", SIGNATURE),
+       ("structure", STRUCTURE),
+       ("struct", STRUCT),
        ("deriving", DERIVING),
        ("open", OPEN),
        ("tagtype", TAGTYPE),

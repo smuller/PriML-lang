@@ -685,6 +685,15 @@ struct
                  << `RBRACE
                  wth Cmd)
 
+      and meta G =
+        !!(alt [
+
+              `STRUCTURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
+              `STRUCTURE -- punt "expected ID after STRUCTURE", 
+
+              `SIGNATURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
+              `SIGNATURE -- punt "expected ID after SIGNATURE"
+          ])
 (*      fun export G =
         alt [`EXPORT >> `TYPE >> alt[tyvars && id, succeed nil && id]
              && opt(`EQUALS >> typ) wth (fn ((atv,i),to) => ExportType (atv, i, to)),
@@ -728,6 +737,7 @@ struct
       val exp = fn G => call G exp
       val dec = fn G => call G dec
       val prog = fn G => call G prog
+      val meta = fn G => call G meta
   end
 
 end

@@ -6,6 +6,7 @@ struct
 
     type label = string
     type var = Variable.var
+    type id = string
 
     (* arm in a datatype(sum). might be a carrier ("of
        t") or not. If a carrier, t might be a type
@@ -23,6 +24,9 @@ struct
       Carrier { definitely_allocated = definitely_allocated,
                 carried = f carried }
 
+    datatype longid =
+      Id of id
+    | Path of string * longid 
 
     datatype prio =
       PEvar of prio ebind ref
