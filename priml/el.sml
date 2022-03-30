@@ -148,6 +148,10 @@ struct
        or
        extern val (a, b) loop : a -> b  @ w  =  real_label_of_loop
      *)
+    | Structure of string * module
+
+				
+  and module = dec list
 
   and tdec =
       Dec of dec

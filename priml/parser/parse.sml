@@ -702,7 +702,10 @@ struct
              && opt(`EQUALS >> call G exp) wth (fn ((atv,i),eo) => ExportVal (atv, i, eo)),
              
              `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
-             *)
+ *)
+      and module G =
+	  `STRUCT >> call G decs << `END
+	    
       fun prog G =
           (call G decs --
                 (fn (G, ds) =>
