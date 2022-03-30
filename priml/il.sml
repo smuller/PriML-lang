@@ -26,7 +26,7 @@ struct
 
     datatype longid =
       Id of id
-    | Path of id * longid 
+    | Path of string * longid 
 
     datatype prio =
       PEvar of prio ebind ref
