@@ -612,11 +612,13 @@ struct
 
                  $bindword -- punt "expected bind declaration after VAL",
 
-                 `STRUCTURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
+                 `STRUCTURE >> id && `EQUALS && call G module
+		  wth (fn (i, (_, ds))  => Structure (i, ds)),
+		 
                  `STRUCTURE -- punt "expected ID after STRUCTURE", 
-
+(*
                  `SIGNATURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
-                 `SIGNATURE -- punt "expected ID after SIGNATURE",
+  *)               `SIGNATURE -- punt "expected ID after SIGNATURE",
 
                  `DO >> "expected EXP after DO" ** 
                    (call G exp wth Do),
@@ -701,8 +703,12 @@ struct
              `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
  *)
       and module G =
-	  `STRUCT >> call G decs << `END
-	    
+	  `STRUCT >> "expected DECS after STRUCT" **
+                   ((repeat (call G regulardec)) -- 
+                    (fn ds => 
+                     `END
+                      wth (fn _ => ds)))
+
       fun prog G =
           (call G decs --
                 (fn (G, ds) =>
@@ -737,7 +743,6 @@ struct
       val exp = fn G => call G exp
       val dec = fn G => call G dec
       val prog = fn G => call G prog
-      val meta = fn G => call G meta
   end
 
 end

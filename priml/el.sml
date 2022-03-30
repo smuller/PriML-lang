@@ -148,11 +148,9 @@ struct
        or
        extern val (a, b) loop : a -> b  @ w  =  real_label_of_loop
      *)
-    | Structure of string * module
+    | Structure of string * dec list
 
 				
-  and module = dec list
-
   and tdec =
       Dec of dec
     | Priority of string
