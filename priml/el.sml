@@ -8,6 +8,11 @@ struct
   type priority = string
   type prio = string
   type pconstraint = prio * prio
+  type id = string
+
+  datatype longid =
+      Id of id
+    | Path of string * longid
   
 (*
       PrVar of string
