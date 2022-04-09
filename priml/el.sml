@@ -149,6 +149,7 @@ struct
        extern val (a, b) loop : a -> b  @ w  =  real_label_of_loop
      *)
     | Structure of string * dec list
+    | Signature of string * dec list
 
 				
   and tdec =
