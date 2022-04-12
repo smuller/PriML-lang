@@ -617,7 +617,7 @@ struct
 
                  `STRUCTURE -- punt "expected ID after STRUCTURE", 
 
-                 `SIGNATURE >> id && `EQUALS && call G signature
+                 `SIGNATURE >> id && `EQUALS && call G sign
 	              	  wth (fn (i, (_, ds)) => Signature (i, ds)),
 
                  `SIGNATURE -- punt "expected ID after SIGNATURE",
@@ -711,7 +711,7 @@ struct
                         `END
                           wth (fn _ => ds)))
 
-      and signature G =
+      and sign G =
         `SIG >> "expected DECS after SIG" **
                       (* TODO @aluqman: create parser for sigdecs i.e. 
                           type id
