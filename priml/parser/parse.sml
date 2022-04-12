@@ -614,12 +614,10 @@ struct
 
                  `STRUCTURE >> id && `EQUALS && call G module
 	              	  wth (fn (i, (_, ds)) => Structure (i, ds)),
-
                  `STRUCTURE -- punt "expected ID after STRUCTURE", 
 
                  `SIGNATURE >> id && `EQUALS && call G sign
 	              	  wth (fn (i, (_, ds)) => Signature (i, ds)),
-
                  `SIGNATURE -- punt "expected ID after SIGNATURE",
 
                  `DO >> "expected EXP after DO" ** 
@@ -629,7 +627,6 @@ struct
                                                     Type (nil,i,t)),
                  `TYPE >> tyvars && id && `EQUALS && typ 
                    wth (fn (tv,(i,(_,t))) => Type(tv,i,t)),
-
                  `TYPE -- punt "expected type declaration after TYPE",
 
                  `TAGTYPE >> id wth Tagtype,
@@ -667,6 +664,23 @@ struct
                  `FUN -- punt "expected (INLINE) FUNS after FUN"
 (*                   `WFUN -- punt "expected id PPATS PATS EQUALS exp after WFUN" *)
                 ])
+
+      and sigdec G = 
+          !!(alt [
+            (* crappy. just says the type is some empty thing to compile *)
+            `TYPE >> id wth (fn i => Type (nil, i, (TVar ""))),
+            `TYPE >> tyvars && id wth (fn (tv, i) => Type (tv, i, (TVar ""))),
+            `TYPE -- punt "expected ID after TYPE",
+
+            `VAL >> id && `COLON && typ wth (fn (i, (_, ty)) => Type (nil, i, ty)),
+            `VAL -- punt "expected val declaration after VAL",
+            
+            `EXCEPTION >> id && opt (`OF >> typ) wth (fn (i, to) => Exception (i, to)),
+            `EXCEPTION -- punt "expected ID (OF TYP) after EXCEPTION",
+
+            `STRUCTURE >> id && `COLON && id wth (fn (i, _) => Structure (i, nil)),
+            `STRUCTURE -- punt "expected ID after STRUCTURE"
+          ])
 
       and inst G =
           !!(alt [`DO >> call G exp wth IDo,
@@ -716,7 +730,7 @@ struct
                       (* TODO @aluqman: create parser for sigdecs i.e. 
                           type id
                           val id `COLON type signature *)
-                      ((repeat (call G regulardec)) --
+                      ((repeat (call G sigdec)) --
                         (fn ds =>
                         `END 
                           wth (fn _ => ds)))
