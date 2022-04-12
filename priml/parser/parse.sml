@@ -613,12 +613,14 @@ struct
                  $bindword -- punt "expected bind declaration after VAL",
 
                  `STRUCTURE >> id && `EQUALS && call G module
-		  wth (fn (i, (_, ds))  => Structure (i, ds)),
-		 
+	              	  wth (fn (i, (_, ds)) => Structure (i, ds)),
+
                  `STRUCTURE -- punt "expected ID after STRUCTURE", 
-(*
-                 `SIGNATURE >> id && `EQUALS && `STRUCT wth (fn (i, _) => Id (i)),
-  *)               `SIGNATURE -- punt "expected ID after SIGNATURE",
+
+                 `SIGNATURE >> id && `EQUALS && call G signature
+	              	  wth (fn (i, (_, ds)) => Signature (i, ds)),
+
+                 `SIGNATURE -- punt "expected ID after SIGNATURE",
 
                  `DO >> "expected EXP after DO" ** 
                    (call G exp wth Do),
@@ -703,11 +705,21 @@ struct
              `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
  *)
       and module G =
-	  `STRUCT >> "expected DECS after STRUCT" **
-                   ((repeat (call G regulardec)) -- 
-                    (fn ds => 
-                     `END
-                      wth (fn _ => ds)))
+        `STRUCT >> "expected DECS after STRUCT" **
+                      ((repeat (call G regulardec)) -- 
+                        (fn ds => 
+                        `END
+                          wth (fn _ => ds)))
+
+      and signature G =
+        `SIG >> "expected DECS after SIG" **
+                      (* TODO @aluqman: create parser for sigdecs i.e. 
+                          type id
+                          val id `COLON type signature *)
+                      ((repeat (call G regulardec)) --
+                        (fn ds =>
+                        `END 
+                          wth (fn _ => ds)))
 
       fun prog G =
           (call G decs --
