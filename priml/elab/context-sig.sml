@@ -52,6 +52,8 @@ sig
     (* bind an identifier to a type constructor with the indicated kind *)
     val bindc : context -> string -> IL.con -> IL.kind -> IL.tystatus -> context
 
+    (* bind a signature to a variable *)
+    val bindsig : context -> string -> context -> context
 
     val plabs : context -> string list
     val pcons : context -> (IL.prio * IL.prio) list

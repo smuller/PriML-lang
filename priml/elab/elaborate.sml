@@ -1758,7 +1758,7 @@ struct
     (* bind a module name to a sig *)
     | E.Signature (id, ds) => 
         let val (decs, context) = elabds C.empty ds
-        in ([], context)
+        in ([], C.bindsig ctx id context)
         end
 
     | E.Structure (id, ds) => 
