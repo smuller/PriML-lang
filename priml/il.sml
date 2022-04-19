@@ -185,12 +185,9 @@ struct
         (* quantifiers on the outside -- no poly recursion *)
         (* XXX5 could make PolyVal that requires syntactic value.. *)
       | Val of (var * typ * exp) poly
-      | SigVal of id * typ 
       | Tagtype of var
         (* tag of typ in tagtype *)
       | Newtag of var * typ * var
-      | Structure of string * dec list
-      | Signature of string * dec list
 
     (* the kind is the number of curried arguments. 0 is kind T. *)
     withtype kind = int

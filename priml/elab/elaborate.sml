@@ -1754,15 +1754,52 @@ struct
             | _ => error loc "unexpected"
       end
 
+    (* How to properly bind decs to context? And how to bind structure to signature? *)
+    (* bind a module name to a sig *)
     | E.Signature (id, ds) => 
         let val (decs, context) = elabds ctx ds
-        in ([Signature (id, decs)], context)
+        in ([], context)
         end
 
     | E.Structure (id, ds) => 
         let val (decs, context) = elabds ctx ds
-        in ([Structure (id, decs)], context)
+        in ([], context)
         end
+    
+    | E.SigVal (s, typ) =>
+        let val t = elabt ctx loc typ 
+        in ([], C.bindv ctx s (mono t) (V.namedvar s))
+        end
+
+    | E.SigType (tyvars, tv) => 
+          let
+              val kind = length tyvars
+
+              val tvv = V.namedvar tv
+
+              fun conf l =
+                   if length l <> kind
+                   then error loc "(bug) wrong number of args to Lambda"
+                   else 
+                       let val nc = 
+                           ListPair.foldl 
+                              (fn (tv, t, ctx) =>
+                               C.bindc ctx tv (Typ t) 0 Regular) 
+                              ctx (tyvars, l)
+                       in
+                           elabt nc loc (E.TVar tv)
+                       end
+          in
+              (* provisional instantiation of type, to make sure its
+                 body is not bogus (unelaboratable) prima facie *)
+              ignore ` conf (List.tabulate (kind, fn _ => new_evar ()));
+
+              ListUtil.allpairssym op<> tyvars 
+                 orelse error loc "duplicate tyvars in type dec";
+              ([], C.bindc ctx tv (Lambda conf) kind Regular)
+          end
+
+    
 (*
   fun elabx ctx export =
     let
