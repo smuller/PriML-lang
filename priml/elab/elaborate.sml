@@ -1754,6 +1754,15 @@ struct
             | _ => error loc "unexpected"
       end
 
+    | E.Signature (id, ds) => 
+        let val (decs, context) = elabds ctx ds
+        in ([Signature (id, decs)], context)
+        end
+
+    | E.Structure (id, ds) => 
+        let val (decs, context) = elabds ctx ds
+        in ([Structure (id, decs)], context)
+        end
 (*
   fun elabx ctx export =
     let
