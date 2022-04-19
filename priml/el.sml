@@ -117,8 +117,10 @@ struct
          val pat cannot contain PConstant or PApp *)
       (* val (a, b) loop = Util.loop : a -> b *)
       Val of string list * pat * exp
+    | SigVal of string * typ
     | Do of exp
     | Type of string list * string * typ
+    | SigType of string list * string
 
     (* fun (a, b, c) f p1 p2 p3 : t1 = e1
          |           f p1 p2 p3 : t2 = e2

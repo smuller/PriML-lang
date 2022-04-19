@@ -668,18 +668,14 @@ struct
       and sigdec G = 
           !!(alt [
             (* crappy. just says the type is some empty thing to compile *)
-            `TYPE >> id wth (fn i => Type (nil, i, (TVar ""))),
-            `TYPE >> tyvars && id wth (fn (tv, i) => Type (tv, i, (TVar ""))),
+            `TYPE >> id wth (fn i => SigType (nil, i)),
+            `TYPE >> tyvars && id wth (fn (tv, i) => SigType (tv, i)),
             `TYPE -- punt "expected ID after TYPE",
 
-            `VAL >> id && `COLON && typ wth (fn (i, (_, ty)) => Type (nil, i, ty)),
+            `VAL >> id && `COLON && typ wth (fn (i, (_, ty)) => SigVal (i, ty)),
             `VAL -- punt "expected val declaration after VAL",
             
-            `EXCEPTION >> id && opt (`OF >> typ) wth (fn (i, to) => Exception (i, to)),
-            `EXCEPTION -- punt "expected ID (OF TYP) after EXCEPTION",
-
-            `STRUCTURE >> id && `COLON && id wth (fn (i, _) => Structure (i, nil)),
-            `STRUCTURE -- punt "expected ID after STRUCTURE"
+            call G regulardec wth (fn (dec, pos) => dec)
           ])
 
       and inst G =
@@ -727,9 +723,6 @@ struct
 
       and sign G =
         `SIG >> "expected DECS after SIG" **
-                      (* TODO @aluqman: create parser for sigdecs i.e. 
-                          type id
-                          val id `COLON type signature *)
                       ((repeat (call G sigdec)) --
                         (fn ds =>
                         `END 
