@@ -104,13 +104,14 @@ struct
                pcons : (IL.prio * IL.prio) list,
                tpcons : tpcons,
                (* obsolete, but might come back *)
-               dbs  : unit S.map }
+               dbs : unit S.map,
+               sign: context S.map }
 
 
 
     structure L = Layout
 
-    fun ctol (C { vars, cons, prios, plabs, mobiles, pcons, tpcons, dbs }) =
+    fun ctol (C { vars, cons, prios, plabs, mobiles, pcons, tpcons, dbs, sign }) =
       let
         val $ = L.str
         val % = L.mayAlign
@@ -258,7 +259,7 @@ struct
     fun con ctx sym = conex ctx NONE sym
 
 
-    fun bindplab (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles }) sym =
+    fun bindplab (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles, sign }) sym =
         C { vars = vars,
             cons = cons,
             plabs =
@@ -269,9 +270,10 @@ struct
             pcons = pcons,
             tpcons = if sym = "bot" then tpcons
                      else (tpc_insert tpcons (IL.PConst "bot", IL.PConst sym)),
-            dbs = dbs }
+            dbs = dbs,
+            sign = sign }
 
-    fun bindex (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles }) sym typ var stat =
+    fun bindex (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles, sign }) sym typ var stat =
       let 
         val sym = (case sym of NONE => 
                      ML5pghUtil.newstr "bindex" | SOME s => s)
@@ -292,13 +294,14 @@ struct
             mobiles = mobiles,
             pcons = pcons,
             tpcons = tpcons,
-            dbs = dbs }
+            dbs = dbs,
+            sign = sign }
       end
 
     fun bindv c sym t v = bindex c (SOME sym) t v IL.Normal
     fun bindu c sym typ var stat = bindex c (SOME sym) typ var stat
 
-    fun bindcex (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs }) module sym con kind status =
+    fun bindcex (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) module sym con kind status =
         C { vars = vars,
             cons = S.insert (cons, sym, (kind, con, status)),
             plabs = plabs,
@@ -306,11 +309,12 @@ struct
             mobiles = mobiles,
             pcons = pcons,
             tpcons = tpcons,
-            dbs = dbs }
+            dbs = dbs,
+            sign = sign }
 
     fun bindc c sym con kind status = bindcex c NONE sym con kind status
 
-    fun bindp (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs }) s v =
+    fun bindp (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) s v =
         C { vars = vars,
             cons = cons,
             mobiles = mobiles,
@@ -318,7 +322,8 @@ struct
             pcons = pcons,
             tpcons = (tpc_insert tpcons (IL.PConst "bot", IL.PVar v)),
             prios = S.insert (prios, s, v),
-            dbs = dbs }
+            dbs = dbs,
+            sign = sign }
 
           (* Kind of inefficient, but we do a DFS at every check *)
     fun checkcons (ctx as C { tpcons, ...}) p1 p2 =
@@ -339,7 +344,7 @@ struct
                     end
             end
 
-    fun bindpcons (ctx as C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs })
+    fun bindpcons (ctx as C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
         if checkcons ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
@@ -351,10 +356,20 @@ struct
                 pcons = (p1, p2)::pcons,
                 tpcons = (tpc_insert tpcons (p1, p2)),
                 plabs = plabs,
-                dbs = dbs
+                dbs = dbs,
+                sign = sign
               }
 
-
+    fun bindsig (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) s con = 
+        C { vars = vars,
+            cons = cons,
+            mobiles = mobiles, 
+            pcons = pcons,
+            tpcons = tpcons,
+            plabs = plabs,
+            prios = prios,
+            dbs = dbs,
+            sign = S.insert (sign, s, con)}
 
     fun plabs (C { plabs, ... }) = SSU.tolist plabs
     fun pcons (C { pcons, ... }) = pcons
@@ -366,6 +381,7 @@ struct
                     plabs = SS.empty,
                     pcons = [],
                     tpcons = tpc_empty,
-                    dbs = S.empty }
+                    dbs = S.empty, 
+                    sign = S.empty }
 
 end
