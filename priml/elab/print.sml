@@ -24,7 +24,7 @@ struct
 
       and etosi i (e, _) =
           (case e of
-               Var s => s
+               Var (Id s) => s
              | Let (d, e) => "let\n" ^ nspaces (i + 3) ^ 
                              dtosi (i + 3) d ^ "\n" ^
                              nspaces i ^ "in\n" ^ nspaces (i + 3) ^ 

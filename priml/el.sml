@@ -22,7 +22,7 @@ struct
   datatype exp_ =
 
       Constant of constant
-    | Var of string
+    | Var of longid
     | Float of real
 
     | App of exp * exp * bool (* infix? *)

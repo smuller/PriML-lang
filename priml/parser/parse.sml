@@ -239,6 +239,8 @@ struct
   (* crappy. *)
   fun call G parser = $(fn () => parser G)
 
+  fun lid G = call G fid && `DOT && call G lid wth (fn (i, (_, r)) => Path (i, r))
+
   (* a pattern is irrefutable if it contains no constants or applications *)
   (* XXX actually, we should expand this notion to include applications
      of one-constructor datatypes. Then this needs to be moved into the
@@ -592,7 +594,6 @@ struct
                          (* `LETA return Leta || 
                          `LETSHAM return Letsham *))
 
-
       and regortdec G =
           alt [(call G regulardec) wth Dec,
                `PRIORITY >> id wth Priority,
@@ -667,7 +668,6 @@ struct
 
       and sigdec G = 
           !!(alt [
-            (* crappy. just says the type is some empty thing to compile *)
             `TYPE >> id wth (fn i => SigType (nil, i)),
             `TYPE >> tyvars && id wth (fn (tv, i) => SigType (tv, i)),
             `TYPE -- punt "expected ID after TYPE",

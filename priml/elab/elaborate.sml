@@ -1763,7 +1763,7 @@ struct
 
     | E.Structure (id, ds) => 
         let val (decs, context) = elabds C.empty ds
-        in ([], context)
+        in ([], C.bindsig ctx id context)
         end
     
     | E.SigVal (s, typ) =>
