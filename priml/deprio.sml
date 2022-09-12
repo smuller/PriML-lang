@@ -6,7 +6,7 @@ open EL
 fun anonfn (pats: pat list) (e as (e_, loc): exp) : exp_ =
     Let ((Fun {inline = false,
                 funs = [([], "anonfn", [(pats, NONE, e)])]}, loc),
-         (Var "anonfn", loc))
+         (Var (Id "anonfn"), loc))
 
 fun deprioe ((e, loc): exp) : exp =
     (case e of
@@ -47,18 +47,18 @@ fun deprioe ((e, loc): exp) : exp =
         Handle (deprioe e, List.map (fn (p, e) => (p, deprioe e)) pes),
      loc)
 
-and depriop loc p = (Var p, loc)
+and depriop loc p = (Var (Id p), loc)
 
 and deprioi ((i, loc) : inst) : exp =
     case i of
         IDo e => (* Encapsulated thread will be a thunk, so apply it. *)
         (App ((deprioe e), (Record [], loc), false), loc)
-      | Spawn (p, c) => (App((App ((Var "Thread.spawn", loc),
+      | Spawn (p, c) => (App((App ((Var (Id "Thread.spawn"), loc),
                                   (anonfn [PWild] (deprioc c), loc), false), loc),
                             depriop loc p, false), loc)
-      | Sync e => (App ((Var "Thread.sync", loc), deprioe e, false), loc)
-      | Poll e => (App ((Var "Thread.poll", loc), deprioe e, false), loc)
-      | Cancel e => (App ((Var "Thread.cancel", loc), deprioe e, false), loc)
+      | Sync e => (App ((Var (Id "Thread.sync"), loc), deprioe e, false), loc)
+      | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
+      | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
       | IRet e => deprioe e
 
 and deprioc (Cmd (sis, i): cmd) : exp =
@@ -124,23 +124,23 @@ and deprioprog (Prog (tds, c)) : dec list =
 
 fun priotosml l (p: string) : dec =
     (Val ([], PVar p,
-          (if p = "bot" then (Var "Priority.bot", l)
+          (if p = "bot" then (Var (Id "Priority.bot"), l)
            else
-               (App ((Var "Priority.new", l), (Record [], l), false), l)
+               (App ((Var (Id "Priority.new"), l), (Record [], l), false), l)
           )), l)
 
 fun constosml l (s1, s2) : dec =
-    (Val ([], PWild, (App ((App ((Var "Priority.new_lessthan", l),
-                                 (Var s1, l),
+    (Val ([], PWild, (App ((App ((Var (Id "Priority.new_lessthan"), l),
+                                 (Var (Id s1), l),
                                  false), l),
-                           (Var s2, l),
+                           (Var (Id s2), l),
                            false), l)),
      l)
 
 fun fairtosml l sns : dec list =
     let fun onefair ((s, n), sml) =
-            (If ((App ((Var "Priority.pe", l),
-                       (Record [("1", (Var s, l)), ("2", (Var "p", l))], l),
+            (If ((App ((Var (Id "Priority.pe"), l),
+                       (Record [("1", (Var (Id s), l)), ("2", (Var (Id "p"), l))], l),
                        false), l),
                  (Constant (CInt n), l),
                  sml),
@@ -153,8 +153,8 @@ fun fairtosml l sns : dec list =
                          [([PVar "p"], NONE, List.foldr onefair catchall sns)])]
               },
           l),
-         (Val ([], PWild, (App ((Var "Priority.installDist", l),
-                                (Var "cg__priodist", l),
+         (Val ([], PWild, (App ((Var (Id "Priority.installDist"), l),
+                                (Var (Id "cg__priodist"), l),
                                 false), l)),
          l)]
     end
@@ -163,18 +163,18 @@ fun deprio p prios cons fs =
     let val l = Pos.initpos
     in
         (List.map (priotosml l) prios) @
-        [(Val ([], PWild, (App ((Var "Basic.initPriorities", l),
+        [(Val ([], PWild, (App ((Var (Id "Basic.initPriorities"), l),
                                 (Record [], l),
                                 false), l)), l)] @
         (List.map (constosml l) cons) @
         (List.map (fn s => constosml l ("bot", s))
                   (List.filter (fn s => s <> "bot") prios)) @
         (List.map (fn s => constosml l (s, "(Priority.top ())")) prios) @
-        [(Val ([], PWild, (App ((Var "Basic.finalizePriorities", l),
+        [(Val ([], PWild, (App ((Var (Id "Basic.finalizePriorities"), l),
                                 (Record [], l),
                                 false), l)), l)] @
         (case fs of [] => [] | _ => fairtosml l fs) @
-        [(Val ([], PWild, (App ((Var "Basic.init", l),
+        [(Val ([], PWild, (App ((Var (Id "Basic.init"), l),
                                 (Record [], l),
                                 false), l)), l)] @
         (deprioprog p)
