@@ -168,8 +168,8 @@ struct
 
   and dopath ctx loc path = 
     (case path of 
-        (Id id) => dovar ctx loc id
-      | (Path (i, p)) => dopath (C.pathex ctx i) loc p
+        (E.Id id) => dovar ctx loc id
+      | (E.Path (i, p)) => dopath (C.pathex ctx i) loc p
     ) handle C.Absent _ => error loc ("Unbound identifier: " (* insert pretty printer here *))
 
   and value (v, t) = (Value v, t)
@@ -188,7 +188,7 @@ struct
 
         | E.Var vv => 
               let 
-                val (v, t) = dovar ctx loc vv
+                val (v, t) = dopath ctx loc vv
               in
 (*                 unifyw ctx loc ("variable " ^ vv) here w; *)
                 value (v, t)
@@ -293,10 +293,10 @@ struct
                        $ ` 
                        E.Seq
                        ($ `
-                        E.App($ ` E.Var (Id "update_"),
+                        E.App($ ` E.Var (E.Id "update_"),
                               $ ` 
                               E.Record
-                              [("1", $ ` E.Var (Id arr)),
+                              [("1", $ ` E.Var (E.Id arr)),
                                ("2", $ ` E.Constant ` E.CInt m),
                                ("3", h)],
                              false),
@@ -308,13 +308,13 @@ struct
                     ($ `
                      E.Val (nil, E.PVar arr,
                              $ `
-                             E.App ($ ` E.Var (Id "array"),
+                             E.App ($ ` E.Var (E.Id "array"),
                                     $ `
                                     E.Record
                                     [("1", $ ` E.Constant ` E.CInt n),
                                      ("2", first)],
                                     false)),
-                     dowrites 0w1 rest ` $ ` E.Var (Id arr))
+                     dowrites 0w1 rest ` $ ` E.Var (E.Id arr))
                end
 
 (*
@@ -530,15 +530,15 @@ struct
                    fun force nil nc acc =
                             Pattern.elaborate true elab elabt nc loc
                                  (rev acc, m, def)
-                     | force ((E.Var v, _)::rest) nc acc = 
-                            force rest nc ((E.Id v)::acc)
+                     | force ((E.Var (E.Id v), _)::rest) nc acc = 
+                            force rest nc (v::acc)
                      | force (e::rest) nc acc =
                             let
                               val (ee, tt) = elab ctx e
                               val s = newstr "case"
                               val sv = V.namedvar s
                               val nctx = C.bindv ctx s (mono tt) sv
-                              val (ein, tin) = force rest nctx ((E.Id s)::acc)
+                              val (ein, tin) = force rest nctx (s::acc)
                             in
                               (Let(Val (mono(sv, tt, ee)),
                                    ein), tin)
@@ -882,7 +882,7 @@ struct
                            (E.Let((E.Fun { inline = false, 
                                            funs = [(nil, fc, [([E.PVar x], NONE,
                                                                buildf rest)])] }, loc),
-                                  (E.Var (Id fc), loc)),
+                                  (E.Var (E.Id fc), loc)),
                             loc)
                        end
                in
@@ -1670,7 +1670,7 @@ struct
                  *)
 
               val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), loc)
-              val (decls2, ctx) = elabd ctx (E.Val (tyvars, p, (E.Var v, loc)), loc)
+              val (decls2, ctx) = elabd ctx (E.Val (tyvars, p, (E.Var (E.Id v), loc)), loc)
             in
               (decls @ decls2, ctx)
             end
@@ -1698,7 +1698,7 @@ struct
               fun projs ctx nil = (nil, ctx)
                 | projs ctx ((l, p) :: rest) = 
                 let
-                    val (decls, ctx) = elabd ctx (E.Val (tyvars, p, (E.Proj(l, t, (E.Var v, loc)), loc)), loc)
+                    val (decls, ctx) = elabd ctx (E.Val (tyvars, p, (E.Proj(l, t, (E.Var (E.Id v), loc)), loc)), loc)
                   val (decls2, ctx) = projs ctx rest
                 in
                   (decls @ decls2, ctx)
