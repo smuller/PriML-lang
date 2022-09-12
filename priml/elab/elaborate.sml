@@ -165,6 +165,13 @@ struct
                   error loc ("Unbound identifier: " ^ vv)
     )
 
+
+  and dopath ctx loc path = 
+    (case path of 
+        (Id id) => dovar ctx loc id
+      | (Path (i, p)) => dopath (C.pathex ctx i) loc p
+    ) handle C.Absent _ => error loc ("Unbound identifier: " (* insert pretty printer here *))
+
   and value (v, t) = (Value v, t)
 
   and elab ctx ((e, loc) : EL.exp) =
@@ -286,10 +293,10 @@ struct
                        $ ` 
                        E.Seq
                        ($ `
-                        E.App($ ` E.Var "update_",
+                        E.App($ ` E.Var (Id "update_"),
                               $ ` 
                               E.Record
-                              [("1", $ ` E.Var arr),
+                              [("1", $ ` E.Var (Id arr)),
                                ("2", $ ` E.Constant ` E.CInt m),
                                ("3", h)],
                              false),
@@ -301,13 +308,13 @@ struct
                     ($ `
                      E.Val (nil, E.PVar arr,
                              $ `
-                             E.App ($ ` E.Var "array",
+                             E.App ($ ` E.Var (Id "array"),
                                     $ `
                                     E.Record
                                     [("1", $ ` E.Constant ` E.CInt n),
                                      ("2", first)],
                                     false)),
-                     dowrites 0w1 rest ` $ ` E.Var arr)
+                     dowrites 0w1 rest ` $ ` E.Var (Id arr))
                end
 
 (*
@@ -524,14 +531,14 @@ struct
                             Pattern.elaborate true elab elabt nc loc
                                  (rev acc, m, def)
                      | force ((E.Var v, _)::rest) nc acc = 
-                            force rest nc (v::acc)
+                            force rest nc ((E.Id v)::acc)
                      | force (e::rest) nc acc =
                             let
                               val (ee, tt) = elab ctx e
                               val s = newstr "case"
                               val sv = V.namedvar s
                               val nctx = C.bindv ctx s (mono tt) sv
-                              val (ein, tin) = force rest nctx (s::acc)
+                              val (ein, tin) = force rest nctx ((E.Id s)::acc)
                             in
                               (Let(Val (mono(sv, tt, ee)),
                                    ein), tin)
@@ -603,7 +610,7 @@ struct
 
                     (* re-raise exception if nothing matches *)
                     fun def () =
-                        (EL.Raise (EL.Var es, loc), loc)
+                        (EL.Raise (EL.Var (E.Id es), loc), loc)
                         
                     (* XXX5 and world.. 
                        (this DOES include the world, right? -  6 Sep 2007) *)
@@ -864,7 +871,7 @@ struct
                        (* XXX5 
                           allow world constraints *)
                        foldr (fn (t, e) => (E.Constrain(e, t), loc)) 
-                             (E.Case (map (fn a => (E.Var a, loc)) args, 
+                             (E.Case (map (fn a => (E.Var (E.Id a), loc)) args, 
                                       columns, NONE), loc)
                              constraints
                      | buildf (x::rest) =
@@ -875,7 +882,7 @@ struct
                            (E.Let((E.Fun { inline = false, 
                                            funs = [(nil, fc, [([E.PVar x], NONE,
                                                                buildf rest)])] }, loc),
-                                  (E.Var fc, loc)),
+                                  (E.Var (Id fc), loc)),
                             loc)
                        end
                in

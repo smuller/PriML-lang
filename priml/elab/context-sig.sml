@@ -55,6 +55,11 @@ sig
     (* bind a signature to a variable *)
     val bindsig : context -> string -> context -> context
 
+    (* binds ids/longids *)
+    val bindpath: context -> EL.longid -> IL.typ IL.poly -> Variable.var -> context
+
+    val pathex : context -> string -> context
+
     val plabs : context -> string list
     val pcons : context -> (IL.prio * IL.prio) list
 

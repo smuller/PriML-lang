@@ -27,7 +27,7 @@ struct
         in
           %(case exp of
                 Constant _ => exp
-              | Var s => 
+              | Var (Id s) => 
                     if nullexp G s
                     then App(%exp, % `Record nil, false)
                     else exp

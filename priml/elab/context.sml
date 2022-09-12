@@ -14,6 +14,7 @@ struct
     structure VS = Variable.Set
     structure VSU = Variable.SetUtil
     structure VM = Variable.Map
+    structure E = EL
 
     (* first is class of identifier, second is identifier *)
     exception Context of string
@@ -258,7 +259,6 @@ struct
 
     fun con ctx sym = conex ctx NONE sym
 
-
     fun bindplab (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles, sign }) sym =
         C { vars = vars,
             cons = cons,
@@ -370,6 +370,18 @@ struct
             prios = prios,
             dbs = dbs,
             sign = S.insert (sign, s, con)}
+
+    fun bindpath c longid t v = 
+        case longid of 
+            E.Id i => bindv c i t v
+          | E.Path (i, p) => let newcon = bindpath c p t v
+                             in bindsig c i newcon
+                             end 
+
+    fun pathex (C {sign, ...}) sym =
+        (case S.find (sign, sym) of
+             SOME x => x
+           | NONE => absent "sign" sym)
 
     fun plabs (C { plabs, ... }) = SSU.tolist plabs
     fun pcons (C { pcons, ... }) = pcons

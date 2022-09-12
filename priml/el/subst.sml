@@ -131,7 +131,8 @@ struct
   fun esubst (s as (vv : string, ee : EL.exp_)) (e,loc) =
       (fn x => (x, loc))
       (case e of
-           E.Var v => if v = vv then ee else e
+           E.Var (E.Id v) => if v = vv then ee else e
+         | E.Var _ => e
          | E.Constant _ => e
          | E.Float _ => e
          | E.Primapp (l, ts, es) => E.Primapp(l, ts, map (esubst s) es)

@@ -216,16 +216,17 @@ struct
                 let
                     val nfs = newstr ("hoist_" ^ Nonce.nonce ())
                     val nfv = V.namedvar nfs
+                    val ids = E.Id nfs
 
                     val ignored = V.namedvar "ignored"
                     val nonrec = V.namedvar "nonrec"
 
                     val nctx =
-                        C.bindv ctx nfs (mono (I.Arrow(false, 
+                        C.bindpath ctx ids (mono (I.Arrow(false, 
                                                        [I.TRec nil], 
                                                        ilt))) nfv
                         
-                    val (ke, kt) = k nctx nfs
+                    val (ke, kt) = k nctx ids
                 in
                     (* would like to use nil arg list here rather
                        than single arg of unit, but need to be able
@@ -1021,11 +1022,11 @@ struct
                      (* new object for this column turns the exception
                         matching into a datatype wrap *)
                      val nobj =
-                       E.Handle(% ` E.App(% ` E.Var yes,
+                       E.Handle(% ` E.App(% ` E.Var (E.Id yes),
                                           % ` E.App(exp,
-                                                    % ` E.Var obj, false), false),
+                                                    % ` E.Var (E.Id obj), false), false),
                                 [(E.PApp (Initial.matchname, SOME ` E.PRecord nil),
-                                  % ` E.App(% ` E.Var no,
+                                  % ` E.App(% ` E.Var (E.Id no),
                                             % ` E.Record nil, false))])
 
                      val objects_a = % nobj :: map (% o E.Var) robs

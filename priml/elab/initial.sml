@@ -276,8 +276,8 @@ struct
           EL.Prog(impexns :: decbool (* :: deceq *) :: decopt :: (*declist ::*) ds, c)
         end
 
-    fun trueexp loc = (EL.Var truename, loc)
-    fun falseexp loc = (EL.Var falsename, loc)
+    fun trueexp loc = (EL.Var (EL.Id truename), loc)
+    fun falseexp loc = (EL.Var (EL.Id falsename), loc)
 
     val trueexpil  = IL.Roll(ilbool, IL.Inject(ilboolsum, truename,  NONE))
     val falseexpil = IL.Roll(ilbool, IL.Inject(ilboolsum, falsename, NONE))
@@ -286,7 +286,7 @@ struct
     val falsepat = EL.PApp (falsename, NONE)
 
     fun matchexp loc = (* (EL.Var matchname, loc) *)
-                             (EL.App ((EL.Var matchname, loc),
+                             (EL.App ((EL.Var (EL.Id matchname), loc),
                                 (EL.Record nil, loc), false), loc)
 
 end

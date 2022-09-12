@@ -240,6 +240,7 @@ struct
   fun call G parser = $(fn () => parser G)
 
   fun lid G = call G fid && `DOT && call G lid wth (fn (i, (_, r)) => Path (i, r))
+           || call G fid wth (fn i => Id i)
 
   (* a pattern is irrefutable if it contains no constants or applications *)
   (* XXX actually, we should expand this notion to include applications
@@ -334,7 +335,7 @@ struct
       (* ------------- expressions ------------- *)
 
       and atomexp G =
-          alt [fid G wth Var,
+          alt [lid G wth Var,
                constant wth Constant,
 (*
                (`LETCC >> fid G) && (`IN >> separate (call G exp) (`SEMICOLON) << `END)
@@ -428,7 +429,7 @@ struct
       and appexp G =
           let
               fun mkinfix (s, x as (_,l), y) = 
-                  (App((Var s,l), (Record[("1",x),("2",y)],l), true),l)
+                  (App((Var (Id s),l), (Record[("1",x),("2",y)],l), true),l)
               fun mark ass prec f = 
                   Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y),l))))
 
@@ -519,7 +520,7 @@ struct
                       wth (fn ((_, l), s) => 
                            let val v = namedstring "anonfn"
                            in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l), 
-                                   (Var v, l))
+                                   (Var (Id v), l))
                            end),
                    call G constrainexp,
                    !!(`WFN) >> (repeat1 ($ppat) && repeat1 (call G mapat)
