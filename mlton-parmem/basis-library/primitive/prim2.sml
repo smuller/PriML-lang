@@ -38,8 +38,8 @@ local
    structure P = Primitive
    structure PFFI = PrimitiveFFI
    val _ =
-      P.TopLevel.setHandler 
-      (fn exn => 
+      P.TopLevel.setHandler
+      (fn exn =>
        (PFFI.Stdio.print "unhandled exception: "
         ; case exn of
              P.Exn.Fail8 msg => (PFFI.Stdio.print "Fail "
@@ -55,7 +55,7 @@ local
    structure P = Primitive
    val _ =
       P.TopLevel.setSuffix
-      (fn () => 
+      (fn () =>
        (P.MLton.halt 0
         ; P.MLton.bug ("missing suffix in Basis Library")))
 in

@@ -1,9 +1,9 @@
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 signature ORDSET =
@@ -60,12 +60,12 @@ signature HASH =
     val exists : elem * table -> bool
     val empty : table
   end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:42  george
  * Version 109
- * 
+ *
  *)
 
 (* base.sig: Base signature file for SML-Yacc.  This file contains signatures
@@ -99,7 +99,7 @@ signature LR_TABLE =
                         | ACCEPT
                         | ERROR
         type table
-        
+
         val numStates : table -> int
         val numRules : table -> int
         val describeActions : table -> state ->
@@ -131,7 +131,7 @@ signature LR_TABLE =
    constructor function for a integer token might be
 
           INT: int * 'a * 'a -> 'a token.
- 
+
    This is not possible because we need to have tokens with the representation
    given below for the polymorphic parser.
 
@@ -168,7 +168,7 @@ signature LR_PARSER =
                      arg: 'arg,
                      saction : int *
                                'c *
-                                (LrTable.state * ('b * 'c * 'c)) list * 
+                                (LrTable.state * ('b * 'c * 'c)) list *
                                 'arg ->
                                      LrTable.nonterm *
                                      ('b * 'c * 'c) *
@@ -207,7 +207,7 @@ signature LEXER =
                 type pos
                 type svalue
            end
-        val makeLexer : (int -> string) -> unit -> 
+        val makeLexer : (int -> string) -> unit ->
          (UserDeclarations.svalue,UserDeclarations.pos) UserDeclarations.token
    end
 
@@ -224,12 +224,12 @@ signature ARG_LEXER =
                 type svalue
                 type arg
            end
-        val makeLexer : (int -> string) -> UserDeclarations.arg -> unit -> 
+        val makeLexer : (int -> string) -> UserDeclarations.arg -> unit ->
          (UserDeclarations.svalue,UserDeclarations.pos) UserDeclarations.token
    end
 
 (* PARSER_DATA: the signature of ParserData structures in {parser name}LrValsFun
-   produced by  SML-Yacc.  All such structures match this signature.  
+   produced by  SML-Yacc.  All such structures match this signature.
 
    The {parser name}LrValsFun produces a structure which contains all the values
    except for the lexer needed to call the polymorphic parser mentioned
@@ -249,7 +249,7 @@ signature PARSER_DATA =
 
          (* the type of the user-supplied argument to the parser *)
         type arg
- 
+
         (* the intended type of the result of the parser.  This value is
            produced by applying extract from the structure Actions to the
            final semantic value resultiing from a parse.
@@ -266,7 +266,7 @@ signature PARSER_DATA =
            a default value for the semantic stack.
          *)
 
-        structure Actions : 
+        structure Actions :
           sig
               val actions : int * pos *
                    (LrTable.state * (svalue * pos * pos)) list * arg->
@@ -294,7 +294,7 @@ signature PARSER_DATA =
         val table : LrTable.table
     end
 
-(* signature PARSER is the signature that most user parsers created by 
+(* signature PARSER is the signature that most user parsers created by
    SML-Yacc will match.
 *)
 
@@ -314,7 +314,7 @@ signature PARSER =
 
          (* the type of the user-supplied argument to the parser *)
         type arg
-        
+
         (* type svalue is the type of semantic values for the semantic value
            stack
          *)
@@ -343,7 +343,7 @@ signature PARSER =
     lexer takes an additional argument.
 *)
 
-signature ARG_PARSER = 
+signature ARG_PARSER =
     sig
         structure Token : TOKEN
         structure Stream : STREAM
@@ -365,7 +365,7 @@ signature ARG_PARSER =
                                 bool
      end
 
-(* ML-Yacc Parser Generator (c) 1989, 1991 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989, 1991 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:38  george
@@ -375,14 +375,14 @@ signature ARG_PARSER =
  *
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 signature HEADER =
   sig
     type pos (*= int   1998-5-14 STW: taken out because leads to nonstandard sharing constraint on line 3386 *)
     val lineno : pos ref
-    val text : string list ref 
+    val text : string list ref
 
     type inputSource
     val newSource : string * TextIO.instream * TextIO.outstream -> inputSource
@@ -407,11 +407,11 @@ signature HEADER =
                        FUNCTOR of string  | START_SYM of symbol |
                        NSHIFT of symbol list | POS of string | PURE |
                        PARSE_ARG of string * string
-                           
+
     datatype rule = RULE of {lhs : symbol, rhs : symbol list,
                              code : string, prec : symbol option}
 
-    datatype declData = DECL of 
+    datatype declData = DECL of
                         {eop : symbol list,
                          keyword : symbol list,
                          nonterm : (symbol * ty option) list option,
@@ -440,7 +440,7 @@ signature PARSE_GEN =
 
 signature GRAMMAR =
     sig
-        
+
         datatype term = T of int
         datatype nonterm = NT of int
         datatype symbol = TERM of term | NONTERM of nonterm
@@ -463,7 +463,7 @@ signature GRAMMAR =
                         noshift : term list,
                         precedence : term -> int option,
                         termToString : term -> string,
-                        nontermToString : nonterm -> string} 
+                        nontermToString : nonterm -> string}
    end
 
 (* signature for internal version of grammar *)
@@ -483,7 +483,7 @@ signature INTGRAMMAR =
 
         (* internal number of rule - convenient for producing LR graph *)
 
-                 num : int,     
+                 num : int,
                  rulenum : int,
                  precedence : int option}
 
@@ -530,7 +530,7 @@ signature CORE =
         val insert : item * item list -> item list
         val union : item list * item list -> item list
 
-(* core:  a set of items.  It is represented by an ordered list of items. 
+(* core:  a set of items.  It is represented by an ordered list of items.
    The list is in ascending order The rule numbers and the positions of the
    dots are used to order the items. *)
 
@@ -618,7 +618,7 @@ signature LOOK =
                             {nullable: Grammar.nonterm -> bool,
                              first : Grammar.symbol list -> Grammar.term list}
 
-        val prLook : (Grammar.term -> string) * (string -> unit) -> 
+        val prLook : (Grammar.term -> string) * (string -> unit) ->
                         Grammar.term list -> unit
    end
 
@@ -665,7 +665,7 @@ signature LR_ERRS =
 
     datatype err = RR of LrTable.term * LrTable.state * int * int
                  | SR of LrTable.term * LrTable.state * int
-                 | NS of LrTable.term * int  
+                 | NS of LrTable.term * int
                  | NOT_REDUCED of int
                  | START of int
 
@@ -673,7 +673,7 @@ signature LR_ERRS =
                             not_reduced : int, start : int,nonshift : int}
 
      val printSummary : (string -> unit) -> err list -> unit
-                                      
+
   end
 
 (* PRINT_STRUCT: prints a structure which includes a value 'table' and a
@@ -681,7 +681,7 @@ signature LR_ERRS =
    structure will contain the same information as the one passed to
    printStruct, although the representation may be different.  It returns
    the number of entries left in the table after compaction.*)
-  
+
 signature PRINT_STRUCT =
   sig
         structure LrTable : LR_TABLE
@@ -750,7 +750,7 @@ signature SHRINK_LR_TABLE =
                    ((LrTable.term,LrTable.action) LrTable.pairlist *
                     LrTable.action) list) * int
     end
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:34  george
@@ -760,7 +760,7 @@ signature SHRINK_LR_TABLE =
  *
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 
 functor HeaderFun () : HEADER =
@@ -775,11 +775,11 @@ functor HeaderFun () : HEADER =
                             inStream : TextIO.instream,
                             errorOccurred : bool ref}
 
-        val newSource = 
+        val newSource =
           fn (s : string,i : TextIO.instream ,errs : TextIO.outstream) =>
               {name=s,errStream=errs,inStream=i,
                errorOccurred = ref false}
-                        
+
         val errorOccurred = fn (s : inputSource) =>fn () => !(#errorOccurred s)
 
         val pr = fn out : TextIO.outstream => fn s : string => TextIO.output(out,s)
@@ -804,16 +804,16 @@ functor HeaderFun () : HEADER =
         val symbolName = fn SYMBOL(s,_) => s
         val symbolPos = fn SYMBOL(_,p) => p
         val symbolMake = fn sp => SYMBOL sp
-    
+
         type ty = string
         val tyName = fn i => i
         val tyMake = fn i => i
- 
+
         datatype control = NODEFAULT | VERBOSE | PARSER_NAME of symbol |
                            FUNCTOR of string  | START_SYM of symbol |
                            NSHIFT of symbol list | POS of string | PURE |
                            PARSE_ARG of string * string
-                           
+
         datatype declData = DECL of
                         {eop : symbol list,
                          keyword : symbol list,
@@ -837,7 +837,7 @@ functor HeaderFun () : HEADER =
                DECL {eop=e',control=c',keyword=k',nonterm=n',prec=prec',
                      change=su',term=t',value=v'} : declData,
                inputSource,pos) =
-          let val ignore = fn s => 
+          let val ignore = fn s =>
                         (warn inputSource pos ("ignoring duplicate " ^ s ^
                                             " declaration"))
               val join = fn (e,NONE,NONE) => NONE
@@ -864,7 +864,7 @@ functor HeaderFun () : HEADER =
 end;
 
 structure Header = HeaderFun();
-      
+
 signature Mlyacc_TOKENS =
 sig
 type ('a,'b) token
@@ -918,14 +918,14 @@ structure ParserData:PARSER_DATA
 sharing type ParserData.Token.token = Tokens.token
 sharing type ParserData.svalue = Tokens.svalue
 end
-functor MlyaccLrValsFun(structure Hdr : HEADER 
+functor MlyaccLrValsFun(structure Hdr : HEADER
                                         where type prec = Header.prec
-                        structure Token : TOKEN) = 
-                             
+                        structure Token : TOKEN) =
+
 struct
 structure ParserData=
 struct
-structure Header = 
+structure Header =
 struct
 (* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi *)
 
@@ -936,7 +936,7 @@ open Hdr
 end
 structure LrTable = Token.LrTable
 structure Token = Token
-local open LrTable in 
+local open LrTable in
 val table=let val actionRows =
 "\
 \\001\000\001\000\074\000\000\000\
@@ -1162,7 +1162,7 @@ val gotoT =
 val numstates = 102
 val numrules = 54
 val s = ref "" and index = ref 0
-val string_to_int = fn () => 
+val string_to_int = fn () =>
 let val i = !index
 in index := i+2; Char.ord(String.sub(!s,i)) + Char.ord(String.sub(!s,i+1)) * 256
 end
@@ -1220,7 +1220,7 @@ end
 local open Header in
 type pos = int
 type arg = Hdr.inputSource
-structure MlyValue = 
+structure MlyValue =
 struct
 datatype svalue = VOID | ntVOID of unit ->  unit
  | UNKNOWN of unit ->  (string) | TYVAR of unit ->  (string)
@@ -1244,16 +1244,16 @@ datatype svalue = VOID | ntVOID of unit ->  unit
  | BEGIN of unit ->  (string*Hdr.declData* ( Hdr.rule list ) )
 end
 type svalue = MlyValue.svalue
-type result = string*Hdr.declData* ( Hdr.rule list ) 
+type result = string*Hdr.declData* ( Hdr.rule list )
 end
 structure EC=
 struct
 open LrTable
 val is_keyword =
 fn _ => false
-val preferred_change = 
+val preferred_change =
 nil
-val noShift = 
+val noShift =
 fn (T 8) => true | _ => false
 val showTerminal =
 fn (T 0) => "ARROW"
@@ -1309,17 +1309,17 @@ val terms = (T 0) :: (T 1) :: (T 2) :: (T 3) :: (T 4) :: (T 5) :: (T 6
  :: (T 34) :: (T 35) :: (T 37) :: (T 38) :: (T 40) :: nil
 end
 structure Actions =
-struct 
+struct
 exception mlyAction of int
 local open Header
 in
-val actions = 
+val actions =
 fn (i392,defaultPos,stack,
     (inputSource):arg) =>
 case (i392,stack)
 of (0,(_,(MlyValue.G_RULE_LIST G_RULE_LIST1,_,G_RULE_LIST1right))::_::
 (_,(MlyValue.MPC_DECLS MPC_DECLS1,_,_))::(_,(MlyValue.HEADER HEADER1,
-HEADER1left,_))::rest671) => let val result=MlyValue.BEGIN(fn _ => 
+HEADER1left,_))::rest671) => let val result=MlyValue.BEGIN(fn _ =>
 let val HEADER as HEADER1=HEADER1 ()
 val MPC_DECLS as MPC_DECLS1=MPC_DECLS1 ()
 val G_RULE_LIST as G_RULE_LIST1=G_RULE_LIST1 ()
@@ -1327,7 +1327,7 @@ val G_RULE_LIST as G_RULE_LIST1=G_RULE_LIST1 ()
 )
  in (LrTable.NT 0,(result,HEADER1left,G_RULE_LIST1right),rest671) end
 | (1,(_,(MlyValue.MPC_DECL MPC_DECL1,MPC_DECLleft,MPC_DECL1right))::(_
-,(MlyValue.MPC_DECLS MPC_DECLS1,MPC_DECLS1left,_))::rest671) => let 
+,(MlyValue.MPC_DECLS MPC_DECLS1,MPC_DECLS1left,_))::rest671) => let
 val result=MlyValue.MPC_DECLS(fn _ => let val MPC_DECLS as MPC_DECLS1=
 MPC_DECLS1 ()
 val MPC_DECL as MPC_DECL1=MPC_DECL1 ()
@@ -1341,7 +1341,7 @@ DECL {prec=nil,nonterm=NONE,term=NONE,eop=nil,control=nil,
 ))
  in (LrTable.NT 5,(result,defaultPos,defaultPos),rest671) end
 | (3,(_,(MlyValue.CONSTR_LIST CONSTR_LIST1,_,CONSTR_LIST1right))::(_,(
-_,TERM1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ => 
+_,TERM1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ =>
 let val CONSTR_LIST as CONSTR_LIST1=CONSTR_LIST1 ()
  in (
 DECL { prec=nil,nonterm=NONE,
@@ -1382,7 +1382,7 @@ DECL {prec=nil,control=[START_SYM (symbolMake ID)],nonterm=NONE,
 )
  in (LrTable.NT 4,(result,START1left,ID1right),rest671) end
 | (7,(_,(MlyValue.ID_LIST ID_LIST1,_,ID_LIST1right))::(_,(_,
-PERCENT_EOP1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn 
+PERCENT_EOP1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn
 _ => let val ID_LIST as ID_LIST1=ID_LIST1 ()
  in (
 DECL {prec=nil,control=nil,nonterm=NONE,term=NONE,
@@ -1402,7 +1402,7 @@ DECL {prec=nil,control=nil,nonterm=NONE,term=NONE,eop=nil,
 )
  in (LrTable.NT 4,(result,KEYWORD1left,ID_LIST1right),rest671) end
 | (9,(_,(MlyValue.ID_LIST ID_LIST1,_,ID_LIST1right))::(_,(_,
-PREFER1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ => 
+PREFER1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ =>
 let val ID_LIST as ID_LIST1=ID_LIST1 ()
  in (
 DECL {prec=nil,control=nil,nonterm=NONE,term=NONE,eop=nil,
@@ -1422,7 +1422,7 @@ DECL {prec=nil,control=nil,nonterm=NONE,term=NONE,eop=nil,
 )
  in (LrTable.NT 4,(result,CHANGE1left,CHANGE_DECL1right),rest671) end
 | (11,(_,(MlyValue.SUBST_DECL SUBST_DECL1,_,SUBST_DECL1right))::(_,(_,
-SUBST1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ => 
+SUBST1left,_))::rest671) => let val result=MlyValue.MPC_DECL(fn _ =>
 let val SUBST_DECL as SUBST_DECL1=SUBST_DECL1 ()
  in (
 DECL {prec=nil,control=nil,nonterm=NONE,term=NONE,eop=nil,
@@ -1479,7 +1479,7 @@ DECL {prec=nil,control=[Hdr.VERBOSE],
                 value=nil}
 ))
  in (LrTable.NT 4,(result,VERBOSE1left,VERBOSE1right),rest671) end
-| (17,(_,(_,NODEFAULT1left,NODEFAULT1right))::rest671) => let val 
+| (17,(_,(_,NODEFAULT1left,NODEFAULT1right))::rest671) => let val
 result=MlyValue.MPC_DECL(fn _ => (
 DECL {prec=nil,control=[Hdr.NODEFAULT],
                 nonterm=NONE,term=NONE,eop=nil,
@@ -1487,7 +1487,7 @@ DECL {prec=nil,control=[Hdr.NODEFAULT],
                 value=nil}
 ))
  in (LrTable.NT 4,(result,NODEFAULT1left,NODEFAULT1right),rest671) end
-| (18,(_,(_,PERCENT_PURE1left,PERCENT_PURE1right))::rest671) => let 
+| (18,(_,(_,PERCENT_PURE1left,PERCENT_PURE1right))::rest671) => let
 val result=MlyValue.MPC_DECL(fn _ => (
 DECL {prec=nil,control=[Hdr.PURE],
                 nonterm=NONE,term=NONE,eop=nil,
@@ -1520,8 +1520,8 @@ DECL {prec=nil,control=nil,
 )
  in (LrTable.NT 4,(result,VALUE1left,PROG1right),rest671) end
 | (21,(_,(MlyValue.CHANGE_DECL CHANGE_DECL1,_,CHANGE_DECL1right))::_::
-(_,(MlyValue.CHANGE_DEC CHANGE_DEC1,CHANGE_DEC1left,_))::rest671) => 
-let val result=MlyValue.CHANGE_DECL(fn _ => let val CHANGE_DEC as 
+(_,(MlyValue.CHANGE_DEC CHANGE_DEC1,CHANGE_DEC1left,_))::rest671) =>
+let val result=MlyValue.CHANGE_DECL(fn _ => let val CHANGE_DEC as
 CHANGE_DEC1=CHANGE_DEC1 ()
 val CHANGE_DECL as CHANGE_DECL1=CHANGE_DECL1 ()
  in (CHANGE_DEC :: CHANGE_DECL) end
@@ -1543,7 +1543,7 @@ val ID_LIST2=ID_LIST2 ()
 )
  in (LrTable.NT 15,(result,ID_LIST1left,ID_LIST2right),rest671) end
 | (24,(_,(MlyValue.SUBST_DECL SUBST_DECL1,_,SUBST_DECL1right))::_::(_,
-(MlyValue.SUBST_DEC SUBST_DEC1,SUBST_DEC1left,_))::rest671) => let 
+(MlyValue.SUBST_DEC SUBST_DEC1,SUBST_DEC1left,_))::rest671) => let
 val result=MlyValue.SUBST_DECL(fn _ => let val SUBST_DEC as SUBST_DEC1
 =SUBST_DEC1 ()
 val SUBST_DECL as SUBST_DECL1=SUBST_DECL1 ()
@@ -1552,14 +1552,14 @@ val SUBST_DECL as SUBST_DECL1=SUBST_DECL1 ()
  in (LrTable.NT 12,(result,SUBST_DEC1left,SUBST_DECL1right),rest671)
  end
 | (25,(_,(MlyValue.SUBST_DEC SUBST_DEC1,SUBST_DEC1left,SUBST_DEC1right
-))::rest671) => let val result=MlyValue.SUBST_DECL(fn _ => let val 
+))::rest671) => let val result=MlyValue.SUBST_DECL(fn _ => let val
 SUBST_DEC as SUBST_DEC1=SUBST_DEC1 ()
  in ([SUBST_DEC]) end
 )
  in (LrTable.NT 12,(result,SUBST_DEC1left,SUBST_DEC1right),rest671)
  end
 | (26,(_,(MlyValue.ID ID2,_,ID2right))::_::(_,(MlyValue.ID ID1,ID1left
-,_))::rest671) => let val result=MlyValue.SUBST_DEC(fn _ => let val 
+,_))::rest671) => let val result=MlyValue.SUBST_DEC(fn _ => let val
 ID1=ID1 ()
 val ID2=ID2 ()
  in ([symbolMake ID2],[symbolMake ID1]) end
@@ -1574,7 +1574,7 @@ val TY as TY1=TY1 ()
  in ((symbolMake ID,SOME (tyMake TY))::CONSTR_LIST) end
 )
  in (LrTable.NT 1,(result,CONSTR_LIST1left,TY1right),rest671) end
-| (28,(_,(MlyValue.ID ID1,_,ID1right))::_::(_,(MlyValue.CONSTR_LIST 
+| (28,(_,(MlyValue.ID ID1,_,ID1right))::_::(_,(MlyValue.CONSTR_LIST
 CONSTR_LIST1,CONSTR_LIST1left,_))::rest671) => let val result=
 MlyValue.CONSTR_LIST(fn _ => let val CONSTR_LIST as CONSTR_LIST1=
 CONSTR_LIST1 ()
@@ -1583,13 +1583,13 @@ val ID as ID1=ID1 ()
 )
  in (LrTable.NT 1,(result,CONSTR_LIST1left,ID1right),rest671) end
 | (29,(_,(MlyValue.TY TY1,_,TY1right))::_::(_,(MlyValue.ID ID1,ID1left
-,_))::rest671) => let val result=MlyValue.CONSTR_LIST(fn _ => let val 
+,_))::rest671) => let val result=MlyValue.CONSTR_LIST(fn _ => let val
 ID as ID1=ID1 ()
 val TY as TY1=TY1 ()
  in ([(symbolMake ID,SOME (tyMake TY))]) end
 )
  in (LrTable.NT 1,(result,ID1left,TY1right),rest671) end
-| (30,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val 
+| (30,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val
 result=MlyValue.CONSTR_LIST(fn _ => let val ID as ID1=ID1 ()
  in ([(symbolMake ID,NONE)]) end
 )
@@ -1607,21 +1607,21 @@ map (fn {rhs,code,prec} =>
 )
  in (LrTable.NT 9,(result,ID1left,RHS_LIST1right),rest671) end
 | (32,(_,(MlyValue.G_RULE G_RULE1,_,G_RULE1right))::(_,(
-MlyValue.G_RULE_LIST G_RULE_LIST1,G_RULE_LIST1left,_))::rest671) => 
-let val result=MlyValue.G_RULE_LIST(fn _ => let val G_RULE_LIST as 
+MlyValue.G_RULE_LIST G_RULE_LIST1,G_RULE_LIST1left,_))::rest671) =>
+let val result=MlyValue.G_RULE_LIST(fn _ => let val G_RULE_LIST as
 G_RULE_LIST1=G_RULE_LIST1 ()
 val G_RULE as G_RULE1=G_RULE1 ()
  in (G_RULE@G_RULE_LIST) end
 )
  in (LrTable.NT 10,(result,G_RULE_LIST1left,G_RULE1right),rest671) end
 | (33,(_,(MlyValue.G_RULE G_RULE1,G_RULE1left,G_RULE1right))::rest671)
- => let val result=MlyValue.G_RULE_LIST(fn _ => let val G_RULE as 
+ => let val result=MlyValue.G_RULE_LIST(fn _ => let val G_RULE as
 G_RULE1=G_RULE1 ()
  in (G_RULE) end
 )
  in (LrTable.NT 10,(result,G_RULE1left,G_RULE1right),rest671) end
 | (34,(_,(MlyValue.ID_LIST ID_LIST1,_,ID_LIST1right))::(_,(MlyValue.ID
- ID1,ID1left,_))::rest671) => let val result=MlyValue.ID_LIST(fn _ => 
+ ID1,ID1left,_))::rest671) => let val result=MlyValue.ID_LIST(fn _ =>
 let val ID as ID1=ID1 ()
 val ID_LIST as ID_LIST1=ID_LIST1 ()
  in (symbolMake ID :: ID_LIST) end
@@ -1640,7 +1640,7 @@ val PROG as PROG1=PROG1 ()
  in (LrTable.NT 8,(result,ID_LIST1left,PROG1right),rest671) end
 | (37,(_,(MlyValue.PROG PROG1,_,PROG1right))::(_,(MlyValue.G_RULE_PREC
  G_RULE_PREC1,_,_))::(_,(MlyValue.ID_LIST ID_LIST1,_,_))::_::(_,(
-MlyValue.RHS_LIST RHS_LIST1,RHS_LIST1left,_))::rest671) => let val 
+MlyValue.RHS_LIST RHS_LIST1,RHS_LIST1left,_))::rest671) => let val
 result=MlyValue.RHS_LIST(fn _ => let val RHS_LIST as RHS_LIST1=
 RHS_LIST1 ()
 val ID_LIST as ID_LIST1=ID_LIST1 ()
@@ -1649,47 +1649,47 @@ val PROG as PROG1=PROG1 ()
  in ({rhs=ID_LIST,code=PROG,prec=G_RULE_PREC}::RHS_LIST) end
 )
  in (LrTable.NT 8,(result,RHS_LIST1left,PROG1right),rest671) end
-| (38,(_,(MlyValue.TYVAR TYVAR1,TYVAR1left,TYVAR1right))::rest671) => 
+| (38,(_,(MlyValue.TYVAR TYVAR1,TYVAR1left,TYVAR1right))::rest671) =>
 let val result=MlyValue.TY(fn _ => let val TYVAR as TYVAR1=TYVAR1 ()
  in (TYVAR) end
 )
  in (LrTable.NT 16,(result,TYVAR1left,TYVAR1right),rest671) end
 | (39,(_,(_,_,RBRACE1right))::(_,(MlyValue.RECORD_LIST RECORD_LIST1,_,
-_))::(_,(_,LBRACE1left,_))::rest671) => let val result=MlyValue.TY(fn 
+_))::(_,(_,LBRACE1left,_))::rest671) => let val result=MlyValue.TY(fn
 _ => let val RECORD_LIST as RECORD_LIST1=RECORD_LIST1 ()
  in ("{ "^RECORD_LIST^" } ") end
 )
  in (LrTable.NT 16,(result,LBRACE1left,RBRACE1right),rest671) end
-| (40,(_,(_,_,RBRACE1right))::(_,(_,LBRACE1left,_))::rest671) => let 
+| (40,(_,(_,_,RBRACE1right))::(_,(_,LBRACE1left,_))::rest671) => let
 val result=MlyValue.TY(fn _ => ("{}"))
  in (LrTable.NT 16,(result,LBRACE1left,RBRACE1right),rest671) end
-| (41,(_,(MlyValue.PROG PROG1,PROG1left,PROG1right))::rest671) => let 
+| (41,(_,(MlyValue.PROG PROG1,PROG1left,PROG1right))::rest671) => let
 val result=MlyValue.TY(fn _ => let val PROG as PROG1=PROG1 ()
  in (" ( "^PROG^" ) ") end
 )
  in (LrTable.NT 16,(result,PROG1left,PROG1right),rest671) end
 | (42,(_,(MlyValue.QUAL_ID QUAL_ID1,_,QUAL_ID1right))::(_,(MlyValue.TY
- TY1,TY1left,_))::rest671) => let val result=MlyValue.TY(fn _ => let 
+ TY1,TY1left,_))::rest671) => let val result=MlyValue.TY(fn _ => let
 val TY as TY1=TY1 ()
 val QUAL_ID as QUAL_ID1=QUAL_ID1 ()
  in (TY^" "^QUAL_ID) end
 )
  in (LrTable.NT 16,(result,TY1left,QUAL_ID1right),rest671) end
 | (43,(_,(MlyValue.QUAL_ID QUAL_ID1,QUAL_ID1left,QUAL_ID1right))::
-rest671) => let val result=MlyValue.TY(fn _ => let val QUAL_ID as 
+rest671) => let val result=MlyValue.TY(fn _ => let val QUAL_ID as
 QUAL_ID1=QUAL_ID1 ()
  in (QUAL_ID) end
 )
  in (LrTable.NT 16,(result,QUAL_ID1left,QUAL_ID1right),rest671) end
 | (44,(_,(MlyValue.TY TY2,_,TY2right))::_::(_,(MlyValue.TY TY1,TY1left
-,_))::rest671) => let val result=MlyValue.TY(fn _ => let val TY1=TY1 
+,_))::rest671) => let val result=MlyValue.TY(fn _ => let val TY1=TY1
 ()
 val TY2=TY2 ()
  in (TY1^"*"^TY2) end
 )
  in (LrTable.NT 16,(result,TY1left,TY2right),rest671) end
 | (45,(_,(MlyValue.TY TY2,_,TY2right))::_::(_,(MlyValue.TY TY1,TY1left
-,_))::rest671) => let val result=MlyValue.TY(fn _ => let val TY1=TY1 
+,_))::rest671) => let val result=MlyValue.TY(fn _ => let val TY1=TY1
 ()
 val TY2=TY2 ()
  in (TY1 ^ " -> " ^ TY2) end
@@ -1697,7 +1697,7 @@ val TY2=TY2 ()
  in (LrTable.NT 16,(result,TY1left,TY2right),rest671) end
 | (46,(_,(MlyValue.TY TY1,_,TY1right))::_::(_,(MlyValue.LABEL LABEL1,_
 ,_))::_::(_,(MlyValue.RECORD_LIST RECORD_LIST1,RECORD_LIST1left,_))::
-rest671) => let val result=MlyValue.RECORD_LIST(fn _ => let val 
+rest671) => let val result=MlyValue.RECORD_LIST(fn _ => let val
 RECORD_LIST as RECORD_LIST1=RECORD_LIST1 ()
 val LABEL as LABEL1=LABEL1 ()
 val TY as TY1=TY1 ()
@@ -1711,7 +1711,7 @@ val TY as TY1=TY1 ()
  in (LABEL^":"^TY) end
 )
  in (LrTable.NT 7,(result,LABEL1left,TY1right),rest671) end
-| (48,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val 
+| (48,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val
 result=MlyValue.QUAL_ID(fn _ => let val ID as ID1=ID1 ()
  in ((fn (a,_) => a) ID) end
 )
@@ -1723,18 +1723,18 @@ val QUAL_ID as QUAL_ID1=QUAL_ID1 ()
  in (IDDOT^QUAL_ID) end
 )
  in (LrTable.NT 6,(result,IDDOT1left,QUAL_ID1right),rest671) end
-| (50,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val 
+| (50,(_,(MlyValue.ID ID1,ID1left,ID1right))::rest671) => let val
 result=MlyValue.LABEL(fn _ => let val ID as ID1=ID1 ()
  in ((fn (a,_) => a) ID) end
 )
  in (LrTable.NT 3,(result,ID1left,ID1right),rest671) end
-| (51,(_,(MlyValue.INT INT1,INT1left,INT1right))::rest671) => let val 
+| (51,(_,(MlyValue.INT INT1,INT1left,INT1right))::rest671) => let val
 result=MlyValue.LABEL(fn _ => let val INT as INT1=INT1 ()
  in (INT) end
 )
  in (LrTable.NT 3,(result,INT1left,INT1right),rest671) end
 | (52,(_,(MlyValue.ID ID1,_,ID1right))::(_,(_,PREC_TAG1left,_))::
-rest671) => let val result=MlyValue.G_RULE_PREC(fn _ => let val ID as 
+rest671) => let val result=MlyValue.G_RULE_PREC(fn _ => let val ID as
 ID1=ID1 ()
  in (SOME (symbolMake ID)) end
 )
@@ -1837,15 +1837,15 @@ fun BOGUS_VALUE (p1,p2) = Token.TOKEN (ParserData.LrTable.T 40,(
 ParserData.MlyValue.VOID,p1,p2))
 end
 end
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:42  george
  * Version 109
- * 
+ *
  *)
 
-structure LrTable : LR_TABLE = 
+structure LrTable : LR_TABLE =
     struct
         open Array List
         infix 9 sub
@@ -1865,7 +1865,7 @@ structure LrTable : LR_TABLE =
         val numStates = fn ({states,...} : table) => states
         val numRules = fn ({rules,...} : table) => rules
         val describeActions =
-           fn ({action,...} : table) => 
+           fn ({action,...} : table) =>
                    fn (STATE s) => action sub s
         val describeGoto =
            fn ({goto,...} : table) =>
@@ -1903,12 +1903,12 @@ structure LrTable : LR_TABLE =
                rules=numRules,
                initialState=initialState} : table)
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:43  george
  * Version 109
- * 
+ *
  *)
 
 (* Stream: a structure implementing a lazy stream.  The signature STREAM
@@ -1921,14 +1921,14 @@ struct
    type 'a stream = 'a str ref
 
    fun get(ref(EVAL t)) = t
-     | get(s as ref(UNEVAL f)) = 
+     | get(s as ref(UNEVAL f)) =
             let val t = (f(), ref(UNEVAL f)) in s := EVAL t; t end
 
    fun streamify f = ref(UNEVAL f)
    fun cons(a,s) = ref(EVAL(a,s))
 
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.3  1996/10/03  03:36:58  jhr
@@ -1941,7 +1941,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:42  george
  * Version 109
- * 
+ *
  *)
 
 (* parser.sml:  This is a parser driver for LR tables with an error-recovery
@@ -1955,7 +1955,7 @@ end;
 
     This program is an implementation is the partial, deferred method discussed
     in the article.  The algorithm and data structures used in the program
-    are described below.  
+    are described below.
 
     This program assumes that all semantic actions are delayed.  A semantic
     action should produce a function from unit -> value instead of producing the
@@ -1967,7 +1967,7 @@ end;
 
     Data Structures:
     ----------------
-        
+
         * The parser:
 
            The state stack has the type
@@ -1975,7 +1975,7 @@ end;
                  (state * (semantic value * line # * line #)) list
 
            The parser keeps a queue of (state stack * lexer pair).  A lexer pair
-         consists of a terminal * value pair and a lexer.  This allows the 
+         consists of a terminal * value pair and a lexer.  This allows the
          parser to reconstruct the states for terminals to the left of a
          syntax error, and attempt to make error corrections there.
 
@@ -1987,7 +1987,7 @@ end;
     Algorithm:
     ----------
 
-        * The steady-state parser:  
+        * The steady-state parser:
 
             This parser keeps the length of the queue of state stacks at
         a steady state by always removing an element from the front when
@@ -2023,7 +2023,7 @@ end;
         tokens left unparsed, a queue, and an action option.
 *)
 
-signature FIFO = 
+signature FIFO =
   sig type 'a queue
       val empty : 'a queue
       exception Empty
@@ -2075,11 +2075,11 @@ structure LrParser :> LR_PARSER =
       type ('a,'b) lexpair = ('a,'b) lexv * (('a,'b) lexv Stream.stream)
       type ('a,'b) distanceParse =
                  ('a,'b) lexpair *
-                 ('a,'b) stack * 
+                 ('a,'b) stack *
                  (('a,'b) stack * ('a,'b) lexpair) Fifo.queue *
                  int ->
                    ('a,'b) lexpair *
-                   ('a,'b) stack * 
+                   ('a,'b) stack *
                    (('a,'b) stack * ('a,'b) lexpair) Fifo.queue *
                    int *
                    action option
@@ -2093,7 +2093,7 @@ structure LrParser :> LR_PARSER =
           showTerminal : term -> string,
           noShift : term -> bool}
 
-      local 
+      local
          val print = fn s => TextIO.output(TextIO.stdOut,s)
          val println = fn s => (print s; print "\n")
          val showState = fn (STATE s) => "STATE " ^ (Int.toString s)
@@ -2105,13 +2105,13 @@ structure LrParser :> LR_PARSER =
                   println(showState state);
                   printStack(rest, n+1))
             | nil => ()
-                
+
         fun prAction showTerminal
                  (stack as (state,_) :: _, next as (TOKEN (term,_),_), action) =
              (println "Parse: state stack:";
               printStack(stack, 0);
               print("       state="
-                         ^ showState state      
+                         ^ showState state
                          ^ " next="
                          ^ showTerminal term
                          ^ " action="
@@ -2131,7 +2131,7 @@ structure LrParser :> LR_PARSER =
         fixError is called with the arguments of parseStep (lexv,stack,and
         queue).  It returns the lexv, and a new stack and queue adjusted so
         that the lexv can be parsed *)
-        
+
     val ssParse =
       fn (table,showTerminal,saction,fixError,arg) =>
         let val prAction = prAction showTerminal
@@ -2161,7 +2161,7 @@ structure LrParser :> LR_PARSER =
                                     queue)
                        | _ => raise (ParseImpossible 197))
                  | ERROR => parseStep(fixError args)
-                 | ACCEPT => 
+                 | ACCEPT =>
                         (case stack
                          of (_,(topvalue,_,_)) :: _ =>
                                 let val (token,restLexer) = lexPair
@@ -2212,7 +2212,7 @@ structure LrParser :> LR_PARSER =
                  | ACCEPT => (lexPair,stack,queue,distance,SOME nextAction)
               end
            | parseStep _ = raise (ParseImpossible 242)
-        in parseStep : ('a,'b) distanceParse 
+        in parseStep : ('a,'b) distanceParse
         end
 
 (* mkFixError: function to create fixError function which adjusts parser state
@@ -2222,7 +2222,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
               preferred_change,noShift,
               showTerminal,error,...} : ('a,'b) ecRecord,
              distanceParse : ('a,'b) distanceParse,
-             minAdvance,maxAdvance) 
+             minAdvance,maxAdvance)
 
             (lexv as (TOKEN (term,value as (_,leftPos,_)),_),stack,queue) =
     let val _ = if DEBUG2 then
@@ -2236,7 +2236,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
         (* pull all the state * lexv elements from the queue *)
 
-        val stateList = 
+        val stateList =
            let fun f q = let val (elem,newQueue) = Fifo.get q
                          in elem :: (f newQueue)
                          end handle Fifo.Empty => nil
@@ -2284,9 +2284,9 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
         fun parse (lexPair,stack,queuePos : int) =
             case distanceParse(lexPair,stack,Fifo.empty,queuePos+maxAdvance+1)
-             of (_,_,_,distance,SOME ACCEPT) => 
-                        if maxAdvance-distance-1 >= 0 
-                            then maxAdvance 
+             of (_,_,_,distance,SOME ACCEPT) =>
+                        if maxAdvance-distance-1 >= 0
+                            then maxAdvance
                             else maxAdvance-distance-1
               | (_,_,_,distance,_) => maxAdvance - distance - 1
 
@@ -2300,9 +2300,9 @@ fun mkFixError({is_keyword,terms,errtermvalue,
         fun tryChange{lex,stack,pos,leftPos,rightPos,orig,new} =
              let val lex' = List.foldr (fn (t',p)=>(t',Stream.cons p)) lex new
                  val distance = parse(lex',stack,pos+length new-length orig)
-              in if distance >= minAdvance + keywordsDelta new 
+              in if distance >= minAdvance + keywordsDelta new
                    then [CHANGE{pos=pos,leftPos=leftPos,rightPos=rightPos,
-                                distance=distance,orig=orig,new=new}] 
+                                distance=distance,orig=orig,new=new}]
                    else []
              end
 
@@ -2331,7 +2331,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                  tryChange{lex=lexPair,stack=stack,
                            pos=queuePos,orig=[],new=[tokAt(t,l)],
                            leftPos=l,rightPos=l})
-                              
+
 (* trySubst: try to substitute tokens for the current terminal;
        return a list of the successes  *)
 
@@ -2348,8 +2348,8 @@ fun mkFixError({is_keyword,terms,errtermvalue,
      (* do_delete(toks,lexPair) tries to delete tokens "toks" from "lexPair".
          If it succeeds, returns SOME(toks',l,r,lp), where
              toks' is the actual tokens (with positions and values) deleted,
-             (l,r) are the (leftmost,rightmost) position of toks', 
-             lp is what remains of the stream after deletion 
+             (l,r) are the (leftmost,rightmost) position of toks',
+             lp is what remains of the stream after deletion
      *)
         fun do_delete(nil,lp as (TOKEN(_,(_,l,_)),_)) = SOME(nil,l,l,lp)
           | do_delete([t],(tok as TOKEN(t',(_,l,r)),lp')) =
@@ -2363,13 +2363,13 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                SOME(tok::deleted,l,r',lp'')
                           | NONE => NONE
                    else NONE
-                             
+
         fun tryPreferred((stack,lexPair),queuePos) =
             catList preferred_change (fn (delete,insert) =>
                if List.exists noShift delete then [] (* should give warning at
                                                  parser-generation time *)
                else case do_delete(delete,lexPair)
-                     of SOME(deleted,l,r,lp) => 
+                     of SOME(deleted,l,r,lp) =>
                             tryChange{lex=lp,stack=stack,pos=queuePos,
                                       leftPos=l,rightPos=r,orig=deleted,
                                       new=map (fn t=>(tokAt(t,r))) insert}
@@ -2382,7 +2382,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                               catList numStateList (tryDelete 2) @
                                 catList numStateList (tryDelete 3)
 
-        val findMaxDist = fn l => 
+        val findMaxDist = fn l =>
           foldr (fn (CHANGE {distance,...},high) => Int.max(distance,high)) 0 l
 
 (* maxDist: max distance past error taken that we could parse *)
@@ -2391,14 +2391,14 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
 (* remove changes which did not parse maxDist tokens past the error token *)
 
-        val changes = catList changes 
-              (fn(c as CHANGE{distance,...}) => 
+        val changes = catList changes
+              (fn(c as CHANGE{distance,...}) =>
                   if distance=maxDist then [c] else [])
 
-      in case changes 
+      in case changes
           of (l as change :: _) =>
               let fun print_msg (CHANGE {new,orig,leftPos,rightPos,...}) =
-                  let val s = 
+                  let val s =
                       case (orig,new)
                           of (_::_,[]) => "deleting " ^ (showTerms orig)
                            | ([],_::_) => "inserting " ^ (showTerms new)
@@ -2406,8 +2406,8 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                  " with " ^ (showTerms new)
                   in error ("syntax error: " ^ s,leftPos,rightPos)
                   end
-                   
-                  val _ = 
+
+                  val _ =
                       (if length l > 1 andalso DEBUG2 then
                            (print "multiple fixes possible; could fix it by:\n";
                             app print_msg l;
@@ -2435,7 +2435,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                           end
                       in f (rev stateList,n)
                       end
-                
+
                   val CHANGE {pos,orig,new,...} = change
                   val (last,queueFront) = findNth pos
                   val (stack,lexPair) = last
@@ -2443,7 +2443,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                   val lp1 = foldl(fn (_,(_,r)) => Stream.get r) lexPair orig
                   val lp2 = foldr(fn(t,r)=>(t,Stream.cons r)) lp1 new
 
-                  val restQueue = 
+                  val restQueue =
                       Fifo.put((stack,lp2),
                                foldl Fifo.put Fifo.empty queueFront)
 
@@ -3141,8 +3141,8 @@ type result = UserDeclarations.lexresult
         exception LexerError (* raised if illegal leaf action tried *)
 end
 
-fun makeLexer yyinput = 
-let 
+fun makeLexer yyinput =
+let
         val yyb = ref "\n"              (* buffer *)
         val yybl = ref 1                (*buffer length *)
         val yybufpos = ref 1            (* location of next character to use *)
@@ -3154,17 +3154,17 @@ let
                  yybegin := x
 
 fun lex (yyarg as (inputSource)) =
-let fun continue() : Internal.result = 
+let fun continue() : Internal.result =
   let fun scan (s,AcceptingLeaves : Internal.yyfinstate list list,l,i0) =
         let fun action (i,nil) = raise LexError
         | action (i,nil::l) = action (i-1,l)
         | action (i,(node::acts)::l) =
                 case node of
-                    Internal.N yyk => 
+                    Internal.N yyk =>
                         (let val yytext = substring(!yyb,i0,i-i0)
                              val yypos = i0+ !yygone
                         open UserDeclarations Internal.StartStates
- in (yybufpos := i; case yyk of 
+ in (yybufpos := i; case yyk of
 
                         (* Application actions *)
 
@@ -3270,12 +3270,12 @@ in continue end
   in lex
   end
 end
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:42  george
  * Version 109
- * 
+ *
  *)
 
 (* functor Join creates a user parser by putting together a Lexer structure,
@@ -3297,7 +3297,7 @@ functor Join(structure Lex : LEXER
 struct
     structure Token = ParserData.Token
     structure Stream = LrParser.Stream
- 
+
     exception ParseError = LrParser.ParseError
 
     type arg = ParserData.arg
@@ -3324,7 +3324,7 @@ struct
      val sameToken = Token.sameToken
 end
 
-(* functor JoinWithArg creates a variant of the parser structure produced 
+(* functor JoinWithArg creates a variant of the parser structure produced
    above.  In this case, the makeLexer take an additional argument before
    yielding a value of type unit -> (svalue,pos) token
  *)
@@ -3370,7 +3370,7 @@ struct
       )
     val sameToken = Token.sameToken
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:38  george
@@ -3380,7 +3380,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 functor ParseGenParserFun(S : sig
@@ -3404,24 +3404,24 @@ functor ParseGenParserFun(S : sig
                               Header.error source i s
               val stream =  Parser.makeLexer (fn i => (TextIO.inputN(in_str,i)))
                             source
-              val (result,_) = (Header.lineno := 1; 
+              val (result,_) = (Header.lineno := 1;
                                 Header.text := nil;
                                 Parser.parse(15,stream,error,source))
            in (TextIO.closeIn in_str; (result,source))
            end
   end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:47  george
  * Version 109
- * 
+ *
  *)
 
 (* Implementation of ordered sets using ordered lists and red-black trees.  The
    code for red-black trees was originally written by Norris Boyd, which was
    modified for use here.
-*)   
+*)
 
 (* ordered sets implemented using ordered lists.
 
@@ -3457,7 +3457,7 @@ functor ListOrdSet(B : sig type elem
 struct
  type elem = B.elem
  val elem_gt = B.gt
- val elem_eq = B.eq 
+ val elem_eq = B.eq
 
  type set = elem list
  exception Select_arb
@@ -3471,13 +3471,13 @@ struct
               | f nil = [key]
         in f s
         end
-                
+
  val select_arb = fn nil => raise Select_arb
                    | a::b => a
 
  val exists = fn (key,s) =>
         let fun f (h::t) = if elem_gt(key,h) then f t
-                           else elem_eq(h,key) 
+                           else elem_eq(h,key)
               | f nil = false
         in f s
         end
@@ -3489,12 +3489,12 @@ struct
               | f nil = NONE
         in f s
         end
-   
+
  fun revfold f lst init = List.foldl f init lst
  fun fold f lst init = List.foldr f init lst
  val app = List.app
 
-fun set_eq(h::t,h'::t') = 
+fun set_eq(h::t,h'::t') =
         (case elem_eq(h,h')
           of true => set_eq(t,t')
            | a => a)
@@ -3509,7 +3509,7 @@ fun set_gt(h::t,h'::t') =
            |  a => a)
   | set_gt(_::_,nil) = true
   | set_gt _ = false
-                
+
 fun union(a as (h::t),b as (h'::t')) =
           if elem_gt(h',h) then h::union(t,b)
           else if elem_eq(h,h') then h::union(t,t')
@@ -3601,7 +3601,7 @@ struct
 
  type elem = B.elem
  val elem_gt = B.gt
- val elem_eq = B.eq 
+ val elem_eq = B.eq
 
  datatype Color = RED | BLACK
 
@@ -3657,7 +3657,7 @@ struct
 
  fun select_arb (TREE(k,_,l,r)) = k
    | select_arb EMPTY = raise Select_arb
-   
+
  fun exists(key,t) =
   let fun look EMPTY = false
         | look (TREE(k,_,l,r)) =
@@ -3943,7 +3943,7 @@ struct
     val find = fn (e,{table,count}) => HashTable.find(e,table)
     val exists = fn (e,{table,count}) => HashTable.exists(e,table)
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:31  george
@@ -3953,7 +3953,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:44  george
  * Version 109
- * 
+ *
  *)
 
 functor mkCore(structure IntGrammar : INTGRAMMAR) : CORE =
@@ -3983,7 +3983,7 @@ functor mkCore(structure IntGrammar : INTGRAMMAR) : CORE =
                                 val eq = eqItem
                                 val gt = gtItem
                         end)
-                
+
                 open ItemList
                 datatype core = CORE of item list * int
 
@@ -4006,12 +4006,12 @@ functor mkCore(structure IntGrammar : INTGRAMMAR) : CORE =
                    in fn (ITEM {rule=RULE {lhs,rhs,rulenum,num,...},
                                 dot,rhsAfter,...}) =>
                         (prNonterm lhs; print " : "; showRhs(rhs,dot);
-                         case rhsAfter 
-                         of nil => (print " (reduce by rule "; 
+                         case rhsAfter
+                         of nil => (print " (reduce by rule ";
                                     printInt rulenum;
                                     print ")")
                           | _ => ();
-                          if DEBUG then 
+                          if DEBUG then
                              (print " (num "; printInt num; print ")")
                           else ())
                    end
@@ -4027,12 +4027,12 @@ functor mkCore(structure IntGrammar : INTGRAMMAR) : CORE =
                            print "\n")
                     end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 
 functor mkCoreUtils(structure Core : CORE) : CORE_UTILS =
@@ -4072,8 +4072,8 @@ functor mkCoreUtils(structure Core : CORE) : CORE_UTILS =
 
 (* renumber rules so that rule numbers increase monotonically with
    the number of their lhs nonterminal, and so that rules are numbered
-   sequentially.  **Functions below assume that this number is true**, 
-   i.e. productions for nonterm i are numbered from j to k, 
+   sequentially.  **Functions below assume that this number is true**,
+   i.e. productions for nonterm i are numbered from j to k,
    productions for nonterm i+1 are numbered from k+1 to m, and
    productions for nonterm 0 start at 0 *)
 
@@ -4094,7 +4094,7 @@ functor mkCoreUtils(structure Core : CORE) : CORE_UTILS =
 
 (* list of rules - sorted by rule number. *)
 
-                 val rules = 
+                 val rules =
                      let fun g i =
                         if i < nonterms then (derives sub i) @ (g (i+1))
                         else nil
@@ -4177,7 +4177,7 @@ functor mkCoreUtils(structure Core : CORE) : CORE_UTILS =
                            nonterms nonterms
                         end
 
-(* shifts: compute the core sets that result from shift/gotoing on 
+(* shifts: compute the core sets that result from shift/gotoing on
    the closure of a kernal set.  The items in core sets are sorted, of
    course.
 
@@ -4255,13 +4255,13 @@ fun mergeShiftItems (args as ((k,l),r)) =
                       | (_,results) => results)
                     [] (produces nt)
                in memoize f
-               end 
+               end
 
 (* epsProds: take a core and compute a list of epsilon productions for it
    sorted by rule number.  ** Depends on closureNonterms returning a list
    of nonterminals sorted by nonterminal #, rule numbers increasing
    monotonically with their lhs production #, and nontermEpsProds returning
-   an ordered item list for each production 
+   an ordered item list for each production
 *)
 
         fun epsProds (CORE (itemList,state)) =
@@ -4272,7 +4272,7 @@ fun mergeShiftItems (args as ((k,l),r)) =
      in {produces=produces,shifts=shifts,rules=rules,epsProds=epsProds}
      end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:34  george
@@ -4282,7 +4282,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 
 functor mkGraph(structure IntGrammar : INTGRAMMAR
@@ -4372,7 +4372,7 @@ functor mkGraph(structure IntGrammar : INTGRAMMAR
            let val printCore = prCore a
                val printSymbol = print o nontermToString
                val nodes = nodes g
-               val printEdges = fn n => 
+               val printEdges = fn n =>
                  List.app (fn {edge,to=CORE (_,state)} =>
                         (print "\tshift on ";
                          printSymbol edge;
@@ -4382,12 +4382,12 @@ functor mkGraph(structure IntGrammar : INTGRAMMAR
          in List.app (fn c => (printCore c; print "\n"; printEdges c)) nodes
          end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
@@ -4421,7 +4421,7 @@ functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
                         val eq = eqNonterm
                         val gt = gtNonterm
                 end)
-        
+
         val mkFuncs = fn {rules : rule list, nonterms : int,
                           produces : nonterm -> rule list} =>
 
@@ -4449,7 +4449,7 @@ functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
                        place it back on the list
                    (4) repeat until the list does not change.
 
-           We have found all the possible nullable rules. 
+           We have found all the possible nullable rules.
       *)
 
         val nullable =
@@ -4464,7 +4464,7 @@ functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
               val f = fn ((NT i,nil),(l,_)) => (update(nullable,i,true);
                                                (l,true))
                        | (a as (lhs,(h::t)),(l,change)) =>
-                                case (nullable sub h) 
+                                case (nullable sub h)
                                   of false => (a::l,change)
                                    | true => ((lhs,t)::l,true)
               fun prove(l,true) = prove(List.foldr f (nil,false) l)
@@ -4481,7 +4481,7 @@ functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
                 if nullable nt then f (rest,addSymbol(sym,result))
                 else addSymbol(sym,result)
               | f ((sym as TERM _) :: _,result) = addSymbol(sym,result)
-        in f 
+        in f
         end
 
      (* accumulate: look at the start of the right-hand-sides of rules,
@@ -4542,11 +4542,11 @@ functor mkLook (structure IntGrammar : INTGRAMMAR) : LOOK =
                    of true => nullable_string r
                     | f => f)
         | nullable_string nil = true
-          
+
     in {nullable = nullable, first = prefix}
     end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.3  1996/10/03  03:37:12  jhr
@@ -4559,7 +4559,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 
 functor mkLalr ( structure IntGrammar : INTGRAMMAR
@@ -4580,7 +4580,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
 
         datatype tmpcore = TMPCORE of (item * term list ref) list * int
         datatype lcore = LCORE of (item * term list) list * int
-        
+
 
          val prLcore =
           fn a as (SymbolToString,nontermToString,termToString,print) =>
@@ -4674,7 +4674,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                                  rule has proven to be nullable so far.
                                  Remember that the rhs has been reversed,
                                  implying that this is true initially *)
-                                
+
                                         (* A -> .z t B y, where y is nullable *)
 
                               let fun f (NONTERM b :: (r as (TERM _ :: _))) =
@@ -4688,10 +4688,10 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
 
                                         (* A -> .B y, where y is nullable *)
 
-                                    | f (NONTERM b :: nil) = 0 
+                                    | f (NONTERM b :: nil) = 0
                               in  f l
                               end
-                             
+
                         val check_rule = fn (rule as RULE {num,...}) =>
                             let val pos = rule_pos rule
                             in (print "look_pos: ";
@@ -4739,7 +4739,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
 
 (* findRef: state * item -> lookahead ref cell for item *)
 
-              val findRef = 
+              val findRef =
                 let val states = Array.fromList new_nodes
                     val dummy = ref nil
                 in fn (state,item) =>
@@ -4755,16 +4755,16 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                                                     print "\n")) l;
                                                 raise Find)
                     end
-                end 
-                        
+                end
+
 
 (* findRuleRefs: state -> rule -> lookahead refs for rule. *)
-                
+
                val findRuleRefs =
                  let val shift = shift graph
                  in fn state =>
                         (* handle epsilon productions *)
-                  fn (rule as RULE {rhs=nil,...}) => 
+                  fn (rule as RULE {rhs=nil,...}) =>
                          [findRef(state,ITEM{rule=rule,dot=0,rhsAfter=nil})]
                    | (rule as RULE {rhs=sym::rest,...}) =>
                    let  val pos = Int.max(look_pos rule,1)
@@ -4777,7 +4777,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                                       findRef(state,ITEM{rule=rule,
                                                          dot=pos,
                                                          rhsAfter=rhs})::result)
-                                
+
 (* find first item of the form A -> x .B y, where y =*=> epsilon and
    x is not epsilon, or A -> x.  use scan' to pick up all refs after this
    point *)
@@ -4806,7 +4806,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                                   | false => r)
                            | (_,r) => r) [] (produces n)
                        fun dfs(a as (n,r)) =
-                         if (NontermSet.exists a) then r 
+                         if (NontermSet.exists a) then r
                          else List.foldr dfs (NontermSet.insert(n,r))
                                 (collect_nonterms n)
                   in dfs(nt,NontermSet.empty)
@@ -4842,7 +4842,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                     in dfs((nt,nil),NTL.empty)
                     end
 
-                val look_info = 
+                val look_info =
                   if not DEBUG then look_info
                   else fn nt =>
                        (print "look_info of "; prNonterm nt; print "=\n";
@@ -4869,7 +4869,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                      in NTL.fold upd_nonterm ntl ntl
                      end
 
-                val prop_look = 
+                val prop_look =
                   if not DEBUG then prop_look
                   else fn ntl =>
                     (print "prop_look =\n";
@@ -4896,7 +4896,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                        val do_nonterm = fn i =>
                         let val nonterms_followed_by_null =
                                 nonterms_w_null i
-                            val nonterms_added_through_closure = 
+                            val nonterms_added_through_closure =
                               NTL.make_list (prop_look (look_info i))
                             val result =
                             map (fn (nt,l) =>
@@ -5032,7 +5032,7 @@ functor mkLalr ( structure IntGrammar : INTGRAMMAR
                        LCORE (List.foldr create_lcore_list [] l, state)) new_nodes
         end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.3  1996/05/31  14:05:01  dbm
@@ -5045,15 +5045,15 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 functor mkMakeLrTable (structure IntGrammar : INTGRAMMAR
                      structure LrTable : LR_TABLE
                      sharing type LrTable.term = IntGrammar.Grammar.term
                      sharing type LrTable.nonterm = IntGrammar.Grammar.nonterm
-                    ) : MAKE_LR_TABLE = 
-   struct 
+                    ) : MAKE_LR_TABLE =
+   struct
         open Array List
         infix 9 sub
         structure Core = mkCore(structure IntGrammar = IntGrammar)
@@ -5091,7 +5091,7 @@ functor mkMakeLrTable (structure IntGrammar : INTGRAMMAR
                        val numSTART = ref 0
                        val numNOT_REDUCED = ref 0
                        val numNS = ref 0
-                       fun loop (h::t) = 
+                       fun loop (h::t) =
                        (case h
                          of RR _ => numRR := !numRR+1
                           | SR _ => numSR := !numSR+1
@@ -5133,7 +5133,7 @@ functor mkMakeLrTable (structure IntGrammar : INTGRAMMAR
             end
 
 
-        open IntGrammar Grammar Errs LrTable Core 
+        open IntGrammar Grammar Errs LrTable Core
 
 (* rules for resolving conflicts:
 
@@ -5174,11 +5174,11 @@ some reductions are removed from the list before conflicting reductions
 can be compared against them.  All reduce/reduce conflicts, however,
 can be generated given a list of the reduce/reduce conflicts generated
 by this method.
-        
+
    This can be done by taking the transitive closure of the relation given
 by the list.  If reduce/reduce (a,b) and reduce/reduce (b,c)  are true,
 then reduce/reduce (a,c) is true.   The relation is symmetric and transitive.
-                  
+
 Adding shifts:
 
     Finally scan the list merging in shifts and resolving conflicts
@@ -5221,7 +5221,7 @@ is true.
          end
 
   val computeActions = fn (rules,precedence,graph,defaultReductions) =>
-     
+
     let val rulePrec =
           let val precData = array(length rules,NONE : int option)
           in app (fn RULE {rulenum=r,precedence=p,...} => update(precData,r,p))
@@ -5251,7 +5251,7 @@ is true.
                 | f (nil,nil,result,errs) = (rev result,errs)
                 | f (nil,h::t,result,errs) =
                         f (nil,t,h::result,errs)
-                | f (h::t,nil,result,errs) = 
+                | f (h::t,nil,result,errs) =
                         f (t,nil,h::result,errs)
           in f(shifts,reduces,nil,nil)
           end
@@ -5282,7 +5282,7 @@ is true.
                                                          shifts,reduces)
                         val actions' = pruneError actions
                         val (actions,default) =
-                           let fun hasReduce (nil,actions) = 
+                           let fun hasReduce (nil,actions) =
                                               (rev actions,REDUCE rulenum)
                                  | hasReduce ((a as (_,SHIFT _)) :: r,actions) =
                                                 hasReduce(r,a::actions)
@@ -5294,7 +5294,7 @@ is true.
                                  | loop ((a as (_,REDUCE _)) :: r,actions) =
                                                 hasReduce(r,actions)
                                  | loop (_ :: r,actions) = loop(r,actions)
-                          in if defaultReductions 
+                          in if defaultReductions
                                andalso length actions = length actions'
                              then loop(actions,nil)
                              else (actions',ERROR)
@@ -5309,7 +5309,7 @@ is true.
                   in ((pruneError actions,ERROR),gotos,errs1@errs2)
                   end
          end
-   end                  
+   end
 
         val mkTable = fn (grammar as GRAMMAR{rules,terms,nonterms,start,
                                   precedence,termToString,noshift,
@@ -5335,13 +5335,13 @@ is true.
                   fun zip (h::t,h'::t') = (h,h') :: zip(t,t')
                     | zip (nil,nil) = nil
                     | zip _ = let exception MkTable in raise MkTable end
-                  
+
                   fun unzip l =
                    let fun f ((a,b,c)::r,j,k,l) = f(r,a::j,b::k,c::l)
                          | f (nil,j,k,l) = (rev j,rev k,rev l)
                    in f(l,nil,nil,nil)
                    end
-                
+
                    val (actions,gotos,errs) =
                         let val doState =
                             computeActions(rules,precedence,graph,
@@ -5356,14 +5356,14 @@ is true.
                      case gotos
                      of nil => (actions,gotos,errs)
                       | h :: t =>
-                        let val newStateActions = 
+                        let val newStateActions =
                            (map (fn t => (t,ACCEPT)) (Look.make_set eop),ERROR)
-                           val state0Goto = 
+                           val state0Goto =
                                GotoList.insert((start,STATE (length actions)),h)
                         in (actions @ [newStateActions],
                             state0Goto :: (t @ [nil]),
                             errs @ [nil])
-                        end 
+                        end
 
                 val startErrs =
                   List.foldr (fn (RULE {rhs,rulenum,...},r) =>
@@ -5402,7 +5402,7 @@ is true.
 
                 val numstates = length actions
 
-                val allErrs = startErrs @ notReduced @ nonshiftErrs @ 
+                val allErrs = startErrs @ notReduced @ nonshiftErrs @
                               (List.concat errs)
 
                 fun convert_to_pairlist(nil : ('a * 'b) list): ('a,'b) pairlist =
@@ -5431,7 +5431,7 @@ is true.
                     allErrs)
               end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:33  george
@@ -5441,21 +5441,21 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 
 structure Grammar : GRAMMAR =
         struct
 
                 (* define types term and nonterm using those in LrTable
-                   datatype term = T of int 
+                   datatype term = T of int
                    datatype nonterm = NT of int *)
 
                 open LrTable
                 datatype symbol = TERM of term | NONTERM of nonterm
                 datatype grammar = GRAMMAR of
                                 {rules: {lhs: nonterm,
-                                         rhs: symbol list, 
+                                         rhs: symbol list,
                                          precedence: int option,
                                          rulenum: int} list,
                                 noshift : term list,
@@ -5479,7 +5479,7 @@ structure IntGrammar : INTGRAMMAR =
                                  num: int,(* internal # assigned by coreutils *)
                                  rulenum: int,
                                  precedence: int option}
-                
+
                 val eqTerm = (op =)
                 val gtTerm = fn (T i,T j) => i>j
 
@@ -5521,7 +5521,7 @@ structure IntGrammar : INTGRAMMAR =
                                         ())
                         else ())
                    end
-                        
+
                 val prGrammar =
                          fn (a as (symbolToString,nontermToString,print)) =>
                              fn (GRAMMAR {rules,terms,nonterms,start,...}) =>
@@ -5542,7 +5542,7 @@ structure IntGrammar : INTGRAMMAR =
                     ()
                  end
         end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:39  george
@@ -5552,7 +5552,7 @@ structure IntGrammar : INTGRAMMAR =
  *
  * Revision 1.1.1.1  1996/01/31  16:01:47  george
  * Version 109
- * 
+ *
  *)
 
 functor mkVerbose(structure Errs : LR_ERRS) : VERBOSE =
@@ -5624,7 +5624,7 @@ struct
                 (print "warning: rule <";
                  printRule i;
                  print "> will never be reduced\n")
-         | START i => 
+         | START i =>
                 (print "warning: start symbol appears on the rhs of ";
                  print "<";
                  printRule i;
@@ -5637,7 +5637,7 @@ struct
                  printRule i;
                  print ">\n")
       end
-   structure PairList : sig 
+   structure PairList : sig
                           val app : ('a * 'b -> unit) -> ('a,'b) pairlist -> unit
                           val length : ('a,'b) pairlist -> int
                         end
@@ -5657,7 +5657,7 @@ struct
    val printVerbose =
         fn {termToString,nontermToString,table,stateErrs,entries:int,
             print,printRule,errs,printCores} =>
-           let 
+           let
                 val printTerm = print o termToString
                 val printNonterm = print o nontermToString
 
@@ -5673,12 +5673,12 @@ struct
 
                 val gotoTableSize = ref 0
                 val actionTableSize = ref 0
-                
-                val _ = if length errs > 0 
+
+                val _ = if length errs > 0
                            then (printSummary print errs;
                                  print "\n";
                                  app printError errs)
-                           else ()  
+                           else ()
                 fun loop i =
                   if i=states then ()
                   else let val s = STATE i
@@ -5698,7 +5698,7 @@ struct
                                               PairList.length gotoList;
                                actionTableSize := (!actionTableSize) +
                                                PairList.length actionList + 1
-                               ) 
+                               )
                            end;
                            loop (i+1))
                         end
@@ -5711,7 +5711,7 @@ struct
 end;
 
 
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/02/26  15:02:37  george
@@ -5721,7 +5721,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 functor mkPrintStruct(structure LrTable : LR_TABLE
@@ -5732,11 +5732,11 @@ functor mkPrintStruct(structure LrTable : LR_TABLE
       infix 9 sub
       structure LrTable = LrTable
       open ShrinkLrTable LrTable
-      
-     
+
+
       (* lineLength = approximately the largest number of characters to allow
          on a line when printing out an encode string *)
-          
+
       val lineLength = 72
 
       (* maxLength = length of a table entry.  All table entries are encoded
@@ -5824,18 +5824,18 @@ functor mkPrintStruct(structure LrTable : LR_TABLE
                  | (SHIFT (STATE i)) => printInt (i+2)
                  | ACCEPT => printInt 0
                  | ERROR => printInt 1
-        
+
          val printTermAction = fn (T t,action) =>
                 (printInt (t+1); printAction action)
 
          val printGoto = fn (NT n,STATE s) => (printInt (n+1); printInt s)
 
-         val ((rowCount,rowNumbers,actionRows),entries)= 
+         val ((rowCount,rowNumbers,actionRows),entries)=
                    shrinkActionList(table,verbose)
          val getActionRow = let val a = Array.fromList actionRows
                             in fn i => a sub i
                             end
-         val printGotoRow : int -> unit = 
+         val printGotoRow : int -> unit =
                let val f = printPairRow printGoto
                    val g = describeGoto table
                in fn i => f (g (STATE i))
@@ -5852,7 +5852,7 @@ functor mkPrintStruct(structure LrTable : LR_TABLE
            print "val actionRowNumbers =\n\"";
            printList (fn i => printInt i) rowNumbers;
            print "\"\n";
-           print "val gotoT =\n"; 
+           print "val gotoT =\n";
            printTable(printGotoRow,states);
            print "val numstates = ";
            print (Int.toString states);
@@ -5918,7 +5918,7 @@ print "}\nend\n";
       entries
       end
 end;
-(* ML-Yacc Parser Generator (c) 1991 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1991 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.2  1996/05/30  17:52:58  dbm
@@ -5927,7 +5927,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:46  george
  * Version 109
- * 
+ *
  *)
 
 signature SORT_ARG =
@@ -6030,10 +6030,10 @@ functor EquivFun(A : EQUIV_ARG) : EQUIV =
 
          We then return the length of R, R, and the list that results from
          permuting SE by P.
-     *) 
+     *)
 
        type entry = A.entry
-             
+
        val gt = fn ((a,_),(b,_)) => A.gt(a,b)
 
        structure Sort = MergeSortFun(type entry = A.entry * int
@@ -6043,8 +6043,8 @@ functor EquivFun(A : EQUIV_ARG) : EQUIV =
              let fun loop (index,nil) = nil
                    | loop (index,h :: t) = (h,index) :: loop(index+1,t)
              in loop (0,l)
-             end 
-    
+             end
+
        local fun loop ((e,_) :: t, prev, class, R , SE) =
                if A.eq(e,prev)
                  then loop(t,e,class,R, class :: SE)
@@ -6063,7 +6063,7 @@ functor EquivFun(A : EQUIV_ARG) : EQUIV =
                              (update(result,dest,elem); loop(r,s))
                          | loop _ = ()
                        fun listofarray i =
-                          if i < Array.length result then 
+                          if i < Array.length result then
                                 (result sub i) :: listofarray (i+1)
                           else nil
                     in loop (l,permutation); listofarray 0
@@ -6086,7 +6086,7 @@ functor ShrinkLrTableFun(structure LrTable : LR_TABLE) : SHRINK_LR_TABLE =
         open LrTable
         val gtAction = fn (a,b) =>
               case a
-              of SHIFT (STATE s) => 
+              of SHIFT (STATE s) =>
                    (case b of SHIFT (STATE s') => s>s' | _ => true)
                | REDUCE i => (case b of SHIFT _ => false | REDUCE i' => i>i'
                                       | _ => true)
@@ -6114,7 +6114,7 @@ functor ShrinkLrTableFun(structure LrTable : LR_TABLE) : SHRINK_LR_TABLE =
 (*        structure GotoEntryList =
             struct
                type entry = (nonterm,state) pairlist
-               val rec eq = 
+               val rec eq =
                     fn (EMPTY,EMPTY) => true
                      | (PAIR (t,d,r),PAIR(t',d',r')) =>
                             t=t' andalso d=d' andalso eq(r,r')
@@ -6142,18 +6142,18 @@ functor ShrinkLrTableFun(structure LrTable : LR_TABLE) : SHRINK_LR_TABLE =
              let val c = ref 0
              in (app (fn (row,_) => c := !c + length row) l; !c)
              end
-       val shrinkActionList = 
+       val shrinkActionList =
          fn (table,verbose) =>
            case EquivActionList.equivalences
                      (map (describeActions table) (states (numStates table)))
            of result as (_,_,l) => (result,if verbose then size l else 0)
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:44  george
  * Version 109
- * 
+ *
  *)
 
 signature ABSYN =
@@ -6178,7 +6178,7 @@ signature ABSYN =
        and     rule = RULE of pat * exp
        val printRule : ((string -> unit) * (string -> unit)) -> rule -> unit
     end
-(* ML-Yacc Parser Generator (c) 1989, 1990 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989, 1990 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.3  1996/05/30  18:05:09  dbm
@@ -6192,7 +6192,7 @@ signature ABSYN =
  *
  * Revision 1.1.1.1  1996/01/31  16:01:48  george
  * Version 109
- * 
+ *
  *)
 
 functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Header.pos = int
@@ -6220,7 +6220,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
     (* record type describing names of structures in the program being
         generated *)
 
-    datatype names = NAMES 
+    datatype names = NAMES
                         of {miscStruct : string,  (* Misc{n} struct name *)
                             tableStruct : string, (* LR table structure *)
                             tokenStruct : string, (* Tokens{n} struct name *)
@@ -6233,7 +6233,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                             dataStruct:string, (* name of structure in Misc *)
                                                 (* which holds parser data *)
                             dataSig:string (* signature for this structure *)
-                                        
+
                             }
 
     val DEBUG = true
@@ -6264,7 +6264,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                           term : (Header.symbol * ty option) list,
                           nonterm : (Header.symbol * ty option) list,
                           terms : Grammar.term list}
-                          
+
     structure SymbolHash = Hash(type elem = string
                                 val gt = (op >) : string*string -> bool)
 
@@ -6298,7 +6298,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                                  termvoid,ntvoid,saydot,hasType,start,
                                  pureActions,...},
                            NAMES {valueStruct,...},symbolType) =>
-     let val prConstr = fn (symbol,SOME s) => 
+     let val prConstr = fn (symbol,SOME s) =>
                            say (" | " ^ (symbolName symbol) ^ " of " ^
                                   (if pureActions then "" else "unit -> ") ^
                                 " (" ^ tyName s ^ ")"
@@ -6342,7 +6342,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                          say (Int.toString i);
                          say ",(";
                          say (dataStruct ^ "." ^ valueStruct ^ ".");
-                         if (hasType (TERM term)) then 
+                         if (hasType (TERM term)) then
                             (say (termToString term);
                              if pureActions then say " i"
                              else say " (fn () => i)")
@@ -6352,7 +6352,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                 in app f terms
                 end;
                 sayln "end")
-                          
+
     (* function to print signatures out - takes print function which
         does not need to insert line breaks *)
 
@@ -6365,7 +6365,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                  (List.foldr (fn ((s,ty),r) => String.concat [
                     "val ", symbolName s,
                     (case ty
-                     of NONE => ": " 
+                     of NONE => ": "
                       | SOME l => ": (" ^ (tyName l) ^ ") * "),
                     " 'a * 'a -> (svalue,'a) token\n", r]) "" term) ^
                  "end\nsignature " ^ miscSig ^
@@ -6374,7 +6374,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                   "\nsharing type " ^ dataStruct ^
                   ".Token.token = Tokens.token\nsharing type " ^
                   dataStruct ^ ".svalue = Tokens.svalue\nend\n")
-                
+
     (* function to print structure for error correction *)
 
     val printEC = fn (keyword : term list,
@@ -6399,7 +6399,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
          fun printChange () =
             (sayln "val preferred_change = ";
              app (fn (d,i) =>
-                    (say"("; printTermList d; say ","; printTermList i; 
+                    (say"("; printTermList d; say ","; printTermList i;
                      sayln ")::"
                     )
                  ) preferred_change;
@@ -6421,7 +6421,7 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
             say "_ => ";
             say (valueStruct ^ ".");
             sayln termvoid; sayln "end")
-              
+
 
           val printNames = fn () =>
                 let val f = fn term =>
@@ -6433,13 +6433,13 @@ functor ParseGenFun(structure ParseGenParser : PARSE_GEN_PARSER where type Heade
                     sayln "_ => \"bogus-term\"")
                 end
 
-           val ecTerms = 
+           val ecTerms =
                 List.foldr (fn (t,r) =>
                   if hasType (TERM t) orelse exists (fn (a,_)=>a=t) value
                     then r
                     else t::r)
                 [] terms
-                                  
+
         in  say "structure ";
             say ecStruct;
             sayln "=";
@@ -6490,7 +6490,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
                                    PAPP(valueStruct^"."^ntvoid,
                                         PVAR symNum)
                               else WILD)
-                           else 
+                           else
                                PAPP(valueStruct^"."^symString,
                                  if num=1 andalso pureActions
                                      then AS(PVAR symNum,PVAR symString)
@@ -6606,45 +6606,45 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
         val defaultReductions = not (List.exists (fn NODEFAULT=>true | _ => false) control)
         val pos_type =
            let fun f nil = NONE
-                 | f ((POS s)::r) = SOME s 
+                 | f ((POS s)::r) = SOME s
                  | f (_::r) = f r
            in f control
            end
         val start =
            let fun f nil = NONE
-                 | f ((START_SYM s)::r) = SOME s 
+                 | f ((START_SYM s)::r) = SOME s
                  | f (_::r) = f r
            in f control
            end
         val name =
            let fun f nil = NONE
-                 | f ((PARSER_NAME s)::r) = SOME s 
+                 | f ((PARSER_NAME s)::r) = SOME s
                  | f (_::r) = f r
            in f control
            end
         val header_decl =
            let fun f nil = NONE
-                 | f ((FUNCTOR s)::r) = SOME s 
+                 | f ((FUNCTOR s)::r) = SOME s
                  | f (_::r) = f r
            in f control
            end
         val arg_decl =
            let fun f nil = ("()","unit")
-                 | f ((PARSE_ARG s)::r) = s 
+                 | f ((PARSE_ARG s)::r) = s
                  | f (_::r) = f r
            in f control
            end
 
         val noshift =
            let fun f nil = nil
-                 | f ((NSHIFT s)::r) = s 
+                 | f ((NSHIFT s)::r) = s
                  | f (_::r) = f r
            in f control
            end
 
         val pureActions =
            let fun f nil = false
-                 | f ((PURE)::r) = true 
+                 | f ((PURE)::r) = true
                  | f (_::r) = f r
            in f control
            end
@@ -6665,7 +6665,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
            | SOME l => l
 
 
-        val termHash = 
+        val termHash =
           List.foldr (fn ((symbol,_),table) =>
               let val name = symbolName symbol
               in if SymbolHash.exists(name,table) then
@@ -6677,14 +6677,14 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
 
         val isTerm = fn name => SymbolHash.exists(name,termHash)
 
-        val symbolHash = 
+        val symbolHash =
           List.foldr (fn ((symbol,_),table) =>
             let val name = symbolName symbol
             in if SymbolHash.exists(name,table) then
                  (error (symbolPos symbol)
                      (if isTerm name then
                           name ^ " is defined as a terminal and a nonterminal"
-                      else 
+                      else
                           "duplicate definition of " ^ name ^ " in %nonterm");
                      table)
              else SymbolHash.add(name,table)
@@ -6704,7 +6704,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
                 (symbolName symbol^" in "^err^" is not defined as a " ^ sym)
 
         val termNum : string -> Header.symbol -> term =
-          let val termError = symError "terminal" 
+          let val termError = symError "terminal"
           in fn stmt =>
              let val stmtError = termError stmt
              in fn symbol =>
@@ -6714,9 +6714,9 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
                                 else (stmtError symbol; ~1))
              end
           end
-                        
+
         val nontermNum : string -> Header.symbol -> nonterm =
-          let val nontermError = symError "nonterminal" 
+          let val nontermError = symError "nonterminal"
           in fn stmt =>
              let val stmtError = nontermError stmt
              in fn symbol =>
@@ -6728,7 +6728,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
           end
 
         val symbolNum : string -> Header.symbol -> Grammar.symbol =
-          let val symbolError = symError "symbol" 
+          let val symbolError = symError "symbol"
           in fn stmt =>
              let val stmtError = symbolError stmt
              in fn symbol =>
@@ -6750,7 +6750,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
 
         val eop = map (termNum "%eop") eop
         val keyword = map (termNum "%keyword") keyword
-        val prec = map (fn (a,l) => 
+        val prec = map (fn (a,l) =>
                         (a,case a
                            of LEFT => map (termNum "%left") l
                             | RIGHT => map (termNum "%right") l
@@ -6798,7 +6798,7 @@ let val printAbsynRule = Absyn.printRule(say,sayln)
                   else data sub i
            end
 
-        val nontermToString = 
+        val nontermToString =
            let val data = array(numNonterms,"")
                val unmap = fn (symbol,_) =>
                     let val name = symbolName symbol
@@ -6857,7 +6857,7 @@ precedences of the rule and the terminal are equal.
            end
 
         val elimAssoc =  fn i => (i - (i mod 3) + 1)
-        val rulePrec = 
+        val rulePrec =
            let fun findRightTerm (nil,r) = r
                  | findRightTerm (TERM t :: tail,r) =
                                  findRightTerm(tail,SOME t)
@@ -6865,7 +6865,7 @@ precedences of the rule and the terminal are equal.
            in fn rhs =>
                  case findRightTerm(rhs,NONE)
                  of NONE => NONE
-                  | SOME term => 
+                  | SOME term =>
                        case termPrec term
                        of SOME i => SOME  (elimAssoc i)
                         | a => a
@@ -6888,10 +6888,10 @@ precedences of the rule and the terminal are equal.
         val start =
          case start
            of NONE => #lhs (hd grammarRules)
-            | SOME name => 
+            | SOME name =>
                 nontermNum "%start" name
 
-        val symbolType = 
+        val symbolType =
            let val data = array(numTerms+numNonterms,NONE : ty option)
                val unmap = fn (symbol,ty) =>
                       update(data,
@@ -6908,7 +6908,7 @@ precedences of the rule and the terminal are equal.
                   else data sub i
            end
 
-        val symbolToString = 
+        val symbolToString =
              fn NONTERM i => nontermToString i
               | TERM i => termToString i
 
@@ -6919,7 +6919,7 @@ precedences of the rule and the terminal are equal.
                                  nontermToString = nontermToString,
                                  precedence = termPrec}
 
-        val name' = case name 
+        val name' = case name
                     of NONE => ""
                      | SOME s => symbolName s
 
@@ -6934,19 +6934,19 @@ precedences of the rule and the terminal are equal.
                            miscSig = name' ^ "_LRVALS",
                            dataStruct = "ParserData",
                            dataSig = "PARSER_DATA"}
-                       
+
         val (table,stateErrs,corePrint,errs) =
                  MakeTable.mkTable(grammar,defaultReductions)
 
         val entries = ref 0 (* save number of action table entries here *)
-        
+
     in  let val result = TextIO.openOut (spec ^ ".sml")
             val sigs = TextIO.openOut (spec ^ ".sig")
             val pos = ref 0
             val pr = fn s => TextIO.output(result,s)
             val say = fn s => let val l = String.size s
                                    val newPos = (!pos) + l
-                              in if newPos > lineLength 
+                              in if newPos > lineLength
                                     then (pr "\n"; pos := l)
                                     else (pos := newPos);
                                    pr s
@@ -6973,7 +6973,7 @@ precedences of the rule and the terminal are equal.
 
             val (NAMES {miscStruct,tableStruct,dataStruct,tokenSig,tokenStruct,dataSig,...}) = names
          in case header_decl
-            of NONE => (say "functor "; say miscStruct; 
+            of NONE => (say "functor "; say miscStruct;
                         sayln "(structure Token : TOKEN)";
                         say " : sig structure ";
                         say dataStruct;
@@ -7003,7 +7003,7 @@ precedences of the rule and the terminal are equal.
             sayln "end";
             printTokenStruct(values,names);
             sayln "end";
-            printSigs(values,names,fn s => TextIO.output(sigs,s));    
+            printSigs(values,names,fn s => TextIO.output(sigs,s));
             TextIO.closeOut sigs;
             TextIO.closeOut result;
             MakeTable.Errs.printSummary
@@ -7015,7 +7015,7 @@ precedences of the rule and the terminal are equal.
              val say = fn s=> TextIO.output(f,s)
              val printRule =
                 let val rules = Array.fromList grammarRules
-                in fn say => 
+                in fn say =>
                    let val prRule = fn {lhs,rhs,precedence,rulenum} =>
                      ((say o nontermToString) lhs; say " : ";
                       app (fn s => (say (symbolToString s); say " ")) rhs)
@@ -7037,7 +7037,7 @@ precedences of the rule and the terminal are equal.
                                 errorOccurred inputSource)
                 end
 end;
-(* ML-Yacc Parser Generator (c) 1991 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1991 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.3  1996/02/26  15:02:30  george
@@ -7050,7 +7050,7 @@ end;
  *
  * Revision 1.1.1.1  1996/01/31  16:01:44  george
  * Version 109
- * 
+ *
  *)
 
 structure Absyn : ABSYN =
@@ -7120,7 +7120,7 @@ structure Absyn : ABSYN =
                      | (PTUPLE l) =>
                           let val l' = map f l
                           in if List.exists(fn WILD=>false | _ => true) l'
-                             then PTUPLE l' 
+                             then PTUPLE l'
                              else WILD
                           end
                      | (AS(a,b)) =>
@@ -7137,8 +7137,8 @@ structure Absyn : ABSYN =
            val simplifyExp : exp -> exp =
                let fun f(EAPP(a,b)) = EAPP(f a,f b)
                      | f(ETUPLE l) = ETUPLE(map f l)
-                     | f(FN(p,e)) = FN(simplifyPat p,f e) 
-                     | f(LET(dl,e)) = 
+                     | f(FN(p,e)) = FN(simplifyPat p,f e)
+                     | f(LET(dl,e)) =
                           LET(map (fn VB(p,e) =>
                                   VB(simplifyPat p,f e)) dl,
                               f e)
@@ -7165,7 +7165,7 @@ structure Absyn : ABSYN =
                  | f (EAPP(EVAR a,b)) = List.concat[[a],lp,f b,rp]
                  | f (EAPP(a,b)) = List.concat [lp,f a,rp,lp,f b,rp]
                  | f (EINT i) = [Int.toString i]
-                 | f (ETUPLE (a::r)) = 
+                 | f (ETUPLE (a::r)) =
                       let fun scan nil = [rp]
                             | scan (h :: t) = cm :: f h :: scan t
                       in List.concat (lp :: f a :: scan r)
@@ -7199,7 +7199,7 @@ structure Absyn : ABSYN =
                             | scan (h :: t) = f h :: ["::"] :: scan t
                       in List.concat (scan l)
                       end
-                 | f (PTUPLE (a::r)) = 
+                 | f (PTUPLE (a::r)) =
                       let fun scan nil = [rp]
                             | scan (h :: t) = cm :: f h :: scan t
                       in List.concat (lp :: f a :: scan r)
@@ -7211,7 +7211,7 @@ structure Absyn : ABSYN =
            end
            fun oursay "\n" = sayln ""
              | oursay a = say a
-         in fn a => 
+         in fn a =>
               let val RULE(p,e) = simplifyRule a
               in app oursay (printPat p);
                  say " => ";
@@ -7219,12 +7219,12 @@ structure Absyn : ABSYN =
               end
          end
 end;
-(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi 
+(* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi
  *
  * $Log$
  * Revision 1.1.1.1  1996/01/31  16:01:45  george
  * Version 109
- * 
+ *
  *)
 local
 

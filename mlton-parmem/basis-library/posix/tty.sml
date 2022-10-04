@@ -41,9 +41,9 @@ structure PosixTTY: POSIX_TTY =
 
             fun new () = Array.array (nccs, default)
 
-            fun updates (a, l) = 
-               List.app (fn (i, cc) => 
-                         Array.update (a, i, (C_CC.castFromSysWord o Word8.castToSysWord o Byte.charToByte) cc)) 
+            fun updates (a, l) =
+               List.app (fn (i, cc) =>
+                         Array.update (a, i, (C_CC.castFromSysWord o Word8.castToSysWord o Byte.charToByte) cc))
                         l
 
             fun cc l = let val a = new ()
@@ -213,7 +213,7 @@ structure PosixTTY: POSIX_TTY =
 
       structure TC =
          struct
-            open Prim.TC 
+            open Prim.TC
 
             type set_action = C_Int.t
             val sadrain = TCSADRAIN
@@ -279,7 +279,7 @@ structure PosixTTY: POSIX_TTY =
                ({errVal = C_PId.castFromFixedInt ~1}, fn () =>
                 Prim.TC.getpgrp (FileDesc.toRep fd))
 
-            fun setpgrp (fd, pid) = 
+            fun setpgrp (fd, pid) =
                SysCall.simpleRestart
                (fn () => Prim.TC.setpgrp (FileDesc.toRep fd, PId.toRep pid))
          end

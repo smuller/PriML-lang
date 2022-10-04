@@ -84,7 +84,7 @@ struct
         C.copyVec{di=st, dst=a, src=s}
 
     fun truncs s n =
-        if size s > n 
+        if size s > n
         then String.substring(s, 0, n)
         else s
 
@@ -108,9 +108,9 @@ struct
 
             (* if it exists, truncate file *)
             (case readid3 f of
-                 SOME _ => 
+                 SOME _ =>
                      let
-                         val fd = FS.openf (f, 
+                         val fd = FS.openf (f,
                                             FS.O_WRONLY,
                                             FS.O.flags nil)
                          val old =
@@ -121,7 +121,7 @@ struct
                          IO.close fd
                      end
                | NONE => ());
-                 
+
             let
                 val fd = FS.openf (f, FS.O_WRONLY, FS.O.flags [FS.O.append])
             in

@@ -33,14 +33,14 @@ structure EncodeBasic : EncodeBasic =
       val openOut    = TextIO.openOut
       val output1    = TextIO.output1
       val stdOut     = TextIO.stdOut
-	 
+
       type File = string * outstream
 
       val stdOutFile = ("-",stdOut)
 
       fun closeFile(fname,s) = if fname="-" then () else closeOut s
       fun fileName(fname,_) = if fname="-" then "<stdout>" else fname
-      fun openFile fname = 
+      fun openFile fname =
 	 if fname = "-" then (fname,stdOut)
 	 else (fname,openOut fname)
 	    handle IO.Io {name,cause,...} => raise NoSuchFile(name,exnMessage cause)

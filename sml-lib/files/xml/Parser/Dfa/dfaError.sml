@@ -17,7 +17,7 @@
 (*--------------------------------------------------------------------------*)
 signature DfaError =
    sig
-      val countOccs : DfaBase.Sigma * DfaBase.State * DfaBase.State 
+      val countOccs : DfaBase.Sigma * DfaBase.State * DfaBase.State
 	 -> DfaBase.ContentModel -> DfaBase.Sigma * int * int
    end
 
@@ -26,7 +26,7 @@ structure DfaError : DfaError =
       open DfaBase
 
       fun countOccs (a,q1,q2) cm =
-	 let 
+	 let
 	    val (q1,q2) = if q1>q2 then (q2,q1) else (q1,q2)
 
 	    fun next a nil = (1,[(a,2)])
@@ -52,7 +52,7 @@ structure DfaError : DfaError =
 		  | CM_SEQ cmis => foldl doit yet cmis
 
 	    val (_,_,n1,n2) = doit (cm,(1,nil,0,0))
-	 in 
+	 in
 	    (a,n1,n2)
 	 end
    end

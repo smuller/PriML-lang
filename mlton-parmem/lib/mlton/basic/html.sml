@@ -5,14 +5,14 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Html:> HTML = 
+structure Html:> HTML =
 struct
 
 fun tag (name: string,
         attributes: (string * string) list,
         body: Layout.t) =
    let open Layout
-   in seq [str "<", str name, 
+   in seq [str "<", str name,
            seq (List.map (attributes, fn (name, value) =>
                           str (concat [" ", name, " = ", value]))),
            str ">",
@@ -63,7 +63,7 @@ structure Element =
       val table = Table
       val tt = Tt
 
-      fun layoutAe ((a, e), s) = tag (s, [Align.attribute a], layout e) 
+      fun layoutAe ((a, e), s) = tag (s, [Align.attribute a], layout e)
       and layout e =
          let open Layout
          in case e of

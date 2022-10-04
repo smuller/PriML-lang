@@ -20,7 +20,7 @@ fun usage msg =
 val doOnce = ref false
 val doWiki = ref false
 val runArgs : string list ref = ref []
-   
+
 fun withInput (file, f: unit -> 'a): 'a =
    let
       open FileDesc
@@ -64,12 +64,12 @@ fun timeIt ca =
        Explicit {args, com} =>
           Process.wait (Process.spawnp {file = com, args = com :: args})
      | Shell ss => List.foreach (ss, Process.system))
-   
+
 local
    val trialTime = Time.seconds (IntInf.fromInt 60)
 in
    fun timeCall (com, args): real =
-      let 
+      let
          fun doit ac =
             let
                val {user, system} = timeIt (Explicit {args = args, com = com})
@@ -80,7 +80,7 @@ in
             if Time.> (ac, trialTime)
                then Time.toReal ac / Real.fromInt n
             else loop (n + 1, doit ac)
-      in 
+      in
          if !doOnce
             then Time.toReal (doit Time.zero)
          else loop (0, Time.zero)
@@ -154,7 +154,7 @@ fun compileSizeRun {command, exe, doTextPlusData: bool} =
        val size =
           if doTextPlusData
              then
-                let 
+                let
                    val {text, data, ...} = Process.size exe
                 in SOME (Position.fromInt (text + data))
                 end
@@ -216,7 +216,7 @@ fun kitCompile {bench} =
                                        com = "mlkit"},
                    exe = "run",
                    doTextPlusData = true}
-   
+
 fun mosmlCompile {bench} =
    compileSizeRun
    {command = Explicit {args = ["-orthodox", "-standalone", "-toplevel",
@@ -293,7 +293,7 @@ fun njCompile {bench} =
               size = size}
           end
     end)
-                
+
 fun polyCompile {bench} =
    Escape.new
    (fn e =>
@@ -352,7 +352,7 @@ fun main args =
                       abbrv: string,
                       test: {bench: File.t} -> {compile: real option,
                                                 run: real option,
-                                                size: Position.int option}} list ref 
+                                                size: Position.int option}} list ref
         = ref []
       fun pushCompiler compiler = List.push(compilers, compiler)
       fun pushCompilers compilers' = compilers := (List.rev compilers') @ (!compilers)
@@ -370,14 +370,14 @@ fun main args =
          in
             case Compiled.matchAll (reC, str) of
                NONE => die ()
-             | SOME match => 
+             | SOME match =>
                   let
                      val num = Match.lookupString (match, numSave)
                      val num = case Int.fromString num of
                                   NONE => die ()
                                 | SOME num => num
                      val regexp = Match.lookupString (match, regexpSave)
-                     val (regexp, saves) = 
+                     val (regexp, saves) =
                         case Regexp.fromString regexp of
                            NONE => die ()
                          | SOME regexp => regexp
@@ -425,7 +425,7 @@ fun main args =
                       (fn args =>
                        runArgs := String.tokens (args, Char.isSpace))),
                      ("err", SpaceString setErrData),
-                     ("mlkit", 
+                     ("mlkit",
                       None (fn () => pushCompiler
                             {name = "MLKit",
                              abbrv = "MLKit",
@@ -548,14 +548,14 @@ fun main args =
                               else
                                  let
                                     val rows = rows toStringHtml
-                                 in                                       
+                                 in
                                     prow (hd rows)
                                     ; (List.foreach
                                        (tl rows,
                                         fn [] => raise Fail "bug"
                                          | b :: r =>
                                               let
-                                                 val b = 
+                                                 val b =
                                                     concat
                                                     ["[attachment:",
                                                      b, ".sml ", b, "]"]
@@ -596,7 +596,7 @@ fun main args =
                   in ()
                   end
                val totalFailures = ref []
-               val data = 
+               val data =
                   List.fold
                   (benchmarks, {compiles = [], runs = [], sizes = [],
                                 outs = [], errs = []},
@@ -636,28 +636,28 @@ fun main args =
                                          then List.push (failures, bench)
                                       else ()
 (*
-                                   val out = 
-                                      case !outData of 
+                                   val out =
+                                      case !outData of
                                          NONE => NONE
-                                       | SOME (_, doit) => 
+                                       | SOME (_, doit) =>
                                             File.foldLines
                                             (outTmpFile, NONE, fn (s, v) =>
                                              let val s = String.removeTrailing
-                                                         (s, fn c => 
+                                                         (s, fn c =>
                                                           Char.equals (c, Char.newline))
                                              in
                                                 case doit s of
                                                    NONE => v
                                                  | v => v
                                              end)
-                                   val err = 
-                                      case !errData of 
+                                   val err =
+                                      case !errData of
                                          NONE => NONE
                                        | SOME (_, doit) =>
                                             File.foldLines
                                             (errTmpFile, NONE, fn (s, v) =>
                                              let val s = String.removeTrailing
-                                                         (s, fn c => 
+                                                         (s, fn c =>
                                                           Char.equals (c, Char.newline))
                                              in
                                                 case doit s of

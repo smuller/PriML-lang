@@ -8,7 +8,7 @@ struct
   val policyName = "ws1"
 end
 
-functor WorkQueue (W : sig type work val numberOfProcessors : unit -> int end) 
+functor WorkQueue (W : sig type work val numberOfProcessors : unit -> int end)
   : PARALLEL_WORKQUEUE =
 struct
   structure WS = WorkStealing (structure W = W

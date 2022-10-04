@@ -5,7 +5,7 @@
 (* TODO: de Bruijn
          use vectors instead of lists?
          hash cons?
-         hash for quick equality tests 
+         hash for quick equality tests
          delayed substitutions
 
          compliance suite for this; it is surprisingly easy
@@ -40,7 +40,7 @@ struct
   (* exception AST of string *)
   val AST = Exn
 
-  (* First attempt. Just counting free vars. 
+  (* First attempt. Just counting free vars.
      invariant: the integer is strictly positive
      *)
   datatype ast =
@@ -106,7 +106,7 @@ struct
   (* PERF should delay substitutions and renamings. *)
   fun rename nil ast = ast
     | rename ((v,v') :: t) ast =
-    let 
+    let
       (* val () = print ("Rename " ^ var_tostring v ^ " -> " ^ var_tostring v' ^ "\n"); *)
       val ast = rename t ast
       val ast = sub (hide ` V v') v ast
@@ -116,8 +116,8 @@ struct
   and sub (obj as A { m = mobj, ... }) v (ast as A { m, f }) =
     (* get out early *)
     if isfree ast v
-    then 
-      let 
+    then
+      let
         (* we know the variable occurs, so the map will include all of obj's
            free vars (occurring as many times as the variable occurs) *)
         val x = count ast v
@@ -135,8 +135,8 @@ struct
                          f = sub obj v a1 / sub obj v a2 }
         | v' \ a => (* avoid renaming if v' doesn't appear in obj... *)
                     if isfree obj v'
-                    then 
-                      let 
+                    then
+                      let
                         val v'' = var_vary v'
                         val a = rename [(v', v'')] a
                       in
@@ -167,7 +167,7 @@ struct
       end
     else ast
 
-  fun looky self (A { m = _, f }) = 
+  fun looky self (A { m = _, f }) =
     (case f of
        $l => $l
      | V v => V v
@@ -202,7 +202,7 @@ struct
     | ast_cmp (A{ f = S _, ...}, _) = LESS
     | ast_cmp (_, A{ f = S _, ...}) = GREATER
     | ast_cmp (A{ f = v1 \ a1, ...}, A { f = v2 \ a2, ... }) =
-       let 
+       let
          val v' = var_vary v1
            (*
          val () = print ("cmp " ^ var_tostring v1 ^ "," ^ var_tostring v2 ^ " -> " ^
@@ -242,7 +242,7 @@ struct
           LESS => LESS
         | GREATER => GREATER
         | EQUAL => astl_cmp (t1, t2))
-       
+
 
   fun look ast = looky I ast
   fun look2 ast = looky look ast

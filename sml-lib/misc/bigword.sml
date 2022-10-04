@@ -1,9 +1,9 @@
-(* WordN for arbitrary positive N. 
+(* WordN for arbitrary positive N.
 
    Contributed by Sean McLaughlin,
    July 2007. *)
 
-(* 
+(*
  We use IntInf to represent large word sizes.  This creates some
  compilicatons.  In particular, IntInf.ints are represented in
  twos complement format, so we have to be careful when negative
@@ -12,7 +12,7 @@
 *)
 
 functor BigWord(val wordSize : int) :> WORD =
-struct 
+struct
 
   structure I = IntInf
 
@@ -22,7 +22,7 @@ struct
   infixr 0 `
   fun f ` x = f x
 
-  val wordSize = wordSize  
+  val wordSize = wordSize
 
   val () = if wordSize < 1 then raise Fail "word size must be positive" else ()
 
@@ -42,7 +42,7 @@ struct
   fun msb n = I.andb(I.pow(2,wordSize-1),n) > 0
 
   (* Consistency check for debugging. No 1s outside the word boundary. *)
-  fun consistent n = 
+  fun consistent n =
       let
         val m = lots_of_1s - word_mask
       in
@@ -63,11 +63,11 @@ struct
 
   (* Negation should just be mod 2^n *)
   fun ~ x = I.+(I.~ x,pow2n)
-  
+
   (* for mod and div, if inputs are positive, no underflow.
      No overflow possible here either. *)
-  fun x div y = I.div(x,y)    
-  fun x mod y = I.mod(x,y)    
+  fun x div y = I.div(x,y)
+  fun x mod y = I.mod(x,y)
 
   (* comparisons should be ok, assuming positive inputs *)
   fun x < y = I.<(x,y)
@@ -85,18 +85,18 @@ struct
   (* left shift can overflow, but not negate. *)
   fun x << y = mask(I.<<(x,y))
 
-  (* because the input is positive, right shift should work correctly as well. 
+  (* because the input is positive, right shift should work correctly as well.
      no over/underflow *)
-  fun x >> y = I.~>>(x,y) 
+  fun x >> y = I.~>>(x,y)
 
-  (* For arithmetic shift, check the msb, and do an orb mask. 
+  (* For arithmetic shift, check the msb, and do an orb mask.
      No need to worry about overflow or underflow. *)
-  fun x ~>> y = 
+  fun x ~>> y =
       let
         val msb = msb x
-        val mask = 
-            if msb 
-            then word_mask - get_mask(Int.-(wordSize,Word.toInt y)) 
+        val mask =
+            if msb
+            then word_mask - get_mask(Int.-(wordSize,Word.toInt y))
             else I.fromInt 0
       in
         I.orb(mask,I.~>>(x,y))
@@ -106,7 +106,7 @@ struct
   fun andb(x,y) = I.andb(x,y)
   fun orb(x,y) = I.orb(x,y)
   fun xorb x = I.xorb x
-  (* I.notb is equivalent to ~(i + 1), so the resulting int is negative.  
+  (* I.notb is equivalent to ~(i + 1), so the resulting int is negative.
      Thus, we need to hack the logical not. *)
   fun notb x = mask(I.xorb(x,lots_of_1s))
 

@@ -11,7 +11,7 @@ structure Natural =
       fun foldStartStop (start, stop, b, f) =
          if start > stop
             then raise Subscript
-         else 
+         else
             let
                fun loop (i, b) =
                   if i >= stop then b

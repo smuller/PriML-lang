@@ -28,11 +28,11 @@ val sign: int -> Int.int =
 
 fun sameSign (x, y) = sign x = sign y
 
-fun << (i, n) = 
+fun << (i, n) =
    if Word.>= (n, sizeInBitsWord)
       then zero
       else I.<<? (i, Primitive.Word32.zextdFromWord n)
-fun >> (i, n) = 
+fun >> (i, n) =
    if Word.>= (n, sizeInBitsWord)
       then zero
       else I.>>? (i, Primitive.Word32.zextdFromWord n)
@@ -73,7 +73,7 @@ local
 in
    fun fmt radix (n: int): string =
       One.use
-      (oneBuf, fn buf => 
+      (oneBuf, fn buf =>
       let
          val radix = fromInt (StringCvt.radixToInt radix)
          fun loop (q, i: Int.int) =
@@ -105,7 +105,7 @@ in
       in
          loop (if n < zero then n else ~? n, Int.- (maxNumDigits, 1))
       end)
-end      
+end
 
 val toString = fmt StringCvt.DEC
 

@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure DirectedGraph:> DIRECTED_GRAPH = 
+structure DirectedGraph:> DIRECTED_GRAPH =
 struct
 
 structure Types =
@@ -146,7 +146,7 @@ fun layoutDot (T {nodes, ...},
            successors = List.revMap (!successors, fn e =>
                                      {name = nodeId (Edge.to e),
                                       options = edgeOptions e})})
-      val res = 
+      val res =
          Dot.layout {nodes = nodes,
                      options = options,
                      title = title}
@@ -714,7 +714,7 @@ fun loopForestSteensgaard (g: t, {root: Node.t}): LoopForest.t =
                       next: Node.t option ref,
                       (* The corresponding node in the original graph. *)
                       original: Node.t},
-           set = setNodeInfo, 
+           set = setNodeInfo,
            rem = remNodeInfo, ...} =
          Property.getSet
          (Node.plist, Property.initRaise ("loopForestSteensgaard", Node.layout))
@@ -731,7 +731,7 @@ fun loopForestSteensgaard (g: t, {root: Node.t}): LoopForest.t =
          let
             val sccs = stronglyConnectedComponents g
             (* Put nodes in the same scc into the same class. *)
-            val _ = List.foreachi 
+            val _ = List.foreachi
                     (sccs, fn (i, ns) =>
                      List.foreach
                      (ns, fn n =>
@@ -815,7 +815,7 @@ fun loopForestSteensgaard (g: t, {root: Node.t}): LoopForest.t =
                                 (Node.successors from, fn e =>
                                  let
                                     val to = Edge.to e
-                                    val {class = ref class', 
+                                    val {class = ref class',
                                          isHeader = isHeader',
                                          next = next', ...} = nodeInfo to
                                  in

@@ -7,7 +7,7 @@ sig
 
     type 'a class
 
-    (* Order is arbitrary. Equality respects the unions 
+    (* Order is arbitrary. Equality respects the unions
        that have been made, of course. *)
     val compare : 'a class * 'a class -> order
     val eq : 'a class * 'a class -> bool

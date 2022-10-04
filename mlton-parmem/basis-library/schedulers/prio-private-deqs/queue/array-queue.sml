@@ -37,7 +37,7 @@ struct
 
   fun size _ =
     raise Fail "ArrayQueue.size"
-    
+
   fun linsert (ary, i, x) =
     Array.update (ary, i, x :: Array.sub (ary, i))
 
@@ -80,7 +80,7 @@ struct
           ; SOME e
           )
       | [] =>
-          
+
 
   val choose : t -> task option
   val split : t -> task_set option

@@ -20,7 +20,7 @@ sig
     val botname : string
     val bot : IL.prio
 
-    (* wrap with declarations and imports needed 
+    (* wrap with declarations and imports needed
        by the compiler (bool, exceptions) *)
      val wrap : EL.prog -> EL.prog
 

@@ -5,7 +5,7 @@
 
 
 
-structure KeyInt : Key = 
+structure KeyInt : Key =
    struct
       type Key = int
 
@@ -15,7 +15,7 @@ structure KeyInt : Key =
       val toString = Int.toString
    end
 
-structure IntDict = Dict (structure Key = KeyInt) 
-structure IntSymTab = SymTable (structure Key = KeyInt) 
+structure IntDict = Dict (structure Key = KeyInt)
+structure IntSymTab = SymTable (structure Key = KeyInt)
 
 

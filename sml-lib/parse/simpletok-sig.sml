@@ -4,7 +4,7 @@
    write your own... *)
 
 (* The tokenizer makes no attempt to report that your language is ambiguous,
-   useless, etc. 
+   useless, etc.
 
  *)
 
@@ -12,11 +12,11 @@ signature SIMPLETOK =
 sig
 
   type 'a tokenizer
-    
+
   (* Allow decimal integers, 0xHEX and 0bBINARY *)
   datatype intstyle =
       ISStandard
-    | ISHex 
+    | ISHex
     | ISBinary
 
   (* Can string literals span multiple lines? *)
@@ -30,7 +30,7 @@ sig
     | CSLine of string
 
 
-  (* Only one way to parse floating point constants. 
+  (* Only one way to parse floating point constants.
      XXX It's not implemented yet. *)
   datatype floatstyle =
       FSStandard
@@ -38,8 +38,8 @@ sig
   (* XXX not implemented. *)
   datatype charstyle =
       CHSPrefix of char
-    | CHSQuoted of char 
-    | CHSBracketed of string * string 
+    | CHSQuoted of char
+    | CHSBracketed of string * string
 
   exception SimpleTok of string
 
@@ -57,10 +57,10 @@ sig
   (* setint intmaker styles negation-character
 
      Take a style and change the way it tokenizes ints. *)
-  val setint : 'a tokenizer -> (int -> 'a) -> 
-               intstyle list -> char option -> 
+  val setint : 'a tokenizer -> (int -> 'a) ->
+               intstyle list -> char option ->
                   'a tokenizer
-  
+
   val settokens : 'a tokenizer -> (string * 'a) list -> 'a tokenizer
 
   val setother : 'a tokenizer -> (string -> 'a) -> 'a tokenizer

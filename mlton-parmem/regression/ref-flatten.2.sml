@@ -22,6 +22,6 @@ val A (w, w', _) = Array.sub (a, 0)
 
 val _ = print (concat [Word16.toString (!w), " ",
                        Word16.toString (!w'), "\n"])
-         
-                           
-                                      
+
+
+

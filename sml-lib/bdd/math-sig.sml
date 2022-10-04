@@ -15,7 +15,7 @@ sig
   val atan2 : real * real -> real
   val abs : real -> real
 
-  (* 2D column vector. Mutable, for porting purposes. 
+  (* 2D column vector. Mutable, for porting purposes.
      Most of the code does not make use of the fact
      that the vectors are mutable, so it would be good
      to make them immutable, which is more idiomatic
@@ -63,7 +63,7 @@ sig
   type mat22
   val mat22cols : vec2 * vec2 -> mat22
   val mat22copy : mat22 -> mat22
-  val mat22with : real * real * 
+  val mat22with : real * real *
                   real * real -> mat22
   (* Construct this matrix using an angle (radians).
      This matrix becomes an orthonormal rotation matrix. *)
@@ -166,9 +166,9 @@ sig
      not coincide with the center of mass. However, to support dynamics
      we must interpolate the center of mass position. *)
   type sweep
-      
+
   val sweep : { (* local center of mass position *)
-                local_center : vec2, 
+                local_center : vec2,
                 (* center world positions *)
                 c0 : vec2,
                 c : vec2,
@@ -185,7 +185,7 @@ sig
 
   val sweep_set_a : sweep * real -> unit
   val sweep_set_c : sweep * vec2 -> unit
-  val sweep_set_a0 : sweep * real -> unit  
+  val sweep_set_a0 : sweep * real -> unit
   val sweep_set_c0 : sweep * vec2 -> unit
   val sweep_set_localcenter : sweep * vec2 -> unit
 
@@ -196,7 +196,7 @@ sig
   val sweeplocalcenter : sweep -> vec2
 
   (* Get the interpolated transform at a specific time.
-     alpha is a factor in [0,1], where 0 indicates t0. 
+     alpha is a factor in [0,1], where 0 indicates t0.
      Modifies the transform. *)
   val sweep_gettransform : sweep * transform * real -> unit
   val sweep_transform : sweep * real -> transform

@@ -19,18 +19,18 @@ fun foldR f b [] = b
 
 fun curry f x y = f(x,y)
 
-datatype 'a Option = None | Some of 'a 
+datatype 'a Option = None | Some of 'a
 
 
-datatype 'a tree = 
-    Lf 
+datatype 'a tree =
+    Lf
   | Br of 'a * 'a tree * 'a tree
 
 fun max(i:int, j) = if i>j then i else j
 fun search p Lf = false
-  | search p (Br(x,t1,t2)) = 
+  | search p (Br(x,t1,t2)) =
       if p x then true
-      else search (fn y => y=x orelse p y) t1 orelse 
+      else search (fn y => y=x orelse p y) t1 orelse
            search (fn y => y=x orelse p y) t2
 
 fun mk_tree 0 = Lf

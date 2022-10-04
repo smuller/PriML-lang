@@ -15,10 +15,10 @@ sig
     val finalize_evars : unit -> unit
 
     (* unify context location message actual expected *)
-    val unify : Context.context -> Pos.pos -> string -> 
+    val unify : Context.context -> Pos.pos -> string ->
                     IL.typ -> IL.typ -> unit
 
-    val unifyp : Context.context -> Pos.pos -> string -> 
+    val unifyp : Context.context -> Pos.pos -> string ->
                      IL.prio -> IL.prio -> unit
 
     (* check_constraint context location p1 <= p2 *)
@@ -35,26 +35,26 @@ sig
     val newstr : string -> string
 
     (* polygen sctx t atworld
-       
+
        perform polymorphic generalization on a type, for
        both types and worlds.
 
        If t has unset type or world evars that do not appear
        anywhere in the context sctx, then they will be
        generalized. We never generalize the atworld, because
-       that cannot be forall-quantified. Instead use polywgen 
+       that cannot be forall-quantified. Instead use polywgen
        below.
 
        returns a new generalized type along with the bound
        type variables and world variables. *)
     val polygen : Context.context -> IL.typ -> (* IL.prio ->  *)
-                        { t : IL.typ, 
-                          tl : Variable.var list, 
+                        { t : IL.typ,
+                          tl : Variable.var list,
                           wl : Variable.var list }
 
     (* polygen sctx w
 
-       If the world is an unbound evar that can be safely generalized (see above), 
+       If the world is an unbound evar that can be safely generalized (see above),
        then instantiate it and return the new variable. Otherwise, return NONE. *)
     val polywgen : Context.context -> IL.prio -> Variable.var option
 

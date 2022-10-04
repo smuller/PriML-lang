@@ -47,8 +47,8 @@
 (*--------------------------------------------------------------------------*)
 signature UtilTime =
    sig
-      val time  : ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time, gc:Time.time} 
-      val timeN : int -> ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time, gc:Time.time} 
+      val time  : ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time, gc:Time.time}
+      val timeN : int -> ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time, gc:Time.time}
    end
 
 structure UtilTime : UtilTime =
@@ -61,11 +61,11 @@ structure UtilTime : UtilTime =
                          val ptime = Timer.checkCPUTimer timer
                      in (y,ptime)
                      end
-                  
+
       (*--------------------------------------------------------------------*)
       (* run f n times on x, and measure the runtime. return the time.      *)
       (*--------------------------------------------------------------------*)
-      fun timeN n f x = 
+      fun timeN n f x =
          let fun iter m = if m<=1 then f x else (ignore (f x); iter (m-1))
          in time iter n
          end
@@ -96,7 +96,7 @@ signature UtilString =
       val Bool2xString   : string * string -> bool -> string
       val Bool2String    : bool -> string
 
-      val Option2xString : string * (('a -> string) -> 'a -> string) 
+      val Option2xString : string * (('a -> string) -> 'a -> string)
          -> ('a -> string) -> 'a option -> string
       val Option2String0 : ('a -> string) -> 'a option -> string
       val Option2String  : ('a -> string) -> 'a option -> string
@@ -110,14 +110,14 @@ signature UtilString =
    end
 
 structure UtilString : UtilString =
-   struct 
+   struct
       fun quoteString q s = let val quote = String.implode [q] in quote^s^quote end
 
       (*--------------------------------------------------------------------*)
       (* generate a string with the ordinal number of n, by appending       *)
       (* "st", "nd", "rd" or "th" to the number.                            *)
       (*--------------------------------------------------------------------*)
-      fun numberNth n = 
+      fun numberNth n =
          let val suffix = case n mod 9
                             of 1 => "st"
                              | 2 => "nd"
@@ -131,30 +131,30 @@ structure UtilString : UtilString =
       (* vocal in the alphabet? (l~ell->true, k~kay->false)                 *)
       (*--------------------------------------------------------------------*)
       fun vocalLetter c =
-         case Char.toLower c 
-           of #"a" => true 
-            | #"f" => true 
-            | #"h" => true 
-            | #"i" => true 
-            | #"l" => true 
-            | #"m" => true 
-            | #"n" => true 
-            | #"o" => true 
-            | #"r" => true 
-            | #"s" => true 
-            | #"x" => true 
+         case Char.toLower c
+           of #"a" => true
+            | #"f" => true
+            | #"h" => true
+            | #"i" => true
+            | #"l" => true
+            | #"m" => true
+            | #"n" => true
+            | #"o" => true
+            | #"r" => true
+            | #"s" => true
+            | #"x" => true
             | #"8" => true
             | _    => false
-              
+
       (*--------------------------------------------------------------------*)
       (* is character c a vocal?                                            *)
       (*--------------------------------------------------------------------*)
-      fun isVocal c = 
+      fun isVocal c =
          case Char.toLower c
-           of #"a" => true 
-            | #"e" => true 
-            | #"i" => true 
-            | #"o" => true 
+           of #"a" => true
+            | #"e" => true
+            | #"i" => true
+            | #"o" => true
             | #"u" => true
             | _    => false
 
@@ -174,15 +174,15 @@ structure UtilString : UtilString =
       (* word uninvented, but sufficient for most cases.                    *)
       (* (Is english pronounciation decidable at all?)                      *)
       (*--------------------------------------------------------------------*)
-      fun extendsAtoAn word = 
-         case String.explode word 
+      fun extendsAtoAn word =
+         case String.explode word
            of nil => false
             | [c] => vocalLetter c
-            | c1::c2::cs => if not (Char.isLower c1 orelse Char.isLower c2) 
+            | c1::c2::cs => if not (Char.isLower c1 orelse Char.isLower c2)
                                then vocalLetter c1
                             else case Char.toLower c1
-                                   of #"a" => true 
-                                    | #"i" => true 
+                                   of #"a" => true
+                                    | #"i" => true
                                     | #"o" => true
                                     | #"e" => Char.toLower c2 <> #"u"
                                     | #"u" => if isVocal c2 then false
@@ -190,7 +190,7 @@ structure UtilString : UtilString =
                                                       of nil => true
                                                        | c3::_ => Char.toLower c3 <> #"i")
                                     | _ => false
-                                                 
+
       (*--------------------------------------------------------------------*)
       (* add an undefinite article to a word.                               *)
       (*--------------------------------------------------------------------*)
@@ -202,7 +202,7 @@ structure UtilString : UtilString =
       fun nCharsC c n = if n>0 then c::nCharsC c (n-1) else nil
       fun nChars c n = String.implode (nCharsC c n)
       val nBlanks = nChars #" "
-         
+
       (*--------------------------------------------------------------------*)
       (* add a minimal number of characters c to the left/right of a string *)
       (* in order to make its length at least n.                            *)
@@ -211,21 +211,21 @@ structure UtilString : UtilString =
       fun padxRight c (s,n) = s^(nChars c (n-String.size s))
       val padLeft  = padxLeft  #" "
       val padRight  = padxRight  #" "
-         
+
       (*--------------------------------------------------------------------*)
       (* break a string into several lines of length width.                 *)
       (*--------------------------------------------------------------------*)
       fun breakLines width str =
-         let 
+         let
             val tokens = String.tokens (fn c => #" "=c) str
-            fun makeLine(toks,lines) = if null toks then lines 
+            fun makeLine(toks,lines) = if null toks then lines
                                        else (String.concat (rev toks))::lines
             fun doit w (toks,lines) nil = makeLine(toks,lines)
-              | doit w (toks,lines) (one::rest) = 
-               let 
+              | doit w (toks,lines) (one::rest) =
+               let
                   val l = String.size one
                   val w1 = w+l
-               in 
+               in
                   if w1<width then doit (w1+1) (" "::one::toks,lines) rest
                   else if w1=width then doit 0 (nil,makeLine(one::toks,lines)) rest
                   else if l>=width then doit 0 (nil,one::makeLine(toks,lines)) rest
@@ -237,11 +237,11 @@ structure UtilString : UtilString =
       (*--------------------------------------------------------------------*)
       (* convert the first/all characters of a string to upper case         *)
       (*--------------------------------------------------------------------*)
-      fun toUpperFirst str = 
+      fun toUpperFirst str =
          case String.explode str
            of nil => ""
             | c::cs => String.implode (Char.toUpper c::cs)
-      fun toUpperString str = 
+      fun toUpperString str =
          String.implode(map Char.toUpper (String.explode str))
 
       (*--------------------------------------------------------------------*)
@@ -250,20 +250,20 @@ structure UtilString : UtilString =
       val Int2String = Int.toString
       val Char2String = Char.toString
       fun Unit2String() = "()"
-         
+
       (*--------------------------------------------------------------------*)
       (* return a string representation of a boolean.                       *)
       (*--------------------------------------------------------------------*)
       fun Bool2xString (t,f) b = if b then t else f
       val Bool2String = Bool2xString ("true","false")
-         
+
       (*--------------------------------------------------------------------*)
       (* return a string representation of an option.                       *)
       (* the first arg is a string for the NONE case, the second a function *)
       (* that converts x to a string, given a function for doing so.        *)
       (*--------------------------------------------------------------------*)
       fun Option2xString (none,Some2String) x2String opt =
-         case opt 
+         case opt
            of NONE => none
             | SOME x => Some2String x2String x
       fun Option2String0 x2String = Option2xString ("",fn f => fn x => f x) x2String
@@ -273,8 +273,8 @@ structure UtilString : UtilString =
       (* return a string representation of list; start with pre, separate   *)
       (* with sep and finish with post; use X2String for each element.      *)
       (*--------------------------------------------------------------------*)
-      fun List2xString (pre,sep,post) X2String nil = pre^post 
-        | List2xString (pre,sep,post) X2String l   = 
+      fun List2xString (pre,sep,post) X2String nil = pre^post
+        | List2xString (pre,sep,post) X2String l   =
           let fun doit nil    _   = [post]
                 | doit (x::r) str = str::X2String x::doit r sep
           in String.concat (doit l pre)
@@ -295,12 +295,12 @@ structure UtilString : UtilString =
       (* a compiler bug in smlnj 110 makes the following uncompilable: *)
       (* fun List2String X2String xs = List2xString ("[",",","]") X2String xs *)
       (* fun List2String0 X2String xs = List2xString (""," ","") X2String xs *)
-   
+
       (*--------------------------------------------------------------------*)
       (* return a string representation of list; start with pre, separate   *)
       (* with sep and finish with post; use X2String for each element.      *)
       (*--------------------------------------------------------------------*)
-      fun Vector2xString (pre,sep,post) X2String vec = 
+      fun Vector2xString (pre,sep,post) X2String vec =
          if Vector.length vec=0 then pre^post
          else String.concat
             (pre::X2String(Vector.sub(vec,0))::
@@ -316,8 +316,8 @@ signature UtilCompare =
       val comparePair   : 'a Comparer * 'b Comparer -> ('a * 'b) Comparer
       val compareTriple : 'a Comparer * 'b Comparer * 'c Comparer -> ('a * 'b * 'c) Comparer
 
-      val compareOption : 'a Comparer -> 'a option Comparer 
-      val compareList   : 'a Comparer -> 'a list Comparer 
+      val compareOption : 'a Comparer -> 'a option Comparer
+      val compareList   : 'a Comparer -> 'a list Comparer
       val compareVector : 'a Comparer -> 'a vector Comparer
 
       val compareInt       : int Comparer
@@ -325,48 +325,48 @@ signature UtilCompare =
       val compareIntTriple : (int * int * int) Comparer
 
       val compareWord       : word Comparer
-      val compareWordPair   : (word * word) Comparer  
-      val compareWordTriple : (word * word * word) Comparer 
+      val compareWordPair   : (word * word) Comparer
+      val compareWordTriple : (word * word * word) Comparer
    end
 
 structure UtilCompare : UtilCompare =
    struct
       type 'a Comparer = 'a * 'a -> order
 
-      fun comparePair (compareA,compareB) ((a1,b1),(a2,b2)) = 
+      fun comparePair (compareA,compareB) ((a1,b1),(a2,b2)) =
          case compareA(a1,a2)
            of EQUAL => compareB(b1,b2)
-            | order => order 
-      fun compareTriple (compareA,compareB,compareC) ((a1,b1,c1),(a2,b2,c2)) = 
+            | order => order
+      fun compareTriple (compareA,compareB,compareC) ((a1,b1,c1),(a2,b2,c2)) =
          case compareA(a1,a2)
            of EQUAL => (case compareB(b1,b2)
                           of EQUAL => compareC(c1,c2)
-                           | order => order) 
-            | order => order 
+                           | order => order)
+            | order => order
 
       val compareInt = Int.compare
       fun compareIntPair((x1,y1),(x2,y2)) =
-         case Int.compare(x1,x2) 
+         case Int.compare(x1,x2)
            of EQUAL => Int.compare (y1,y2)
-            | order => order 
+            | order => order
       fun compareIntTriple((x1,y1,z1),(x2,y2,z2)) =
-         case Int.compare(x1,x2) 
+         case Int.compare(x1,x2)
            of EQUAL => (case Int.compare (y1,y2)
                           of EQUAL => Int.compare (z1,z2)
                            | order => order)
-            | order => order 
+            | order => order
 
       val compareWord = Word.compare
       fun compareWordPair((x1,y1),(x2,y2)) =
-         case Word.compare(x1,x2) 
+         case Word.compare(x1,x2)
            of EQUAL => Word.compare (y1,y2)
-            | order => order 
+            | order => order
       fun compareWordTriple((x1,y1,z1),(x2,y2,z2)) =
-         case Word.compare(x1,x2) 
+         case Word.compare(x1,x2)
            of EQUAL => (case Word.compare (y1,y2)
                           of EQUAL => Word.compare (z1,z2)
                            | order => order)
-            | order => order 
+            | order => order
 
       fun compareOption compareA opts =
          case opts
@@ -375,7 +375,7 @@ structure UtilCompare : UtilCompare =
             | (SOME x,NONE) => GREATER
             | (SOME x,SOME y) => compareA(x,y)
 
-      fun compareList compA ll = 
+      fun compareList compA ll =
          let fun doit (nil,nil) = EQUAL
                | doit (nil,_) = LESS
                | doit (_,nil) = GREATER
@@ -384,17 +384,17 @@ structure UtilCompare : UtilCompare =
                                              | order => order
          in doit ll
          end
-      
+
       fun compareVector compA (vec1,vec2) =
          let val (l,l2) = (Vector.length vec1,Vector.length vec2)
          in case Int.compare(l,l2)
               of EQUAL => let fun doit i = if i>=l then EQUAL
                                            else case compA(Vector.sub(vec1,i),Vector.sub(vec2,i))
                                                   of EQUAL => doit (i+1)
-                                                   | order => order 
+                                                   | order => order
                           in doit 0
                           end
-               | order => order 
+               | order => order
          end
    end
 
@@ -406,8 +406,8 @@ signature UtilHash =
       val hashTriple : ('a -> word) * ('b -> word) * ('c -> word) -> 'a * 'b * 'c -> word
 
       val hashOption : ('a -> word) -> 'a option -> word
-      val hashList   : ('a -> word) -> 'a list -> word 
-      val hashVector : ('a -> word) -> 'a vector -> word 
+      val hashList   : ('a -> word) -> 'a list -> word
+      val hashVector : ('a -> word) -> 'a vector -> word
 
       val hashString : string -> word
 
@@ -422,24 +422,24 @@ signature UtilHash =
 
 structure UtilHash : UtilHash =
    struct
-      fun hashPair (hashA,hashB) (a,b) = 
+      fun hashPair (hashA,hashB) (a,b) =
          0w1327 * hashA a + 0w3853 * hashB b
-      fun hashTriple (hashA,hashB,hashC) (a,b,c) = 
+      fun hashTriple (hashA,hashB,hashC) (a,b,c) =
          0w1327 * hashA a + 0w3853 * hashB b + 0w2851 * hashC c
 
       val hashInt =
          Word.fromInt
-      fun hashIntPair (i,j) = 
+      fun hashIntPair (i,j) =
          0w1327 * Word.fromInt i + 0w3853 * Word.fromInt j
-      fun hashIntTriple (i,j,k) = 
+      fun hashIntTriple (i,j,k) =
          0w1327 * Word.fromInt i + 0w3853 * Word.fromInt j + 0w2851 * Word.fromInt k
 
       fun hashWord w = w
       fun hashWordPair (i,j) = 0w1327 * i + 0w3853 * j
       fun hashWordTriple (i,j,k) = 0w1327 * i + 0w3853 * j + 0w2851 * k
 
-      val hashChar = Word.fromInt o ord 
-      fun hashString s = 
+      val hashChar = Word.fromInt o ord
+      fun hashString s =
          case String.size s
            of 0 => 0wx0
             | 1 => 0w1 + hashChar(String.sub(s,0))
@@ -452,20 +452,20 @@ structure UtilHash : UtilHash =
                        val wn = String.sub(s,n-1)
                    in 0w3 + hashChar w1 * 0wx3853 + hashChar w2 * 0wx1327 + hashChar wn
                    end
-         
 
-      fun hashOption hashA opt = 
+
+      fun hashOption hashA opt =
          case opt
            of NONE => 0w0
             | SOME a => 0w1 + hashA a
 
-      fun hashList hashA l = 
+      fun hashList hashA l =
          case l
            of nil => 0wx0
             | [a] => 0w1 + hashA a
             | a1::a2::_ => 0w2 + 0w3853 * hashA a1 + 0wx1327 * hashA a2
 
-      fun hashVector hashA cv = 
+      fun hashVector hashA cv =
          case Vector.length cv
            of 0 => 0wx0
             | 1 => 0w1 + hashA(Vector.sub(cv,0))
@@ -489,9 +489,9 @@ structure UtilHash : UtilHash =
 (* In order to be used as a dictinary/symbol table key, a type must have a  *)
 (* null value, hash to words, must be comparable and printable.             *)
 (*--------------------------------------------------------------------------*)
-signature Key = 
+signature Key =
    sig
-      type Key 
+      type Key
 
       val null     : Key
       val hash     : Key -> word
@@ -532,22 +532,22 @@ structure UtilInt : UtilInt =
       (* apply f to each number in [n...m]                                  *)
       (*--------------------------------------------------------------------*)
       fun appInterval f (n,m) =
-         let fun doit i = 
-            if i>m then () 
+         let fun doit i =
+            if i>m then ()
             else let val _ = f i
                  in doit (i+1)
                  end
          in doit n
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* insert an integer into a sorted list without duplicates.           *)
       (*--------------------------------------------------------------------*)
-      fun insertInt (x:int,l) = 
+      fun insertInt (x:int,l) =
          let fun go nil = [x]
                | go (l as y::ys) = case Int.compare (x,y)
                                      of LESS => x::l
-                                      | EQUAL => l 
+                                      | EQUAL => l
                                       | GREATER =>  y::go ys
          in go l
          end
@@ -555,12 +555,12 @@ structure UtilInt : UtilInt =
       (*--------------------------------------------------------------------*)
       (* insert an integer into a sorted list if it is not yet in it.       *)
       (*--------------------------------------------------------------------*)
-      fun insertNewInt (x:int,l) = 
-         let 
+      fun insertNewInt (x:int,l) =
+         let
             fun go nil = SOME [x]
               | go (l as y::ys) = case Int.compare (x,y)
                                      of LESS => SOME(x::l)
-                                      | EQUAL => NONE 
+                                      | EQUAL => NONE
                                       | GREATER => case go ys
                                                      of NONE => NONE
                                                       | SOME xys => SOME(y::xys)
@@ -570,16 +570,16 @@ structure UtilInt : UtilInt =
       (*--------------------------------------------------------------------*)
       (* compute the power to the base of two.                              *)
       (*--------------------------------------------------------------------*)
-      fun powerOfTwo n = 
+      fun powerOfTwo n =
          if n=0 then 1
          else if n mod 2=0 then let val x=powerOfTwo (n div 2) in x*x end
               else let val x=powerOfTwo (n-1) in 2*x end
-           
+
       (*--------------------------------------------------------------------*)
       (* find the smallest p with 2^p >= n.                                 *)
       (*--------------------------------------------------------------------*)
-      fun nextPowerTwo n = 
-         let fun doit (p,m) = 
+      fun nextPowerTwo n =
+         let fun doit (p,m) =
             if m>=n then p
             else if m*m<2*n then doit (2*p,m*m)
                  else doit (1+p,2*m)
@@ -593,15 +593,15 @@ structure UtilInt : UtilInt =
 
 
 
-signature UtilError = 
+signature UtilError =
    sig
       exception InternalError of string * string * string
       exception NoSuchFile of string * string
 
-      val formatMessage : int * int -> string list -> string 
+      val formatMessage : int * int -> string list -> string
    end
 
-structure UtilError : UtilError = 
+structure UtilError : UtilError =
    struct
       open UtilString
 
@@ -609,18 +609,18 @@ structure UtilError : UtilError =
       exception NoSuchFile of string * string
 
       fun formatMessage (indentWidth,lineWidth) strs =
-         let 
+         let
             val indent = nBlanks indentWidth
             val nl = "\n"^indent
             val blank = " "
-            val dot = "." 
+            val dot = "."
 
             fun isSep c = #" "=c orelse #"\n"=c orelse #"\t"=c
 
             fun go (w,yet) nil = List.rev ("\n"::yet)
-              | go (w,yet) (x::xs) = 
-               let 
-                  val y = if null xs then x^dot else x 
+              | go (w,yet) (x::xs) =
+               let
+                  val y = if null xs then x^dot else x
                   val l = String.size y
                   val w1 = w+l
                   val (w2,yet2) = if w1<=lineWidth then (w1,y::yet)
@@ -630,10 +630,10 @@ structure UtilError : UtilError =
                                         else (indentWidth,nl::yet2))
                in go (w3,yet3) xs
                end
-            
+
             val tokens = List.concat (map (String.tokens isSep) strs)
             val fragments = go (0,nil) tokens
-         in 
+         in
             String.concat fragments
          end
    end
@@ -656,7 +656,7 @@ structure UtilError : UtilError =
 (*   makeDict    : none                                                     *)
 (*   nullDict    : none                                                     *)
 (*   printDict   : none                                                     *)
-(*   usedIndices : none                                                     *) 
+(*   usedIndices : none                                                     *)
 (*--------------------------------------------------------------------------*)
 (* A dictionary maps keys to consecutive integers and additionally holds    *)
 (* a value of arbitrary type for each entry.                                *)
@@ -665,23 +665,23 @@ signature Dict =
    sig
       type Key
       type 'a Dict
-         
+
       exception NoSuchIndex
 
       val nullDict   : string * 'a -> 'a Dict
       val makeDict   : string * int * 'a -> 'a Dict
       val clearDict  : 'a Dict * int option -> unit
-         
+
       val hasIndex   : 'a Dict * Key -> int option
       val getIndex   : 'a Dict * Key -> int
       val getKey     : 'a Dict * int -> Key
 
       val getByIndex : 'a Dict * int -> 'a
       val getByKey   : 'a Dict * Key -> 'a
-         
-      val setByIndex : 'a Dict * int * 'a -> unit 
+
+      val setByIndex : 'a Dict * int * 'a -> unit
       val setByKey   : 'a Dict * Key * 'a -> unit
-         
+
       val usedIndices : 'a Dict -> int
 
       val extractDict : 'a Dict -> (Key * 'a) array
@@ -693,7 +693,7 @@ functor Dict (structure Key : Key) : Dict =
       open UtilError UtilInt
 
       type Key = Key.Key
-         
+
       exception NoSuchIndex
 
       (*--------------------------------------------------------------------*)
@@ -714,29 +714,29 @@ functor Dict (structure Key : Key) : Dict =
       (* buckets are unsorted - they are probably small, so comparing the   *)
       (* keys might be overkill.                                            *)
       (*--------------------------------------------------------------------*)
-      fun addToBucket (ni as (key,_),bucket) = 
-         let 
+      fun addToBucket (ni as (key,_),bucket) =
+         let
             fun doit nil = [ni]
-              | doit (nis as (ni' as (key',_))::rest) = 
+              | doit (nis as (ni' as (key',_))::rest) =
                case Key.compare (key',key)
                  of LESS    => ni'::doit rest
-                  | EQUAL   => ni::rest 
+                  | EQUAL   => ni::rest
                   | GREATER => ni::nis
-         in 
+         in
             doit bucket
          end
-      fun searchBucket (key,bucket) = 
-         let 
+      fun searchBucket (key,bucket) =
+         let
             fun doit nil = NONE
-              | doit ((key',i)::rest) = 
+              | doit ((key',i)::rest) =
                case Key.compare (key',key)
                  of LESS    => doit rest
-                  | EQUAL   => SOME i 
+                  | EQUAL   => SOME i
                   | GREATER => NONE
-         in 
+         in
             doit bucket
          end
-                
+
       (*--------------------------------------------------------------------*)
       (* a dictionary consists of                                           *)
       (* - a string desc saying what is stored in this dictionary           *)
@@ -753,7 +753,7 @@ functor Dict (structure Key : Key) : Dict =
                       hashTab : Bucket array ref,
                       hashFun : (Key -> int) ref,
                       width   : int ref,  (* bit width *)
-                      size    : int ref,  (* tab size=2^width, hash size is double *) 
+                      size    : int ref,  (* tab size=2^width, hash size is double *)
                       count   : int ref,  (* number of entries *)
                       def     : 'a        (* default for values *)
                       }
@@ -770,7 +770,7 @@ functor Dict (structure Key : Key) : Dict =
       (* how many entries are in the dictionary?                            *)
       (*--------------------------------------------------------------------*)
       fun usedIndices ({count,...}:'a Dict) = !count
-         
+
       (*--------------------------------------------------------------------*)
       (* what is the table load, i.e. percentage of number of entries to    *)
       (* hash table size = 100*count/(2*size) = 50*count/size.              *)
@@ -790,22 +790,22 @@ functor Dict (structure Key : Key) : Dict =
       (* this is a simple strategy but experiences good results.            *)
       (*--------------------------------------------------------------------*)
       fun square (x:word) = Word.*(x,x)
-      fun hashKey(half,mask) x = 
+      fun hashKey(half,mask) x =
          Word.toInt(Word.andb(mask,Word.>>(square(Key.hash x),half)))
       fun makeHashFun(size,width) =
-         let 
-            val mask = 0w2*Word.fromInt size-0w1 
+         let
+            val mask = 0w2*Word.fromInt size-0w1
             val half = Word.fromInt((width+1) div 2)
-         in 
+         in
             hashKey(half,mask)
          end
-            
+
       (*--------------------------------------------------------------------*)
       (* create a new dictionary for 2^w, but at least 2 and at most 2^m    *)
       (* entries, where m is the value of MAX_WIDTH.                        *)
       (*--------------------------------------------------------------------*)
-      fun makeDict (desc,w,def) = 
-         let 
+      fun makeDict (desc,w,def) =
+         let
             val width= Int.min(Int.max(1,w),MAX_WIDTH)
             val size = Word.toInt(Word.<<(0w1,Word.fromInt(width-1)))
          in {desc    = desc,
@@ -817,24 +817,24 @@ functor Dict (structure Key : Key) : Dict =
              count   = ref 0,
              def     = def}
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* clear a dictionary. If the 2nd arg is SOME w, use w for resizing.  *)
       (*--------------------------------------------------------------------*)
-      fun clearDict (dict:'a Dict,widthOpt) = 
-         case widthOpt 
-           of NONE => 
-              let 
+      fun clearDict (dict:'a Dict,widthOpt) =
+         case widthOpt
+           of NONE =>
+              let
                  val {tab=ref tab,hashTab=ref hashTab,size,count,def,...} = dict
                  val _ = appInterval (fn i => Array.update(tab,i,(Key.null,def))) (0,!count-1)
                  val _ = appInterval (fn i => Array.update(hashTab,i,nullBucket)) (0,!size*2-1)
-              in 
+              in
                  count := 0
               end
-            | SOME w => 
-              let 
+            | SOME w =>
+              let
                  val {tab,hashTab,hashFun,width,size,count,def,...} = dict
-                 val newWidth = Int.min(Int.max(1,w),MAX_WIDTH)   
+                 val newWidth = Int.min(Int.max(1,w),MAX_WIDTH)
                  val newSize  = Word.toInt(Word.<<(0w1,Word.fromInt(newWidth-1)))
                  val _ = tab     := (Array.array(newSize,(Key.null,def)))
                  val _ = hashTab := (Array.array(2*newSize,nullBucket))
@@ -844,33 +844,33 @@ functor Dict (structure Key : Key) : Dict =
               in
                  count := 0
               end
-      
+
       (*--------------------------------------------------------------------*)
       (* grow a dictionary to the double size. raise InternalError if the   *)
       (* dictionary already has maximal size.                               *)
       (*--------------------------------------------------------------------*)
-      fun growDictionary ({desc,tab,hashTab,hashFun,width,size,count,def}:'a Dict) = 
-         let 
+      fun growDictionary ({desc,tab,hashTab,hashFun,width,size,count,def}:'a Dict) =
+         let
             val oldTab = !tab
-            val _ = if !width < MAX_WIDTH then width := !width+1 
-                    else raise InternalError 
+            val _ = if !width < MAX_WIDTH then width := !width+1
+                    else raise InternalError
                        ("Dict","growDictionary",
                         String.concat ["growing the ",desc," dictionary ",
                                        "exceeded the system maximum size of ",
-                                       Int.toString Array.maxLen," for arrays"]) 
+                                       Int.toString Array.maxLen," for arrays"])
             val _ = size := !size*2
             val _ = tab  := Array.array(!size,(Key.null,def))
             val _ = hashTab := Array.array(!size*2,nullBucket)
             val _ = hashFun := makeHashFun(!size,!width)
 
-            fun addTo (i,kv as (key,_)) = 
-               let 
+            fun addTo (i,kv as (key,_)) =
+               let
                   val idx = !hashFun key
                   val _ = Array.update(!hashTab,idx,addToBucket((key,i),Array.sub(!hashTab,idx)))
                   val _ = Array.update(!tab,i,kv)
                in ()
                end
-         in 
+         in
             Array.appi addTo (oldTab,0,NONE)
          end
 
@@ -886,11 +886,11 @@ functor Dict (structure Key : Key) : Dict =
       (* dictionary yet, add a new entry with a new index. grow the table   *)
       (* if there is no more free index in the dictionary.                  *)
       (*--------------------------------------------------------------------*)
-      fun getIndex(dict as {tab,hashTab,hashFun,size,count,def,...}:'a Dict,key) = 
-         let 
+      fun getIndex(dict as {tab,hashTab,hashFun,size,count,def,...}:'a Dict,key) =
+         let
             val k = !hashFun key
             val bucket = Array.sub(!hashTab,k)
-         in 
+         in
             case searchBucket(key,bucket)
               of SOME idx => idx
                | NONE => let val idx = !count
@@ -906,15 +906,15 @@ functor Dict (structure Key : Key) : Dict =
                          in idx
                          end
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* does a Key have an entry in a dictionary?                          *)
       (*--------------------------------------------------------------------*)
-      fun hasIndex({hashTab,hashFun,...}:'a Dict,key) = 
-         let 
+      fun hasIndex({hashTab,hashFun,...}:'a Dict,key) =
+         let
             val idx = !hashFun key
             val bucket = Array.sub(!hashTab,idx)
-         in 
+         in
             searchBucket(key,bucket)
          end
 
@@ -930,7 +930,7 @@ functor Dict (structure Key : Key) : Dict =
       (*--------------------------------------------------------------------*)
       fun getByKey(dict,key) =
          getByIndex(dict,getIndex(dict,key))
-      
+
       (*--------------------------------------------------------------------*)
       (* enter a value for index idx.                                       *)
       (*--------------------------------------------------------------------*)
@@ -945,22 +945,22 @@ functor Dict (structure Key : Key) : Dict =
       (*--------------------------------------------------------------------*)
       fun setByKey(dict,key,v) =
          setByIndex(dict,getIndex(dict,key),v)
-      
+
       (*--------------------------------------------------------------------*)
       (* extract the contents of the dictionary to an array.                *)
       (*--------------------------------------------------------------------*)
-      fun extractDict({count,tab,...}:'a Dict) = 
+      fun extractDict({count,tab,...}:'a Dict) =
          Array.tabulate(!count,fn i => Array.sub(!tab,i))
 
       (*--------------------------------------------------------------------*)
       (* print the contents of the dictionary.                              *)
       (*--------------------------------------------------------------------*)
-      fun printDict X2String ({desc,tab,count,...}:'a Dict) = 
+      fun printDict X2String ({desc,tab,count,...}:'a Dict) =
          (print (desc^" dictionary:\n");
-          Array.appi 
+          Array.appi
           (fn (n,(key,value)) =>
-           print ("  "^Int.toString n^": "^Key.toString key^" = "^X2String value^"\n")) 
-          (!tab,0,SOME (!count))) 
+           print ("  "^Int.toString n^": "^Key.toString key^" = "^X2String value^"\n"))
+          (!tab,0,SOME (!count)))
    end
 (* stop of ../../Util/SymDict/dict.sml *)
 (* start of ../../Util/SymDict/symbolTable.sml *)
@@ -988,13 +988,13 @@ signature SymTable =
    sig
       type Key
       type SymTable
-         
+
       exception NoSuchSymbol
 
       val nullSymTable  : string -> SymTable
       val makeSymTable  : string * int -> SymTable
       val clearSymTable : SymTable * int option -> unit
-         
+
       val hasSymIndex   : SymTable * Key -> int option
       val getSymIndex   : SymTable * Key -> int
       val getSymKey     : SymTable * int -> Key
@@ -1002,7 +1002,7 @@ signature SymTable =
 
       val assignSymIndex  : SymTable * Key * int -> unit
       val reserveSymIndex : SymTable -> int
-         
+
       val extractSymTable : SymTable -> Key vector
       val printSymTable   : SymTable -> unit
    end
@@ -1010,7 +1010,7 @@ signature SymTable =
 functor SymTable (structure Key : Key) : SymTable =
    struct
       open UtilError UtilInt
-      
+
       exception NoSuchSymbol
 
       type Key = Key.Key
@@ -1032,29 +1032,29 @@ functor SymTable (structure Key : Key) : SymTable =
       (*--------------------------------------------------------------------*)
       (* buckets are sorted - though they are probably small.               *)
       (*--------------------------------------------------------------------*)
-      fun addToBucket (ni as (key,_),bucket) = 
-         let 
+      fun addToBucket (ni as (key,_),bucket) =
+         let
             fun doit nil = [ni]
-              | doit (nis as (ni' as (key',_))::rest) = 
+              | doit (nis as (ni' as (key',_))::rest) =
                case Key.compare (key',key)
                  of LESS    => ni'::doit rest
-                  | EQUAL   => ni::rest 
+                  | EQUAL   => ni::rest
                   | GREATER => ni::nis
-         in 
+         in
             doit bucket
          end
-      fun searchBucket (key,bucket) = 
-         let 
+      fun searchBucket (key,bucket) =
+         let
             fun doit nil = NONE
-              | doit ((key',i)::rest) = 
+              | doit ((key',i)::rest) =
                case Key.compare (key',key)
                  of LESS    => doit rest
-                  | EQUAL   => SOME i 
+                  | EQUAL   => SOME i
                   | GREATER => NONE
-         in 
+         in
             doit bucket
          end
-                
+
       (*--------------------------------------------------------------------*)
       (* a symbol table consists of                                         *)
       (* - an array tab holding for each index its key                      *)
@@ -1069,7 +1069,7 @@ functor SymTable (structure Key : Key) : SymTable =
                        hash    : Bucket array ref,
                        hashFun : (Key -> int) ref,
                        width   : int ref, (* bit width *)
-                       size    : int ref, (* tab size=2^width, hash size is double *) 
+                       size    : int ref, (* tab size=2^width, hash size is double *)
                        count   : int ref  (* number of entries *)
                        }
 
@@ -1085,7 +1085,7 @@ functor SymTable (structure Key : Key) : SymTable =
       (* how many entries are in the symtable?                              *)
       (*--------------------------------------------------------------------*)
       fun usedSymbols ({count,...}:SymTable) = !count
-         
+
       (*--------------------------------------------------------------------*)
       (* what is the table load, i.e. percentage of number of entries to    *)
       (* hash table size = 100*count/(2*size) = 50*count/size.              *)
@@ -1105,22 +1105,22 @@ functor SymTable (structure Key : Key) : SymTable =
       (* this is a simple strategy but experiences good results.            *)
       (*--------------------------------------------------------------------*)
       fun square (x:word) = Word.*(x,x)
-      fun hashKey(half,mask) x = 
+      fun hashKey(half,mask) x =
          Word.toInt(Word.andb(mask,Word.>>(square(Key.hash x),half)))
       fun makeHashFun(size,width) =
-         let 
-            val mask = Word.fromInt(2*size-1) 
+         let
+            val mask = Word.fromInt(2*size-1)
             val half = Word.fromInt((width+1) div 2)
-         in 
+         in
             hashKey(half,mask)
          end
-            
+
       (*--------------------------------------------------------------------*)
       (* create a new symtable for 2^w, but at least 2 and at most 2^m      *)
       (* entries, where m is the value of MAX_WIDTH.                        *)
       (*--------------------------------------------------------------------*)
-      fun makeSymTable (desc,w) = 
-         let 
+      fun makeSymTable (desc,w) =
+         let
             val width= Int.min(Int.max(1,w),MAX_WIDTH)
             val size = Word.toInt(Word.<<(0w1,Word.fromInt(width-1)))
          in {desc    = desc,
@@ -1131,24 +1131,24 @@ functor SymTable (structure Key : Key) : SymTable =
              size    = ref size,
              count   = ref 0}
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* clear a dictionary. If the 2nd arg is SOME w, use w for resizing.  *)
       (*--------------------------------------------------------------------*)
-      fun clearSymTable (symTab:SymTable,widthOpt) = 
-         case widthOpt 
-           of NONE => 
-              let 
+      fun clearSymTable (symTab:SymTable,widthOpt) =
+         case widthOpt
+           of NONE =>
+              let
                  val {tab=ref tab,hash=ref hash,size,count,...} = symTab
                  val _ = appInterval (fn i => Array.update(tab,i,Key.null)) (0,!count-1)
                  val _ = appInterval (fn i => Array.update(hash,i,nullBucket)) (0,!size*2-1)
-              in 
+              in
                  count := 0
               end
-            | SOME w => 
-              let 
+            | SOME w =>
+              let
                  val {tab,hash,hashFun,width,size,count,...} = symTab
-                 val newWidth = Int.min(Int.max(1,w),MAX_WIDTH)   
+                 val newWidth = Int.min(Int.max(1,w),MAX_WIDTH)
                  val newSize  = Word.toInt(Word.<<(0w1,Word.fromInt(newWidth-1)))
                  val _ = tab     := (Array.array(newSize,Key.null))
                  val _ = hash    := (Array.array(2*newSize,nullBucket))
@@ -1163,23 +1163,23 @@ functor SymTable (structure Key : Key) : SymTable =
       (* grow a symtable to the double size. raise InternalError if the     *)
       (* table already has maximal size.                                    *)
       (*--------------------------------------------------------------------*)
-      fun growTable ({desc,tab,hash,hashFun,width,size,count}:SymTable) = 
-         let 
-            val newWidth = if !width < MAX_WIDTH then !width+1 
-                           else raise InternalError 
+      fun growTable ({desc,tab,hash,hashFun,width,size,count}:SymTable) =
+         let
+            val newWidth = if !width < MAX_WIDTH then !width+1
+                           else raise InternalError
                               ("SymTable","growTable",
                                String.concat ["growing the ",desc," symbol table ",
                                               "exceeded the system maximum size of ",
-                                              Int.toString Array.maxLen," for arrays"]) 
+                                              Int.toString Array.maxLen," for arrays"])
             val newSize  = !size*2
-               
+
             val oldTab = !tab
             val newTab = Array.array(newSize,Key.null)
             val newHash = Array.array(2*newSize,nullBucket)
             val newHashFun = makeHashFun(newSize,newWidth)
 
-            fun addToNew (inv as (i,key)) = 
-               let 
+            fun addToNew (inv as (i,key)) =
+               let
                   val idx = newHashFun key
                   val _ = Array.update(newHash,idx,addToBucket((key,i),Array.sub(newHash,idx)))
                   val _ = Array.update(newTab,i,key)
@@ -1207,11 +1207,11 @@ functor SymTable (structure Key : Key) : SymTable =
       (* symbol table yet, add a new entry with a new index. grow the table *)
       (* if there is no more free index in the table.                       *)
       (*--------------------------------------------------------------------*)
-      fun getSymIndex(st as {tab,hash,hashFun,size,count,...}:SymTable,key) = 
-         let 
+      fun getSymIndex(st as {tab,hash,hashFun,size,count,...}:SymTable,key) =
+         let
             val idx = !hashFun key
             val bucket = Array.sub(!hash,idx)
-         in 
+         in
             case searchBucket(key,bucket)
               of SOME i => i
                | NONE => let val i = !count
@@ -1222,33 +1222,33 @@ functor SymTable (structure Key : Key) : SymTable =
                                                      in (idx',buck')
                                                      end
                              val _ = Array.update(!hash,idx',addToBucket((key,i),buck'))
-                             val _ = Array.update(!tab,i,key) 
+                             val _ = Array.update(!tab,i,key)
                              val _ = count := i+1
                          in i
                          end
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* does a Key have an entry in a symbol table?                        *)
       (*--------------------------------------------------------------------*)
-      fun hasSymIndex({hash,hashFun,...}:SymTable,key) = 
-         let 
+      fun hasSymIndex({hash,hashFun,...}:SymTable,key) =
+         let
             val idx = !hashFun key
             val buck = Array.sub(!hash,idx)
-         in 
+         in
             searchBucket(key,buck)
          end
 
       (*--------------------------------------------------------------------*)
-      (* reserve an index for a (yet unknown) key.                          *) 
+      (* reserve an index for a (yet unknown) key.                          *)
       (*--------------------------------------------------------------------*)
-      fun reserveSymIndex(st as {size,count=count as ref i,...}:SymTable) = 
-         let 
+      fun reserveSymIndex(st as {size,count=count as ref i,...}:SymTable) =
+         let
             val _ = if !size>i then () else growTable st
             val _ = count := i+1
          in i
          end
-         
+
       (*--------------------------------------------------------------------*)
       (* assign an index to a (previously reserved) index.                  *)
       (*--------------------------------------------------------------------*)
@@ -1256,27 +1256,27 @@ functor SymTable (structure Key : Key) : SymTable =
          if !count<=i then raise NoSuchSymbol
          else let val idx = !hashFun key
                   val buck = Array.sub(!hash,idx)
-                  val newBuck = addToBucket((key,i),buck) 
+                  val newBuck = addToBucket((key,i),buck)
                   val _ = Array.update(!hash,idx,newBuck)
                   val _ = Array.update(!tab,i,key)
               in ()
               end
-           
+
       (*--------------------------------------------------------------------*)
       (* extract the contents of a symbol table to a vector.                *)
       (*--------------------------------------------------------------------*)
-      fun extractSymTable({count,tab,...}:SymTable) = 
+      fun extractSymTable({count,tab,...}:SymTable) =
          Array.extract(!tab,0,SOME(!count))
 
       (*--------------------------------------------------------------------*)
       (* print the contents of the symbol table.                            *)
       (*--------------------------------------------------------------------*)
-      fun printSymTable ({desc,tab,count,...}:SymTable) = 
+      fun printSymTable ({desc,tab,count,...}:SymTable) =
          (print (desc^" table:\n");
-          Array.appi 
+          Array.appi
           (fn (n,key) =>
-           print ("  "^Int.toString n^": "^Key.toString key^"\n")) 
-          (!tab,0,SOME (!count))) 
+           print ("  "^Int.toString n^": "^Key.toString key^"\n"))
+          (!tab,0,SOME (!count)))
    end
 (* stop of ../../Util/SymDict/symbolTable.sml *)
 (* start of ../../Util/SymDict/intListDict.sml *)
@@ -1286,7 +1286,7 @@ functor SymTable (structure Key : Key) : SymTable =
 
 
 
-structure KeyIntList : Key = 
+structure KeyIntList : Key =
    struct
       type Key = int list
 
@@ -1296,8 +1296,8 @@ structure KeyIntList : Key =
       val toString = UtilString.List2String Int.toString
    end
 
-structure IntListDict = Dict (structure Key = KeyIntList) 
-structure IntListSymTab = SymTable (structure Key = KeyIntList) 
+structure IntListDict = Dict (structure Key = KeyIntList)
+structure IntListSymTab = SymTable (structure Key = KeyIntList)
 
 
 (* stop of ../../Util/SymDict/intListDict.sml *)
@@ -1309,7 +1309,7 @@ structure IntListSymTab = SymTable (structure Key = KeyIntList)
 
 
 
-structure KeyInt : Key = 
+structure KeyInt : Key =
    struct
       type Key = int
 
@@ -1319,8 +1319,8 @@ structure KeyInt : Key =
       val toString = Int.toString
    end
 
-structure IntDict = Dict (structure Key = KeyInt) 
-structure IntSymTab = SymTable (structure Key = KeyInt) 
+structure IntDict = Dict (structure Key = KeyInt)
+structure IntSymTab = SymTable (structure Key = KeyInt)
 
 
 (* stop of ../../Util/SymDict/intDict.sml *)
@@ -1333,15 +1333,15 @@ structure IntSymTab = SymTable (structure Key = KeyInt)
 (*                                                                          *)
 (* Exceptions raised by functions in this structure:                        *)
 (*--------------------------------------------------------------------------*)
-signature UniChar = 
+signature UniChar =
    sig
       structure Chars : WORD
 
       type Char = Chars.word
       type Data = Char list
       type Vector = Char vector
-         
-      val nullData   : Data 
+
+      val nullData   : Data
       val nullVector : Vector
 
       val hashChar   : Char -> word
@@ -1380,7 +1380,7 @@ structure UniChar : UniChar =
 
       structure Chars = Word
 
-      val _ = if Chars.wordSize > 21 then () 
+      val _ = if Chars.wordSize > 21 then ()
               else let val str = ("UniChar: Chars.wordSize is too small.\n"^
                                   "Cannot compile on this system!\n" )
                        val _ = print str
@@ -1392,7 +1392,7 @@ structure UniChar : UniChar =
 
       type CharInterval = Char * Char
       type CharRange    = CharInterval list
-         
+
       type Vector = Char vector
 
       val nullChar = 0wx0:Char
@@ -1410,15 +1410,15 @@ structure UniChar : UniChar =
       val char2Char = Chars.fromLargeWord o Word8.toLargeWord o Byte.charToByte
       val Char2char = Byte.byteToChar o Word8.fromLargeWord o Chars.toLargeWord
 
-      fun Char2Uni c = 
+      fun Char2Uni c =
          "U+"^UtilString.toUpperString(StringCvt.padLeft #"0" 4 (Chars.toString c))
-      fun Char2String c = 
+      fun Char2String c =
          case c
            of 0wx9 => "\\t"
             | 0wxA => "\\n"
             | _ => if c<0wx100 then String.implode [Char2char c]
                    else Char2Uni c
-                      
+
       fun String2Data s = map char2Char (String.explode s)
       fun Data2String cs = String.concat (map Char2String cs)
       fun Latin2String cs = String.implode (map Char2char cs)
@@ -1428,16 +1428,16 @@ structure UniChar : UniChar =
 
       fun Vector2Data vec = Vector.foldr (op ::) nil vec
       fun Vector2String vec =
-         let 
+         let
             val maxlen = O_VECTOR_PRINTLEN
             val len = Vector.length vec
-         in  
-            if len<=maxlen orelse maxlen=0 
+         in
+            if len<=maxlen orelse maxlen=0
                then Data2String (Vector2Data vec)
-            else let 
-                    val cs1 = Vector.foldri 
+            else let
+                    val cs1 = Vector.foldri
                        (fn (_,c,cs) => c::cs) nil (vec,0,SOME (maxlen div 2))
-                    val cs2 = Vector.foldri 
+                    val cs2 = Vector.foldri
                        (fn (_,c,cs) => c::cs) nil (vec,len-3-maxlen div 2,NONE)
                  in Data2String cs1^"..."^Data2String cs2
                  end
@@ -1452,7 +1452,7 @@ structure UniChar : UniChar =
 
 (* stop of ../../Unicode/Chars/uniChar.sml *)
 (* start of ../../Unicode/Chars/charVecDict.sml *)
-structure KeyVector : Key = 
+structure KeyVector : Key =
    struct
       type Key = UniChar.Vector
 
@@ -1462,7 +1462,7 @@ structure KeyVector : Key =
       val hash     = UniChar.hashVector
    end
 
-structure VectorDict = Dict (structure Key = KeyVector) 
+structure VectorDict = Dict (structure Key = KeyVector)
 (* stop of ../../Unicode/Chars/charVecDict.sml *)
 (* start of ../../Util/SymDict/stringDict.sml *)
 
@@ -1473,7 +1473,7 @@ structure VectorDict = Dict (structure Key = KeyVector)
 
 
 
-structure KeyString : Key = 
+structure KeyString : Key =
    struct
       type Key = string
 
@@ -1484,16 +1484,16 @@ structure KeyString : Key =
       fun toString str = str
    end
 
-structure StringDict = Dict (structure Key = KeyString) 
+structure StringDict = Dict (structure Key = KeyString)
 (* stop of ../../Util/SymDict/stringDict.sml *)
 (* start of ../../Unicode/encoding.sml *)
 
 
 signature Encoding =
    sig
-      datatype Encoding = 
-         NOENC  | ASCII  | EBCDIC | LATIN1 
-       | UCS4B  | UCS4L  | UCS4SB | UCS4SL 
+      datatype Encoding =
+         NOENC  | ASCII  | EBCDIC | LATIN1
+       | UCS4B  | UCS4L  | UCS4SB | UCS4SL
        | UCS2B  | UCS2L  | UTF16B | UTF16L
        | UTF8
 
@@ -1503,16 +1503,16 @@ signature Encoding =
 
       val encodingName   : Encoding -> string
       val isEncoding     : string -> Encoding
-      val switchEncoding : Encoding * Encoding -> Encoding 
+      val switchEncoding : Encoding * Encoding -> Encoding
    end
 
-structure Encoding : Encoding = 
+structure Encoding : Encoding =
    struct
       open StringDict
 
-      datatype Encoding = 
-         NOENC  | ASCII  | EBCDIC | LATIN1 
-       | UCS4B  | UCS4L  | UCS4SB | UCS4SL 
+      datatype Encoding =
+         NOENC  | ASCII  | EBCDIC | LATIN1
+       | UCS4B  | UCS4L  | UCS4SB | UCS4SL
        | UCS2B  | UCS2L  | UTF16B | UTF16L
        | UTF8
 
@@ -1521,7 +1521,7 @@ structure Encoding : Encoding =
       val UTF16 = UTF16B
 
       fun encodingName enc =
-         case enc 
+         case enc
            of NOENC  => "NONE"
             | ASCII  => "ASCII"
             | EBCDIC => "EBCDIC"
@@ -1537,10 +1537,10 @@ structure Encoding : Encoding =
             | UTF16L => "UTF-16"
 
       val encDict = makeDict("encoding",6,NOENC)
-      val encAliases = 
-         [(ASCII,["ANSI_X3.4-1968","ANSI_X3.4-1986","ASCII","US-ASCII","US",                   
+      val encAliases =
+         [(ASCII,["ANSI_X3.4-1968","ANSI_X3.4-1986","ASCII","US-ASCII","US",
                     "ISO646-US","ISO-IR-6","ISO_646.IRV:1991","IBM367","CP367"]),
-          (EBCDIC,["EBCDIC"]),                 
+          (EBCDIC,["EBCDIC"]),
           (LATIN1,["ISO_8859-1:1987","ISO-8859-1","ISO_8859-1",
                      "ISO-IR-100","CP819","IBM819","L1","LATIN1"]),
           (UCS2,["UCS-2","ISO-10646-UCS-2"]),
@@ -1557,7 +1557,7 @@ structure Encoding : Encoding =
             | LATIN1 => new
             | UTF8   => new
             | _      => NOENC
-      fun compatUcs4 (old,new) = 
+      fun compatUcs4 (old,new) =
          if new=UCS4 then old else NOENC
 
       fun switchEncoding(old,new) =
@@ -1570,8 +1570,8 @@ structure Encoding : Encoding =
             | UCS4L  => compatUcs4(old,new)
             | UCS4SB => compatUcs4(old,new)
             | UCS4SL => compatUcs4(old,new)
-            | UTF16B => if new=UTF16 then old else if new=UCS2 then UCS2B else NOENC 
-            | UTF16L => if new=UTF16 then old else if new=UCS2 then UCS2L else NOENC 
+            | UTF16B => if new=UTF16 then old else if new=UCS2 then UCS2B else NOENC
+            | UTF16L => if new=UTF16 then old else if new=UCS2 then UCS2L else NOENC
             | UCS2B  => if new=UCS2 then old else if new=UTF16 then UTF16B else NOENC
             | UCS2L  => if new=UCS2 then old else if new=UTF16 then UTF16L else NOENC
             | UTF8   => compatAscii new
@@ -1613,14 +1613,14 @@ structure EncodeBasic : EncodeBasic =
       val openOut    = TextIO.openOut
       val output1    = TextIO.output1
       val stdOut     = TextIO.stdOut
-         
+
       type File = string * outstream
 
       val stdOutFile = ("-",stdOut)
 
       fun closeFile(fname,s) = if fname="-" then () else closeOut s
       fun fileName(fname,_) = if fname="-" then "<stdout>" else fname
-      fun openFile fname = 
+      fun openFile fname =
          if fname = "-" then (fname,stdOut)
          else (fname,openOut fname)
             handle IO.Io {name,cause,...} => raise NoSuchFile(name,exnMessage cause)
@@ -1635,30 +1635,30 @@ structure EncodeBasic : EncodeBasic =
 
 
 
-signature EncodeError = 
+signature EncodeError =
    sig
-      datatype EncodeError = 
+      datatype EncodeError =
          ERR_ILLEGAL_CHAR of UniChar.Char * string
 
       val encodeMessage : EncodeError -> string list
 
-      exception EncodeError of EncodeBasic.File * EncodeError 
+      exception EncodeError of EncodeBasic.File * EncodeError
    end
 
 structure EncodeError : EncodeError =
    struct
-      open 
+      open
          UtilString
          UniChar
 
-      datatype EncodeError = 
+      datatype EncodeError =
          ERR_ILLEGAL_CHAR of UniChar.Char * string
 
       fun encodeMessage err =
          case err
            of ERR_ILLEGAL_CHAR(c,what) => [Char2Uni c,"is not",prependAnA what,"character"]
 
-      exception EncodeError of EncodeBasic.File * EncodeError 
+      exception EncodeError of EncodeBasic.File * EncodeError
    end
 (* stop of ../../Unicode/Encode/encodeError.sml *)
 (* start of ../../Unicode/Encode/encodeMisc.sml *)
@@ -1671,20 +1671,20 @@ require "chars";
 require "encodeBasic";
 require "encodeError";
 *)
-signature EncodeMisc = 
+signature EncodeMisc =
    sig
-      val writeCharAscii  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharEbcdic : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharLatin1 : UniChar.Char * EncodeBasic.File -> EncodeBasic.File  
-      val writeCharUcs4B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4SB : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4SL : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUtf8   : UniChar.Char * EncodeBasic.File -> EncodeBasic.File  
-      val writeCharUtf16B : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUtf16L : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs2B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs2L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
+      val writeCharAscii  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharEbcdic : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharLatin1 : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4SB : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4SL : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf8   : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf16B : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf16L : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs2B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs2L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
 
       val validCharAscii  : UniChar.Char -> bool
       val validCharEbcdic : UniChar.Char -> bool
@@ -1703,7 +1703,7 @@ structure EncodeMisc : EncodeMisc =
       val op >> = Chars.>>
       val op || = Word8.orb
 
-      fun splitSurrogates (c : Char) = 
+      fun splitSurrogates (c : Char) =
          (((c-0wx10000) >> 0w10)+0wxD800,c && 0wx3FF + 0wxDC00)
 
       fun Char2Byte c = Word8.fromLargeWord(Chars.toLargeWord c)
@@ -1712,14 +1712,14 @@ structure EncodeMisc : EncodeMisc =
       (* Ascii                                                               *)
       (*---------------------------------------------------------------------*)
       fun validCharAscii (c : Char) = c<0wx80
-      fun writeCharAscii(c,f) = 
+      fun writeCharAscii(c,f) =
          if c<0wx80 then writeByte(f,Char2Byte c)
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"ASCII"))
 
       (*---------------------------------------------------------------------*)
       (* Ebcdic                                                              *)
       (*---------------------------------------------------------------------*)
-      val latin2ebcdicTab = Word8Vector.fromList 
+      val latin2ebcdicTab = Word8Vector.fromList
           [0wx00,0wx01,0wx02,0wx03,0wx37,0wx2D,0wx2E,0wx2F,
            0wx16,0wx05,0wx25,0wx0B,0wx0C,0wx0D,0wx0E,0wx0F,
            0wx10,0wx11,0wx12,0wx13,0wx3C,0wx3D,0wx32,0wx26,
@@ -1754,7 +1754,7 @@ structure EncodeMisc : EncodeMisc =
            0wxEE,0wxEF,0wxFA,0wxFB,0wxFC,0wxFD,0wxFE,0wxFF
            ]
       fun validCharEbcdic (c : Char) = c<0wx100
-      fun writeCharEbcdic(c,f) = 
+      fun writeCharEbcdic(c,f) =
          if c<0wx100 then writeByte(f,Word8Vector.sub(latin2ebcdicTab,Chars.toInt c))
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"EBCDIC"))
 
@@ -1762,7 +1762,7 @@ structure EncodeMisc : EncodeMisc =
       (* Latin1                                                              *)
       (*---------------------------------------------------------------------*)
       fun validCharLatin1 (c : Char) = c<0wx100
-      fun writeCharLatin1(c,f) = 
+      fun writeCharLatin1(c,f) =
          if c<0wx100 then writeByte(f,Char2Byte c)
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"LATIN-1"))
 
@@ -1773,7 +1773,7 @@ structure EncodeMisc : EncodeMisc =
                          Char2Byte(c >> 0w16),
                          Char2Byte(c >> 0w8),
                          Char2Byte c)
-      fun writeCharUcs4 perm = 
+      fun writeCharUcs4 perm =
          fn (c,f) => let val bytes = ucs4Bytes c
                          val (b1,b2,b3,b4) = perm bytes
                          val f1 = writeByte(f,b1)
@@ -1795,12 +1795,12 @@ structure EncodeMisc : EncodeMisc =
       (*---------------------------------------------------------------------*)
       (* UTF-8                                                               *)
       (*---------------------------------------------------------------------*)
-      fun writeCharUtf8(c,f) = 
+      fun writeCharUtf8(c,f) =
          if c<0wx80 then writeByte(f,Char2Byte c)
-         else if c<0wx800 
+         else if c<0wx800
                  then let val f1 = writeByte(f,0wxC0 || Char2Byte(c >> 0w6))
                           val f2 = writeByte(f1,0wx80 || Char2Byte(c && 0wx3F))
-                      in f2 
+                      in f2
                       end
          else if c<0wx10000
                  then let val f1 = writeByte(f, 0wxE0 || Char2Byte(c >> 0w12))
@@ -1835,13 +1835,13 @@ structure EncodeMisc : EncodeMisc =
       (*---------------------------------------------------------------------*)
       (* UTF-16                                                              *)
       (*---------------------------------------------------------------------*)
-      fun oneUtf16 isL (c,f) = 
+      fun oneUtf16 isL (c,f) =
          let val (b1,b2) = (Char2Byte(c >> 0w8),Char2Byte c)
          in if isL then writeByte(writeByte(f,b2),b1)
             else writeByte(writeByte(f,b1),b2)
          end
-      fun writeCharUtf16 isL = 
-         fn (c,f) => 
+      fun writeCharUtf16 isL =
+         fn (c,f) =>
          if c<0wx10000 then oneUtf16 isL (c,f)
          else let val (hi,lo) = splitSurrogates c
                   val f1 = oneUtf16 isL (hi,f)
@@ -1854,9 +1854,9 @@ structure EncodeMisc : EncodeMisc =
       (*---------------------------------------------------------------------*)
       (* UCS-2                                                               *)
       (*---------------------------------------------------------------------*)
-      fun writeCharUcs2 isL = 
-         fn (c,f) => 
-         if c<0wx10000 
+      fun writeCharUcs2 isL =
+         fn (c,f) =>
+         if c<0wx10000
             then let val (b1,b2) = (Char2Byte(c >> 0w8),Char2Byte c)
                  in if isL then writeByte(writeByte(f,b2),b1)
                     else writeByte(writeByte(f,b1),b2)
@@ -1879,7 +1879,7 @@ structure EncodeMisc : EncodeMisc =
 
 
 
-signature Encode = 
+signature Encode =
    sig
       include EncodeError
 
@@ -1896,12 +1896,12 @@ signature Encode =
       val encValidChar : EncFile * UniChar.Char -> bool
    end
 
-structure Encode : Encode = 
+structure Encode : Encode =
    struct
-      open 
+      open
          Encoding UtilError
          EncodeBasic EncodeError EncodeMisc
-         
+
       type EncFile = Encoding * File
 
       val encNoFile = (NOENC,stdOutFile)
@@ -1909,15 +1909,15 @@ structure Encode : Encode =
 
       fun encAdapt((enc,_),f) = (enc,f)
 
-      fun encValidChar((enc,_),c) = 
+      fun encValidChar((enc,_),c) =
          case enc
            of ASCII  => validCharAscii c
             | EBCDIC => validCharEbcdic c
             | LATIN1 => validCharLatin1 c
             | _ => true
 
-      fun encPutChar((enc,f),c) = 
-         let val f1 = 
+      fun encPutChar((enc,f),c) =
+         let val f1 =
             case enc
               of NOENC  => f
                | ASCII  => (writeCharAscii(c,f))
@@ -1937,20 +1937,20 @@ structure Encode : Encode =
 
       fun encCloseFile(_,f) = closeFile f
 
-      fun encOpenFile (fname,enc,name) = 
-         let 
-            val outEnc = 
-               case enc 
-                 of NOENC => 
+      fun encOpenFile (fname,enc,name) =
+         let
+            val outEnc =
+               case enc
+                 of NOENC =>
                     (case isEncoding name
                        of NOENC => raise NoSuchFile(fname,"Unsupported encoding \""^name^"\"")
                         | enc => enc)
                   | enc => enc
             val f   = openFile fname
-            val f1  = case outEnc 
+            val f1  = case outEnc
                         of UTF16B => writeByte(writeByte(f,0wxFE),0wxFF)
                          | UTF16L => writeByte(writeByte(f,0wxFF),0wxFE)
-                         | _      => f 
+                         | _      => f
          in (outEnc,f1)
          end
    end
@@ -1983,38 +1983,38 @@ structure NullHard =
    struct
       fun parseNull uri = NullParse.parseDocument uri NONE NullHooks.nullStart
 
-      open 
+      open
          NullCatOptions NullOptions Options NullParserOptions Uri
 
       val usage = List.concat [parserUsage,[("","")],catalogUsage,[("","")],nullUsage]
 
-      exception Exit of OS.Process.status 
-         
-      fun null(prog,args) = 
-         let 
+      exception Exit of OS.Process.status
+
+      fun null(prog,args) =
+         let
             val prog = "fxp"
             val hadError = ref false
-               
-            fun optError msg = 
+
+            fun optError msg =
                let val _ = TextIO.output(TextIO.stdErr,msg^".\n")
                in hadError := true
                end
-            fun exitError msg = 
+            fun exitError msg =
                let val _ = TextIO.output(TextIO.stdErr,msg^".\n")
-               in raise Exit OS.Process.failure 
+               in raise Exit OS.Process.failure
                end
-            fun exitHelp prog = 
+            fun exitHelp prog =
                let val _ = printUsage TextIO.stdOut prog usage
-               in raise Exit OS.Process.success 
+               in raise Exit OS.Process.success
                end
-            fun exitVersion prog = 
+            fun exitVersion prog =
                let val _ = app print [prog," version ",Version.FXP_VERSION,"\n"]
-               in raise Exit OS.Process.success 
+               in raise Exit OS.Process.success
                end
-            
+
             fun summOpt prog = "For a summary of options type "^prog^" --help"
             fun noFile(f,cause) = "can't open file '"^f^"': "^exnMessage cause
-               
+
             val opts = parseOptions args
             val _ = setParserDefaults()
             val opts1 = setParserOptions (opts,optError)
@@ -2025,7 +2025,7 @@ structure NullHard =
             val _ = if !hadError then exitError (summOpt prog) else ()
             val _ = if vers then exitVersion prog else ()
             val _ = if help then exitHelp prog else ()
-            val _ = case err 
+            val _ = case err
                       of SOME "-" => O_ERROR_DEVICE := TextIO.stdErr
                        | SOME f => (O_ERROR_DEVICE := TextIO.openOut f
                                     handle IO.Io {cause,...} => exitError(noFile(f,cause)))
@@ -2036,11 +2036,11 @@ structure NullHard =
             val _ = if isSome err then TextIO.closeOut (!O_ERROR_DEVICE) else ()
          in status
          end
-      handle Exit status => status 
-           | exn => 
-         let val _ = TextIO.output 
+      handle Exit status => status
+           | exn =>
+         let val _ = TextIO.output
             (TextIO.stdErr,prog^": Unexpected exception: "^exnMessage exn^".\n")
-         in OS.Process.failure 
+         in OS.Process.failure
          end
    end
 *)
@@ -2068,7 +2068,7 @@ signature Options=
 structure Options : Options =
    struct
       exception BadOption of string
-            
+
       datatype Option =
          OPT_LONG of string * string option
        | OPT_SHORT of char list
@@ -2083,16 +2083,16 @@ structure Options : Options =
       type Usage = UsageItem list
 
       fun parseOptions ss =
-         let 
+         let
             fun doOne opt =
-               if String.isPrefix "--" opt 
-                  then let val opt1 = Substring.extract(opt,2,NONE) 
+               if String.isPrefix "--" opt
+                  then let val opt1 = Substring.extract(opt,2,NONE)
                            val (key0,opt2) = Substring.splitl (fn c => #"="<>c) opt1
-                           val key = if Substring.isEmpty key0 then raise BadOption opt 
+                           val key = if Substring.isEmpty key0 then raise BadOption opt
                                      else Substring.string key0
                            val valOpt = if Substring.isPrefix "=" opt2
                                            then let val val0 = Substring.triml 1 opt2
-                                                in if Substring.isEmpty val0 
+                                                in if Substring.isEmpty val0
                                                       then raise BadOption opt
                                                    else SOME(Substring.string val0)
                                                 end
@@ -2100,9 +2100,9 @@ structure Options : Options =
                        in OPT_LONG(key,valOpt)
                        end
                     handle BadOption s => if opt="--" then OPT_NOOPT else OPT_STRING opt
-               else if String.isPrefix "-" opt 
+               else if String.isPrefix "-" opt
                        then let val chars = tl(String.explode opt)
-                            (* val _ = app (fn c => if Char.isAlphaNum c then () 
+                            (* val _ = app (fn c => if Char.isAlphaNum c then ()
                                                     else raise BadOption opt) chars *)
                             in case chars
                                  of nil => OPT_STRING opt
@@ -2111,7 +2111,7 @@ structure Options : Options =
                             end
                          handle BadOption s => OPT_STRING opt
                     else OPT_STRING opt
-                       
+
             fun doAll nil = nil
               | doAll (s::ss) = let val opt = doOne s
                                 in case opt
@@ -2121,8 +2121,8 @@ structure Options : Options =
          in doAll ss
          end
 
-      fun printUsage stream prog usage = 
-         let 
+      fun printUsage stream prog usage =
+         let
             val KEY_WIDTH = 30
             val LINE_WIDTH = 80
             val EMPTY_KEY = UtilString.nBlanks KEY_WIDTH
@@ -2130,13 +2130,13 @@ structure Options : Options =
                                      else UtilString.nBlanks (KEY_WIDTH-col)
               | appendKeys col [key] = key^" "^appendKeys (col+1+String.size key) nil
               | appendKeys col (key::keys) = let val col1 = col+2+String.size key
-                                             in if col1>KEY_WIDTH 
+                                             in if col1>KEY_WIDTH
                                                    then key^",\n"^appendKeys 0 keys
                                                 else key^", "^appendKeys col1 keys
                                              end
             fun makeKey keylist = appendKeys 0 keylist
             val makeText = UtilString.breakLines(LINE_WIDTH-KEY_WIDTH)
-            fun format (keylist,text) = 
+            fun format (keylist,text) =
                let val key = makeKey keylist
                in case makeText text
                     of nil => [key]
@@ -2144,14 +2144,14 @@ structure Options : Options =
                end
             val _ = app (fn x => TextIO.output(stream,x))
                ["Usage: ",prog," [option ...] file\n","where option is one of:\n\n"]
-            val _ = app (fn item => app (fn x => TextIO.output(stream,x^"\n")) 
-                         (case item 
+            val _ = app (fn item => app (fn x => TextIO.output(stream,x^"\n"))
+                         (case item
                             of U_SEP => [""]
                              | U_TITLE txt => ["",txt]
                              | U_ITEM option => format option)) usage
          in ()
          end
-   end      
+   end
 (* stop of ../../Util/options.sml *)
 (* start of ../../config.sml *)
 structure Config =
@@ -2171,7 +2171,7 @@ structure Config =
       (* val retrieveCommand = "got_it -o %2 %1"                             *)
       (* val retrieveCommand = "urlget -s -o %2 %1"                          *)
       (*---------------------------------------------------------------------*)
-      val retrieveCommand = "wget -qO %2 %1"                            
+      val retrieveCommand = "wget -qO %2 %1"
    end
 (* stop of ../../config.sml *)
 (* start of ../../Unicode/Chars/charClasses.sml *)
@@ -2213,12 +2213,12 @@ signature CharClasses =
    end
 
 structure CharClasses : CharClasses =
-   struct 
+   struct
       open UniChar
 
       type CharInterval = Char * Char
       type CharRange = CharInterval list
-         
+
       val Char2Word = Word.fromLargeWord o Chars.toLargeWord
 
       (*--------------------------------------------------------------------*)
@@ -2239,7 +2239,7 @@ structure CharClasses : CharClasses =
       val op & = Word.andb
 
       val max32 = Word32.notb 0wx0
-   
+
       (*--------------------------------------------------------------------*)
       (* a char class is an array of words, interpreted as bitvectors.      *)
       (*--------------------------------------------------------------------*)
@@ -2261,41 +2261,41 @@ structure CharClasses : CharClasses =
       (*--------------------------------------------------------------------*)
       fun inCharClass(c,vec) = let val (idx,mask) = indexMask c
                                in mask &&& Vector.sub(vec,idx) <> 0wx0
-                               end 
+                               end
 
       (*--------------------------------------------------------------------*)
       (* generate a CharClass large enough to hold (max-min+1) characters.  *)
       (*--------------------------------------------------------------------*)
-      fun initialize(min,max) = 
+      fun initialize(min,max) =
          Array.array((Chars.toInt max-Chars.toInt min+1) div 32+1,0wx0):MutableClass
       fun finalize arr = Array.extract(arr,0,NONE)
-         
+
       (*--------------------------------------------------------------------*)
       (* add a single character to a CharClass.                             *)
       (*--------------------------------------------------------------------*)
       fun addChar(cls,min,max,c) =
-         let 
+         let
             val (idx,new) = indexMask c
             val old = Array.sub(cls,idx)
          in
             Array.update(cls,idx,old|||new)
-         end 
-                            
+         end
+
       (*--------------------------------------------------------------------*)
       (* add a full range of characters to a CharClass.                     *)
       (* this is the only function that computes the offset before access   *)
       (* to the array.                                                      *)
       (*--------------------------------------------------------------------*)
       fun addCharRange(cls,min,max,range) =
-         let 
-            fun doOne (lo,hi) = 
-               let 
+         let
+            fun doOne (lo,hi) =
+               let
                   val (l,h) = (lo-min,hi-min)
                   val (idxL,idxH) = ((Chars.toInt l) div 32,(Chars.toInt h) div 32)
                   val (bitL,bitH) = (Char2Word l & 0w31,Char2Word h & 0w31)
-               in 
-                  if idxL=idxH then 
-                     let 
+               in
+                  if idxL=idxH then
+                     let
                         val new = (max32>>>(0w31-bitH+bitL))<<<bitL
                         val old = Array.sub(cls,idxL)
                         val _ = Array.update(cls,idxL,old|||new)
@@ -2309,14 +2309,14 @@ structure CharClasses : CharClasses =
                         val oldH = Array.sub(cls,idxH)
                         val _ = Array.update(cls,idxL,oldL|||newL)
                         val _ = Array.update(cls,idxH,oldH|||newH)
-                        val _ = UtilInt.appInterval (fn i => Array.update(cls,i,max32)) 
+                        val _ = UtilInt.appInterval (fn i => Array.update(cls,i,max32))
                            (idxL+1,idxH-1)
                      in ()
                      end
                        else ()
                end
             fun doAll nil = nil
-              | doAll ((lh as (lo,hi))::lhs) = 
+              | doAll ((lh as (lo,hi))::lhs) =
                if hi<lo then doAll lhs
                else if hi<min then doAll lhs
                else if lo>max then lh::doAll lhs
@@ -2328,7 +2328,7 @@ structure CharClasses : CharClasses =
                        then (doOne(lo,max); (max+0w1,hi)::lhs)
                     else (doOne(min,max); (max+0w1,hi)::lhs)
             val _ = doAll range
-         in 
+         in
             doAll range
          end
    end
@@ -2339,7 +2339,7 @@ structure CharClasses : CharClasses =
 
 
 
-structure UniRanges = 
+structure UniRanges =
    struct
       val digitRange = [(0wx0030,0wx0039),
                         (0wx0660,0wx0669),
@@ -2578,7 +2578,7 @@ structure UniRanges =
                        (0wx3041,0wx3094),
                        (0wx30A1,0wx30FA),
                        (0wx3105,0wx312C),
-                       (0wxAC00,0wxD7A3) 
+                       (0wxAC00,0wxD7A3)
                        ] : CharClasses.CharRange
 
       val ideoRange = [(0wx3007,0wx3007),
@@ -2696,12 +2696,12 @@ structure UniRanges =
                       (0wx30FC,0wx30FE)
                       ] : CharClasses.CharRange
 
-      val nmsRange = List.concat 
+      val nmsRange = List.concat
          [[(0wx3A,0wx3A),(0wx5F,0wx5F)](* :_ *),
           baseRange,
           ideoRange]
 
-      val nameRange = List.concat 
+      val nameRange = List.concat
          [[(0wx2D,0wx2D),(0wx2E,0wx2E)](* -. *),
           digitRange,
           combRange,
@@ -2712,9 +2712,9 @@ structure UniRanges =
          [map (fn c => (c,c)) [0wx0A,0wx0D,0wx20], (* space,cr,lf *)
           map (fn c => (c,c)) (UniChar.String2Data "-'()+,./:=?;!*#@$_%"),
           [(0wx0030,0wx0039),(0wx0041,0wx005A),(0wx0061,0wx007A)] (* [0-9A-Za-z] *)
-          ] : CharClasses.CharRange 
+          ] : CharClasses.CharRange
 
-      val encRange =       
+      val encRange =
          [(0wx002D,0wx002E), (* -.  *)
           (0wx0030,0wx0039), (* 0-9 *)
           (0wx0041,0wx005A), (* A-Z *)
@@ -2763,8 +2763,8 @@ signature UniClasses =
       val isVers    : UniChar.Char -> bool
       val isDec     : UniChar.Char -> bool
       val isHex     : UniChar.Char -> bool
-      val isXml     : UniChar.Char -> bool 
-      val isUnicode : UniChar.Char -> bool 
+      val isXml     : UniChar.Char -> bool
+      val isUnicode : UniChar.Char -> bool
 
       val decValue  : UniChar.Char -> UniChar.Char option
       val hexValue  : UniChar.Char -> UniChar.Char option
@@ -2779,25 +2779,25 @@ structure UniClasses : UniClasses =
       (*--------------------------------------------------------------------*)
       (* initialize the character classes.                                  *)
       (*--------------------------------------------------------------------*)
-      local 
+      local
          val nmsTemp = initialize(0wx0000,0wx3FFF)
          val restNms = addCharRange(nmsTemp,0wx0000,0wx3FFF,nmsRange)
-         val _ = if restNms=[(0wxAC00,0wxD7A3),(0wx4E00,0wx9FA5)] then () 
+         val _ = if restNms=[(0wxAC00,0wxD7A3),(0wx4E00,0wx9FA5)] then ()
                  else print ("Warning: extra characters after computing nms char class.\n")
 
          val nameTemp = initialize(0wx0000,0wxFFFF)
          val restName = addCharRange(nameTemp,0wx0000,0wx3FFF,nameRange)
-         val _ = if restName=[(0wxAC00,0wxD7A3),(0wx4E00,0wx9FA5)] then () 
+         val _ = if restName=[(0wxAC00,0wxD7A3),(0wx4E00,0wx9FA5)] then ()
                  else print ("Warning: extra characters after computing name char class.\n")
 
          val pubTemp = initialize(0wx0000,0wx007F)
          val restPubid = addCharRange(pubTemp,0wx0000,0wx007F,pubidRange)
-         val _ = if restPubid=nil then () 
+         val _ = if restPubid=nil then ()
                  else print ("Warning: extra characters after computing pubid char class.\n")
 
          val encTemp = initialize(0wx0000,0wx007F)
          val restEnc = addCharRange(encTemp,0wx0000,0wx007F,encRange)
-         val _ = if restEnc=nil then () 
+         val _ = if restEnc=nil then ()
                  else print ("Warning: extra characters after computing enc char class.\n")
       in
          val nmsClass = finalize nmsTemp
@@ -2805,12 +2805,12 @@ structure UniClasses : UniClasses =
          val pubClass = finalize pubTemp
          val encClass = finalize encTemp
       end
-      
+
       (*--------------------------------------------------------------------*)
       (* is a character a name start char?                                  *)
       (*--------------------------------------------------------------------*)
-      fun isNms c = if c<0wx4000 then inCharClass(c,nmsClass) 
-                    else 
+      fun isNms c = if c<0wx4000 then inCharClass(c,nmsClass)
+                    else
                        c>=0wx4E00 andalso c<=0wx9FA5 orelse
                        c>=0wxAC00 andalso c<=0wxD7A3
 
@@ -2818,7 +2818,7 @@ structure UniClasses : UniClasses =
       (* is a character a name char?                                        *)
       (*--------------------------------------------------------------------*)
       fun isName c = if c<0wx4000 then inCharClass(c,nameClass)
-                     else 
+                     else
                         c>=0wx4E00 andalso c<=0wx9FA5 orelse
                         c>=0wxAC00 andalso c<=0wxD7A3
 
@@ -2831,12 +2831,12 @@ structure UniClasses : UniClasses =
       (* is a character valid in an encoding name, at its start, or in a    *)
       (* version number?                                                    *)
       (*--------------------------------------------------------------------*)
-      fun isEnc c = 
+      fun isEnc c =
          c<0wx80 andalso inCharClass(c,encClass)
-      fun isEncS (c:UniChar.Char) = 
+      fun isEncS (c:UniChar.Char) =
          c>=0wx41 andalso c<=0wx5A orelse
          c>=0wx61 andalso c<=0wx7A
-      fun isVers c = 
+      fun isVers c =
          isEnc c orelse c=0wx3A (* #":" *)
 
       (*--------------------------------------------------------------------*)
@@ -2847,7 +2847,7 @@ structure UniClasses : UniClasses =
       (*--------------------------------------------------------------------*)
       (* XML characters if not checked for Unicode char in advance.         *)
       (*--------------------------------------------------------------------*)
-      fun isXml (c:UniChar.Char) = 
+      fun isXml (c:UniChar.Char) =
          c>=0wx0020 andalso c<=0wxD7FF orelse
          c>=0wxE000 andalso c<=0wxFFFD orelse
          c>=0wx10000 andalso c<=0wx10FFFF orelse
@@ -2857,10 +2857,10 @@ structure UniClasses : UniClasses =
       (* the frontend supresses 0wxD (carriage return), but its is still    *)
       (* present when encoding is recognized.                               *)
       (*--------------------------------------------------------------------*)
-      fun isS (c:UniChar.Char) = 
+      fun isS (c:UniChar.Char) =
          case c
-           of 0wx09 => true 
-            | 0wx0A => true 
+           of 0wx09 => true
+            | 0wx0A => true
             | 0wx0D => true
             | 0wx20 => true
             | _ => false
@@ -2868,34 +2868,34 @@ structure UniClasses : UniClasses =
       (*--------------------------------------------------------------------*)
       (* is this character an ascii decimal/hexadecimal digit?              *)
       (*--------------------------------------------------------------------*)
-      fun isDec (c:UniChar.Char) = 
+      fun isDec (c:UniChar.Char) =
          c>=0wx30 andalso c<=0wx39
-      fun isHex (c:UniChar.Char) = 
-         c>=0wx30 andalso c<=0wx39 orelse     
+      fun isHex (c:UniChar.Char) =
+         c>=0wx30 andalso c<=0wx39 orelse
          c>=0wx41 andalso c<=0wx46 orelse
          c>=0wx61 andalso c<=0wx66
 
       (*--------------------------------------------------------------------*)
       (* calculate the decimal/hexadecimal value of an ascii (hex-)digit.   *)
       (*--------------------------------------------------------------------*)
-      fun decValue (c:UniChar.Char) = 
+      fun decValue (c:UniChar.Char) =
          let val v = c-0wx30
          in if v<=0wx9 then SOME v else NONE
          end
-      fun hexValue (c:UniChar.Char) = 
+      fun hexValue (c:UniChar.Char) =
          let val v = c-0wx30
          in if v<=0wx9 then SOME v
             else (if c>=0wx41 andalso c<=0wx46 then SOME(c-0wx37)
             else if c>=0wx61 andalso c<=0wx66 then SOME(c-0wx57)
                  else NONE)
          end
-                    
+
       (*--------------------------------------------------------------------*)
       (* is c in [a-z]+[A-Z]?                                               *)
       (*--------------------------------------------------------------------*)
-      fun isAsciiLetter (c:UniChar.Char) = 
-         c>=0wx41 andalso c<=0wx5A orelse 
-         c>=0wx61 andalso c<=0wx7A 
+      fun isAsciiLetter (c:UniChar.Char) =
+         c>=0wx41 andalso c<=0wx5A orelse
+         c>=0wx61 andalso c<=0wx7A
    end
 (* stop of ../../Unicode/Chars/uniClasses.sml *)
 (* start of ../../Unicode/Uri/uriDecode.sml *)
@@ -2921,7 +2921,7 @@ structure UriDecode : UriDecode =
 
       val Byte2Char = Chars.fromLargeWord o Word8.toLargeWord
 
-      fun hexValue c = 
+      fun hexValue c =
          if #"0"<=c andalso #"9">=c then SOME (Byte.charToByte c-0wx30)
          else if #"A"<=c andalso #"F">=c then SOME (Byte.charToByte c-0wx37)
          else if #"a"<=c andalso #"f">=c then SOME (Byte.charToByte c-0wx57)
@@ -2929,13 +2929,13 @@ structure UriDecode : UriDecode =
 
       exception Failed of char list
 
-      fun getQuads cs = 
-         case cs 
-           of c1::c2::cs1 => (case (hexValue c1,hexValue c2) 
+      fun getQuads cs =
+         case cs
+           of c1::c2::cs1 => (case (hexValue c1,hexValue c2)
                                 of (SOME b1,SOME b2) => ((b1 << 0w4 || b2),cs1)
-                                 | _ => raise Failed cs1) 
+                                 | _ => raise Failed cs1)
             | _ => raise Failed nil
-      
+
       (*--------------------------------------------------------------------*)
       (* decode UTF-8                                                       *)
       (*--------------------------------------------------------------------*)
@@ -2950,20 +2950,20 @@ structure UriDecode : UriDecode =
       val diff2 = 0wx00003080
       val diff3 = diff2 <<< 0wx6 ||| 0wx00020080
       val diff4 = diff3 <<< 0wx6 ||| 0wx00400080
-      val diff5 = diff4 <<< 0wx6 ||| 0wx08000080 
+      val diff5 = diff4 <<< 0wx6 ||| 0wx08000080
       val diff6 = diff5 <<< 0wx6 ||| 0wx00000080
       val diffsByLen = Vector.fromList [0w0,0w0,diff2,diff3,diff4,diff5,diff6]
 
-      fun getByte cs = 
-         case cs 
+      fun getByte cs =
+         case cs
            of #"%"::cs1 => getQuads cs1
             | c::cs1 => (Byte.charToByte c,cs1)
             | nil => raise Failed nil
-                    
+
       fun getBytes(b,cs,n) =
-         let 
-            fun do_err (cs,m) = 
-               if n<m then raise Failed cs 
+         let
+            fun do_err (cs,m) =
+               if n<m then raise Failed cs
                else let val (_,cs1) = getByte cs
                     in do_err (cs1,m+1)
                     end
@@ -2977,12 +2977,12 @@ structure UriDecode : UriDecode =
             val (w,cs1) = doit (Byte2Char b,cs,2)
             val diff = Vector.sub(diffsByLen,n)
             val c = w-diff
-         in 
-            if c<0wx100 then (Char2char c,cs1) 
+         in
+            if c<0wx100 then (Char2char c,cs1)
             else raise Failed cs1
          end
 
-      fun getCharUtf8 cs = 
+      fun getCharUtf8 cs =
          let val (b,cs1) = getQuads cs
          in case Array.sub(byte1switch,Word8.toInt b)
               of 0 (* error   *) => raise Failed cs1
@@ -2991,9 +2991,9 @@ structure UriDecode : UriDecode =
          end
 
       fun decodeUriUtf8 str =
-         let 
+         let
             val cs = String.explode str
-            
+
             fun doit yet nil = yet
               | doit yet (c::cs) =
                if #"%"<>c then doit (c::yet) cs
@@ -3003,34 +3003,34 @@ structure UriDecode : UriDecode =
                                       handle Failed cs => (yet,cs)
                     in doit yet1 cs1
                     end
-         in 
+         in
             String.implode(rev(doit nil cs))
          end
 
       (*--------------------------------------------------------------------*)
       (* decode Latin                                                       *)
       (*--------------------------------------------------------------------*)
-      fun getChar cs = 
-         case cs 
-           of #"%"::cs1 => let val (b,cs2) = getQuads cs1 
+      fun getChar cs =
+         case cs
+           of #"%"::cs1 => let val (b,cs2) = getQuads cs1
                            in (Byte.byteToChar b,cs2)
                            end
             | c::cs1 => (c,cs1)
             | nil => raise Failed nil
-                    
+
       fun decodeUriLatin str =
-         let 
+         let
             val cs = String.explode str
-            
+
             fun doit yet nil = yet
-              | doit yet (c::cs) = 
+              | doit yet (c::cs) =
                let val (yet1,cs1) = let val (ch,cs1) = getChar cs
                                     in (ch::yet,cs1)
                                     end
                                  handle Failed cs => (yet,cs)
                in doit yet1 cs1
                end
-         in 
+         in
             String.implode(rev(doit nil cs))
          end
    end
@@ -3048,7 +3048,7 @@ signature UriEncode =
       val String2UriLatin : string -> string
    end
 
-structure UriEncode : UriEncode = 
+structure UriEncode : UriEncode =
    struct
 
       open UniChar UniClasses
@@ -3065,9 +3065,9 @@ structure UriEncode : UriEncode =
 
       val Char2Byte = Word8.fromLargeWord o Chars.toLargeWord
 
-      fun encodeCharUtf8 c = 
+      fun encodeCharUtf8 c =
          if c<0wx80 then [Char2Byte c]
-         else if c<0wx800 
+         else if c<0wx800
                  then [0wxC0 || Char2Byte(c >>> 0w6),
                        0wx80 || Char2Byte(c &&& 0wx3F)]
          else if c<0wx10000
@@ -3092,37 +3092,37 @@ structure UriEncode : UriEncode =
                     0wx80 || Char2Byte((c >>> 0w6) &&& 0wx3F),
                     0wx80 || Char2Byte(c &&& 0wx3F)]
 
-      fun Byte2Cc b = 
+      fun Byte2Cc b =
          let fun Quad2C b = if b<0wxA then Byte.byteToChar(b+0wx30) else Byte.byteToChar(b+0wx37)
          in (Quad2C(b >> 0w4),Quad2C(b && 0wx0F))
          end
 
-      fun precedesHex (i,cv) = 
+      fun precedesHex (i,cv) =
          if Vector.length cv <= i+2 then false
          else let val (c1,c2) = (Vector.sub(cv,i+1),Vector.sub(cv,i+2))
               in isHex c1 andalso isHex c2
               end
 
-      fun Vector2UriUtf8 cv = 
+      fun Vector2UriUtf8 cv =
          let val revd = Vector.foldli
-            (fn (i,c,s) => if c<0wx80 andalso (c<>0wx25 orelse precedesHex(i,cv)) 
+            (fn (i,c,s) => if c<0wx80 andalso (c<>0wx25 orelse precedesHex(i,cv))
                               then Char2char c::s
                            else foldl (fn (b,s) => let val (c1,c2) = Byte2Cc b
                                                    in c2::c1:: #"%"::s
-                                                   end) 
-                              s (encodeCharUtf8 c)) 
+                                                   end)
+                              s (encodeCharUtf8 c))
             nil (cv,0,NONE)
          in String.implode (rev revd)
          end
 
-      fun Vector2UriLatin cv = 
+      fun Vector2UriLatin cv =
          let val revd = Vector.foldli
-            (fn (i,c,s) => if c<0wx80 andalso (c<>0wx25 orelse precedesHex(i,cv)) 
+            (fn (i,c,s) => if c<0wx80 andalso (c<>0wx25 orelse precedesHex(i,cv))
                               then Char2char c::s
                            else (if c>= 0w100 then s
                                  else let val (c1,c2) = Byte2Cc (Char2Byte c)
                                       in c2::c1:: #"%"::s
-                                      end)) 
+                                      end))
             nil (cv,0,NONE)
          in String.implode (rev revd)
          end
@@ -3145,14 +3145,14 @@ require "basis.__word";
 require "basis.__word8";
 
 require "util.unsafe";
-require "util.utilInt"; 
+require "util.utilInt";
 
-require "chars"; 
-require "naming"; 
+require "chars";
+require "naming";
 *)
 signature Uri =
    sig
-      eqtype Uri      
+      eqtype Uri
 
       val emptyUri   : Uri
 
@@ -3184,12 +3184,12 @@ structure Uri :> Uri =
       val Vector2Uri = Vector2UriUtf8
       val Data2Uri = Data2UriUtf8
       val String2Uri = String2UriUtf8
-      val Uri2String = decodeUriUtf8 
+      val Uri2String = decodeUriUtf8
 
       val slash = "/"
 
       fun uriSuffix s =
-         let fun search i = if i<0 then NONE else case String.sub(s,i) 
+         let fun search i = if i<0 then NONE else case String.sub(s,i)
                                                     of #"." => SOME i
                                                      | #"/" => NONE
                                                      | _ => search (i-1)
@@ -3198,34 +3198,34 @@ structure Uri :> Uri =
                | SOME i => String.extract(s,i+1,NONE)
          end
 
-      fun isScheme c = 
+      fun isScheme c =
          Char.isAlphaNum c orelse #"+"=c orelse #"-"=c orelse #"."=c
 
       fun uriAbsolute uri =
-         let fun search i = 
+         let fun search i =
             if i>=String.size uri then false
             else let val c=String.sub(uri,i)
                  in if #":"=c then true else if isScheme c then search (i+1)
                                              else false
                  end
-         in 
+         in
             if uri="" then false
             else if Char.isAlpha (String.sub(uri,0)) then search 1
                  else false
          end
       fun uriRelative uri = not (uriAbsolute uri)
-                 
+
       fun uriLocal uri =
-         if String.isPrefix "file:" uri 
-            then SOME(String.extract(uri,5,NONE)) 
-         else if uriRelative uri then SOME uri 
+         if String.isPrefix "file:" uri
+            then SOME(String.extract(uri,5,NONE))
+         else if uriRelative uri then SOME uri
               else NONE
 
       fun uriPath s =
-         let 
-            fun search (i,hadSlash) = 
+         let
+            fun search (i,hadSlash) =
                if i<0 then if hadSlash then SOME 0 else NONE
-               else case String.sub(s,i) 
+               else case String.sub(s,i)
                       of #"/" => if hadSlash then NONE else search(i-1,true)
                        | _ => if hadSlash then SOME(i+1) else search(i-1,false)
             val len = String.size s
@@ -3237,24 +3237,24 @@ structure Uri :> Uri =
          end
 
       fun uriAuth uri =
-         let 
-            fun searchScheme i = 
+         let
+            fun searchScheme i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #":"=c then SOME i else if isScheme c then searchScheme (i+1)
                                                   else NONE
                  end
-            fun searchSlash i = 
+            fun searchSlash i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #"/"=c then SOME i else searchSlash (i+1)
                     end
-         in 
+         in
             if uri="" then ""
             else if not (Char.isAlpha(String.sub(uri,0))) then ""
                  else case searchScheme 1
                         of NONE => ""
-                         | SOME i => 
+                         | SOME i =>
                            if String.size uri<=i+2 then String.extract(uri,0,SOME(i+1))
                            else if #"/"=String.sub(uri,i+1) andalso #"/"=String.sub(uri,i+2)
                                    then case searchSlash (i+3)
@@ -3264,22 +3264,22 @@ structure Uri :> Uri =
          end
 
       fun uriScheme uri =
-         let 
-            fun searchScheme i = 
+         let
+            fun searchScheme i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #":"=c then SOME i else if isScheme c then searchScheme (i+1)
                                                   else NONE
                  end
-         in 
+         in
             if uri="" then ""
             else if not (Char.isAlpha(String.sub(uri,0))) then ""
                  else case searchScheme 1
                         of NONE => ""
                          | SOME i => String.extract(uri,0,SOME(i+1))
          end
-      
-      fun uriJoin(abs,rel) = 
+
+      fun uriJoin(abs,rel) =
          if rel="" then uriPath abs
          else if abs="" then rel
          else if String.isPrefix "//" rel then uriScheme abs^rel
@@ -3291,9 +3291,9 @@ structure Uri :> Uri =
       val hashUri = UtilHash.hashString
 
       fun convertCommand str (src,dst) =
-         let 
+         let
             val s = Substring.all str
-            fun doit ss s = 
+            fun doit ss s =
                if Substring.isEmpty s then ss
                else let val (sl,sr) = Substring.splitr (fn c => #"%"<>c) s
                     in if Substring.isEmpty sl then sr::ss
@@ -3314,24 +3314,24 @@ structure Uri :> Uri =
          end
 
       fun retrieveRemote uri =
-         let 
+         let
             val tmp = OS.FileSys.tmpName()
             val cmd = convertCommand Config.retrieveCommand (uri,tmp)
             val status = OS.Process.system cmd
             val _ = if status = OS.Process.success then ()
-                    else let val _ = (OS.FileSys.remove tmp 
+                    else let val _ = (OS.FileSys.remove tmp
                                       handle OS.SysErr _ => ())
-                             val cmd = convertCommand 
+                             val cmd = convertCommand
                                 Config.retrieveCommand ("<uri>",tmp)
                          in raise NoSuchFile (uri,"command '"^cmd^"' failed")
                          end
          in (Uri2String uri,tmp,true)
          end
 
-      fun retrieveUri uri = 
+      fun retrieveUri uri =
          case uriLocal uri
-           of SOME f => (Uri2String uri,Uri2String f,false) 
-            | NONE => retrieveRemote uri 
+           of SOME f => (Uri2String uri,Uri2String f,false)
+            | NONE => retrieveRemote uri
    end
 (* stop of ../../Unicode/Uri/uri.sml *)
 (* start of ../../Parser/version.sml *)
@@ -3370,15 +3370,15 @@ signature UtilList =
       val delete        : ('a * 'a -> order) -> 'a * 'a list -> 'a list
       val elem          : ('a * 'a -> order) -> 'a * 'a list -> bool
    end
-      
+
 structure UtilList : UtilList =
    struct
       (*--------------------------------------------------------------------*)
       (* split a list into a list of lists at each element fullfilling p.   *)
-      (*--------------------------------------------------------------------*) 
-      fun split p l = 
+      (*--------------------------------------------------------------------*)
+      fun split p l =
          let val (one,ls) = foldr
-            (fn (a,(curr,ls)) => if p a then (nil,curr::ls) else (a::curr,ls)) 
+            (fn (a,(curr,ls)) => if p a then (nil,curr::ls) else (a::curr,ls))
             (nil,nil) l
          in one::ls
          end
@@ -3392,16 +3392,16 @@ structure UtilList : UtilList =
       (* for [a1,...,an] and [b1,...,bk], generate                          *)
       (* [f(a1,b1),f(a1,b2),...,f(an,bk-1),f(an,bk)].                       *)
       (*--------------------------------------------------------------------*)
-      fun mapAllPairs f (ass,bs) = 
-         foldr 
-         (fn (a,cs) => foldr (fn (b,cs) => f(a,b)::cs) cs bs) 
+      fun mapAllPairs f (ass,bs) =
+         foldr
+         (fn (a,cs) => foldr (fn (b,cs) => f(a,b)::cs) cs bs)
          nil ass
 
       (*--------------------------------------------------------------------*)
       (* find the first element x of l such that f x = SOME y, and return   *)
       (* f x. If there is no such x, return NONE.                           *)
       (*--------------------------------------------------------------------*)
-      fun findAndMap _ nil = NONE 
+      fun findAndMap _ nil = NONE
         | findAndMap f (x::xs) = case f x of NONE => findAndMap f xs | y => y
 
       (*--------------------------------------------------------------------*)
@@ -3410,21 +3410,21 @@ structure UtilList : UtilList =
       (* return (NONE,l).                                                   *)
       (*--------------------------------------------------------------------*)
       fun findAndDelete _ nil = (NONE,nil)
-        | findAndDelete f (x::xs) = 
+        | findAndDelete f (x::xs) =
          if f x then (SOME x,xs)
-         else let val (y,ys) = findAndDelete f xs in (y,x::ys) end  
+         else let val (y,ys) = findAndDelete f xs in (y,x::ys) end
 
       (*--------------------------------------------------------------------*)
       (* given a function that compares elements, merge two sorted lists.   *)
       (*--------------------------------------------------------------------*)
-      fun merge comp (l1,l2) = 
-         let 
-            fun go (nil,l) = l 
+      fun merge comp (l1,l2) =
+         let
+            fun go (nil,l) = l
               | go (l,nil) = l
-              | go (l1 as (x1::r1),l2 as (x2::r2)) = 
-               case comp(x1,x2) 
+              | go (l1 as (x1::r1),l2 as (x2::r2)) =
+               case comp(x1,x2)
                  of LESS => x1::go(r1,l2)
-                  | EQUAL => go(l1,r2) 
+                  | EQUAL => go(l1,r2)
                   | GREATER =>  x2::go(l1,r2)
          in go(l1,l2)
          end
@@ -3433,12 +3433,12 @@ structure UtilList : UtilList =
       (* given a comparing function, compute the intersection of two        *)
       (* ordered lists.                                                     *)
       (*--------------------------------------------------------------------*)
-      fun cap comp (l1,l2) = 
-         let 
+      fun cap comp (l1,l2) =
+         let
             fun go (nil,l) = nil
               | go (l,nil) = nil
-              | go (l1 as (x1::r1),l2 as (x2::r2)) = 
-               case comp(x1,x2) 
+              | go (l1 as (x1::r1),l2 as (x2::r2)) =
+               case comp(x1,x2)
                  of LESS => go(r1,l2)
                   | EQUAL => x1::go(r1,r2)
                   | GREATER =>  go(l1,r2)
@@ -3449,12 +3449,12 @@ structure UtilList : UtilList =
       (* given a comparing function, compute the difference of two          *)
       (* ordered lists.                                                     *)
       (*--------------------------------------------------------------------*)
-      fun diff comp (l1,l2) = 
-         let 
+      fun diff comp (l1,l2) =
+         let
             fun go (nil,l) = nil
               | go (l,nil) = l
-              | go (l1 as (x1::r1),l2 as (x2::r2)) = 
-               case comp(x1,x2) 
+              | go (l1 as (x1::r1),l2 as (x2::r2)) =
+               case comp(x1,x2)
                  of LESS => x1::go(r1,l2)
                   | EQUAL => go(r1,r2)
                   | GREATER => go(l1,r2)
@@ -3465,12 +3465,12 @@ structure UtilList : UtilList =
       (* given a comparing function, find out whether an ordered list is    *)
       (* contained in an other ordered list.                                *)
       (*--------------------------------------------------------------------*)
-      fun sub comp (l1,l2) = 
-         let 
+      fun sub comp (l1,l2) =
+         let
             fun go (nil,l) = true
               | go (l,nil) = false
-              | go (l1 as (x1::r1),l2 as (x2::r2)) = 
-               case comp(x1,x2) 
+              | go (l1 as (x1::r1),l2 as (x2::r2)) =
+               case comp(x1,x2)
                  of LESS => false
                   | EQUAL => go(r1,r2)
                   | GREATER => go(l1,r2)
@@ -3481,11 +3481,11 @@ structure UtilList : UtilList =
       (* given a function that compares elements, insert an element into an *)
       (* ordered list.                                                      *)
       (*--------------------------------------------------------------------*)
-      fun insert comp (x,l) = 
-         let 
+      fun insert comp (x,l) =
+         let
             fun go nil = [x]
-              | go (l as y::ys) = 
-               case comp(x,y) 
+              | go (l as y::ys) =
+               case comp(x,y)
                  of LESS => x::l
                   | EQUAL => l
                   | GREATER => y::go ys
@@ -3496,11 +3496,11 @@ structure UtilList : UtilList =
       (* given a function that compares elements, delete an element from    *)
       (* an ordered list.                                                   *)
       (*--------------------------------------------------------------------*)
-      fun delete comp (x,l) = 
-         let 
+      fun delete comp (x,l) =
+         let
             fun go nil = [x]
-              | go (l as y::ys) = 
-               case comp(x,y) 
+              | go (l as y::ys) =
+               case comp(x,y)
                  of LESS => l
                   | EQUAL => ys
                   | GREATER => y::go ys
@@ -3511,11 +3511,11 @@ structure UtilList : UtilList =
       (* given a function that compares elements, insert an element into an *)
       (* ordered list.                                                      *)
       (*--------------------------------------------------------------------*)
-      fun elem comp (x,l) = 
-         let 
+      fun elem comp (x,l) =
+         let
             fun go nil = false
-              | go (l as y::ys) = 
-               case comp(x,y) 
+              | go (l as y::ys) =
+               case comp(x,y)
                  of LESS => false
                   | EQUAL => true
                   | GREATER => go ys
@@ -3526,14 +3526,14 @@ structure UtilList : UtilList =
       (* merge-sort a list of elements comparable with the function in the  *)
       (* 1st argument. Preserve duplicate elements.                         *)
       (*--------------------------------------------------------------------*)
-      fun sort _ nil = nil 
-        | sort comp l = 
+      fun sort _ nil = nil
+        | sort comp l =
          let fun mergeOne (x::y::l) = merge comp (x,y)::mergeOne l
                | mergeOne l = l
              fun mergeAll [l] = l
                | mergeAll ls = mergeAll (mergeOne ls)
              val singles = map (fn x => [x]) l
-         in 
+         in
             mergeAll singles
          end
 
@@ -3541,46 +3541,46 @@ structure UtilList : UtilList =
 
 (* stop of ../../Util/utilList.sml *)
 (* start of ../../Parser/Dfa/dfaOptions.sml *)
-signature DfaOptions = 
+signature DfaOptions =
    sig
       val O_DFA_INITIAL_WIDTH  : int ref
       val O_DFA_MAX_STATES     : int ref
       val O_DFA_WARN_TOO_LARGE : bool ref
-                           
+
       val setDfaDefaults : unit -> unit
       val setDfaOptions  : Options.Option list * (string -> unit) -> Options.Option list
-                           
+
       val dfaUsage : Options.Usage
    end
 
-functor DfaOptions () : DfaOptions = 
+functor DfaOptions () : DfaOptions =
    struct
       open Options UtilInt
 
-      val O_DFA_INITIAL_WIDTH  = ref 4 
+      val O_DFA_INITIAL_WIDTH  = ref 4
       val O_DFA_MAX_STATES     = ref 256
       val O_DFA_WARN_TOO_LARGE = ref true
 
-      fun setDfaDefaults() = 
-         let 
+      fun setDfaDefaults() =
+         let
             val _ = O_DFA_INITIAL_WIDTH   := 4
             val _ = O_DFA_MAX_STATES      := 256
             val _ = O_DFA_WARN_TOO_LARGE  := true
          in ()
          end
 
-      val dfaUsage = 
+      val dfaUsage =
          [U_ITEM(["--dfa-initial-size=n"],"Initial size of DFA transition tables (16)"),
           U_ITEM(["--dfa-initial-width=n"],"Same as --dfa-initial-size=2^n (4)"),
           U_ITEM(["--dfa-max-size=n"],"Maximal size of DFAs for ambiguous content models (256)"),
           U_ITEM(["--dfa-warn-size[=(yes|no)]"],"Warn about too large DFAs (yes)")
           ]
 
-      fun setDfaOptions(opts,doError) = 
-         let 
+      fun setDfaOptions(opts,doError) =
+         let
             exception Failed of string option
 
-            fun getNat str = 
+            fun getNat str =
                if str="" then raise Failed NONE
                else let val cs = String.explode str
                     in foldl (fn (c,n) => if #"0">c orelse #"9"<c then raise Failed NONE
@@ -3588,35 +3588,35 @@ functor DfaOptions () : DfaOptions =
                        handle Overflow => raise Failed
                           (SOME("number "^str^" is too large for this system"))
                     end
-                 
+
             val yesNo = "'yes' or 'no'"
             fun tooLarge n = String.concat ["number ",n," is too large for this system"]
             fun mustHave key = String.concat ["option --",key," must have an argument"]
-            fun mustBe key what = String.concat 
+            fun mustBe key what = String.concat
                ["the argument to option --",key," must be ",what]
 
             fun do_yesno(key,valOpt,flag) =
-               case valOpt 
+               case valOpt
                  of NONE => flag := true
                   | SOME "yes" => flag := true
                   | SOME "no" => flag := false
                   | SOME s => doError (mustBe key yesNo)
 
             fun do_num(key,valOpt,flag) =
-               case valOpt 
+               case valOpt
                  of NONE => doError (mustHave key)
                   | SOME s => flag := getNat s
                     handle Failed NONE => doError (mustBe key "a number")
                          | Failed (SOME s) => doError s
 
             fun do_dfa_ts(key,valOpt,toWidth) =
-               case valOpt 
+               case valOpt
                  of NONE => doError (mustHave key)
                   | SOME s => O_DFA_INITIAL_WIDTH := toWidth (getNat s)
                     handle Failed NONE => doError (mustBe key "a number")
                          | Failed (SOME s) => doError s
 
-            fun do_long(key,valOpt) = 
+            fun do_long(key,valOpt) =
                case key
                  of "dfa-initial-size" => true before do_dfa_ts(key,valOpt,nextPowerTwo)
                   | "dfa-initial-width" => true before do_dfa_ts(key,valOpt,fn i => i)
@@ -3628,7 +3628,7 @@ functor DfaOptions () : DfaOptions =
               | doit (opt::opts) =
                case opt
                  of OPT_NOOPT => opts
-                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts 
+                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts
                                            else opt::doit opts
                   | OPT_NEG _ => opt::doit opts
                   | OPT_SHORT _ => opt::doit opts
@@ -3637,7 +3637,7 @@ functor DfaOptions () : DfaOptions =
          end
    end
 
-      
+
 (* stop of ../../Parser/Dfa/dfaOptions.sml *)
 (* start of ../../Parser/Params/parserOptions.sml *)
 (*--------------------------------------------------------------------------*)
@@ -3684,7 +3684,7 @@ functor ParserOptions () : ParserOptions =
    struct
       structure DfaOptions = DfaOptions ()
 
-      open DfaOptions Options UtilInt UtilList 
+      open DfaOptions Options UtilInt UtilList
 
       val O_CHECK_VERSION = ref true (* check for conforming xml version?   *)
       val O_CHECK_ISO639 = ref true (* check whether a two-letter LangCode  *)
@@ -3707,7 +3707,7 @@ functor ParserOptions () : ParserOptions =
                                            (* are not declared in the dtd   *)
 
       val O_WARN_MULT_ATT_DEF  = ref true (* warn if an attributes is defd  *)
-                                          (* twice for the same element?    *) 
+                                          (* twice for the same element?    *)
       val O_WARN_MULT_ATT_DECL = ref true (* warn if there are multiple att *)
                                           (* def lists for one element?     *)
       val O_WARN_NON_ASCII_URI = ref true (* warn about non-ascii chars in  *)
@@ -3715,15 +3715,15 @@ functor ParserOptions () : ParserOptions =
 
       val O_ERROR_MINIMIZE  = ref true (* try to avoid repeating errors?    *)
 
-      val O_VALIDATE         = ref true 
+      val O_VALIDATE         = ref true
       val O_COMPATIBILITY    = ref true
       val O_INTEROPERABILITY = ref false
 
       val O_INCLUDE_EXT_PARSED = ref false
       val O_INCLUDE_PARAM_ENTS = ref false
 
-      fun setParserDefaults() = 
-         let 
+      fun setParserDefaults() =
+         let
             val _ = setDfaDefaults()
 
             val _ = O_CHECK_ISO639        := false
@@ -3731,7 +3731,7 @@ functor ParserOptions () : ParserOptions =
             val _ = O_CHECK_PREDEFINED    := true
             val _ = O_CHECK_RESERVED      := false
             val _ = O_CHECK_VERSION       := true
-            
+
             val _ = O_WARN_MULT_ENUM      := true
             val _ = O_WARN_XML_DECL       := false
             val _ = O_WARN_ATT_NO_ELEM    := false
@@ -3745,7 +3745,7 @@ functor ParserOptions () : ParserOptions =
             val _ = O_VALIDATE            := true
             val _ = O_COMPATIBILITY       := true
             val _ = O_INTEROPERABILITY    := false
-            
+
             val _ = O_ERROR_MINIMIZE      := true
 
             val _ = O_INCLUDE_EXT_PARSED  := false
@@ -3753,7 +3753,7 @@ functor ParserOptions () : ParserOptions =
          in ()
          end
 
-      val parserUsage = 
+      val parserUsage =
          [U_ITEM(["-[n]v","--validate[=(yes|no)]"],"Turn on or off validation (yes)"),
           U_ITEM(["-[n]c","--compat[=(yes|no)]","--compatibility[=(yes|no)]"],
                  "Turn on or off compatibility checking (yes)"),
@@ -3787,13 +3787,13 @@ functor ParserOptions () : ParserOptions =
           U_SEP]
          @dfaUsage
 
-      fun setParserOptions(opts,doError) = 
-         let 
-            datatype What = ATT | ATTLIST | ENT | NOT 
-               
+      fun setParserOptions(opts,doError) =
+         let
+            datatype What = ATT | ATTLIST | ENT | NOT
+
             exception Failed of string option
 
-            fun getNat str = 
+            fun getNat str =
                if str="" then raise Failed NONE
                else let val cs = String.explode str
                     in foldl (fn (c,n) => if #"0">c orelse #"9"<c then raise Failed NONE
@@ -3801,7 +3801,7 @@ functor ParserOptions () : ParserOptions =
                        handle Overflow => raise Failed
                           (SOME("number "^str^" is too large for this system"))
                     end
-                 
+
             val allNone = "'all' or 'none'"
             val yesNo = "'yes' or 'no'"
             val yesNoWhat = "'yes', 'no' or a list of 'att', 'attlist', 'ent' and 'not'"
@@ -3809,19 +3809,19 @@ functor ParserOptions () : ParserOptions =
                (String.concat ["the argument to option --",key," must be ",what])
             fun errorNoArg key = doError
                (String.concat ["option --",key," has no argument"])
-               
+
             fun do_mult_decl(key,valOpt) =
-               let 
+               let
                   val all = [ATT,ATTLIST,ENT,NOT]
                   fun setFlags whats = app (fn (what,flag) => flag := member what whats)
                      [(ATT,O_WARN_MULT_ATT_DEF),(ATTLIST,O_WARN_MULT_ATT_DECL),
                       (ENT,O_WARN_MULT_ENT_DECL),(NOT,O_WARN_MULT_NOT_DECL)]
-               in case valOpt 
+               in case valOpt
                     of NONE => setFlags all
                      | SOME "yes" => setFlags all
                      | SOME "no" => setFlags nil
                      | SOME s => let val fields = String.fields (fn c => #","=c) s
-                                     val whats = map 
+                                     val whats = map
                                         (fn s => case s
                                                    of "att" => ATT
                                                     | "attlist" => ATTLIST
@@ -3833,27 +3833,27 @@ functor ParserOptions () : ParserOptions =
                               handle Failed _ => errorMustBe(key,yesNoWhat)
                end
 
-            fun do_noarg(key,valOpt,flag) = 
-               case valOpt 
+            fun do_noarg(key,valOpt,flag) =
+               case valOpt
                  of NONE => flag := true
                   | SOME _ => errorNoArg key
 
             fun do_yesno(key,valOpt,flag) =
-               case valOpt 
+               case valOpt
                  of NONE => flag := true
                   | SOME "yes" => flag := true
                   | SOME "no" => flag := false
                   | SOME s => errorMustBe(key,yesNo)
 
             fun do_num(key,valOpt,flag) =
-               case valOpt 
+               case valOpt
                  of NONE => errorMustBe(key,"a number")
                   | SOME s => flag := getNat s
                     handle Failed NONE => errorMustBe(key,"a number")
                          | Failed (SOME s) => doError s
 
             fun do_warn(key,valOpt) =
-               let val all = [O_WARN_MULT_ENUM,O_WARN_ATT_NO_ELEM,   
+               let val all = [O_WARN_MULT_ENUM,O_WARN_ATT_NO_ELEM,
                               O_WARN_MULT_ENT_DECL,O_WARN_MULT_NOT_DECL,O_WARN_MULT_ATT_DEF,
                               O_WARN_MULT_ATT_DECL,O_WARN_SHOULD_DECLARE,O_WARN_XML_DECL]
                   fun setFlags value = app (fn flag => flag := value) all
@@ -3864,7 +3864,7 @@ functor ParserOptions () : ParserOptions =
                      | SOME _ => errorMustBe(key,allNone)
                end
 
-            fun do_long(key,valOpt) = 
+            fun do_long(key,valOpt) =
                case key
                  of "validate" => true before do_yesno(key,valOpt,O_VALIDATE)
                   | "compat" => true before do_yesno(key,valOpt,O_COMPATIBILITY)
@@ -3873,53 +3873,53 @@ functor ParserOptions () : ParserOptions =
                   | "interoperability" => true before do_yesno(key,valOpt,O_INTEROPERABILITY)
 
                   | "few-errors" => true before do_yesno(key,valOpt,O_ERROR_MINIMIZE)
-                    
+
                   | "check-reserved" => true before do_yesno(key,valOpt,O_CHECK_RESERVED)
                   | "check-predef" => true before do_yesno(key,valOpt,O_CHECK_PREDEFINED)
                   | "check-predefined" => true before do_yesno(key,valOpt,O_CHECK_PREDEFINED)
                   | "check-lang-id" => true before do_yesno(key,valOpt,O_CHECK_LANGID)
                   | "check-iso639" => true before do_yesno(key,valOpt,O_CHECK_ISO639)
                   | "check-xml-version" => true before do_yesno(key,valOpt,O_CHECK_VERSION)
-                    
+
                   | "warn" => true before do_warn(key,valOpt)
                   | "warn-xml-decl" => true before do_yesno(key,valOpt,O_WARN_XML_DECL)
                   | "warn-att-elem" => true before do_yesno(key,valOpt,O_WARN_ATT_NO_ELEM)
                   | "warn-predefined" => true before do_yesno(key,valOpt,O_WARN_SHOULD_DECLARE)
                   | "warn-mult-decl" => true before do_mult_decl(key,valOpt)
                   | "warn-uri" => true before do_yesno(key,valOpt,O_WARN_NON_ASCII_URI)
-                    
+
                   | "include-ext" => true before do_yesno(key,valOpt,O_INCLUDE_EXT_PARSED)
                   | "include-external" => true before do_yesno(key,valOpt,O_INCLUDE_EXT_PARSED)
                   | "include-par" => true before do_yesno(key,valOpt,O_INCLUDE_PARAM_ENTS)
                   | "include-parameter" => true before do_yesno(key,valOpt,O_INCLUDE_PARAM_ENTS)
-                    
+
                   | _ => false
 
-            fun do_short cs = 
-               let fun doOne c = 
+            fun do_short cs =
+               let fun doOne c =
                   case c
                     of #"v" => false before O_VALIDATE := true
                      | #"c" => false before O_COMPATIBILITY := true
                      | #"i" => false before O_INTEROPERABILITY := true
                      | _ => true
                in List.filter doOne cs
-               end 
+               end
 
-            fun do_neg cs = 
-               let fun doOne c = 
+            fun do_neg cs =
+               let fun doOne c =
                   case c
                     of #"v" => false before O_VALIDATE := false
                      | #"c" => false before O_COMPATIBILITY := false
                      | #"i" => false before O_INTEROPERABILITY := false
                      | _ => true
                in List.filter doOne cs
-               end 
+               end
 
             and doit nil = nil
               | doit (opt::opts) =
                case opt
                  of OPT_NOOPT => opts
-                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts 
+                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts
                                            else opt::doit opts
                   | OPT_SHORT cs => (case do_short cs
                                        of nil => doit opts
@@ -3928,9 +3928,9 @@ functor ParserOptions () : ParserOptions =
                                        of nil => doit opts
                                         | rest => OPT_NEG rest::doit opts)
                   | OPT_STRING s => opt::doit opts
-         
+
             val opts1 = setDfaOptions (opts,doError)
-         in 
+         in
             doit opts1
          end
    end
@@ -3948,7 +3948,7 @@ signature IntLists =
       val inIntList      : int * IntList -> bool
       val subIntList     : IntList * IntList -> bool
 
-      val compareIntLists: IntList * IntList -> order 
+      val compareIntLists: IntList * IntList -> order
       val hashIntList    : IntList -> word
 
       val addIntList     : int * IntList -> IntList
@@ -3961,7 +3961,7 @@ signature IntLists =
       val IntList2String : IntList -> string
    end
 
-structure IntLists : IntLists = 
+structure IntLists : IntLists =
    struct
       open UtilCompare UtilHash UtilInt UtilList UtilString
 
@@ -3983,8 +3983,8 @@ structure IntLists : IntLists =
       val compareIntLists = compareList Int.compare
       val hashIntList = hashList hashInt
 
-      val IntList2String = List2String Int.toString 
-   end                        
+      val IntList2String = List2String Int.toString
+   end
 (* stop of ../../Util/intLists.sml *)
 (* start of ../../Unicode/Chars/dataDict.sml *)
 
@@ -3995,7 +3995,7 @@ structure IntLists : IntLists =
 
 
 
-structure KeyData : Key = 
+structure KeyData : Key =
    struct
       type Key = UniChar.Data
 
@@ -4005,8 +4005,8 @@ structure KeyData : Key =
       val toString = UniChar.Data2String
    end
 
-structure DataDict = Dict (structure Key = KeyData) 
-structure DataSymTab = SymTable (structure Key = KeyData) 
+structure DataDict = Dict (structure Key = KeyData)
+structure DataSymTab = SymTable (structure Key = KeyData)
 
 
 (* stop of ../../Unicode/Chars/dataDict.sml *)
@@ -4020,11 +4020,11 @@ structure DataSymTab = SymTable (structure Key = KeyData)
 (* Depends on:                                                              *)
 (*                                                                          *)
 (* Exceptions raised by functions in this structure:                        *)
-(*   boundsFollow : none                                                    *) 
-(*   mergeFirst   : ConflictFirst                                           *) 
-(*   mergeFollow  : ConflictFollow                                          *) 
+(*   boundsFollow : none                                                    *)
+(*   mergeFirst   : ConflictFirst                                           *)
+(*   mergeFollow  : ConflictFollow                                          *)
 (*--------------------------------------------------------------------------*)
-signature DfaData = 
+signature DfaData =
    sig
       type Dfa
 
@@ -4033,7 +4033,7 @@ signature DfaData =
        | CM_OPT of ContentModel
        | CM_REP of ContentModel
        | CM_PLUS of ContentModel
-       | CM_ALT of ContentModel list 
+       | CM_ALT of ContentModel list
        | CM_SEQ of ContentModel list
    end
 
@@ -4045,15 +4045,15 @@ structure DfaBase =
        | CM_OPT of ContentModel
        | CM_REP of ContentModel
        | CM_PLUS of ContentModel
-       | CM_ALT of ContentModel list 
+       | CM_ALT of ContentModel list
        | CM_SEQ of ContentModel list
 
       type Sigma = int
       type State = int
 
-      val dfaDontCare = ~2 
-      val dfaError    = ~1 
-      val dfaInitial  = 0 
+      val dfaDontCare = ~2
+      val dfaError    = ~1
+      val dfaInitial  = 0
 
       exception DfaTooLarge of int
       exception Ambiguous of Sigma * int * int
@@ -4062,8 +4062,8 @@ structure DfaBase =
 
       type Empty  = bool
       type First  = (State * Sigma) list
-      type Follow = First 
-         
+      type Follow = First
+
       type Info = State * Empty * First
 
       datatype CM' =
@@ -4077,10 +4077,10 @@ structure DfaBase =
 
       type Row = Sigma * Sigma * State vector * bool
       val nullRow : Row = (1,0,Vector.fromList nil,false)
-         
+
       type Dfa = Row vector
 
-      val emptyDfa : Dfa = Vector.fromList [(1,0,Vector.fromList nil,true)] 
+      val emptyDfa : Dfa = Vector.fromList [(1,0,Vector.fromList nil,true)]
    end
 
 structure DfaData = DfaBase : DfaData
@@ -4122,17 +4122,17 @@ signature DecodeFile =
 structure DecodeFile : DecodeFile =
    struct
       open
-         UniChar Uri UtilError 
-         
+         UniChar Uri UtilError
+
       structure Bytes = Word8
       type Byte = Bytes.word
 
       fun Byte2Char b = Chars.fromLargeWord(Bytes.toLargeWord b)
-      fun Byte2Hex b = 
+      fun Byte2Hex b =
          "0x"^UtilString.toUpperString(StringCvt.padLeft #"0" 2 (Bytes.toString b))
       fun Char2Byte c = Bytes.fromLargeWord(Chars.toLargeWord c)
 
-      type instream = TextIO.instream 
+      type instream = TextIO.instream
       val closeIn   = TextIO.closeIn
       val input     = TextIO.input
       val input1    = TextIO.input1
@@ -4156,35 +4156,35 @@ structure DecodeFile : DecodeFile =
       (* return the uri of a file.                                          *)
       (*--------------------------------------------------------------------*)
       fun fileUri ((typ,_,_),_,_,_) =
-         case typ 
+         case typ
            of STD => emptyUri
             | FNAME(uri,_,_,_) => uri
       (*--------------------------------------------------------------------*)
       (* return the uri string name of a file.                              *)
       (*--------------------------------------------------------------------*)
       fun fileName ((typ,_,_),_,_,_) =
-         case typ 
+         case typ
            of STD => "<stdin>"
             | FNAME(_,str,_,_) => str
       (*--------------------------------------------------------------------*)
       (* return the uri string and the position in the the file.            *)
       (*--------------------------------------------------------------------*)
       fun filePos ((typ,_,p),_,s,i) =
-         case typ 
+         case typ
            of STD => ("<stdin>",p+i-s)
             | FNAME(_,str,_,_) => (str,p+i-s)
 
       (*--------------------------------------------------------------------*)
       (* open a file; report IO errors by raising NoSuchFile.               *)
       (*--------------------------------------------------------------------*)
-      fun openFile uriOpt = 
-         let val (typ,stream) = 
-            case uriOpt 
+      fun openFile uriOpt =
+         let val (typ,stream) =
+            case uriOpt
               of NONE => (STD,stdIn)
                | SOME uri => let val (str,fname,tmp) = retrieveUri uri
                              in (FNAME(uri,str,fname,tmp),openIn fname)
                              end
-                          handle IO.Io {name,cause,...} 
+                          handle IO.Io {name,cause,...}
                           => raise NoSuchFile(name,exnMessage cause)
          in ((typ,stream,0),nullVec,0,0)
          end
@@ -4195,19 +4195,19 @@ structure DecodeFile : DecodeFile =
       fun closeStream (typ,stream,_) =
          case typ
            of STD => ()
-            | FNAME(_,uri,fname,tmp) 
+            | FNAME(_,uri,fname,tmp)
               => let val _ = closeIn stream handle IO.Io _ => ()
-                     val _ = (if tmp andalso OS.FileSys.access(fname,nil) 
+                     val _ = (if tmp andalso OS.FileSys.access(fname,nil)
                                  then OS.FileSys.remove fname else ())
                         handle exn as OS.SysErr _ =>
                            TextIO.output(TextIO.stdErr,String.concat
                                          ["Error removing temporary file ",fname,"for URI",uri,
                                           "(",exnMessage exn,")\n"])
-                             
+
                  in ()
                  end
       fun closeFile (tsp,_,_,_) = closeStream tsp
-                                         
+
       (*--------------------------------------------------------------------*)
       (* read a byte from the file; if at the end of buffer, reload it.     *)
       (* if a reload fails or returns an IO error, raise EndOfFile. --------*)
@@ -4250,7 +4250,7 @@ structure DecodeFile : DecodeFile =
 (* Exceptions raised by functions in this structure:                        *)
 (*   decodeMessage : none                                                   *)
 (*--------------------------------------------------------------------------*)
-signature DecodeError = 
+signature DecodeError =
    sig
       datatype DecodeError =
           ERR_ILLEGAL_CHAR of DecodeFile.Byte * string
@@ -4274,13 +4274,13 @@ signature DecodeError =
 
       val decodeMessage : DecodeError -> string list
 
-      exception DecodeError of DecodeFile.File * bool * DecodeError 
+      exception DecodeError of DecodeFile.File * bool * DecodeError
    end
 
 structure DecodeError : DecodeError =
    struct
-      open 
-         DecodeFile UtilString UniChar 
+      open
+         DecodeFile UtilString UniChar
 
       datatype DecodeError =
           ERR_ILLEGAL_CHAR of DecodeFile.Byte * string
@@ -4303,57 +4303,57 @@ structure DecodeError : DecodeError =
         | ERR_INCOMPATIBLE_ENC of string * string
 
       fun Char2Hex c = "0x"^UtilString.toUpperString(StringCvt.padLeft #"0" 4 (Chars.toString c))
-          
-      fun decodeMessage err = 
+
+      fun decodeMessage err =
          case err
-           of ERR_ILLEGAL_CHAR(b,what) => 
+           of ERR_ILLEGAL_CHAR(b,what) =>
               [Byte2Hex b,"is not",prependAnA what,"character"]
 
-            | ERR_NON_UNI_UCS4 c => 
+            | ERR_NON_UNI_UCS4 c =>
               ["UCS-4 coded non-Unicode character",Char2Uni c]
-            | ERR_EOF_UCS4(pos,bytes) => 
+            | ERR_EOF_UCS4(pos,bytes) =>
               ["End of file after",Int2String pos,"bytes of UCS-4 character",
                "starting with ",List2String0 Byte2Hex bytes]
-           
-            | ERR_NON_DIRECT_UTF7 b => 
+
+            | ERR_NON_DIRECT_UTF7 b =>
               ["Indirect UTF-7 character ",Byte2Hex b,"in non-shifted mode"]
-            | ERR_PADDING_UTF7 pad => 
+            | ERR_PADDING_UTF7 pad =>
               ["Non-zero padding",Char2Hex pad,"at end of UTF-7 shifted sequence"]
 
-            | ERR_ILLFORMED_UTF8 (b,len,pos) => 
-              [numberNth pos,"byte",Byte2Hex b,"of a",Int2String len^"-byte", 
-               "UTF-8 sequence does not start with bits 10"] 
-            | ERR_ILLEGAL_UTF8 b => 
+            | ERR_ILLFORMED_UTF8 (b,len,pos) =>
+              [numberNth pos,"byte",Byte2Hex b,"of a",Int2String len^"-byte",
+               "UTF-8 sequence does not start with bits 10"]
+            | ERR_ILLEGAL_UTF8 b =>
               ["Byte",Byte2Hex b,"is neither ASCII nor does it start",
                "a valid multi-byte UTF-8 sequence"]
-            | ERR_EOF_UTF8 (len,pos) => 
+            | ERR_EOF_UTF8 (len,pos) =>
               ["End of file terminates a ",Int2String len^"-byte",
                "UTF-8 sequence before the ",numberNth pos,"byte"]
-            | ERR_NON_UNI_UTF8 (c,len) => 
+            | ERR_NON_UNI_UTF8 (c,len) =>
               [Int2String len^"-byte UTF-8 sequence decodes to non-Unicode character",Char2Uni c]
-            | ERR_INVALID_UTF8_SEQ bs => 
+            | ERR_INVALID_UTF8_SEQ bs =>
               ["Invalid UTF-8 sequence",List2xString (""," ","") Byte2Hex bs]
-              
-            | ERR_EOF_UCS2 b => 
+
+            | ERR_EOF_UCS2 b =>
               ["End of file before second byte of UCS-2 character starting with",Byte2Hex b]
-            | ERR_EOF_UTF16 b => 
+            | ERR_EOF_UTF16 b =>
               ["End of file before second byte of UTF-16 character starting with",Byte2Hex b]
 
-            | ERR_LOW_SURROGATE c => 
+            | ERR_LOW_SURROGATE c =>
               ["Low surrogate",Char2Uni c,"without preceding high surrogate"]
-            | ERR_HIGH_SURROGATE (c,c1) => 
+            | ERR_HIGH_SURROGATE (c,c1) =>
               ["High surrogate",Char2Uni c,"followed by",Char2Uni c1,"instead of low surrogate"]
-            | ERR_EOF_SURROGATE c => 
+            | ERR_EOF_SURROGATE c =>
               ["High surrogate",Char2Uni c,"followed by the end of file"]
 
-            | ERR_NO_ENC_DECL auto => 
+            | ERR_NO_ENC_DECL auto =>
               ["Couldn't parse encoding declaration but auto-detected encoding",auto,"required so"]
-            | ERR_UNSUPPORTED_ENC enc => 
+            | ERR_UNSUPPORTED_ENC enc =>
               ["Unsupported encoding",enc]
-            | ERR_INCOMPATIBLE_ENC (enc,auto) => 
+            | ERR_INCOMPATIBLE_ENC (enc,auto) =>
               ["Encoding",enc,"is incompatible with auto-detected encoding",auto]
 
-      exception DecodeError of File * bool * DecodeError 
+      exception DecodeError of File * bool * DecodeError
    end
 
 
@@ -4415,33 +4415,33 @@ signature DecodeUcs2 =
       val getCharUcs2l : DecodeFile.File -> UniChar.Char * DecodeFile.File
    end
 
-structure DecodeUcs2 : DecodeUcs2 = 
+structure DecodeUcs2 : DecodeUcs2 =
    struct
-      open 
+      open
          UniChar Encoding
          DecodeFile DecodeError DecodeUtil
 
       fun getCharUcs2b f =
-         let 
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle exn as EndOfFile f 
+            val (b2,f2) = getByte f1 handle exn as EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS2 b1)
-            val c = Chars.orb(Chars.<<(Byte2Char b1,0w8),Byte2Char b2) 
+            val c = Chars.orb(Chars.<<(Byte2Char b1,0w8),Byte2Char b2)
          in (c,f2)
          end
 
       fun getCharUcs2l f =
-         let 
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle exn as EndOfFile f 
+            val (b2,f2) = getByte f1 handle exn as EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS2 b1)
-            val c = Chars.orb(Chars.<<(Byte2Char b2,0w8),Byte2Char b1) 
+            val c = Chars.orb(Chars.<<(Byte2Char b2,0w8),Byte2Char b1)
          in (c,f2)
          end
    end
 (* stop of ../../Unicode/Decode/decodeUcs2.sml *)
 (* start of ../../Unicode/Decode/decodeMisc.sml *)
-signature DecodeMisc = 
+signature DecodeMisc =
    sig
       val getCharAscii  : DecodeFile.File -> UniChar.Char * DecodeFile.File
       val getCharEbcdic : DecodeFile.File -> UniChar.Char * DecodeFile.File
@@ -4449,17 +4449,17 @@ signature DecodeMisc =
       val getCharLatin1 : DecodeFile.File -> UniChar.Char * DecodeFile.File
    end
 
-structure DecodeMisc : DecodeMisc = 
+structure DecodeMisc : DecodeMisc =
    struct
-      open 
+      open
          UniChar DecodeFile DecodeError
-         
+
       fun getCharEof f = raise EndOfFile f
 
       (*--------------------------------------------------------------------*)
       (* ASCII characters must be lower than 0wx80                          *)
       (*--------------------------------------------------------------------*)
-      fun getCharAscii f = 
+      fun getCharAscii f =
          let val (b,f1) = getByte f
          in if b<0wx80 then (Byte2Char b,f1)
             else raise DecodeError(f1,false,ERR_ILLEGAL_CHAR(b,"ASCII"))
@@ -4476,7 +4476,7 @@ structure DecodeMisc : DecodeMisc =
       (* EBCDIC is mapped to the first plane of Unicode.                    *)
       (*--------------------------------------------------------------------*)
       (* according to rfc-1345 (and gnu recode experiments) *)
-      val ebcdic2latinTab = Vector.fromList 
+      val ebcdic2latinTab = Vector.fromList
           [0wx00,0wx01,0wx02,0wx03,0wx9C,0wx09,0wx86,0wx7F,
            0wx97,0wx8D,0wx8E,0wx0B,0wx0C,0wx0D,0wx0E,0wx0F,
            0wx10,0wx11,0wx12,0wx13,0wx9D,0wx85,0wx08,0wx87,
@@ -4509,8 +4509,8 @@ structure DecodeMisc : DecodeMisc =
            0wx59,0wx5A,0wxF4,0wxF5,0wxF6,0wxF7,0wxF8,0wxF9,
            0wx30,0wx31,0wx32,0wx33,0wx34,0wx35,0wx36,0wx37,
            0wx38,0wx39,0wxFA,0wxFB,0wxFC,0wxFD,0wxFE,0wxFF
-           ] 
-           
+           ]
+
       fun ebcdic2latin b = Vector.sub(ebcdic2latinTab,Word8.toInt b)
 
       fun getCharEbcdic f = let val (b,f1) = getByte f
@@ -4535,20 +4535,20 @@ signature DecodeUcs4 =
       val getCharUcs4sl : DecodeFile.File -> UniChar.Char * DecodeFile.File
    end
 
-structure DecodeUcs4 : DecodeUcs4 = 
+structure DecodeUcs4 : DecodeUcs4 =
    struct
-      open 
-         UniChar UniClasses 
+      open
+         UniChar UniClasses
          DecodeFile DecodeError DecodeUtil
 
-      fun getCharUcs4b f = 
-         let 
+      fun getCharUcs4b f =
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle EndOfFile f 
+            val (b2,f2) = getByte f1 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1]))
-            val (b3,f3) = getByte f2 handle EndOfFile f 
+            val (b3,f3) = getByte f2 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2]))
-            val (b4,f4) = getByte f3 handle EndOfFile f 
+            val (b4,f4) = getByte f3 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2,b3]))
             val c = Chars.orb(Chars.orb(Chars.<<(Byte2Char b1,0w24),
                                         Chars.<<(Byte2Char b2,0w16)),
@@ -4558,14 +4558,14 @@ structure DecodeUcs4 : DecodeUcs4 =
             else raise DecodeError(f4,false,ERR_NON_UNI_UCS4 c)
          end
 
-      fun getCharUcs4l f = 
-         let 
+      fun getCharUcs4l f =
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle EndOfFile f 
+            val (b2,f2) = getByte f1 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1]))
-            val (b3,f3) = getByte f2 handle EndOfFile f 
+            val (b3,f3) = getByte f2 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2]))
-            val (b4,f4) = getByte f3 handle EndOfFile f 
+            val (b4,f4) = getByte f3 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2,b3]))
             val c = Chars.orb(Chars.orb(Chars.<<(Byte2Char b4,0w24),
                                         Chars.<<(Byte2Char b3,0w16)),
@@ -4575,14 +4575,14 @@ structure DecodeUcs4 : DecodeUcs4 =
             else raise DecodeError(f4,false,ERR_NON_UNI_UCS4 c)
          end
 
-      fun getCharUcs4sb f = 
-         let 
+      fun getCharUcs4sb f =
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle EndOfFile f 
+            val (b2,f2) = getByte f1 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1]))
-            val (b3,f3) = getByte f2 handle EndOfFile f 
+            val (b3,f3) = getByte f2 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2]))
-            val (b4,f4) = getByte f3 handle EndOfFile f 
+            val (b4,f4) = getByte f3 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2,b3]))
             val c = Chars.orb(Chars.orb(Chars.<<(Byte2Char b2,0w24),
                                         Chars.<<(Byte2Char b1,0w16)),
@@ -4592,14 +4592,14 @@ structure DecodeUcs4 : DecodeUcs4 =
             else raise DecodeError(f4,false,ERR_NON_UNI_UCS4 c)
          end
 
-      fun getCharUcs4sl f = 
-         let 
+      fun getCharUcs4sl f =
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle EndOfFile f 
+            val (b2,f2) = getByte f1 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1]))
-            val (b3,f3) = getByte f2 handle EndOfFile f 
+            val (b3,f3) = getByte f2 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2]))
-            val (b4,f4) = getByte f3 handle EndOfFile f 
+            val (b4,f4) = getByte f3 handle EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UCS4(1,[b1,b2,b3]))
             val c = Chars.orb(Chars.orb(Chars.<<(Byte2Char b3,0w24),
                                         Chars.<<(Byte2Char b4,0w16)),
@@ -4625,25 +4625,25 @@ signature DecodeUtf16 =
       val getCharUtf16l : DecodeFile.File -> UniChar.Char * DecodeFile.File
    end
 
-structure DecodeUtf16 : DecodeUtf16 = 
+structure DecodeUtf16 : DecodeUtf16 =
    struct
-      open 
+      open
          UniChar Encoding
          DecodeFile DecodeError DecodeUtil
 
       fun getCharUtf16b f =
-         let 
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle exn as EndOfFile f 
+            val (b2,f2) = getByte f1 handle exn as EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UTF16 b1)
-            val c = Chars.orb(Chars.<<(Byte2Char b1,0w8),Byte2Char b2) 
-        in 
+            val c = Chars.orb(Chars.<<(Byte2Char b1,0w8),Byte2Char b2)
+        in
            if isSurrogate c then (* Chars.orb(c,0wx7FF)=0wxDFFF *)
                if isLowSurrogate c then raise DecodeError(f2,false,ERR_LOW_SURROGATE c)
-               else let 
-                       val (b3,f3) = getByte f2 handle exn as EndOfFile f 
+               else let
+                       val (b3,f3) = getByte f2 handle exn as EndOfFile f
                           => raise DecodeError(f,true,ERR_EOF_SURROGATE c)
-                       val (b4,f4) = getByte f3 handle exn as EndOfFile f 
+                       val (b4,f4) = getByte f3 handle exn as EndOfFile f
                           => raise DecodeError(f,true,ERR_EOF_UTF16 b3)
                        val c1 = Chars.orb(Chars.<<(Byte2Char b3,0w8),Byte2Char b4)
                     in if isLowSurrogate c1 then (combineSurrogates(c,c1),f4)
@@ -4653,18 +4653,18 @@ structure DecodeUtf16 : DecodeUtf16 =
          end
 
       fun getCharUtf16l f =
-         let 
+         let
             val (b1,f1) = getByte f
-            val (b2,f2) = getByte f1 handle exn as EndOfFile f 
+            val (b2,f2) = getByte f1 handle exn as EndOfFile f
                => raise DecodeError(f,true,ERR_EOF_UTF16 b1)
-            val c = Chars.orb(Chars.<<(Byte2Char b2,0w8),Byte2Char b1) 
-         in 
+            val c = Chars.orb(Chars.<<(Byte2Char b2,0w8),Byte2Char b1)
+         in
             if isSurrogate c then
                if isLowSurrogate c then raise DecodeError(f2,false,ERR_LOW_SURROGATE c)
-               else let 
-                       val (b3,f3) = getByte f2 handle exn as EndOfFile f 
+               else let
+                       val (b3,f3) = getByte f2 handle exn as EndOfFile f
                           => raise DecodeError(f,true,ERR_EOF_SURROGATE c)
-                       val (b4,f4) = getByte f3 handle exn as EndOfFile f 
+                       val (b4,f4) = getByte f3 handle exn as EndOfFile f
                           => raise DecodeError(f,true,ERR_EOF_UTF16 b3)
                        val c1 = Chars.orb(Chars.<<(Byte2Char b4,0w8),Byte2Char b3)
                     in if isLowSurrogate c1 then (combineSurrogates(c,c1),f4)
@@ -4682,7 +4682,7 @@ signature DecodeUtf8 =
 
 structure DecodeUtf8 : DecodeUtf8 =
    struct
-      open 
+      open
          UniChar UniClasses UtilError UtilInt
          DecodeFile DecodeError DecodeUtil
 
@@ -4696,9 +4696,9 @@ structure DecodeUtf8 : DecodeUtf8 =
       val op <<< = Chars.<<
       val op ||| = Chars.orb
 
-      val byte1switch = Vector.tabulate 
-         (256,fn i => 
-          if i<0x80 then 1 
+      val byte1switch = Vector.tabulate
+         (256,fn i =>
+          if i<0x80 then 1
           else if i<0xC0 then 0
           else if i<0xE0 then 2
           else if i<0xF0 then 3
@@ -4710,7 +4710,7 @@ structure DecodeUtf8 : DecodeUtf8 =
       val diff2 : Char = 0wx00003080
       val diff3 : Char = diff2 <<< 0wx6 ||| 0wx00020080
       val diff4 : Char = diff3 <<< 0wx6 ||| 0wx00400080
-      val diff5 : Char = diff4 <<< 0wx6 ||| 0wx08000080 
+      val diff5 : Char = diff4 <<< 0wx6 ||| 0wx08000080
       val diff6 : Char = diff5 <<< 0wx6 ||| 0wx00000080
 
       fun getCharUtf8 f =
@@ -4720,66 +4720,66 @@ structure DecodeUtf8 : DecodeUtf8 =
                  in case n
                       of 0 (* error   *) => raise DecodeError(f1,false,ERR_ILLEGAL_UTF8 b1)
                        | 1 => (Byte2Char b1,f1)
-                       | 2 => 
-                         let 
+                       | 2 =>
+                         let
                             val (b2,f2) = getByte f1 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,2))
-                         in  if b2 && 0wxC0 <> 0wx80 
+                         in  if b2 && 0wxC0 <> 0wx80
                                 then raise DecodeError(f2,false,ERR_ILLFORMED_UTF8(b2,n,2))
                              else let val c = Byte2Char b1 <<< 0w6 + Byte2Char b2 - diff2
                                   in if c>=0wx80 then (c,f2)
                                      else raise DecodeError(f2,false,ERR_INVALID_UTF8_SEQ [b1,b2])
                                   end
                          end
-                       | 3 => 
-                         let 
+                       | 3 =>
+                         let
                             val (b2,f2) = getByte f1 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,2))
                             val (b3,f3) = getByte f2 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,3))
-                         in  
-                            if b2 && 0wxC0 <> 0wx80 
+                         in
+                            if b2 && 0wxC0 <> 0wx80
                                then raise DecodeError(f3,false,ERR_ILLFORMED_UTF8(b2,n,2))
-                            else if b3 && 0wxC0 <> 0wx80 
+                            else if b3 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f3,false,ERR_ILLFORMED_UTF8(b2,n,3))
-                                 else let val c = (Byte2Char b1 <<< 0w12 + 
-                                                   Byte2Char b2 <<< 0w06 + 
+                                 else let val c = (Byte2Char b1 <<< 0w12 +
+                                                   Byte2Char b2 <<< 0w06 +
                                                    Byte2Char b3 - diff3)
                                       in if c>=0wx800 then (c,f3)
                                          else raise DecodeError
                                             (f3,false,ERR_INVALID_UTF8_SEQ [b1,b2,b3])
                                       end
                          end
-                       | 4 => 
-                         let 
+                       | 4 =>
+                         let
                             val (b2,f2) = getByte f1 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,2))
                             val (b3,f3) = getByte f2 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,3))
                             val (b4,f4) = getByte f3 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,4))
-                         in  
-                            if b2 && 0wxC0 <> 0wx80 
+                         in
+                            if b2 && 0wxC0 <> 0wx80
                                then raise DecodeError(f4,false,ERR_ILLFORMED_UTF8(b2,n,2))
-                            else if b3 && 0wxC0 <> 0wx80 
+                            else if b3 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f4,false,ERR_ILLFORMED_UTF8(b2,n,3))
-                            else if b4 && 0wxC0 <> 0wx80 
+                            else if b4 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f4,false,ERR_ILLFORMED_UTF8(b2,n,4))
-                                 else let val c = (Byte2Char b1 <<< 0w18 + 
-                                                   Byte2Char b2 <<< 0w12 + 
-                                                   Byte2Char b3 <<< 0w06 + 
+                                 else let val c = (Byte2Char b1 <<< 0w18 +
+                                                   Byte2Char b2 <<< 0w12 +
+                                                   Byte2Char b3 <<< 0w06 +
                                                    Byte2Char b4 - diff4)
-                                      in 
+                                      in
                                          if c>=0wx100000 andalso c<=0wx10FFFF then (c,f4)
-                                         else if c<0wx10000 
+                                         else if c<0wx10000
                                                  then raise DecodeError
                                                     (f4,false,ERR_INVALID_UTF8_SEQ [b1,b2,b3,b4])
                                               else raise DecodeError
                                                  (f4,false,ERR_NON_UNI_UTF8(c,n))
                                       end
                          end
-                       | 5 => 
-                         let 
+                       | 5 =>
+                         let
                             val (b2,f2) = getByte f1 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,2))
                             val (b3,f3) = getByte f2 handle EndOfFile f
@@ -4788,29 +4788,29 @@ structure DecodeUtf8 : DecodeUtf8 =
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,4))
                             val (b5,f5) = getByte f4 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,5))
-                         in  
-                            if b2 && 0wxC0 <> 0wx80 
+                         in
+                            if b2 && 0wxC0 <> 0wx80
                                then raise DecodeError(f5,false,ERR_ILLFORMED_UTF8(b2,n,2))
-                            else if b3 && 0wxC0 <> 0wx80 
+                            else if b3 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f5,false,ERR_ILLFORMED_UTF8(b2,n,3))
-                            else if b4 && 0wxC0 <> 0wx80 
+                            else if b4 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f5,false,ERR_ILLFORMED_UTF8(b2,n,4))
-                            else if b5 && 0wxC0 <> 0wx80 
+                            else if b5 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f5,false,ERR_ILLFORMED_UTF8(b2,n,5))
-                                 else let val c = (Byte2Char b1 <<< 0w24 + 
-                                                   Byte2Char b2 <<< 0w18 + 
-                                                   Byte2Char b3 <<< 0w12 + 
-                                                   Byte2Char b4 <<< 0w06 + 
+                                 else let val c = (Byte2Char b1 <<< 0w24 +
+                                                   Byte2Char b2 <<< 0w18 +
+                                                   Byte2Char b3 <<< 0w12 +
+                                                   Byte2Char b4 <<< 0w06 +
                                                    Byte2Char b5 - diff5)
-                                      in if c<0wx200000 
+                                      in if c<0wx200000
                                             then raise DecodeError
                                                (f5,false,ERR_INVALID_UTF8_SEQ [b1,b2,b3,b4,b5])
                                          else raise DecodeError
                                                  (f5,false,ERR_NON_UNI_UTF8(c,n))
                                       end
                          end
-                       | 6 => 
-                         let 
+                       | 6 =>
+                         let
                             val (b2,f2) = getByte f1 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,2))
                             val (b3,f3) = getByte f2 handle EndOfFile f
@@ -4821,24 +4821,24 @@ structure DecodeUtf8 : DecodeUtf8 =
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,5))
                             val (b6,f6) = getByte f5 handle EndOfFile f
                                => raise DecodeError(f,true,ERR_EOF_UTF8(n,6))
-                         in  
-                            if b2 && 0wxC0 <> 0wx80 
+                         in
+                            if b2 && 0wxC0 <> 0wx80
                                then raise DecodeError(f6,false,ERR_ILLFORMED_UTF8(b2,n,2))
-                            else if b3 && 0wxC0 <> 0wx80 
+                            else if b3 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f6,false,ERR_ILLFORMED_UTF8(b2,n,3))
-                            else if b4 && 0wxC0 <> 0wx80 
+                            else if b4 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f6,false,ERR_ILLFORMED_UTF8(b2,n,4))
-                            else if b5 && 0wxC0 <> 0wx80 
+                            else if b5 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f6,false,ERR_ILLFORMED_UTF8(b2,n,5))
-                            else if b6 && 0wxC0 <> 0wx80 
+                            else if b6 && 0wxC0 <> 0wx80
                                     then raise DecodeError(f6,false,ERR_ILLFORMED_UTF8(b2,n,6))
-                                 else let val c = (Byte2Char b1 <<< 0w30 + 
-                                                   Byte2Char b2 <<< 0w24 + 
-                                                   Byte2Char b3 <<< 0w18 + 
-                                                   Byte2Char b4 <<< 0w12 + 
-                                                   Byte2Char b5 <<< 0w06 + 
+                                 else let val c = (Byte2Char b1 <<< 0w30 +
+                                                   Byte2Char b2 <<< 0w24 +
+                                                   Byte2Char b3 <<< 0w18 +
+                                                   Byte2Char b4 <<< 0w12 +
+                                                   Byte2Char b5 <<< 0w06 +
                                                    Byte2Char b6 - diff6)
-                                      in if c<0wx4000000 
+                                      in if c<0wx4000000
                                             then raise DecodeError
                                                (f6,false,ERR_INVALID_UTF8_SEQ [b1,b2,b3,b4,b5,b6])
                                          else raise DecodeError
@@ -4870,7 +4870,7 @@ signature Decode =
       exception DecEof of DecFile
       exception DecError of DecFile * bool * Error.DecodeError
 
-      val decUri       : DecFile -> Uri.Uri 
+      val decUri       : DecFile -> Uri.Uri
       val decName      : DecFile -> string
       val decEncoding  : DecFile -> Encoding.Encoding
 
@@ -4885,15 +4885,15 @@ signature Decode =
       val decGetArray  : DecFile -> UniChar.Char array -> int * DecFile * Error.DecodeError option
    end
 
-structure Decode : Decode = 
+structure Decode : Decode =
    struct
       structure Error = DecodeError
       open
-         UniChar Encoding Error 
-         DecodeFile DecodeMisc DecodeUcs2 DecodeUcs4 
+         UniChar Encoding Error
+         DecodeFile DecodeMisc DecodeUcs2 DecodeUcs4
          DecodeUtf16 DecodeUtf8 DecodeUtil
 
-      type DecFile = Encoding * File 
+      type DecFile = Encoding * File
       exception DecEof of DecFile
       exception DecError of DecFile * bool * DecodeError
 
@@ -4917,7 +4917,7 @@ structure Decode : Decode =
       (*--------------------------------------------------------------------*)
       (* commit the auto-detected encoding.                                 *)
       (*--------------------------------------------------------------------*)
-      fun decCommit (enc,f) = 
+      fun decCommit (enc,f) =
          case enc
            of UTF8 => ()
             | UTF16B => ()
@@ -4930,19 +4930,19 @@ structure Decode : Decode =
       fun decSwitch ((enc,f),decl) =
          let
             val decEnc = isEncoding decl
-            val _ = if decEnc<>NOENC then () 
+            val _ = if decEnc<>NOENC then ()
                     else raise DecError((enc,f),false,ERR_UNSUPPORTED_ENC decl)
             val newEnc = switchEncoding(enc,decEnc)
-            val _ = if decEnc<>NOENC orelse enc=NOENC then () 
+            val _ = if decEnc<>NOENC orelse enc=NOENC then ()
                     else raise DecError((enc,f),false,ERR_INCOMPATIBLE_ENC(encodingName enc,decl))
          in (newEnc,f)
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* get a character from an encoded entity.                            *)
       (*--------------------------------------------------------------------*)
       fun decGetChar (enc,f) =
-         let val (c,f1) = 
+         let val (c,f1) =
             case enc
               of NOENC  => raise EndOfFile f
                | ASCII  => getCharAscii f
@@ -4965,42 +4965,42 @@ structure Decode : Decode =
       (*--------------------------------------------------------------------*)
       (* Load new characters, depending on the current entity's encoding.   *)
       (*--------------------------------------------------------------------*)
-      fun decGetArray (enc,f) arr = 
-         let 
+      fun decGetArray (enc,f) arr =
+         let
             (*--------------------------------------------------------------*)
             (* Load the buffer with len new characters, or until the entity *)
             (* end is reached. Close the current file in that case.         *)
             (* Local exception Ended is needed in order to preserve tail    *)
             (* recursion.                                                   *)
             (*--------------------------------------------------------------*)
-            fun loadArray getChar = 
-               let 
+            fun loadArray getChar =
+               let
                   val ende = Array.length arr
                   exception Error of int * exn
-                  fun doit (idx,f) = 
+                  fun doit (idx,f) =
                      if idx=ende then (ende,(enc,f),NONE)
                      else let val (c,f1) = getChar f handle exn => raise Error (idx,exn)
                               val _ = Array.update(arr,idx,c)
                           in doit (idx+1,f1)
                           end
-               in doit (0,f) handle Error(idx,exn) 
-                  => case exn 
+               in doit (0,f) handle Error(idx,exn)
+                  => case exn
                        of EndOfFile f => (idx,(NOENC,f),NONE)
                         | DecodeError (f,_,err) => (idx,(enc,f),SOME err)
                         | _ => raise exn
                end
          in case enc
               of NOENC  => (0,(NOENC,f),NONE)
-               | ASCII  => loadArray getCharAscii 
+               | ASCII  => loadArray getCharAscii
                | EBCDIC => loadArray getCharEbcdic
                | LATIN1 => loadArray getCharLatin1
-               | UCS2B  => loadArray getCharUcs2b 
-               | UCS2L  => loadArray getCharUcs2l 
-               | UCS4B  => loadArray getCharUcs4b 
-               | UCS4L  => loadArray getCharUcs4l 
+               | UCS2B  => loadArray getCharUcs2b
+               | UCS2L  => loadArray getCharUcs2l
+               | UCS4B  => loadArray getCharUcs4b
+               | UCS4L  => loadArray getCharUcs4l
                | UCS4SB => loadArray getCharUcs4sb
                | UCS4SL => loadArray getCharUcs4sl
-               | UTF8   => loadArray getCharUtf8 
+               | UTF8   => loadArray getCharUtf8
                | UTF16B => loadArray getCharUtf16b
                | UTF16L => loadArray getCharUtf16l
          end
@@ -5033,7 +5033,7 @@ structure Decode : Decode =
       (* 00 00 FE FF: UCS-4, big-endian machine (1234 order)                    *)
       (* FF FE 00 00: UCS-4, little-endian machine (4321 order)                 *)
       (* FE FF 00 ##:  UTF-16, big-endian                                       *)
-      (* FF FE ## 00:  UTF-16, little-endian                                    *) 
+      (* FF FE ## 00:  UTF-16, little-endian                                    *)
       (* EF BB BF: UTF-8                                                        *)
       (* Without a Byte Order Mark:                                             *)
       (* 00 00 00 3C: UCS-4, big-endian machine (1234 order)                    *)
@@ -5072,22 +5072,22 @@ structure Decode : Decode =
 
 
 
-      fun decOpenXml uri = 
-         let 
-            fun get4Bytes (n,f) = 
+      fun decOpenXml uri =
+         let
+            fun get4Bytes (n,f) =
                if n=4 then (nil,f)
                else let val (b,f1) = getByte f
                         val (bs,f2) = get4Bytes (n+1,f1)
                     in (b::bs,f2)
                     end
                  handle EndOfFile f => (nil,f)
-                    
-            fun detect bs = 
-              case bs 
+
+            fun detect bs =
+              case bs
                 of
                   [0wx0,0wx0,0wxFE,0wxFF] => (UCS4B,nil)
                 | [0wxFF,0wxFE,0wx0,0wx0] => (UCS4L,nil)
-                | [0wxFE,0wxFF,0wx0,b4] => 
+                | [0wxFE,0wxFF,0wx0,b4] =>
                     if b4 <> 0wx0 then (UTF16B,[0wx0,b4])
                     else (UTF8,bs)
                 | [0wxFF,0wxFE,b3,0wx0] =>
@@ -5099,12 +5099,12 @@ structure Decode : Decode =
                 | [0wx0,0wx0,0wx3C,0wx0] => (UCS4SB,bs)
                 | [0wx0,0wx3C,0wx0,0wx0] => (UCS4SL,bs)
                 | [0wx0,b2,b3,b4] =>
-                    if (b2=0wx3C orelse b2=0wx25 orelse b2=0wx20 
+                    if (b2=0wx3C orelse b2=0wx25 orelse b2=0wx20
                         orelse b2=0wx09 orelse b2=0wx0D orelse b2=0wx0A)
                       andalso (b3<>0wx0 orelse b4<>0wx0) then (UTF16B,bs)
                     else (UTF8,bs)
                 | [b1,0wx0,b3,b4] =>
-                    if (b1=0wx3C orelse b1=0wx25 orelse b1=0wx20 
+                    if (b1=0wx3C orelse b1=0wx25 orelse b1=0wx20
                         orelse b1=0wx09 orelse b1=0wx0D orelse b1=0wx0A)
                       andalso (b3<>0wx0 orelse b4<>0wx0) then (UTF16L,bs)
                     else (UTF8,bs)
@@ -5125,14 +5125,14 @@ structure Decode : Decode =
       (* return the encoded file, a list of bytes looked ahead and the      *)
       (* encoding.                                                          *)
       (*--------------------------------------------------------------------*)
-      fun decOpenUni (uri,default) = 
+      fun decOpenUni (uri,default) =
          let
-            fun def(f,bs) = 
+            fun def(f,bs) =
                (default,ungetBytes(f,bs))
-            fun detect f = 
-               let val (b1,f1) = getByte f 
+            fun detect f =
+               let val (b1,f1) = getByte f
                in case b1
-                    of 0wxFE => (let val (b2,f2) = getByte f1 
+                    of 0wxFE => (let val (b2,f2) = getByte f1
                                  in if b2 = 0wxFF then (UTF16B,f2)
                                     else def(f2,[b1,b2])
                                  end handle EndOfFile f => def(f,[b1]))
@@ -5143,7 +5143,7 @@ structure Decode : Decode =
                      | _ => def(f1,[b1])
                end handle EndOfFile f => def(f,nil)
             val f = openFile uri
-            val (enc,f1) = detect f 
+            val (enc,f1) = detect f
          in (enc,f1)
          end
    end
@@ -5155,17 +5155,17 @@ structure ErrorData =
       (*--------------------------------------------------------------------*)
       (* a position holds the filename, line and column number.             *)
       (*--------------------------------------------------------------------*)
-      type Position = string * int * int 
+      type Position = string * int * int
       val nullPosition = ("",0,0)
 
-      datatype ExpItem = 
+      datatype ExpItem =
           EXP_CHAR of UniChar.Char
         | EXP_DATA of UniChar.Data
         | EXP_STRING of string
-      type Expected = ExpItem list 
+      type Expected = ExpItem list
       type Found = UniChar.Data
 
-      datatype Location = 
+      datatype Location =
           LOC_NONE
         | LOC_AFTER_DTD
         | LOC_ATT_DECL
@@ -5208,7 +5208,7 @@ structure ErrorData =
         | ENT_EXTERNAL
         | ENT_UNPARSED
 
-      datatype Item = 
+      datatype Item =
           IT_ATT_NAME
         | IT_CDATA
         | IT_CHAR of UniChar.Char
@@ -5227,13 +5227,13 @@ structure ErrorData =
         | IT_NMTOKEN
         | IT_NOT_NAME
         | IT_NOTATION
-        | IT_PAR_ENT 
+        | IT_PAR_ENT
         | IT_PAR_REF
         | IT_REF
         | IT_STAG
         | IT_TARGET
 
-      datatype Error = 
+      datatype Error =
          (* syntax errors *)
           ERR_EMPTY of Location
         | ERR_ENDED_BY_EE of Location
@@ -5250,7 +5250,7 @@ structure ErrorData =
         | ERR_IGNORED_END_TAG of UniChar.Data * UniChar.Data
         | ERR_ENDED_IN_PROLOG
         | ERR_FORBIDDEN_HERE of Item * Location
-        | ERR_ILLEGAL_ENTITY of EntityClass * UniChar.Data * Location 
+        | ERR_ILLEGAL_ENTITY of EntityClass * UniChar.Data * Location
         | ERR_MULTIPLE_DTD
         | ERR_MULT_ATT_SPEC of UniChar.Data
         | ERR_RECURSIVE_ENTITY of EntityClass * UniChar.Data
@@ -5275,15 +5275,15 @@ structure ErrorData =
         | ERR_BAD_ELEM of UniChar.Data * UniChar.Data
         | ERR_ELEM_CONTENT of Item
         | ERR_EMPTY_TAG of UniChar.Data
-        | ERR_ENDED_EARLY of UniChar.Data 
-        | ERR_MULT_MIXED of UniChar.Data 
+        | ERR_ENDED_EARLY of UniChar.Data
+        | ERR_MULT_MIXED of UniChar.Data
         | ERR_NONEMPTY of UniChar.Data
         | ERR_REDEC_ELEM of UniChar.Data
         | ERR_ROOT_ELEM of UniChar.Data * UniChar.Data
 
         (* other validity errors *)
         | ERR_DECL_ENT_NESTING of Location
-        | ERR_EE_INT_SUBSET 
+        | ERR_EE_INT_SUBSET
         | ERR_GROUP_ENT_NESTING of Location
         | ERR_NO_DTD
         | ERR_STANDALONE_DEF of UniChar.Data
@@ -5291,7 +5291,7 @@ structure ErrorData =
         | ERR_STANDALONE_ENT of EntityClass *UniChar.Data
         | ERR_STANDALONE_NORM of UniChar.Data
         | ERR_UNDECLARED of Item * UniChar.Data * Location
-          
+
         (* miscellaneous errors *)
         | ERR_DECL_PREDEF of UniChar.Data * UniChar.Vector
         | ERR_NO_SUCH_FILE of string * string
@@ -5305,12 +5305,12 @@ structure ErrorData =
 
         (* interoperability errors *)
         | ERR_EMPTY_TAG_INTER of UniChar.Data
-        | ERR_MUST_BE_EMPTY of UniChar.Data 
+        | ERR_MUST_BE_EMPTY of UniChar.Data
 
         (* decoding errors *)
         | ERR_DECODE_ERROR of Decode.Error.DecodeError
 
-      datatype Warning = 
+      datatype Warning =
           WARN_NO_XML_DECL
 
         | WARN_MULT_DECL of Item * UniChar.Data
@@ -5322,7 +5322,7 @@ structure ErrorData =
         | WARN_ENUM_ATTS of UniChar.Data * UniChar.Data list
 
         | WARN_DFA_TOO_LARGE of UniChar.Data * int
-       
+
         | WARN_NON_ASCII_URI of UniChar.Char
    end
 (* stop of ../../Parser/Error/errorData.sml *)
@@ -5369,9 +5369,9 @@ structure ErrorString : ErrorString =
    struct
       open
          ErrorData UniChar UtilString
-         
 
-      fun errorChar2String c = 
+
+      fun errorChar2String c =
          case c
            of 0wx9 => "\\t"
             | 0wxA => "\\n"
@@ -5379,11 +5379,11 @@ structure ErrorString : ErrorString =
                    else "U+"^UtilString.toUpperString
                       (StringCvt.padLeft #"0" 4 (Chars.toString c))
 
-      fun errorData2String cs = 
+      fun errorData2String cs =
          String.concat (map errorChar2String cs)
-      fun errorVector2String vec = 
+      fun errorVector2String vec =
          errorData2String (Vector.foldr (op ::) nil vec)
-      
+
       val QUOTE = "'"
       fun quoteErrorChar0 c = QUOTE^errorChar2String c^QUOTE
       fun quoteErrorChar c = if c=0wx0 then "entity end" else QUOTE^errorChar2String c^QUOTE
@@ -5391,8 +5391,8 @@ structure ErrorString : ErrorString =
       fun quoteErrorString s = QUOTE^s^QUOTE
       fun quoteErrorVector v = QUOTE^errorVector2String v^QUOTE
 
-      fun Position2String (fname,l,c) = 
-         if fname="" then "" 
+      fun Position2String (fname,l,c) =
+         if fname="" then ""
          else String.concat ["[",fname,":",Int2String l,".",Int2String c,"]"]
 
       fun ExpItem2String exp =
@@ -5402,10 +5402,10 @@ structure ErrorString : ErrorString =
             | EXP_STRING s => s
 
       fun Expected2String exp =
-         case exp 
+         case exp
            of nil => "nothing"
             | [one] => ExpItem2String one
-            | _ => let val l=List.length exp 
+            | _ => let val l=List.length exp
                    in List2xString ("",", ","") ExpItem2String (List.take (exp,l-1))
                       ^" or "^ExpItem2String (List.last exp)
                    end
@@ -5474,7 +5474,7 @@ structure ErrorString : ErrorString =
             | ENT_EXTERNAL => "external"
 
       fun Item2String item =
-         case item 
+         case item
            of IT_ATT_NAME => "attribute name"
             | IT_CDATA => "CDATA section"
             | IT_CHAR c => "character "^quoteErrorChar c
@@ -5494,18 +5494,18 @@ structure ErrorString : ErrorString =
             | IT_NOT_NAME => "notation name"
             | IT_NOTATION => "notation"
             | IT_PAR_ENT => "parameter entity"
-            | IT_PAR_REF => "parameter entity reference" 
+            | IT_PAR_REF => "parameter entity reference"
             | IT_REF => "reference"
             | IT_STAG => "start-tag"
             | IT_TARGET => "target name"
 
       fun AnItem2String item =
-         case item 
+         case item
            of IT_CHAR c => Item2String item
             | IT_DATA cs => Item2String item
-            | _ => prependAnA (Item2String item) 
+            | _ => prependAnA (Item2String item)
    end
-   
+
 (* stop of ../../Parser/Error/errorString.sml *)
 (* start of ../../Parser/Error/errorMessage.sml *)
 
@@ -5524,7 +5524,7 @@ signature ErrorMessage =
 
 structure ErrorMessage : ErrorMessage =
    struct
-      open 
+      open
          Decode
          UtilString
          ErrorData ErrorString
@@ -5540,18 +5540,18 @@ structure ErrorMessage : ErrorMessage =
            (* syntax errors *)
            of ERR_EMPTY loc => ["Empty",Location2String loc]
             | ERR_ENDED_BY_EE loc => [toUpperFirst (Location2String loc),"ended by entity end"]
-            | ERR_EXPECTED (exp,found) => 
-              ["Expected",Expected2String exp,"but found",Found2String found]         
+            | ERR_EXPECTED (exp,found) =>
+              ["Expected",Expected2String exp,"but found",Found2String found]
             | ERR_MISSING_WHITE => ["Missing white space"]
             | ERR_NON_XML_CHAR c => ["Non-XML character",quoteChar0 c]
             | ERR_NON_XML_CHARREF c => ["Reference to non-XML character",quoteChar0 c]
 
             (* other well-formedness errors *)
             | ERR_CANT_PARSE loc => ["Cannot parse",Location2String loc]
-            | ERR_ELEM_ENT_NESTING elem =>             
+            | ERR_ELEM_ENT_NESTING elem =>
               ["The first and last character of element",quoteData elem,
-               "are in different entities"]  
-            | ERR_ELEM_TYPE_MATCH (elem,other) => 
+               "are in different entities"]
+            | ERR_ELEM_TYPE_MATCH (elem,other) =>
               ["Element",quoteData elem,"was ended by an end-tag for",quoteData other]
             | ERR_IGNORED_END_TAG(elem,other) =>
               ["An end-tag for element type",quoteData other,"is not allowed in the",
@@ -5559,91 +5559,91 @@ structure ErrorMessage : ErrorMessage =
             | ERR_OMITTED_END_TAG elem =>
               ["Element",quoteData elem,"has no end-tag"]
             | ERR_ENDED_IN_PROLOG => ["Document entity ended in prolog"]
-            | ERR_FORBIDDEN_HERE(what,loc) => 
+            | ERR_FORBIDDEN_HERE(what,loc) =>
               [AnItem2String what,"is not allowed",InLocation2String loc]
-            | ERR_ILLEGAL_ENTITY(what,ent,loc) => 
+            | ERR_ILLEGAL_ENTITY(what,ent,loc) =>
               ["Reference to",EntityClass2String what,"entity",quoteData ent,InLocation2String loc]
             | ERR_MULTIPLE_DTD => ["Repeated document type declaration"]
-            | ERR_MULT_ATT_SPEC att => 
+            | ERR_MULT_ATT_SPEC att =>
               ["A value for attribute",quoteData att,"was already specified in this tag"]
             | ERR_RECURSIVE_ENTITY(what,ent) =>
               ["Reference to",EntityClass2String what,"entity",quoteData ent,
                "that is already open"]
-            | ERR_UNDEC_ENTITY(what,ent) => 
+            | ERR_UNDEC_ENTITY(what,ent) =>
               ["Reference to undeclared",EntityClass2String what,"entity",quoteData ent]
-              
+
             (* validity errors concerning attributes *)
-            | ERR_AT_LEAST_ONE what => ["At least one",Item2String what,"must be specified"] 
-            | ERR_AT_MOST_ONE what => ["Only one",Item2String what,"may be specified"] 
-            | ERR_ATT_IS_NOT(cs,what) => [quoteData cs,"is not",AnItem2String what] 
+            | ERR_AT_LEAST_ONE what => ["At least one",Item2String what,"must be specified"]
+            | ERR_AT_MOST_ONE what => ["Only one",Item2String what,"may be specified"]
+            | ERR_ATT_IS_NOT(cs,what) => [quoteData cs,"is not",AnItem2String what]
             | ERR_EXACTLY_ONE what => [toUpperFirst (AnItem2String what),"must be specified"]
-            | ERR_FIXED_VALUE(att,value,fixed) => 
+            | ERR_FIXED_VALUE(att,value,fixed) =>
               ["Attribute",quoteData att,"has the value",quoteVector value,
                "but was declared with a fixed default value of",quoteVector fixed]
-            | ERR_ID_DEFAULT => 
+            | ERR_ID_DEFAULT =>
               ["An ID attribute must have a default value of #IMPLIED or #REQUIRED"]
-            | ERR_MISSING_ATT att => 
-              ["No value was specified for required attribute",quoteData att] 
-            | ERR_MULT_ID_ELEM elem => 
+            | ERR_MISSING_ATT att =>
+              ["No value was specified for required attribute",quoteData att]
+            | ERR_MULT_ID_ELEM elem =>
               ["Element type",quoteData elem,"already has an ID attribute"]
-            | ERR_MUST_BE_AMONG (what,x,ys) => 
+            | ERR_MUST_BE_AMONG (what,x,ys) =>
               [toUpperFirst (Item2String what),quoteData x,"is none of",
                List2xString ("",",","") quoteData ys]
-            | ERR_MUST_BE_UNPARSED (name,loc) => 
+            | ERR_MUST_BE_UNPARSED (name,loc) =>
               [quoteData name,InLocation2String loc,"is not the name of an unparsed entity"]
-            | ERR_REPEATED_ID name => 
+            | ERR_REPEATED_ID name =>
               ["ID name",quoteData name,"already occurred as an attribute value"]
-            | ERR_UNDECL_ATT(att,elem) => 
+            | ERR_UNDECL_ATT(att,elem) =>
               ["Attribute",quoteData att,"was not declared for element type",quoteData elem]
-            | ERR_UNDECL_ID(name,refs) => 
+            | ERR_UNDECL_ID(name,refs) =>
               (if null refs then ["Reference to non-existent ID",quoteData name]
                else ["Reference to non-existent ID",quoteData name,
                      "(also referenced at",List2xString ("",", ",")") Position2String refs])
 
             (* validity errors concerning elements *)
-            | ERR_BAD_ELEM (curr,elem) => 
+            | ERR_BAD_ELEM (curr,elem) =>
               ["Element type",quoteData elem,"not allowed at this point",
-               "in the content of element",quoteData curr] 
-            | ERR_ELEM_CONTENT what => 
-              [toUpperFirst (AnItem2String what),"is not allowed in element content"] 
-            | ERR_EMPTY_TAG elem =>      
+               "in the content of element",quoteData curr]
+            | ERR_ELEM_CONTENT what =>
+              [toUpperFirst (AnItem2String what),"is not allowed in element content"]
+            | ERR_EMPTY_TAG elem =>
               ["Empty-element tag for element type",quoteData elem,
                "whose content model requires non-empty content"]
             | ERR_ENDED_EARLY elem =>
               ["Element",quoteData elem,"ended before its content was completed"]
             | ERR_MULT_MIXED elem =>
               ["Element type",quoteData elem,"already occurred in this mixed-content declaration"]
-            | ERR_NONEMPTY elem =>  
+            | ERR_NONEMPTY elem =>
               ["The end-tag for element",quoteData elem,"with declared EMPTY content",
                "must follow immediately after its start-tag"]
             | ERR_REDEC_ELEM elem => ["Element type",quoteData elem,"was already declared"]
-            | ERR_ROOT_ELEM (dec,root) => 
+            | ERR_ROOT_ELEM (dec,root) =>
               ["Document element",quoteData root,"does not match the name",
                quoteData dec,"in the document type declaration"]
 
             (* other validity errors *)
-            | ERR_DECL_ENT_NESTING loc => 
+            | ERR_DECL_ENT_NESTING loc =>
               ["The first and last character of this",Location2String loc,
-               "are not in the same entity replacement text"]  
+               "are not in the same entity replacement text"]
             | ERR_EE_INT_SUBSET =>
               ["An entity end is not allowed in a declaration in the internal subset"]
-            | ERR_GROUP_ENT_NESTING loc => 
+            | ERR_GROUP_ENT_NESTING loc =>
               ["The opening and closing parentheses of this",Location2String loc,
-               "are not in the same entity replacement text"]  
-            | ERR_NO_DTD => 
+               "are not in the same entity replacement text"]
+            | ERR_NO_DTD =>
               ["There is no document type declaration. Switching to semi-validating mode",
                "(will not check for declaredness of entities, elements, etc.)"]
-            | ERR_STANDALONE_DEF att => 
+            | ERR_STANDALONE_DEF att =>
               ["Externally declared attribute",quoteData att,"was defaulted,",
                "although the standalone declaration is",quoteString "yes"]
-            | ERR_STANDALONE_ELEM elem => 
+            | ERR_STANDALONE_ELEM elem =>
               ["White space occurred in the content of externally declared",
                "element",quoteData elem,"with declared element content",
                "although the standalone declaration is",quoteString "yes"]
-            | ERR_STANDALONE_ENT(what,ent) => 
+            | ERR_STANDALONE_ENT(what,ent) =>
               ["Reference to externally declared",EntityClass2String what,"entity",
                quoteData ent^",","although the standalone declaration is",quoteString "yes"]
-            | ERR_STANDALONE_NORM att => 
+            | ERR_STANDALONE_NORM att =>
               ["The value for externally declared attribute",
                quoteData att,"was changed as a result of normalization,",
                "although the standalone declaration is",quoteString "yes"]
@@ -5651,21 +5651,21 @@ structure ErrorMessage : ErrorMessage =
               ["Undeclared",Item2String what,quoteData x,InLocation2String loc]
 
             (* miscellaneous errors *)
-            | ERR_DECL_PREDEF(ent,def) => 
+            | ERR_DECL_PREDEF(ent,def) =>
               ["General entity",quoteData ent,"must be declared as internal entity",
                "with replacement text",quoteVector def]
             | ERR_NO_SUCH_FILE(f,msg) => ["Could not open file",quoteString f,"("^msg^")"]
             | ERR_RESERVED(name,what) =>
               [quoteData name,"is reserved for standardization and therefore not allowed as",
                AnItem2String what]
-            | ERR_VERSION version => 
+            | ERR_VERSION version =>
               ["XML version",quoteString version,"is not supported"]
-            | ERR_XML_SPACE => 
+            | ERR_XML_SPACE =>
               ["Attribute",quoteString "xml:space","must be given an enumeration type",
                "with values",quoteString "default","and",quoteString "preserve","only"]
 
             (* compatibility errors *)
-            | ERR_AMBIGUOUS(a,n1,n2) =>                
+            | ERR_AMBIGUOUS(a,n1,n2) =>
               ["Content model is ambiguous: conflict between the",numberNth n1,
                "and the",numberNth n2,"occurrence of element",quoteData a^".",
                "Using an approximation instead"]
@@ -5674,30 +5674,30 @@ structure ErrorMessage : ErrorMessage =
             (* interoperability errors *)
             | ERR_EMPTY_TAG_INTER elem =>
               ["Empty-element tag for element",quoteData elem,"with non-EMPTY declared content"]
-            | ERR_MUST_BE_EMPTY elem => 
+            | ERR_MUST_BE_EMPTY elem =>
               ["An empty-element tag must be used for element type",
                quoteData elem,"with EMPTY declared content"]
 
-            (* decoding errors *) 
+            (* decoding errors *)
             | ERR_DECODE_ERROR err => "Decoding error:"::Decode.Error.decodeMessage err
 
       fun warningMessage warn =
          case warn
            of WARN_NO_XML_DECL => ["Document entity has no XML declaration"]
 
-            | WARN_MULT_DECL(what,name) => 
+            | WARN_MULT_DECL(what,name) =>
               ["Repeated declaration for",Item2String what,quoteData name]
             | WARN_SHOULD_DECLARE(ents) =>
               let val (one,more) = (hd ents,tl ents)
-              in case more 
+              in case more
                    of nil => ["The predefined entity",quoteData one,"should have been declared"]
                     | _ => ["The predefined entities",List2xString ("",", ","") quoteData more,
                             "and",quoteData one,"should have been declared"]
               end
-           
+
             | WARN_ATT_UNDEC_ELEM elem =>
               ["Attribute-list declaration for undeclared element type",quoteData elem]
-            | WARN_MULT_ATT_DECL elem => 
+            | WARN_MULT_ATT_DECL elem =>
               ["Repeated attribute-list declaration for element type",quoteData elem]
             | WARN_MULT_ATT_DEF(elem,att) =>
               ["Repeated definition of attribute",quoteData att,"for element type",quoteData elem]
@@ -5727,7 +5727,7 @@ signature ErrorUtil =
       val isWellFormedError : ErrorData.Error -> bool
    end
 
-structure ErrorUtil : ErrorUtil = 
+structure ErrorUtil : ErrorUtil =
    struct
       open ErrorData
 
@@ -5736,7 +5736,7 @@ structure ErrorUtil : ErrorUtil =
            of ERR_DECODE_ERROR _ => true
             | _                  => false
 
-      fun isSyntaxError err = 
+      fun isSyntaxError err =
          case err
            of ERR_EMPTY _           => true
             | ERR_ENDED_BY_EE _     => true
@@ -5759,15 +5759,15 @@ structure ErrorUtil : ErrorUtil =
             | ERR_MULTIPLE_DTD       => true
             | ERR_MULT_ATT_SPEC _    => true
             | ERR_RECURSIVE_ENTITY _ => true
-            | ERR_UNDEC_ENTITY _     => true 
-            | _ => isSyntaxError err 
+            | ERR_UNDEC_ENTITY _     => true
+            | _ => isSyntaxError err
 
       fun isFatalError err =
          case err
            of ERR_NO_SUCH_FILE _ => true
-            | _ => isWellFormedError err 
+            | _ => isWellFormedError err
 
-      fun isValidityError err = 
+      fun isValidityError err =
          case err
            of ERR_AT_LEAST_ONE _      => true
             | ERR_AT_MOST_ONE _       => true
@@ -5807,11 +5807,11 @@ structure ErrorUtil : ErrorUtil =
 
 
 
-structure Expected = 
+structure Expected =
    struct
-      local 
-         open UniChar ErrorData 
-      in 
+      local
+         open UniChar ErrorData
+      in
          val expAnElemName  = [EXP_STRING "an element name"]
          val expAnEntName   = [EXP_STRING "an entity name"]
          val expAName       = [EXP_STRING "a name"]
@@ -5879,7 +5879,7 @@ structure Errors =
    struct
       open
          UtilError
-         ErrorData ErrorMessage ErrorString ErrorUtil Expected 
+         ErrorData ErrorMessage ErrorString ErrorUtil Expected
    end
 (* stop of ../../Parser/Error/errors.sml *)
 (* start of ../../Parser/Base/baseData.sml *)
@@ -5887,20 +5887,20 @@ structure Errors =
 (* Structure: BaseData                                                      *)
 (*--------------------------------------------------------------------------*)
 
-structure BaseData = 
+structure BaseData =
    struct
       open DfaData
 
       (*--- external ids may have a public id and must have a system id ---*)
       (*--- for notations, however, also the system id can be optional ----*)
-      datatype ExternalId = 
-         EXTID of (string * UniChar.Char) option * (Uri.Uri * Uri.Uri * UniChar.Char) option 
+      datatype ExternalId =
+         EXTID of (string * UniChar.Char) option * (Uri.Uri * Uri.Uri * UniChar.Char) option
 
       (*--- external ids may have a public id and must have a system id ---*)
       type NotationInfo = ExternalId option
-         
+
       (*--- replacement of a general entity ---*)
-      datatype GenEntity = 
+      datatype GenEntity =
          GE_NULL
        | GE_INTERN of UniChar.Vector * UniChar.Vector
        | GE_EXTERN of ExternalId
@@ -5908,24 +5908,24 @@ structure BaseData =
       type GenEntInfo = GenEntity * bool
 
       fun isExtGen (GE_EXTERN _) = true
-        | isExtGen _ = false 
-         
+        | isExtGen _ = false
+
       (*--- replacement of a parameter entity ---*)
-      datatype ParEntity = 
+      datatype ParEntity =
          PE_NULL
        | PE_INTERN of UniChar.Vector * UniChar.Vector
        | PE_EXTERN of ExternalId
       type ParEntInfo = ParEntity * bool
 
       fun isExtPar (PE_EXTERN _) = true
-        | isExtPar _ = false 
-         
+        | isExtPar _ = false
+
       (*--- declared type of an attribute ---*)
-      datatype AttType = 
+      datatype AttType =
          AT_CDATA
        | AT_NMTOKEN
        | AT_NMTOKENS
-       | AT_ID 
+       | AT_ID
        | AT_IDREF
        | AT_IDREFS
        | AT_ENTITY
@@ -5941,24 +5941,24 @@ structure BaseData =
        | AV_ID of int
        | AV_IDREF of int
        | AV_IDREFS of int list
-       | AV_ENTITY of int 
+       | AV_ENTITY of int
        | AV_ENTITIES of int list
        | AV_GROUP of int list * int
        | AV_NOTATION of int list * int
 
-      fun isIdType at = at=AT_ID 
+      fun isIdType at = at=AT_ID
 
-      (*--- default values of attributes ---*) 
-      datatype AttDefault = 
+      (*--- default values of attributes ---*)
+      datatype AttDefault =
          AD_IMPLIED
        | AD_REQUIRED
-       | AD_DEFAULT of (UniChar.Vector * UniChar.Vector * AttValue option) 
+       | AD_DEFAULT of (UniChar.Vector * UniChar.Vector * AttValue option)
          * (Errors.Position * bool ref)
-       | AD_FIXED of (UniChar.Vector * UniChar.Vector * AttValue option) 
+       | AD_FIXED of (UniChar.Vector * UniChar.Vector * AttValue option)
          * (Errors.Position * bool ref)
-          
+
       (*--- attribute definition (list) ---*)
-      (*--- the boolean says whether it was externally declared ---*) 
+      (*--- the boolean says whether it was externally declared ---*)
       type AttDef = int * AttType * AttDefault * bool
       type AttDefList = AttDef list
 
@@ -5972,12 +5972,12 @@ structure BaseData =
        | CT_MIXED of int list
        | CT_ELEMENT of DfaData.ContentModel * DfaData.Dfa
 
-      fun isMixed ct = 
-         case ct 
+      fun isMixed ct =
+         case ct
            of CT_ANY     => true
             | CT_MIXED _ => true
             | _          => false
-              
+
       type ElemInfo = {decl    : (ContentSpec * bool) option,
                        atts    : (AttDefList * bool) option,
                        errAtts : int list}
@@ -6021,16 +6021,16 @@ signature DfaString =
    end
 
 structure DfaString : DfaString =
-    struct 
+    struct
         open DfaBase UtilString
 
         fun State2String q = if q=dfaError then "Error" else Int2String q
-           
-        fun Info2String Elem2String (q,mt,fst) = String.concat 
+
+        fun Info2String Elem2String (q,mt,fst) = String.concat
            (State2String q::Bool2xString ("[empty]","") mt
             ::map (fn (q,a) => " "^Elem2String a^"->"^State2String q) fst)
 
-        fun ContentModel2String Elem2String cm = 
+        fun ContentModel2String Elem2String cm =
            case cm
              of CM_ELEM i => Elem2String i
               | CM_OPT cm => ContentModel2String Elem2String cm^"?"
@@ -6038,37 +6038,37 @@ structure DfaString : DfaString =
               | CM_PLUS cm => ContentModel2String Elem2String cm^"+"
               | CM_ALT cms => List2xString ("(","|",")") (ContentModel2String Elem2String) cms
               | CM_SEQ cms => List2xString ("(",",",")") (ContentModel2String Elem2String) cms
-                
+
         fun CM2String Elem2String =
             let fun cm2s indent cm =
                 case cm
-                  of (ELEM a,info) => String.concat 
+                  of (ELEM a,info) => String.concat
                      [indent,Elem2String a,"  ",Info2String Elem2String info,"\n"]
-                   | (OPT cm',info) => String.concat 
-                     [indent,"?  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm'] 
-                   | (REP cm',info) => String.concat 
-                     [indent,"*  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm'] 
-                   | (PLUS cm',info) => String.concat 
-                     [indent,"+  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm'] 
-                   | (ALT cms,info) => String.concat 
+                   | (OPT cm',info) => String.concat
+                     [indent,"?  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm']
+                   | (REP cm',info) => String.concat
+                     [indent,"*  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm']
+                   | (PLUS cm',info) => String.concat
+                     [indent,"+  ",Info2String Elem2String info,"\n",cm2s (indent^" ") cm']
+                   | (ALT cms,info) => String.concat
                      (indent^"|  "::Info2String Elem2String info::"\n"
-                      ::map (cm2s (indent^" ")) cms) 
-                   | (SEQ cms,info) => String.concat 
+                      ::map (cm2s (indent^" ")) cms)
+                   | (SEQ cms,info) => String.concat
                      (indent^",  "::Info2String Elem2String info::"\n"
-                      ::map (cm2s (indent^" ")) cms) 
+                      ::map (cm2s (indent^" ")) cms)
             in cm2s ""
             end
-         
+
         fun Row2String Elem2String (lo,hi,tab,fin) =
-           String.concat 
-           (Vector.foldri 
-            (fn (i,q,yet) => if q<0 then yet 
+           String.concat
+           (Vector.foldri
+            (fn (i,q,yet) => if q<0 then yet
                              else " "::Elem2String (i+lo)::"->"::State2String q::yet)
             (if fin then [" [Final]"] else nil)
                 (tab,0,NONE))
-           
+
         fun Dfa2String Elem2String tab =
-           String.concat 
+           String.concat
            (Vector.foldri
             (fn (q,row,yet) => State2String q::":"::Row2String Elem2String row::yet)
             nil (tab,0,NONE))
@@ -6104,7 +6104,7 @@ structure DfaString : DfaString =
 (*   IdInfo2String     : none                                               *)
 (*   ParEntity2String  : none                                               *)
 (*--------------------------------------------------------------------------*)
-signature BaseString = 
+signature BaseString =
    sig
       val ExternalId2String   : BaseData.ExternalId -> string
       val NotationInfo2String : BaseData.NotationInfo -> string
@@ -6112,23 +6112,23 @@ signature BaseString =
       val GenEntity2xString : (int -> string) -> BaseData.GenEntity -> string
       val ParEntity2String  : BaseData.ParEntity -> string
 
-      val ElemInfo2xString  : (int -> string) * (int -> string) * (int -> string) 
+      val ElemInfo2xString  : (int -> string) * (int -> string) * (int -> string)
          * (int -> string) * (int -> string) -> BaseData.ElemInfo -> string
 
       val IdInfo2String     : BaseData.IdInfo -> string
    end
 
-structure BaseString : BaseString = 
+structure BaseString : BaseString =
    struct
-      open 
+      open
          UtilString Uri
          Errors UniChar DfaString
-         BaseData 
+         BaseData
 
       val THIS_MODULE = "BaseString"
 
-      fun ExternalId2String (EXTID id) = 
-         case id 
+      fun ExternalId2String (EXTID id) =
+         case id
            of (SOME(p,pq),SOME(rel,s,sq)) => String.concat
               ["PUBLIC ",quoteUni pq p,
                " ",quoteUni sq (Uri2String rel),
@@ -6139,12 +6139,12 @@ structure BaseString : BaseString =
               ["SYSTEM ",quoteUni sq (Uri2String rel),
                " @ ",quoteUni sq (Uri2String s)]
             | (NONE,NONE) => "<none>"
-      fun NotationInfo2String not = 
-         case not 
+      fun NotationInfo2String not =
+         case not
            of NONE => "undeclared"
             | SOME extId => ExternalId2String extId
 
-      fun GenEntity2xString NotIdx2String ge = 
+      fun GenEntity2xString NotIdx2String ge =
          case ge
            of GE_NULL => "NULL"
             | GE_INTERN(lit,cv) => let val quote = Vector.sub(lit,0)
@@ -6154,7 +6154,7 @@ structure BaseString : BaseString =
             | GE_EXTERN id => "EXTERN "^ExternalId2String id
             | GE_UNPARSED(id,not,_) => "UNPARSED "^ExternalId2String id^" "^NotIdx2String not
 
-      fun ParEntity2String pe = 
+      fun ParEntity2String pe =
          case pe
            of PE_NULL => "NULL"
             | PE_INTERN(lit,cv) => let val quote = Vector.sub(lit,0)
@@ -6169,8 +6169,8 @@ structure BaseString : BaseString =
             | CT_EMPTY => "EMPTY"
             | CT_MIXED is => List2xString ("MIXED (","|",")") Elem2String is
             | CT_ELEMENT(cm,_) => "ELEMENT "^ContentModel2String Elem2String cm
-         
-      fun AttValue2xString (Att2String,Ent2String,Id2String,Not2String) quote av = 
+
+      fun AttValue2xString (Att2String,Ent2String,Id2String,Not2String) quote av =
          quoteUni quote (case av
                            of AV_CDATA buf => Vector2String buf
                             | AV_NMTOKEN cs => Data2String cs
@@ -6183,23 +6183,23 @@ structure BaseString : BaseString =
                             | AV_GROUP(_,idx) => Att2String idx
                             | AV_NOTATION(_,idx) => Not2String idx)
 
-      fun AttDefault2xString funs ad = 
-         case ad 
-           of AD_DEFAULT ((lit,cv,av),_) => 
+      fun AttDefault2xString funs ad =
+         case ad
+           of AD_DEFAULT ((lit,cv,av),_) =>
               let val quote = Vector.sub(lit,0)
               in String.concat [quoteVector quote cv," ",
                                 Option2String0 (AttValue2xString funs quote) av]
               end
-            | AD_FIXED ((lit,cv,av),_) => 
+            | AD_FIXED ((lit,cv,av),_) =>
               let val quote = Vector.sub(lit,0)
               in String.concat ["#FIXED ",quoteVector quote cv," ",
                                 Option2String0 (AttValue2xString funs quote) av]
               end
             | AD_IMPLIED => "#IMPLIED"
             | AD_REQUIRED => "#REQUIRED"
-          
-      fun AttType2xString (Att2String,Not2String) at = 
-         case at 
+
+      fun AttType2xString (Att2String,Not2String) at =
+         case at
            of AT_CDATA => "CDATA"
             | AT_NMTOKEN => "NMTOKEN"
             | AT_NMTOKENS => "NMTOKENS"
@@ -6211,19 +6211,19 @@ structure BaseString : BaseString =
             | AT_GROUP idxs => List2xString ("(","|",")") Att2String idxs
             | AT_NOTATION idxs => List2xString ("NOTATION(","|",")") Not2String idxs
 
-      fun AttDef2xString (funs  as (Att2String,_,_,Not2String)) (idx,attType,default,ext) = 
+      fun AttDef2xString (funs  as (Att2String,_,_,Not2String)) (idx,attType,default,ext) =
          String.concat [Att2String idx," ",
                         AttType2xString (Att2String,Not2String) attType," ",
                         AttDefault2xString funs default,
                         Bool2xString ("[external]","") ext]
-                        
+
       fun AttDefList2xString funs adl = List2xString ("",",","") (AttDef2xString funs) adl
 
       fun ElemInfo2xString (Att2String,Elem2String,Ent2String,Id2String,Not2String)
          ({decl,atts,...}:ElemInfo) =
          let val dec = case decl
                          of NONE => "elem undeclared"
-                          | SOME(cont,ext) => String.concat 
+                          | SOME(cont,ext) => String.concat
                             ["elem declared ",if ext then "ex" else "in","ternally: ",
                              ContentSpec2String Elem2String cont]
              val att = case atts
@@ -6234,7 +6234,7 @@ structure BaseString : BaseString =
          in dec^att
          end
 
-      fun IdInfo2String (decl,refs) = 
+      fun IdInfo2String (decl,refs) =
          Bool2xString ("declared","undeclared") decl^"/"^
          (if null refs then "no references"
           else List2xString ("references: ",", ","") Position2String refs)
@@ -6247,7 +6247,7 @@ structure BaseString : BaseString =
 
 structure Base =
    struct
-      open 
+      open
          BaseData
          BaseString
    end
@@ -6288,18 +6288,18 @@ structure Base =
 (*   setNotation         : NoSuchIndex                                      *)
 (*   setParEnt           : NoSuchIndex                                      *)
 (*--------------------------------------------------------------------------*)
-signature Dtd = 
+signature Dtd =
    sig
-      type Dtd 
-      
+      type Dtd
+
       val hasDtd       : Dtd -> bool
       val hasExternal  : Dtd -> bool
       val standsAlone  : Dtd -> bool
-         
+
       val setHasDtd     : Dtd -> unit
       val setExternal   : Dtd -> unit
       val setStandAlone : Dtd -> bool -> unit
-         
+
       val entitiesWellformed : Dtd -> bool
 
       val validPredef  : int -> UniChar.Vector
@@ -6318,7 +6318,7 @@ signature Dtd =
       val Index2GenEnt    : Dtd -> int -> UniChar.Data
       val Index2AttNot    : Dtd -> int -> UniChar.Data
       val Index2ParEnt    : Dtd -> int -> UniChar.Data
-         
+
       val getId       : Dtd -> int -> Base.IdInfo
       val getElement  : Dtd -> int -> Base.ElemInfo
       val getGenEnt   : Dtd -> int -> Base.GenEntInfo
@@ -6339,7 +6339,7 @@ signature Dtd =
 
       val initDtdTables  : unit -> Dtd
       val printDtdTables : Dtd -> unit
-         
+
       val printAttNotTable  : Dtd -> unit
       val printIdTable      : Dtd -> unit
       val printElementTable : Dtd -> unit
@@ -6353,13 +6353,13 @@ signature Dtd =
       val xmlSpaceType : Base.AttType
    end
 
-structure Dtd :> Dtd = 
-   struct 
-      open 
+structure Dtd :> Dtd =
+   struct
+      open
          UtilInt
          Base UniChar
          DataDict DataSymTab
-         
+
       val O_TS_ELEM    = ref 6 (* Initial size of element table             *)
       val O_TS_GEN_ENT = ref 6 (* Initial size of general entity table      *)
       val O_TS_ID      = ref 6 (* Initial size of id attribute table        *)
@@ -6369,7 +6369,7 @@ structure Dtd :> Dtd =
       (*--------------------------------------------------------------------*)
       (* this is how the predefined entities must be declared.              *)
       (*--------------------------------------------------------------------*)
-      val predefined = Vector.fromList 
+      val predefined = Vector.fromList
          (map (fn (x,y,z) => (String2Data x,String2Vector y,String2Vector z))
           [("","",""),
            ("amp" ,"'&#38;'","&#38;"),
@@ -6378,7 +6378,7 @@ structure Dtd :> Dtd =
            ("apos","\"'\""  ,"'"    ),
            ("quot","'\"'"   ,"\""   )])
       fun validPredef i = #3(Vector.sub(predefined,i))
-         
+
       (*--------------------------------------------------------------------*)
       (* this type holds all information relevent to the DTD.               *)
       (*--------------------------------------------------------------------*)
@@ -6402,7 +6402,7 @@ structure Dtd :> Dtd =
                       notDict        = nullDict ("attribute and notation",NONE:NotationInfo),
                       parDict        = nullDict ("parameter entity",(PE_NULL,false)),
                       preRedef       = Array.array(6,false)
-                      } : Dtd 
+                      } : Dtd
 
       val default  = String2Data "default"
       val preserve = String2Data "preserve"
@@ -6442,10 +6442,10 @@ structure Dtd :> Dtd =
       (*--------------------------------------------------------------------*)
       (* bug fixed 080600: changed !hasDtdFlag to not(!hasDtdFlag)          *)
       (*--------------------------------------------------------------------*)
-      fun entitiesWellformed ({hasDtdFlag,standAloneFlag,externalFlag,...}:Dtd) = 
-         not (!hasDtdFlag andalso !externalFlag) orelse !standAloneFlag 
+      fun entitiesWellformed ({hasDtdFlag,standAloneFlag,externalFlag,...}:Dtd) =
+         not (!hasDtdFlag andalso !externalFlag) orelse !standAloneFlag
 
-      fun initStandalone ({hasDtdFlag,standAloneFlag,externalFlag,...}:Dtd) = 
+      fun initStandalone ({hasDtdFlag,standAloneFlag,externalFlag,...}:Dtd) =
          (hasDtdFlag := false; standAloneFlag := false; externalFlag := false)
 
       (*--------------------------------------------------------------------*)
@@ -6454,8 +6454,8 @@ structure Dtd :> Dtd =
       (*--------------------------------------------------------------------*)
       fun isRedefined (dtd:Dtd) i = Array.sub(#preRedef dtd,i)
       fun setRedefined (dtd:Dtd) i = Array.update(#preRedef dtd,i,true)
-      fun notRedefined dtd = List.mapPartial 
-         (fn i => if isRedefined dtd i then NONE else SOME(#1(Vector.sub(predefined,i)))) 
+      fun notRedefined dtd = List.mapPartial
+         (fn i => if isRedefined dtd i then NONE else SOME(#1(Vector.sub(predefined,i))))
          [1,2,3,4,5]
 
       fun AttNot2Index  (dtd:Dtd) name = getIndex(#notDict dtd,name)
@@ -6492,8 +6492,8 @@ structure Dtd :> Dtd =
       (* initialize the attribute tables. Make sure that indices 0...3 are  *)
       (* assigned to "default", "preserve", "xml:lang" and "xml:space".     *)
       (*--------------------------------------------------------------------*)
-      fun initAttNotTable (dtd as {idDict,notDict,...}:Dtd) = 
-         let 
+      fun initAttNotTable (dtd as {idDict,notDict,...}:Dtd) =
+         let
             val _ = clearDict(notDict,SOME(!O_TS_ATT_NOT))
             val _ = clearDict(idDict,SOME(!O_TS_ID))
             val _ = AttNot2Index dtd default
@@ -6504,13 +6504,13 @@ structure Dtd :> Dtd =
          end
       fun initElementTable (dtd:Dtd) = clearDict(#elDict dtd,SOME(!O_TS_ELEM))
       (*--------------------------------------------------------------------*)
-      (* reserve 0 for gen entity -,    i.e., the document entity.          *) 
+      (* reserve 0 for gen entity -,    i.e., the document entity.          *)
       (* reserve 1 for gen entity amp,  i.e., "&#38;#38;"                   *)
-      (* reserve 2 for gen entity lt,   i.e., "&#38;#60;"                   *) 
-      (* reserve 3 for gen entity gt,   i.e., "&#62;"                       *) 
-      (* reserve 4 for gen entity apos, i.e., "&#39;"                       *) 
-      (* reserve 5 for gen entity quot, i.e., "&#34;"                       *) 
-      (* reserve 0 for par entity -,    i.e., the external dtd subset.      *) 
+      (* reserve 2 for gen entity lt,   i.e., "&#38;#60;"                   *)
+      (* reserve 3 for gen entity gt,   i.e., "&#62;"                       *)
+      (* reserve 4 for gen entity apos, i.e., "&#39;"                       *)
+      (* reserve 5 for gen entity quot, i.e., "&#34;"                       *)
+      (* reserve 0 for par entity -,    i.e., the external dtd subset.      *)
       (*                                                                    *)
       (* Cf. 4.1:                                                           *)
       (*                                                                    *)
@@ -6525,21 +6525,21 @@ structure Dtd :> Dtd =
       (*   <!ENTITY apos   "&#39;">                                         *)
       (*   <!ENTITY quot   "&#34;">                                         *)
       (*--------------------------------------------------------------------*)
-      fun initEntityTables (dtd as {genDict,parDict,preRedef,...}:Dtd) = 
-         let 
+      fun initEntityTables (dtd as {genDict,parDict,preRedef,...}:Dtd) =
+         let
             val _ = clearDict(genDict,SOME(!O_TS_GEN_ENT))
             val _ = clearDict(parDict,SOME(!O_TS_PAR_ENT))
             val _ = map (fn i => Array.update(preRedef,i,false)) [1,2,3,4,5]
             val _ = GenEnt2Index dtd [0wx2D] (* "-" *)
             val _ = ParEnt2Index dtd [0wx2D] (* "-" *)
-            val _ = Vector.appi 
-               (fn (_,(name,lit,cs)) 
-                => (setGenEnt dtd (GenEnt2Index dtd name,(GE_INTERN(lit,cs),false)))) 
+            val _ = Vector.appi
+               (fn (_,(name,lit,cs))
+                => (setGenEnt dtd (GenEnt2Index dtd name,(GE_INTERN(lit,cs),false))))
                (predefined,1,NONE)
          in ()
          end
 
-      fun initDtdTables() = 
+      fun initDtdTables() =
          let
             val dtd = newDtd()
             val _ = initAttNotTable dtd
@@ -6548,10 +6548,10 @@ structure Dtd :> Dtd =
             val _ = initStandalone dtd
          in dtd
          end
-                                    
-      local 
-         val dtd = initDtdTables() 
-      in 
+
+      local
+         val dtd = initDtdTables()
+      in
          val defaultIdx = AttNot2Index dtd default
          val preserveIdx = AttNot2Index dtd preserve
          val xmlLangIdx = AttNot2Index dtd xmlLang
@@ -6559,19 +6559,19 @@ structure Dtd :> Dtd =
          val xmlSpaceType = AT_GROUP (IntLists.addIntList (preserveIdx,[defaultIdx]))
       end
 
-      fun printAttNotTable (dtd:Dtd) = 
+      fun printAttNotTable (dtd:Dtd) =
          printDict NotationInfo2String (#notDict dtd)
-      fun printElementTable dtd = 
+      fun printElementTable dtd =
          printDict (ElemInfo2xString (UniChar.Data2String o (Index2AttNot dtd),
                                       UniChar.Data2String o (Index2Element dtd),
                                       UniChar.Data2String o (Index2GenEnt dtd),
                                       UniChar.Data2String o (Index2Id dtd),
                                       UniChar.Data2String o (Index2AttNot dtd))) (#elDict dtd)
-      fun printGenEntTable dtd = 
+      fun printGenEntTable dtd =
          printDict (fn (ent,ext) => GenEntity2xString (Data2String o (Index2AttNot dtd)) ent
                     ^(if ext then "[external]" else "")) (#genDict dtd)
       fun printIdTable (dtd:Dtd) = printDict (IdInfo2String) (#idDict dtd)
-      fun printParEntTable (dtd:Dtd) = 
+      fun printParEntTable (dtd:Dtd) =
          printDict (fn (ent,ext) => ParEntity2String ent
                     ^(if ext then "[external]" else "")) (#parDict dtd)
 
@@ -6588,7 +6588,7 @@ structure HookData =
       type StartEnd = Errors.Position * Errors.Position
       (*--------------------------------------------------------------------*)
       (* a text declaration consists of a version info and an encoding decl.*)
-      (* an xml declaration has an additional standalone decl.              *) 
+      (* an xml declaration has an additional standalone decl.              *)
       (*--------------------------------------------------------------------*)
       type TextDecl = string option * string option
       type XmlDecl = string option * string option * bool option
@@ -6620,19 +6620,19 @@ structure HookData =
       type StartTagInfo  = StartEnd * int * AttSpecList * UniChar.Data * bool
       type WhiteInfo     = UniChar.Vector
       type CDataInfo     = StartEnd * UniChar.Vector
-      type DataInfo      = StartEnd * UniChar.Vector * bool 
+      type DataInfo      = StartEnd * UniChar.Vector * bool
 
-      type CharRefInfo   = StartEnd * UniChar.Char * UniChar.Vector 
-      type GenRefInfo    = StartEnd * int * Base.GenEntity * bool 
-      type ParRefInfo    = StartEnd * int * Base.ParEntity * bool 
+      type CharRefInfo   = StartEnd * UniChar.Char * UniChar.Vector
+      type GenRefInfo    = StartEnd * int * Base.GenEntity * bool
+      type ParRefInfo    = StartEnd * int * Base.ParEntity * bool
       type EntEndInfo    = Errors.Position
 
-      datatype MarkupDecl = 
+      datatype MarkupDecl =
          DEC_ATTLIST of int * (int * Base.AttType * Base.AttDefault) list * bool
        | DEC_ELEMENT of int * Base.ContentSpec * bool
        | DEC_GEN_ENT of int * Base.GenEntity * bool
        | DEC_PAR_ENT of int * Base.ParEntity * bool
-       | DEC_NOTATION of int * Base.ExternalId * bool 
+       | DEC_NOTATION of int * Base.ExternalId * bool
       type DeclInfo = StartEnd * MarkupDecl
 
       fun isExtDecl decl =
@@ -6650,12 +6650,12 @@ structure HookData =
 
 signature Hooks =
    sig
-      type AppData 
-      type AppFinal 
-      
+      type AppData
+      type AppFinal
+
       val hookXml       : AppData * HookData.XmlInfo -> AppData
       val hookFinish    : AppData -> AppFinal
-         
+
       val hookError     : AppData * HookData.ErrorInfo -> AppData
       val hookWarning   : AppData * HookData.WarningInfo -> AppData
 
@@ -6685,12 +6685,12 @@ signature Hooks =
 
 
 
-signature Resolve = 
+signature Resolve =
    sig
       val resolveExtId : Base.ExternalId -> Uri.Uri
    end
 
-structure ResolveNull : Resolve = 
+structure ResolveNull : Resolve =
    struct
       open Base Errors Uri
 
@@ -6715,51 +6715,51 @@ structure ResolveNull : Resolve =
 (*   UtilInt                                                                *)
 (*                                                                          *)
 (* Exceptions raised by functions in this structure:                        *)
-(*   boundsFollow : none                                                    *) 
-(*   cmSymbols    : none                                                    *) 
-(*   makeRow      : none                                                    *) 
-(*   mergeFirst   : ConflictFirst                                           *) 
-(*   mergeFollow  : ConflictFollow                                          *) 
+(*   boundsFollow : none                                                    *)
+(*   cmSymbols    : none                                                    *)
+(*   makeRow      : none                                                    *)
+(*   mergeFirst   : ConflictFirst                                           *)
+(*   mergeFollow  : ConflictFollow                                          *)
 (*--------------------------------------------------------------------------*)
 signature DfaUtil =
    sig
-      val mergeFirst   : bool -> DfaBase.First * DfaBase.First -> DfaBase.First 
-      val mergeFollow  : bool -> DfaBase.Follow * DfaBase.Follow  -> DfaBase.Follow 
-      val boundsFollow : DfaBase.Follow -> DfaBase.Sigma * DfaBase.Sigma 
+      val mergeFirst   : bool -> DfaBase.First * DfaBase.First -> DfaBase.First
+      val mergeFollow  : bool -> DfaBase.Follow * DfaBase.Follow  -> DfaBase.Follow
+      val boundsFollow : DfaBase.Follow -> DfaBase.Sigma * DfaBase.Sigma
       val cmSymbols    : DfaBase.ContentModel -> DfaBase.Sigma list
-      val makeRow      : DfaBase.Follow * bool -> DfaBase.Row 
+      val makeRow      : DfaBase.Follow * bool -> DfaBase.Row
    end
 
 structure DfaUtil : DfaUtil =
    struct
       open UtilInt DfaBase
-         
+
       (*--------------------------------------------------------------------*)
       (* merge two First sets, raise ConflictFirst at conflict: there may   *)
       (* not be two entries (q1,a) and (q2,a) in the same First set, if     *)
       (* nondet is false.                                                   *)
       (*--------------------------------------------------------------------*)
-      fun mergeFirst nondet ll = 
-         let 
-            fun go_det (nil,l) = l 
+      fun mergeFirst nondet ll =
+         let
+            fun go_det (nil,l) = l
               | go_det (l,nil) = l
-              | go_det (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) = 
-               case Int.compare(a1,a2) 
-                 of LESS => x1::go_det(r1,l2) 
+              | go_det (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) =
+               case Int.compare(a1,a2)
+                 of LESS => x1::go_det(r1,l2)
                   | GREATER => x2::go_det(l1,r2)
                   | EQUAL => raise ConflictFirst(a1,q1,q2)
 
-            fun go_nondet (nil,l) = l 
+            fun go_nondet (nil,l) = l
               | go_nondet (l,nil) = l
-              | go_nondet (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) = 
-               case Int.compare(a1,a2) 
-                 of LESS => x1::go_nondet(r1,l2) 
+              | go_nondet (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) =
+               case Int.compare(a1,a2)
+                 of LESS => x1::go_nondet(r1,l2)
                   | GREATER => x2::go_nondet(l1,r2)
                   | EQUAL => case Int.compare(q1,q2)
                                of LESS => x1::go_nondet(r1,l2)
                                 | GREATER => x2::go_nondet(l1,r2)
                                 | EQUAL => go_nondet(l1,r2)
-         in 
+         in
             if nondet then go_nondet ll else go_det ll
          end
 
@@ -6770,28 +6770,28 @@ structure DfaUtil : DfaUtil =
       (* Follow(a+) U First(a+), so duplicate occurrences of the same (q,a) *)
       (* are possible (as opposed to First).                                *)
       (*--------------------------------------------------------------------*)
-      fun mergeFollow nondet ll = 
-         let 
-            fun go_det (nil,l) = l 
+      fun mergeFollow nondet ll =
+         let
+            fun go_det (nil,l) = l
               | go_det (l,nil) = l
-              | go_det (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) = 
-               case Int.compare(a1,a2) 
-                 of LESS => x1::go_det(r1,l2) 
+              | go_det (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) =
+               case Int.compare(a1,a2)
+                 of LESS => x1::go_det(r1,l2)
                   | GREATER => x2::go_det(l1,r2)
                   | EQUAL => if q1=q2 then go_det(l1,r2)
                              else raise ConflictFollow(a1,q1,q2)
 
-            fun go_nondet (nil,l) = l 
+            fun go_nondet (nil,l) = l
               | go_nondet (l,nil) = l
-              | go_nondet (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) = 
-               case Int.compare(a1,a2) 
-                 of LESS => x1::go_nondet(r1,l2) 
+              | go_nondet (l1 as (x1 as (q1,a1))::r1,l2 as (x2 as (q2,a2))::r2) =
+               case Int.compare(a1,a2)
+                 of LESS => x1::go_nondet(r1,l2)
                   | GREATER => x2::go_nondet(l1,r2)
                   | EQUAL => case Int.compare(q1,q2)
                                of LESS => x1::go_nondet(r1,l2)
                                 | GREATER => x2::go_nondet(l1,r2)
                                 | EQUAL => go_nondet(l1,r2)
-         in 
+         in
             if nondet then go_nondet ll else go_det ll
          end
 
@@ -6805,10 +6805,10 @@ structure DfaUtil : DfaUtil =
       (*--------------------------------------------------------------------*)
       (* return the list of all symbols occurring in a content model.       *)
       (*--------------------------------------------------------------------*)
-      fun cmSymbols cm = 
-         let 
-            fun do_cm(cm,yet) = 
-               case cm 
+      fun cmSymbols cm =
+         let
+            fun do_cm(cm,yet) =
+               case cm
                  of CM_ELEM a  => insertInt(a,yet)
                   | CM_OPT cm  => do_cm(cm,yet)
                   | CM_REP cm  => do_cm(cm,yet)
@@ -6821,12 +6821,12 @@ structure DfaUtil : DfaUtil =
       (*--------------------------------------------------------------------*)
       (* given the follow set and the final flag, make a row in the dfa.    *)
       (*--------------------------------------------------------------------*)
-      fun makeRow (flw,fin) = 
-         let 
+      fun makeRow (flw,fin) =
+         let
             val (lo,hi) = boundsFollow flw
             val tab = Array.array(hi-lo+1,dfaError)
             val _ = app (fn (q,a) => Array.update (tab,a-lo,q)) flw
-         in 
+         in
             (lo,hi,Array.extract (tab,0,NONE),fin)
          end
 
@@ -6841,7 +6841,7 @@ structure DfaUtil : DfaUtil =
 
 
 signature IntSets =
-   sig 
+   sig
       eqtype IntSet
 
       val emptyIntSet   : IntSet
@@ -6851,7 +6851,7 @@ signature IntSets =
       val isEmptyIntSet : IntSet -> bool
       val inIntSet      : int * IntSet -> bool
 
-      val compareIntSets: IntSet * IntSet -> order 
+      val compareIntSets: IntSet * IntSet -> order
       val hashIntSet    : IntSet -> word
 
       val addIntSet     : int * IntSet -> IntSet
@@ -6865,13 +6865,13 @@ signature IntSets =
       val IntList2Set : int list -> IntSet
    end
 
-structure IntSets : IntSets = 
+structure IntSets : IntSets =
    struct
       structure W = Word32
       val wordSize = W.wordSize
- 
+
       type IntSet = W.word vector
-      
+
       infix 7 << >>
       infix 6 &&
       infix 5 ||
@@ -6882,7 +6882,7 @@ structure IntSets : IntSets =
       val op || = W.orb
       val !! = W.notb
 
-      fun normalize (vec:IntSet) = 
+      fun normalize (vec:IntSet) =
          let val max = Vector.foldli
             (fn (i,w,max) => if w=0wx0 then i else max) 0 (vec,0,NONE)
          in Vector.extract (vec,0,SOME max)
@@ -6898,82 +6898,82 @@ structure IntSets : IntSets =
                                             fn i => if i<size-1 then full else last):IntSet
                          end
 
-      fun singleIntSet n = 
-         let 
+      fun singleIntSet n =
+         let
             val idx = n div wordSize
             val mask = 0w1 << (Word.fromInt (n mod wordSize))
-         in 
+         in
             Vector.tabulate(idx+1,fn i => if i=idx then mask else 0w0):IntSet
          end
 
       fun isEmptyIntSet vec = Vector.length vec=0
 
-      fun inIntSet(n,vec) = 
+      fun inIntSet(n,vec) =
          let val idx = n div wordSize
-         in if idx>=Vector.length vec then false 
+         in if idx>=Vector.length vec then false
             else let val mask = 0w1 << (Word.fromInt (n mod wordSize))
                  in Vector.sub(vec,idx) && mask <> 0w0
                  end
          end
 
-      fun addIntSet(n,vec) = 
+      fun addIntSet(n,vec) =
          let
             val idx = n div wordSize
             val mask = 0w1 << (Word.fromInt (n mod wordSize))
             val size = Vector.length vec
-         in 
-            if size>idx 
+         in
+            if size>idx
                then Vector.mapi (fn (i,x) => if i=idx then x||mask else x) (vec,0,NONE)
-            else Vector.tabulate 
+            else Vector.tabulate
                (idx+1,fn i => if i<size then Vector.sub(vec,i) else if i=idx then mask else 0w0)
          end
 
-      fun delIntSet(n,vec) = 
+      fun delIntSet(n,vec) =
          let
             val idx = n div wordSize
             val size = Vector.length vec
             val vec1 = if size<=idx then vec
                        else let val mask = !! (0w1 << (Word.fromInt (n mod wordSize)))
-                            in Vector.mapi 
+                            in Vector.mapi
                                (fn (i,x) => if i=idx then x && mask else x) (vec,0,NONE)
                             end
          in normalize vec1
          end
-      
-      fun capIntSets(vec1,vec2) = 
-         let 
+
+      fun capIntSets(vec1,vec2) =
+         let
             val l12 = Int.min(Vector.length vec1,Vector.length vec2)
             val v12 = Vector.tabulate(l12,fn i => Vector.sub(vec1,i) && Vector.sub(vec2,i))
-         in 
+         in
             normalize v12
          end
 
-      fun cupIntSets(vec1,vec2) = 
-         let 
+      fun cupIntSets(vec1,vec2) =
+         let
             val (l1,l2) = (Vector.length vec1,Vector.length vec2)
             val (shorter,longer,v) = if l1<=l2 then (l1,l2,vec2) else (l2,l1,vec1)
-         in 
+         in
             Vector.tabulate (longer,fn i => if i>=shorter then Vector.sub(v,i)
                                             else Vector.sub(vec1,i) || Vector.sub(vec2,i))
          end
 
-      fun diffIntSets(vec1,vec2) = 
-         let 
+      fun diffIntSets(vec1,vec2) =
+         let
             val (l1,l2) = (Vector.length vec1,Vector.length vec2)
-            val vec1 = Vector.tabulate 
+            val vec1 = Vector.tabulate
                (l1,fn i => if i>=l2 then Vector.sub(vec1,i)
                            else Vector.sub(vec1,i) && !!(Vector.sub(vec2,i)))
          in normalize vec1
          end
-      
+
       fun IntList2Set l = List.foldl addIntSet emptyIntSet l
 
-      fun IntSet2List vec = 
-         let 
+      fun IntSet2List vec =
+         let
             val size = Vector.length vec
-            fun doOne (w,off,yet) = 
-               let fun doit (i,mask) = 
-                  if i=wordSize then yet 
+            fun doOne (w,off,yet) =
+               let fun doit (i,mask) =
+                  if i=wordSize then yet
                   else if w&&mask=0w0 then doit(i+1,mask<<0wx1)
                        else (off+i)::doit(i+1,mask<<0wx1)
                in doit(0,0wx1)
@@ -6984,7 +6984,7 @@ structure IntSets : IntSets =
          end
 
       fun compareIntSets (vec1,vec2:IntSet) =
-         let 
+         let
             val (l1,l2) = (Vector.length vec1,Vector.length vec2)
             val (l12,ifEq) = case Int.compare(l1,l2)
                                of LESS => (l1,LESS)
@@ -6996,16 +6996,16 @@ structure IntSets : IntSets =
          in doit 0
          end
 
-      val intShift = case Int.precision 
+      val intShift = case Int.precision
                        of NONE => 0w0
                         | SOME x => Word.fromInt(Int.max(wordSize-x+1,0))
 
-      fun hashIntSet vec = 
+      fun hashIntSet vec =
          case Vector.length vec
-           of 0 => 0w0 
+           of 0 => 0w0
             | 1 => Word.fromInt(W.toInt(W.>>(Vector.sub(vec,0),intShift)))
             | l => Word.fromInt(W.toInt(W.>>(Vector.sub(vec,0)+Vector.sub(vec,l-1),intShift)))
-   end                        
+   end
 (* stop of ../../Util/intSets.sml *)
 (* start of ../../Util/SymDict/intSetDict.sml *)
 
@@ -7015,7 +7015,7 @@ structure IntSets : IntSets =
 
 
 
-structure KeyIntSet : Key = 
+structure KeyIntSet : Key =
    struct
       open IntSets UtilString
 
@@ -7027,8 +7027,8 @@ structure KeyIntSet : Key =
       val toString = (List2xString ("{",",","}") Int2String) o IntSet2List
    end
 
-structure IntSetDict = Dict (structure Key = KeyIntSet) 
-structure IntSetSymTab = SymTable (structure Key = KeyIntSet) 
+structure IntSetDict = Dict (structure Key = KeyIntSet)
+structure IntSetSymTab = SymTable (structure Key = KeyIntSet)
 
 
 (* stop of ../../Util/SymDict/intSetDict.sml *)
@@ -7057,16 +7057,16 @@ structure IntSetSymTab = SymTable (structure Key = KeyIntSet)
 (* Exceptions raised by functions in this structure:                        *)
 (*   passThree : TooLarge                                                   *)
 (*--------------------------------------------------------------------------*)
-signature DfaPassThree = 
+signature DfaPassThree =
    sig
       val passThree: bool -> (DfaBase.Follow * bool) vector -> DfaBase.Dfa
    end
 
-functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree = 
-   struct 
-      open 
+functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree =
+   struct
+      open
          IntSets IntSetDict DfaBase DfaOptions DfaUtil
-         
+
       (*--------------------------------------------------------------------*)
       (* do the subset construction.                                        *)
       (*--------------------------------------------------------------------*)
@@ -7075,20 +7075,20 @@ functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree =
       (* - Q' = 2^Q                                                         *)
       (* - q0'= {q0}                                                        *)
       (* - F' = {S | S cap F <> empty}                                      *)
-      (* - delta'(S,a) = {p | (q,a,p) in delta, q in S}                     *) 
+      (* - delta'(S,a) = {p | (q,a,p) in delta, q in S}                     *)
       (*--------------------------------------------------------------------*)
-      fun makeDet tab = 
-         let 
+      fun makeDet tab =
+         let
             (* the new start state is the singleton of the old start state  *)
             val sNull = singleIntSet 0
 
             (* create a dictionary for the subsets, make sNull get index 0  *)
             val tau = makeDict("",!O_DFA_INITIAL_WIDTH,(nil:Follow,false))
-            val pInitial = getIndex(tau,sNull) 
+            val pInitial = getIndex(tau,sNull)
 
             (* enter a new set state. raise DfaTooLarge if the new state    *)
             (* would have a too large index                                 *)
-            fun makeState s = 
+            fun makeState s =
                let val (max,i) = (!O_DFA_MAX_STATES,getIndex(tau,s))
                in if max>i then i else raise DfaTooLarge max
                end
@@ -7098,17 +7098,17 @@ functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree =
             fun makeFollow NONE nil = nil
               | makeFollow (SOME(s,a)) nil = [(makeState s,a)]
               | makeFollow NONE ((q,a)::qas) = makeFollow (SOME(singleIntSet q,a)) qas
-              | makeFollow (SOME(s,a)) ((q,b)::qas) = 
+              | makeFollow (SOME(s,a)) ((q,b)::qas) =
                if a=b then makeFollow (SOME(addIntSet(q,s),a)) qas
                else (makeState s,a)::makeFollow (SOME(singleIntSet q,b)) qas
 
             (* continue until all entries in the state dictionary are done -*)
-            fun doit i = 
+            fun doit i =
                if i>=usedIndices tau then i
                else let val sI = getKey(tau,i)
                         val lI = IntSet2List sI
                         val ffs = map (fn j => Vector.sub(tab,j)) lI
-                        val (followJs,finI) = foldl 
+                        val (followJs,finI) = foldl
                            (fn ((flwJ,finJ),(flw,fin)) => (mergeFollow true (flwJ,flw),
                                                            finJ orelse fin))
                            (nil,false) ffs
@@ -7121,15 +7121,15 @@ functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree =
          in (* finally create a vector holding the new follow/fin pairs     *)
             Vector.tabulate (size,fn i => getByIndex(tau,i))
          end
-         
+
       (*--------------------------------------------------------------------*)
       (* given a vector of Follow and boolean final condition, make a dfa   *)
       (* out of it. if the first arg is true, then the content model was    *)
       (* ambiguous; in this case we must first apply a subset construction  *)
       (* in order to obtain a deterministic finite machine.                 *)
       (*--------------------------------------------------------------------*)
-      fun passThree nondet tab =  
-         let 
+      fun passThree nondet tab =
+         let
             val det = if nondet then makeDet tab else tab
          in Vector.map makeRow det
          end
@@ -7155,7 +7155,7 @@ functor DfaPassThree (structure DfaOptions : DfaOptions) : DfaPassThree =
 (*--------------------------------------------------------------------------*)
 signature DfaError =
    sig
-      val countOccs : DfaBase.Sigma * DfaBase.State * DfaBase.State 
+      val countOccs : DfaBase.Sigma * DfaBase.State * DfaBase.State
          -> DfaBase.ContentModel -> DfaBase.Sigma * int * int
    end
 
@@ -7164,7 +7164,7 @@ structure DfaError : DfaError =
       open DfaBase
 
       fun countOccs (a,q1,q2) cm =
-         let 
+         let
             val (q1,q2) = if q1>q2 then (q2,q1) else (q1,q2)
 
             fun next a nil = (1,[(a,2)])
@@ -7190,7 +7190,7 @@ structure DfaError : DfaError =
                   | CM_SEQ cmis => foldl doit yet cmis
 
             val (_,_,n1,n2) = doit (cm,(1,nil,0,0))
-         in 
+         in
             (a,n1,n2)
          end
    end
@@ -7209,13 +7209,13 @@ structure DfaError : DfaError =
 (* Exceptions raised by functions in this structure:                        *)
 (*   passOne : ConflictFirst                                                *)
 (*--------------------------------------------------------------------------*)
-signature DfaPassOne = 
+signature DfaPassOne =
    sig
       val passOne : bool -> DfaBase.ContentModel -> DfaBase.CM
    end
 
-structure DfaPassOne : DfaPassOne = 
-   struct 
+structure DfaPassOne : DfaPassOne =
+   struct
       open DfaBase DfaUtil
 
       (*--------------------------------------------------------------------*)
@@ -7242,14 +7242,14 @@ structure DfaPassOne : DfaPassOne =
       (*          error,   if exist (q1,a) in F1, (q2,a) in F2              *)
       (*                   then raise ConflictFirst(a,q1,q2)                *)
       (*--------------------------------------------------------------------*)
-      fun passOne nondet cm = 
-         let 
+      fun passOne nondet cm =
+         let
             fun und(a,b) = a andalso b
             fun oder(a,b) = a orelse b
-               
+
             fun op_fst_seq (fst,fsts,mt) = if mt then mergeFirst nondet (fst,fsts) else fst
             fun op_fst_or  (fst,fsts,_)  = mergeFirst nondet (fst,fsts)
-               
+
             fun do_cm cm q =
                case cm
                  of CM_ELEM a  => (ELEM a,(q+1,false,[(q+1,a)]))
@@ -7260,16 +7260,16 @@ structure DfaPassOne : DfaPassOne =
                                   in (REP cmi,(q1,true,fst))
                                   end
                   | CM_PLUS cm => let val cmi as (_,info1) = do_cm cm q
-                                  in (PLUS cmi,info1) 
-                                  end 
+                                  in (PLUS cmi,info1)
+                                  end
                   | CM_ALT cms => do_cms (ALT,false,oder,op_fst_or) cms q
                   | CM_SEQ cms => do_cms (SEQ,true,und,op_fst_seq) cms q
-                                  
-            and do_cms(con,null_mt,op_mt,op_fst) cms q = 
-               let 
+
+            and do_cms(con,null_mt,op_mt,op_fst) cms q =
+               let
                   fun doit [] q = ([],(q,null_mt,[]))
                     | doit (cm::cms) q =
-                     let 
+                     let
                         val cmi as (_,(q1,mt1,fst1)) = do_cm cm q
                         val (cmis,(q2,mt2,fst2)) = doit cms q1
                      in (cmi::cmis,(q2,op_mt(mt1,mt2),op_fst(fst1,fst2,mt1)))
@@ -7277,7 +7277,7 @@ structure DfaPassOne : DfaPassOne =
                   val (cmis,info1) = doit cms q
                in (con cmis,info1)
                end
-            
+
          in do_cm cm 0
          end
    end
@@ -7298,15 +7298,15 @@ structure DfaPassOne : DfaPassOne =
 (* Exceptions raised by functions in this structure:                        *)
 (*   passTwo : ConflictFollow                                               *)
 (*--------------------------------------------------------------------------*)
-signature DfaPassTwo = 
+signature DfaPassTwo =
    sig
       val passTwo: bool -> DfaBase.CM -> (DfaBase.Follow * bool) vector
    end
 
-structure DfaPassTwo : DfaPassTwo = 
-   struct 
+structure DfaPassTwo : DfaPassTwo =
+   struct
       open DfaBase DfaUtil
-         
+
       (*--------------------------------------------------------------------*)
       (* Given a CM annotated with leaf numbers (states), Empty and First,  *)
       (* compute Follow and Fin foreach node, and generate the transition   *)
@@ -7335,24 +7335,24 @@ structure DfaPassTwo : DfaPassTwo =
       (*          error,   if exist (q1,a) in F1, (q2,a) in F2              *)
       (*                   then raise ConflictFirst(a,q1,q2)                *)
       (*--------------------------------------------------------------------*)
-      fun passTwo nondet (cmi as (_,(n,mt,fst))) =                                   
-         let 
+      fun passTwo nondet (cmi as (_,(n,mt,fst))) =
+         let
             val table = Array.array(n+1,(nil,false))
-                    
+
             val _ = Array.update(table,0,(fst,mt))
 
             fun do_cm (ff as (flw,fin)) (cm,(q,mt,fst)) =
-               case cm 
+               case cm
                  of ELEM a   => Array.update(table,q,ff)
                   | OPT cmi  => do_cm ff cmi
                   | REP cmi  => do_cm (mergeFollow nondet (fst,flw),fin) cmi
                   | PLUS cmi => do_cm (mergeFollow nondet (fst,flw),fin) cmi
                   | ALT cmis => app (do_cm ff) cmis
                   | SEQ cmis => ignore (do_seq ff cmis)
-            and do_seq ff cmis = foldr 
-               (fn (cmi as (_,(_,mt,fst)),ff as (flw,fin)) 
-                => (do_cm ff cmi; 
-                    if mt then (mergeFollow nondet (fst,flw),fin) else (fst,false))) 
+            and do_seq ff cmis = foldr
+               (fn (cmi as (_,(_,mt,fst)),ff as (flw,fin))
+                => (do_cm ff cmi;
+                    if mt then (mergeFollow nondet (fst,flw),fin) else (fst,false)))
                ff cmis
 
             val _ = do_cm (nil,true) cmi
@@ -7392,10 +7392,10 @@ structure DfaPassTwo : DfaPassTwo =
 (*   makeDfa             : Ambiguous                                        *)
 (*   Dfa2String          : none                                             *)
 (*--------------------------------------------------------------------------*)
-signature Dfa = 
+signature Dfa =
    sig
       eqtype DfaState
-         
+
       val dfaError   : DfaState
       val dfaInitial : DfaState
 
@@ -7413,10 +7413,10 @@ signature Dfa =
    end
 
 functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
-   struct       
-      structure DfaPassThree = DfaPassThree (structure DfaOptions = DfaOptions) 
+   struct
+      structure DfaPassThree = DfaPassThree (structure DfaOptions = DfaOptions)
 
-      open 
+      open
          DfaBase DfaError DfaPassOne DfaPassTwo DfaString DfaUtil
 
       type DfaState = State
@@ -7426,10 +7426,10 @@ functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
       (* are the symbols occurring in the input dfa.                        *)
       (*--------------------------------------------------------------------*)
       fun makeChoiceDfa cm =
-         let 
+         let
             val syms = cmSymbols cm
             val flw = map (fn a => (dfaInitial,a)) syms
-         in 
+         in
             Vector.fromList [makeRow(flw,true)]
          end
 
@@ -7437,20 +7437,20 @@ functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
       (* create a dfa for an ambiguous content model. Raise DfaTooLarge if  *)
       (* the subset construction yields too many states.                    *)
       (*--------------------------------------------------------------------*)
-      fun makeAmbiguous cm = 
-         let 
+      fun makeAmbiguous cm =
+         let
             val cmi = DfaPassOne.passOne true cm
             val tab = DfaPassTwo.passTwo true cmi
             val dfa = DfaPassThree.passThree true tab
          in dfa
          end
-            
+
       (*--------------------------------------------------------------------*)
       (* generate a dfa for a content model. Raise Ambiguous if the content *)
       (* model is ambiguous.                                                *)
       (*--------------------------------------------------------------------*)
-      fun makeDfa cm = 
-         let 
+      fun makeDfa cm =
+         let
             val cmi = DfaPassOne.passOne false cm
             val tab = DfaPassTwo.passTwo false cmi
             val dfa = DfaPassThree.passThree false tab
@@ -7458,12 +7458,12 @@ functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
          end
       handle ConflictFirst aqq => raise Ambiguous (countOccs aqq cm)
            | ConflictFollow aqq => raise Ambiguous (countOccs aqq cm)
-      
+
       (*--------------------------------------------------------------------*)
       (* make one transitions in the dfa.                                   *)
       (*--------------------------------------------------------------------*)
-      fun dfaTrans(tab,q,a) = 
-         if q<0 then dfaDontCare 
+      fun dfaTrans(tab,q,a) =
+         if q<0 then dfaDontCare
          else let val (lo,hi,tab,_) = Vector.sub(tab,q)
               in if a>=lo andalso a<=hi then Vector.sub(tab,a-lo) else dfaError
               end
@@ -7471,7 +7471,7 @@ functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
       (*--------------------------------------------------------------------*)
       (* check whether a dfa's state is an accepting state.                 *)
       (*--------------------------------------------------------------------*)
-      fun dfaFinal (tab,q) = 
+      fun dfaFinal (tab,q) =
          q<0 orelse #4(Vector.sub(tab,q):Row)
    end
 (* stop of ../../Parser/Dfa/dfa.sml *)
@@ -7522,12 +7522,12 @@ functor Dfa (structure DfaOptions : DfaOptions) : Dfa =
 signature Entities =
    sig
       include Hooks
-      
-      type State 
+
+      type State
       eqtype EntId
       datatype Special = DOC_ENTITY | EXT_SUBSET
 
-      exception CantOpenFile of (string * string) * AppData 
+      exception CantOpenFile of (string * string) * AppData
 
       val pushIntern  : State * int * bool * UniChar.Vector -> State
       val pushExtern  : State * int * bool * Uri.Uri -> State * Encoding.Encoding
@@ -7544,21 +7544,21 @@ signature Entities =
 
       val getChar     : AppData * State -> UniChar.Char * AppData * State
       val ungetChars  : State * UniChar.Data -> State
- 
+
       val isOpen      : int * bool * State -> bool
       val isSpecial   : State -> bool
       val inDocEntity : State -> bool
    end
 
-functor Entities (structure Hooks : Hooks) : Entities = 
+functor Entities (structure Hooks : Hooks) : Entities =
    struct
-      open 
+      open
          UniChar Decode Decode.Error Errors Hooks Uri UtilError
 
       val THIS_MODULE = "Entities"
       val BUFSIZE = 1024
       type CharBuffer = UniChar.Char array
-         
+
       (*--------------------------------------------------------------------*)
       (* A special entity can not be popped from the stack by getChar, so   *)
       (* it must be popped explicitly. This is for the document entity and  *)
@@ -7574,7 +7574,7 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (*--------------------------------------------------------------------*)
       (* Make an EntId from the entity's index.                             *)
       (*--------------------------------------------------------------------*)
-      fun makeEntId(idx,isParam) = 
+      fun makeEntId(idx,isParam) =
          if isParam then PARAMETER idx else GENERAL idx
 
       (*--------------------------------------------------------------------*)
@@ -7624,7 +7624,7 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (* the looked-ahead chars now in the right order.                     *)
       (*--------------------------------------------------------------------*)
       datatype ExtType = SPECIAL of Special | NORMAL of EntId * State
-      and State = 
+      and State =
           LOOKED  of Data * State
         | ENDED of EntId * State
         | CLOSED of DecFile * int * int * ExtType
@@ -7639,32 +7639,32 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (* Extract the unique number from a state.                            *)
       (*--------------------------------------------------------------------*)
       fun getExtEntId extType =
-         case extType 
+         case extType
            of SPECIAL DOC_ENTITY => GENERAL 0
             | SPECIAL EXT_SUBSET => PARAMETER 0
             | NORMAL(id,_) => id
       fun getEntId q =
-         case q 
+         case q
            of LOOKED (_,q) => getEntId q
             | ENDED(id,_) => id
             | CLOSED(_,_,_,extType) => getExtEntId extType
             | INT(_,_,_,(id,_)) => id
             | EXT1(_,_,_,_,extType) => getExtEntId extType
             | EXT2(_,_,_,_,_,_,(_,_,extType)) => getExtEntId extType
- 
+
       (*--------------------------------------------------------------------*)
       (* Find the nearest enclosing external entity, and return its         *)
       (* filename, line and column number.                                  *)
       (*--------------------------------------------------------------------*)
       fun getPos q =
-         case q 
+         case q
            of ENDED(_,other) => getPos other
             | INT(_,_,_,(_,other)) => getPos other
             | CLOSED(dec,l,col,_) => (decName dec,l,col)
             | EXT1(dec,l,col,_,_) => (decName dec,l,col)
             | EXT2(_,_,_,l,col,_,(dec,_,_)) => (decName dec,l,col)
             | LOOKED (cs,q) => let val (f,l,c) = getPos q
-                                   val k = length cs 
+                                   val k = length cs
                                in if c>=k then (f,l,c-k) else (f,l,0)
                                end
 
@@ -7672,7 +7672,7 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (* get the path of the nearest enclosing external entity.             *)
       (*--------------------------------------------------------------------*)
       fun getUri q =
-         case q 
+         case q
            of LOOKED (_,q) => getUri q
             | ENDED(_,other) => getUri other
             | INT(_,_,_,(_,other)) => getUri other
@@ -7701,7 +7701,7 @@ functor Entities (structure Hooks : Hooks) : Entities =
       fun isOpen (idx,isParam,q) =
          let val id = makeEntId(idx,isParam)
             fun doit q =
-               case q 
+               case q
                  of LOOKED (_,other) => doit other
                   | ENDED(id',other) => id=id' orelse doit other
                   | CLOSED(_,_,_,SPECIAL _) => false
@@ -7720,11 +7720,11 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (* parameter entities are declared prior to it. The document entity   *)
       (* is then the only entity on the stack.                              *)
       (*--------------------------------------------------------------------*)
-      fun inDocEntity q = 
-         case q 
+      fun inDocEntity q =
+         case q
            of LOOKED (_,q) => inDocEntity q
-            | ENDED(_,other) => inDocEntity other 
-            | INT(_,_,_,(_,other)) => inDocEntity other 
+            | ENDED(_,other) => inDocEntity other
+            | INT(_,_,_,(_,other)) => inDocEntity other
             | CLOSED(_,_,_,NORMAL _) => false
             | CLOSED(_,_,_,SPECIAL what) => what=DOC_ENTITY
             | EXT1(_,_,_,_,NORMAL _) => false
@@ -7735,19 +7735,19 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (*--------------------------------------------------------------------*)
       (* is this state the document end, i.e., are all entities closed?     *)
       (*--------------------------------------------------------------------*)
-      fun isSpecial q = 
-         case q 
+      fun isSpecial q =
+         case q
            of LOOKED (_,q) => isSpecial q
             | CLOSED(_,_,_,SPECIAL _) => true
             | EXT1(_,_,_,_,SPECIAL _) => true
             | EXT2(_,_,_,_,_,_,(_,_,SPECIAL _)) => true
-            | _ => false 
+            | _ => false
 
       (*--------------------------------------------------------------------*)
       (* Initialize and load a new buffer when opening an external entity.  *)
       (*--------------------------------------------------------------------*)
-      fun initArray dec = 
-         let 
+      fun initArray dec =
+         let
             val arr = Array.array(BUFSIZE,0wx0)
             val (n,dec1,err) = decGetArray dec arr
          in (arr,n,dec1,err)
@@ -7756,17 +7756,17 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (*--------------------------------------------------------------------*)
       (* Open an external/internal entity.                                  *)
       (*--------------------------------------------------------------------*)
-      fun pushIntern(q,id,isParam,vec) = 
+      fun pushIntern(q,id,isParam,vec) =
          INT(vec,Vector.length vec,0,(makeEntId(id,isParam),q))
-      fun pushExtern(q,id,isParam,uri) = 
-         let 
+      fun pushExtern(q,id,isParam,uri) =
+         let
             val dec = decOpenXml (SOME uri)
             val auto = decEncoding dec
             val q1 = EXT1(dec,1,0,false,NORMAL(makeEntId(id,isParam),q))
          in (q1,auto)
          end
-      fun pushSpecial(what,uri) = 
-         let 
+      fun pushSpecial(what,uri) =
+         let
             val dec = decOpenXml uri
             val auto = decEncoding dec
             val q = EXT1(dec,1,0,false,SPECIAL what)
@@ -7774,14 +7774,14 @@ functor Entities (structure Hooks : Hooks) : Entities =
          end
 
       (*--------------------------------------------------------------------*)
-      (* confirm the autodetected encoding of an external entity.           *) 
+      (* confirm the autodetected encoding of an external entity.           *)
       (*--------------------------------------------------------------------*)
       fun commitAuto(a,q) =
-         case q 
-           of EXT1(dec,l,col,brk,typ) => 
+         case q
+           of EXT1(dec,l,col,brk,typ) =>
               let
                  val a1 = a before decCommit dec
-                    handle DecError(_,_,err) 
+                    handle DecError(_,_,err)
                     => hookError(a,(getPos q,ERR_DECODE_ERROR err))
                  val (arr,n,dec1,err) = initArray dec
               in (a1,EXT2(arr,n,0,l,col,brk,(dec1,err,typ)))
@@ -7798,18 +7798,18 @@ functor Entities (structure Hooks : Hooks) : Entities =
                                        "entity is neither EXT1 nor CLOSED nor LOOKED")
 
       (*--------------------------------------------------------------------*)
-      (* change from the autodetected encoding to the declared one.         *) 
-      (*--------------------------------------------------------------------*) 
-      fun changeAuto (a,q,decl) = 
-         case q 
-           of EXT1(dec,l,col,brk,typ) => 
+      (* change from the autodetected encoding to the declared one.         *)
+      (*--------------------------------------------------------------------*)
+      fun changeAuto (a,q,decl) =
+         case q
+           of EXT1(dec,l,col,brk,typ) =>
               let
                  val dec1 = decSwitch(dec,decl)
-                    handle DecError(dec,_,err) 
+                    handle DecError(dec,_,err)
                     => let val a1 = hookError(a,(getPos q,ERR_DECODE_ERROR err))
                            val _ = decClose dec
                            val uri = decName dec
-                           val msg = case err 
+                           val msg = case err
                                        of ERR_UNSUPPORTED_ENC _ => "Unsupported encoding"
                                         | _ => "Declared encoding incompatible"
                                           ^"with auto-detected encoding"
@@ -7837,29 +7837,29 @@ functor Entities (structure Hooks : Hooks) : Entities =
       (* is valid (cf. 2.2). If the last character was a carriage return    *)
       (* (0xD) supress a line feed (0xA).                                   *)
       (*--------------------------------------------------------------------*)
-      fun getChar (a,q) = 
-         case q 
+      fun getChar (a,q) =
+         case q
            of ENDED(_,other) => getChar(a,other)
-            | CLOSED(_,_,_,typ) => 
-              (case typ 
+            | CLOSED(_,_,_,typ) =>
+              (case typ
                  of SPECIAL _ => raise InternalError (THIS_MODULE,"getChar",
                                                       "attempt to read beyond special entity end")
                   | NORMAL(_,other) => getChar(a,other))
-            | INT(vec,s,i,io) => 
+            | INT(vec,s,i,io) =>
               if i>=s then (0wx0,a,ENDED io)
-              else (Vector.sub(vec,i),a,INT(vec,s,i+1,io)) 
-            | EXT1(dec,l,col,br,typ) => 
-              (let 
+              else (Vector.sub(vec,i),a,INT(vec,s,i+1,io))
+            | EXT1(dec,l,col,br,typ) =>
+              (let
                   val (c,dec1) = decGetChar dec
-               in 
+               in
                   if (* c>=0wx20 orelse c=0wx09 *)
-                     c>=0wx0020 
-                     andalso (c<=0wxD7FF 
-                              orelse c>=0wxE000 andalso (c<=0wxFFFD 
+                     c>=0wx0020
+                     andalso (c<=0wxD7FF
+                              orelse c>=0wxE000 andalso (c<=0wxFFFD
                                                          orelse c>=0wx10000))
                      orelse c=0wx9
-                     then (c,a,EXT1(dec1,l,col+1,false,typ)) 
-                  else if c=0wxA 
+                     then (c,a,EXT1(dec1,l,col+1,false,typ))
+                  else if c=0wxA
                           then if br then getChar(a,EXT1(dec1,l,col,false,typ))
                                else (c,a,EXT1(dec1,l+1,0,false,typ))
                        else (if c=0wxD then (0wxA,a,EXT1(dec1,l+1,0,true,typ))
@@ -7868,25 +7868,25 @@ functor Entities (structure Hooks : Hooks) : Entities =
                                   end)
                end
                   handle DecEof dec => (0wx0,a,CLOSED(dec,l,col,typ))
-                       | DecError(dec,eof,err) => 
+                       | DecError(dec,eof,err) =>
                                        let val err = ERR_DECODE_ERROR err
                                            val a1 = hookError(a,(getPos q,err))
                                        in if eof then (0wx0,a,CLOSED(dec,l,col,typ))
                                           else getChar(a1,EXT1(dec,col,l,br,typ))
                                        end)
-            | EXT2(arr,s,i,l,col,br,det) => 
-              if i<s 
+            | EXT2(arr,s,i,l,col,br,det) =>
+              if i<s
                  then let val c = Array.sub(arr,i)
                       in if (* c>=0wx20 orelse c=0wx09 *)
                          (* c>=0wx0020 andalso c<=0wxD7FF orelse c=0wx9 orelse *)
                          (* c>=0wxE000 andalso c<=0wxFFFD orelse c>=0wx10000 *)
-                         c>=0wx0020 
-                         andalso (c<=0wxD7FF 
-                                  orelse c>=0wxE000 andalso (c<=0wxFFFD 
+                         c>=0wx0020
+                         andalso (c<=0wxD7FF
+                                  orelse c>=0wxE000 andalso (c<=0wxFFFD
                                                              orelse c>=0wx10000))
                          orelse c=0wx9
-                            then (c,a,EXT2(arr,s,i+1,l,col+1,false,det)) 
-                      else if c=0wxA 
+                            then (c,a,EXT2(arr,s,i+1,l,col+1,false,det))
+                      else if c=0wxA
                               then if br then getChar(a,EXT2(arr,s,i+1,l,col,false,det))
                                    else (c,a,EXT2(arr,s,i+1,l+1,0,false,det))
                            else (if c=0wxD then (0wxA,a,EXT2(arr,s,i+1,l+1,0,true,det))
@@ -7895,8 +7895,8 @@ functor Entities (structure Hooks : Hooks) : Entities =
                                       end)
                       end
               else let val (dec,err,typ) = det
-                       val (a1,(n,dec1,err1)) = 
-                          case err 
+                       val (a1,(n,dec1,err1)) =
+                          case err
                             of NONE => if s=BUFSIZE then (a,decGetArray dec arr)
                                        else (a,(0,dec,NONE))
                              | SOME err => (hookError(a,(getPos q,ERR_DECODE_ERROR err)),
@@ -7926,18 +7926,18 @@ functor Entities (structure Hooks : Hooks) : Entities =
 (*--------------------------------------------------------------------------*)
 functor DtdDeclare (structure Dtd           : Dtd
                     structure Entities      : Entities
-                    structure ParserOptions : ParserOptions) = 
+                    structure ParserOptions : ParserOptions) =
    struct
       open
          UtilInt UtilList
          Base Dtd Errors Entities ParserOptions UniChar UniClasses
-         
+
       (*--------------------------------------------------------------------*)
       (* check whether a sequence a chars is the b-adic representation of a *)
       (* character's code, terminated by ";". base will be 10 or 16, isBase *)
       (* will check for a character being a decimal/hexadecimal number.     *)
       (*--------------------------------------------------------------------*)
-      fun checkBasimal (base,baseValue) (ch:Char,cs) = 
+      fun checkBasimal (base,baseValue) (ch:Char,cs) =
          let fun doit _ (nil:Data) = false
                | doit yet [0wx3B] = yet=ch
                | doit yet (c::cs) = case baseValue c
@@ -7959,7 +7959,7 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* check for a single character ch.                                   *)
       (*--------------------------------------------------------------------*)
       fun checkSingle (ch,[c]) = c=ch
-        | checkSingle _ = false 
+        | checkSingle _ = false
 
       (*--------------------------------------------------------------------*)
       (* check a predefined entity for being well defined. Note that both   *)
@@ -7968,11 +7968,11 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*--------------------------------------------------------------------*)
       fun checkPredef (idx,cs) =
          case idx
-           of 1 => checkRef(0wx26,cs) 
-            | 2 => checkSingle(0wx3C,cs) orelse checkRef(0wx3C,cs) 
-            | 3 => checkSingle(0wx3E,cs) orelse checkRef(0wx3E,cs) 
-            | 4 => checkSingle(0wx27,cs) orelse checkRef(0wx27,cs) 
-            | 5 => checkSingle(0wx22,cs) orelse checkRef(0wx22,cs) 
+           of 1 => checkRef(0wx26,cs)
+            | 2 => checkSingle(0wx3C,cs) orelse checkRef(0wx3C,cs)
+            | 3 => checkSingle(0wx3E,cs) orelse checkRef(0wx3E,cs)
+            | 4 => checkSingle(0wx27,cs) orelse checkRef(0wx27,cs)
+            | 5 => checkSingle(0wx22,cs) orelse checkRef(0wx22,cs)
             | _ => true
 
       (*--------------------------------------------------------------------*)
@@ -8001,19 +8001,19 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* print an error if the entity was already declared.                 *)
       (* print an error if the declaration is not correct.                  *)
       (*--------------------------------------------------------------------*)
-      fun checkPredefined dtd (a,q) (idx,ent) = 
-         if !O_VALIDATE andalso idx>=1 andalso idx<=5 then 
+      fun checkPredefined dtd (a,q) (idx,ent) =
+         if !O_VALIDATE andalso idx>=1 andalso idx<=5 then
             let
                val a1 = if !O_WARN_MULT_ENT_DECL andalso isRedefined dtd idx
                            then let val warn = WARN_MULT_DECL(IT_GEN_ENT,Index2GenEnt dtd idx)
                                 in hookWarning(a,(getPos q,warn))
                                 end
                         else a before setRedefined dtd idx
-               val a2 = 
-                  if !O_CHECK_PREDEFINED then 
-                     let val correct = 
-                        case ent 
-                          of GE_INTERN(_,rep) => checkPredef (idx,Vector2Data rep) 
+               val a2 =
+                  if !O_CHECK_PREDEFINED then
+                     let val correct =
+                        case ent
+                          of GE_INTERN(_,rep) => checkPredef (idx,Vector2Data rep)
                            | _ => false
                      in if correct then a1
                         else let val err = ERR_DECL_PREDEF(Index2GenEnt dtd idx,validPredef idx)
@@ -8024,7 +8024,7 @@ functor DtdDeclare (structure Dtd           : Dtd
             in (true,a2)
             end
          else (false,a)
-            
+
       (*--------------------------------------------------------------------*)
       (* add an entity declaration to the DTD tables. 4.2                   *)
       (*                                                                    *)
@@ -8039,19 +8039,19 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* print a warning and ignore the declaration if the notation was     *)
       (* declared previously.                                               *)
       (*--------------------------------------------------------------------*)
-      fun addGenEnt dtd (a,q) (idx,ent,ext) = 
+      fun addGenEnt dtd (a,q) (idx,ent,ext) =
          case getGenEnt dtd idx
            of (GE_NULL,_) => a before setGenEnt dtd (idx,(ent,ext))
-            | _ => let val (pre,a1) = checkPredefined dtd (a,q) (idx,ent) 
+            | _ => let val (pre,a1) = checkPredefined dtd (a,q) (idx,ent)
                    in if pre orelse not (!O_WARN_MULT_ENT_DECL) then a1
                       else hookWarning(a1,(getPos q,WARN_MULT_DECL
                                            (IT_GEN_ENT,Index2GenEnt dtd idx)))
                    end
 
-      fun addParEnt dtd (a,q) (idx,ent,ext) = 
+      fun addParEnt dtd (a,q) (idx,ent,ext) =
          case getParEnt dtd idx
            of (PE_NULL,_) => a before setParEnt dtd (idx,(ent,ext))
-            | _ => if !O_WARN_MULT_ENT_DECL 
+            | _ => if !O_WARN_MULT_ENT_DECL
                       then hookWarning(a,(getPos q,WARN_MULT_DECL
                                           (IT_PAR_ENT,Index2ParEnt dtd idx)))
                    else a
@@ -8064,9 +8064,9 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*   entities amp, lt, gt, apos, quot, in the form specified in       *)
       (*   "4.6 Predefined Entities".                                       *)
       (*--------------------------------------------------------------------*)
-      fun checkPreDefined dtd (a,q) = 
-         if !O_VALIDATE andalso !O_INTEROPERABILITY andalso 
-            !O_WARN_SHOULD_DECLARE andalso hasDtd dtd  
+      fun checkPreDefined dtd (a,q) =
+         if !O_VALIDATE andalso !O_INTEROPERABILITY andalso
+            !O_WARN_SHOULD_DECLARE andalso hasDtd dtd
             then case notRedefined dtd
                    of nil => a
                     | ents => hookWarning(a,(getPos q,WARN_SHOULD_DECLARE ents))
@@ -8082,9 +8082,9 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* print a warning and ignore the declaration if the notation was     *)
       (* declared previously.                                               *)
       (*--------------------------------------------------------------------*)
-      fun addNotation dtd (a,q) (idx,nt) = 
-         if hasNotation dtd idx 
-            then if !O_WARN_MULT_NOT_DECL 
+      fun addNotation dtd (a,q) (idx,nt) =
+         if hasNotation dtd idx
+            then if !O_WARN_MULT_NOT_DECL
                     then hookWarning(a,(getPos q,WARN_MULT_DECL
                                         (IT_NOTATION,Index2AttNot dtd idx)))
                  else a
@@ -8100,14 +8100,14 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* print an error and ignore the declaration if the element was       *)
       (* declared previously.                                               *)
       (*--------------------------------------------------------------------*)
-      fun addElement dtd (a,q) (idx,cont,ext) = 
+      fun addElement dtd (a,q) (idx,cont,ext) =
          let val {decl,atts,errAtts,...} = getElement dtd idx
          in case decl
               of NONE => a before setElement dtd (idx,{decl    = SOME(cont,ext),
                                                        atts    = atts,
                                                        errAtts = errAtts})
-               | SOME _ => if !O_VALIDATE 
-                              then hookError(a,(getPos q,ERR_REDEC_ELEM(Index2Element dtd idx))) 
+               | SOME _ => if !O_VALIDATE
+                              then hookError(a,(getPos q,ERR_REDEC_ELEM(Index2Element dtd idx)))
                            else a
          end
 
@@ -8115,8 +8115,8 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* at option, pretend an element is declared by adding a default      *)
       (* declaration. Only the decl flag of the element info is updated.    *)
       (*--------------------------------------------------------------------*)
-      fun handleUndeclElement dtd idx = 
-         let 
+      fun handleUndeclElement dtd idx =
+         let
             val {atts,errAtts,...} = getElement dtd idx
             val newInfo = {decl    = SOME(CT_ANY,false),
                            atts    = atts,
@@ -8140,15 +8140,15 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* attribute list declaration.                                        *)
       (*--------------------------------------------------------------------*)
       fun enterAttList dtd (a,q) idx =
-         let 
+         let
             val {decl,atts,errAtts,...} = getElement dtd idx
             val a1 = if isSome decl orelse not (!O_WARN_ATT_NO_ELEM) then a
                      else hookWarning(a,(getPos q,WARN_ATT_UNDEC_ELEM(Index2Element dtd idx)))
-         in 
+         in
             case atts
-              of NONE => a1 before 
-                 setElement dtd (idx,{decl=decl,atts=SOME(nil,false),errAtts=errAtts}) 
-               | _ => if !O_INTEROPERABILITY andalso !O_WARN_MULT_ATT_DECL 
+              of NONE => a1 before
+                 setElement dtd (idx,{decl=decl,atts=SOME(nil,false),errAtts=errAtts})
+               | _ => if !O_INTEROPERABILITY andalso !O_WARN_MULT_ATT_DECL
                          then hookWarning(a1,(getPos q,WARN_MULT_ATT_DECL(Index2Element dtd idx)))
                       else a1
          end
@@ -8162,7 +8162,7 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*   type whose only possible values are "default" and "preserve".    *)
       (*--------------------------------------------------------------------*)
       fun checkAttDef (a,q) (aidx,attType,_,_) =
-         if aidx<>xmlSpaceIdx orelse attType=xmlSpaceType then a 
+         if aidx<>xmlSpaceIdx orelse attType=xmlSpaceType then a
          else hookError(a,(getPos q,ERR_XML_SPACE))
 
       (*--------------------------------------------------------------------*)
@@ -8186,18 +8186,18 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*   No element type may have more than one ID attribute specified.   *)
       (*--------------------------------------------------------------------*)
       (* print an error if the element already has an ID attribute.         *)
-      (* print a warning if the attr. is already defined for this element.  *) 
+      (* print a warning if the attr. is already defined for this element.  *)
       (*--------------------------------------------------------------------*)
       (* return the new application data.                                   *)
       (*--------------------------------------------------------------------*)
       fun addAttribute dtd (a,q) (eidx,attDef as (att,attType,attDefault,_)) =
-         let 
+         let
             val a1 = checkAttDef (a,q) attDef
 
             fun doit nil = (false,[attDef],a)
-              | doit (atts as (ad as (aidx,_,_,_))::rest) = 
-               if aidx=att 
-                  then let val a1 = if !O_INTEROPERABILITY andalso !O_WARN_MULT_ATT_DEF 
+              | doit (atts as (ad as (aidx,_,_,_))::rest) =
+               if aidx=att
+                  then let val a1 = if !O_INTEROPERABILITY andalso !O_WARN_MULT_ATT_DEF
                                        then let val warn = WARN_MULT_ATT_DEF
                                           (Index2Element dtd eidx,Index2AttNot dtd att)
                                             in hookWarning(a,(getPos q,warn))
@@ -8206,15 +8206,15 @@ functor DtdDeclare (structure Dtd           : Dtd
                        in (true,atts,a1)
                        end
                else (if aidx<att then (false,attDef::atts,a)
-                     else let val (redefined,atts1,a1) = doit rest 
+                     else let val (redefined,atts1,a1) = doit rest
                           in (redefined,ad::atts1,a1)
                           end)
 
             val {decl,atts,errAtts,...} = getElement dtd eidx
             val (defs,hadId) = getOpt(atts,(nil,false))
             val (redefined,defs1,a1) = doit defs
-            val (newId,a1) = if isIdType attType 
-                                then let val a1 = if hadId andalso (not redefined) andalso !O_VALIDATE 
+            val (newId,a1) = if isIdType attType
+                                then let val a1 = if hadId andalso (not redefined) andalso !O_VALIDATE
                                                      then hookError(a,(getPos q,ERR_MULT_ID_ELEM
                                                                        (Index2Element dtd eidx)))
                                                   else a
@@ -8227,7 +8227,7 @@ functor DtdDeclare (structure Dtd           : Dtd
                                           errAtts = errAtts})
          in a1
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* check whether a name starts with (a case variant of) "xml" and if  *)
       (* yes, whether it is an allowed name from the spec. Cf. 3:           *)
@@ -8246,18 +8246,18 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*--------------------------------------------------------------------*)
       fun startsWithXml name =
          case name
-           of c1::c2::c3::cs => (c1=0wx58 orelse c1=0wx78) andalso 
+           of c1::c2::c3::cs => (c1=0wx58 orelse c1=0wx78) andalso
               (c2=0wx4D orelse c2=0wx6D) andalso (c3=0wx4C orelse c3=0wx6C)
             | _ => false
-      fun checkAttName (a,q) name = 
-         if !O_CHECK_RESERVED andalso startsWithXml name then 
-            case name 
+      fun checkAttName (a,q) name =
+         if !O_CHECK_RESERVED andalso startsWithXml name then
+            case name
               of [0wx78,0wx6d,0wx6c,0wx3a,0wx6c,0wx61,0wx6e,0wx67] (* ":lang" *) => a
                | [0wx78,0wx6d,0wx6c,0wx3a,0wx73,0wx70,0wx61,0wx63,0wx65] (* ":space" *) => a
                | _ => hookError(a,(getPos q,ERR_RESERVED(name,IT_ATT_NAME)))
          else a
-      fun checkElemName (a,q) name = 
-         if !O_CHECK_RESERVED andalso startsWithXml name 
+      fun checkElemName (a,q) name =
+         if !O_CHECK_RESERVED andalso startsWithXml name
             then hookError(a,(getPos q,ERR_RESERVED(name,IT_ELEM)))
          else a
 
@@ -8270,16 +8270,16 @@ functor DtdDeclare (structure Dtd           : Dtd
       (* return nothing.                                                    *)
       (*--------------------------------------------------------------------*)
       fun checkMultEnum dtd (a,q) =
-         if !O_INTEROPERABILITY andalso !O_WARN_MULT_ENUM then 
-            let 
-               fun doElem a idx = 
+         if !O_INTEROPERABILITY andalso !O_WARN_MULT_ENUM then
+            let
+               fun doElem a idx =
                   let
                      (*-----------------------------------------------------*)
                      (* for each i, add i to yet if it not in that list.    *)
                      (* otherwise add it to dup.                            *)
                      (*-----------------------------------------------------*)
                      fun do_list yd nil = yd
-                       | do_list (yet,dup) (i::is) = 
+                       | do_list (yet,dup) (i::is) =
                         let val yd' = case insertNewInt (i,yet)
                                         of NONE => (yet,insertInt (i,dup))
                                          | SOME new => (new,dup)
@@ -8300,7 +8300,7 @@ functor DtdDeclare (structure Dtd           : Dtd
                                   of NONE => nil
                                    | SOME(defs,_) => defs
                      val dup = doit (nil,nil) defs
-                  in 
+                  in
                      if null dup then a
                      else hookWarning(a,(getPos q,WARN_ENUM_ATTS
                                          (Index2Element dtd idx,map (Index2AttNot dtd) dup)))
@@ -8311,7 +8311,7 @@ functor DtdDeclare (structure Dtd           : Dtd
                val maxIdx = maxUsedElem dtd
 
                fun doit a i = if i>maxIdx then a else doit (doElem a i) (i+1)
-            in 
+            in
                doit a 0
             end
          else a
@@ -8324,19 +8324,19 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*                                                                    *)
       (* return nothing.                                                    *)
       (*--------------------------------------------------------------------*)
-      fun checkDefinedIds dtd (a,q) = 
-         if !O_VALIDATE then 
-            let 
+      fun checkDefinedIds dtd (a,q) =
+         if !O_VALIDATE then
+            let
                val maxId = maxUsedId dtd
-               
+
                fun doOne a i = let val (decl,refs) = getId dtd i
                                in if decl orelse null refs then a
                                   else hookError(a,(hd refs,ERR_UNDECL_ID(Index2Id dtd i,tl refs)))
                                end
                fun doAll a i = if i>maxId then a else doAll (doOne a i) (i+1)
-            in 
+            in
                doAll a 0
-            end 
+            end
          else a
 
       (*--------------------------------------------------------------------*)
@@ -8347,22 +8347,22 @@ functor DtdDeclare (structure Dtd           : Dtd
       (*                                                                    *)
       (* return nothing.                                                    *)
       (*--------------------------------------------------------------------*)
-      fun checkUnparsed dtd a = 
-         if !O_VALIDATE then 
-            let 
+      fun checkUnparsed dtd a =
+         if !O_VALIDATE then
+            let
                val maxGen = maxUsedGen dtd
-               
-               fun doOne a i = 
+
+               fun doOne a i =
                   case getGenEnt dtd i
-                    of (GE_UNPARSED(_,nidx,pos),_) => 
+                    of (GE_UNPARSED(_,nidx,pos),_) =>
                        if hasNotation dtd nidx then a
                        else hookError(a,(pos,ERR_UNDECLARED
                                          (IT_NOTATION,Index2AttNot dtd nidx,LOC_NONE)))
                      | _ => a
                fun doAll a i = if i>maxGen then a else doAll (doOne a i) (i+1)
-            in 
+            in
                doAll a 0
-            end 
+            end
          else a
    end
 (* stop of ../../Parser/Dtd/dtdDeclare.sml *)
@@ -8374,28 +8374,28 @@ functor DtdDeclare (structure Dtd           : Dtd
 (*   checkAttValue       : AttValue InternalError                           *)
 (*   checkDefinedIds     : none                                             *)
 (*   genMissingAtts      : none                                             *)
-(*   makeAttValue        : AttValue InternalError                           *) 
+(*   makeAttValue        : AttValue InternalError                           *)
 (*--------------------------------------------------------------------------*)
 functor DtdAttributes (structure Dtd           : Dtd
                        structure Entities      : Entities
-                       structure ParserOptions : ParserOptions) = 
+                       structure ParserOptions : ParserOptions) =
    struct
       structure DtdDeclare = DtdDeclare (structure Dtd = Dtd
                                          structure Entities = Entities
                                          structure ParserOptions = ParserOptions)
-      open 
-         UniChar UniClasses UtilList 
-         Base Dtd DtdDeclare Errors Entities HookData ParserOptions 
+      open
+         UniChar UniClasses UtilList
+         Base Dtd DtdDeclare Errors Entities HookData ParserOptions
 
       val THIS_MODULE = "DtdAttributes"
-      
+
       exception AttValue of AppData
 
       (*--------------------------------------------------------------------*)
       (* this is the list of language codes in ISO 639.                     *)
       (*--------------------------------------------------------------------*)
-      val iso639codes = 
-         Vector.fromList 
+      val iso639codes =
+         Vector.fromList
          ["AA","AB","AF","AM","AR","AS","AY","AZ",
           "BA","BE","BG","BH","BI","BN","BO","BR",
           "CA","CO","CS","CY",
@@ -8426,13 +8426,13 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*--------------------------------------------------------------------*)
       (* a two-dimensional field [0..25][0..25] of booleans for ISO 639.    *)
       (*--------------------------------------------------------------------*)
-      val iso639field = 
-         let 
+      val iso639field =
+         let
             val arr = Array.tabulate(26,fn _ => Array.array(26,false))
-            val _ = Vector.map 
+            val _ = Vector.map
                (fn s => Array.update(Array.sub(arr,ord(String.sub(s,0))-65),
                                      ord(String.sub(s,1))-65,
-                                     true)) 
+                                     true))
                iso639codes
          in Vector.tabulate(26,fn i => Array.extract (Array.sub(arr,i),0,NONE))
          end
@@ -8447,18 +8447,18 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* are these two letters an ISO 639 code?                             *)
       (*--------------------------------------------------------------------*)
       fun isIso639 (c1,c2) =
-         if !O_CHECK_ISO639 then 
+         if !O_CHECK_ISO639 then
             Vector.sub(Vector.sub(iso639field,cIndex c1),cIndex c2)
             handle Subscript => false
          else isAsciiLetter c1 andalso isAsciiLetter c2
-        
+
       (*--------------------------------------------------------------------*)
       (* does this match Subcode ('-' Subcode)* ?                           *)
       (* is this a sequence of ('-' Subcode) ?                              *)
       (* Iana codes and user codes also end on ([a-z] | [A-Z])+             *)
       (*--------------------------------------------------------------------*)
       fun isSubcode' nil = false
-        | isSubcode' (c::cs) = 
+        | isSubcode' (c::cs) =
          let fun doit nil = true
                | doit (c::cs) = if c=0wx2D then isSubcode' cs
                                 else isAsciiLetter c andalso doit cs
@@ -8467,7 +8467,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       fun isSubcode nil = true
         | isSubcode (c::cs) = c=0wx2D andalso isSubcode' cs
       val isIanaUser = isSubcode'
-         
+
       (*--------------------------------------------------------------------*)
       (* Check whether a "xml:lang" attribute matches the LanguageID        *)
       (* production. 2.12:                                                  *)
@@ -8482,17 +8482,17 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the "xml:lang" attribute does *)
       (* not have a valid value.                                            *)
       (*--------------------------------------------------------------------*)
-      fun checkAttSpec (a,q) (aidx,cs) = 
+      fun checkAttSpec (a,q) (aidx,cs) =
          if !O_CHECK_LANGID andalso aidx=xmlLangIdx
             then let val valid = case cs
                                    of c::0wx2D::cs' => (c=0wx49 orelse
                                                         c=0wx69 orelse
-                                                        c=0wx58 orelse 
+                                                        c=0wx58 orelse
                                                         c=0wx78) andalso isIanaUser cs'
                                     | c1::c2::cs' => isIso639 (c1,c2) andalso isSubcode cs'
-                                    | _ => false 
-                 in 
-                    if valid then a 
+                                    | _ => false
+                 in
+                    if valid then a
                     else raise AttValue(hookError(a,(getPos q,ERR_ATT_IS_NOT(cs,IT_LANG_ID))))
                  end
          else a
@@ -8516,7 +8516,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* value as a char vector.                                            *)
       (*--------------------------------------------------------------------*)
       fun splitAttValue av =
-         let 
+         let
             fun doOne nil = (nil,nil,nil)
               | doOne (c::cs) = if c=0wx20 then let val (toks,ys) = doAll true cs
                                                 in (nil,toks,ys)
@@ -8530,7 +8530,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                                           in ((c::tok)::toks,
                                               if addS then 0wx20::c::ys else c::ys)
                                           end
-                    
+
             val (tokens,normed) = doAll false av
          in (Data2Vector normed,tokens)
          end
@@ -8553,7 +8553,7 @@ functor DtdAttributes (structure Dtd           : Dtd
          end
 
       (*--------------------------------------------------------------------*)
-      (* Check whether a sequence of chars forms a name (token).            *) 
+      (* Check whether a sequence of chars forms a name (token).            *)
       (*--------------------------------------------------------------------*)
       fun isNmToken cs = List.all isName cs
       fun isaName nil = false
@@ -8563,10 +8563,10 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* Check whether a list of tokens is a single what fulfilling isWhat. *)
       (* print an error and raise AttValue if it is not.                    *)
       (*--------------------------------------------------------------------*)
-      fun checkOne (isWhat,what,detail) (a,q) toks = 
-         case toks 
+      fun checkOne (isWhat,what,detail) (a,q) toks =
+         case toks
            of nil => raise AttValue (hookError(a,(getPos q,ERR_EXACTLY_ONE detail)))
-            | [one] => if isWhat one then one 
+            | [one] => if isWhat one then one
                        else raise AttValue(hookError(a,(getPos q,ERR_ATT_IS_NOT(one,what))))
             | more => raise AttValue(hookError(a,(getPos q,ERR_AT_MOST_ONE detail)))
       (*--------------------------------------------------------------------*)
@@ -8574,10 +8574,10 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* fil isWhat.                                                        *)
       (* print an error and raise AttValue if not.                          *)
       (*--------------------------------------------------------------------*)
-      fun checkList (isWhat,what,detail) (a,q) toks = 
-         case toks 
+      fun checkList (isWhat,what,detail) (a,q) toks =
+         case toks
            of nil => raise AttValue (hookError(a,(getPos q,ERR_AT_LEAST_ONE detail)))
-            | _ => app (fn one => if isWhat one then () 
+            | _ => app (fn one => if isWhat one then ()
                                   else let val err = ERR_ATT_IS_NOT(one,what)
                                        in raise AttValue(hookError(a,(getPos q,err)))
                                        end) toks
@@ -8596,8 +8596,8 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* was already used.                                                  *)
       (* print an error and raise AttValue if it is not a name.             *)
       (*--------------------------------------------------------------------*)
-      fun takeId (dtd,inDtd) (a,q) toks = 
-         let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeId (dtd,inDtd) (a,q) toks =
+         let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
              val idx = Id2Index dtd one
              val _ = if inDtd then ()
                      else let val (decl,refs) = getId dtd idx
@@ -8608,7 +8608,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                           end
          in (SOME(AV_ID idx),a)
          end
-            
+
       (*--------------------------------------------------------------------*)
       (* Convert a list of tokens into an IDREF/IDREFS att value. 3.3.1:    *)
       (*                                                                    *)
@@ -8621,14 +8621,14 @@ functor DtdAttributes (structure Dtd           : Dtd
          let val (decl,refs) = getId dtd idx
          in setId dtd (idx,(decl,getPos q::refs))
          end
-      fun takeIdref (dtd,_) (a,q) toks = 
-         let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeIdref (dtd,_) (a,q) toks =
+         let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
              val idx=Id2Index dtd one
              val _ = setIdRef (dtd,q) idx
          in (SOME(AV_IDREF idx),a)
          end
-      fun takeIdrefs (dtd,_) (a,q) toks = 
-         let val _ = checkList (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeIdrefs (dtd,_) (a,q) toks =
+         let val _ = checkList (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
              val idxs = map (Id2Index dtd) toks
              val _ = app (setIdRef (dtd,q)) idxs
          in (SOME(AV_IDREFS idxs),a)
@@ -8659,13 +8659,13 @@ functor DtdAttributes (structure Dtd           : Dtd
                                     end
          in idx
          end
-      fun takeEntity (dtd,inDtd) (aq as (a,_)) toks = 
-         let val one = checkOne (isaName,IT_NAME,IT_ENT_NAME) aq toks 
+      fun takeEntity (dtd,inDtd) (aq as (a,_)) toks =
+         let val one = checkOne (isaName,IT_NAME,IT_ENT_NAME) aq toks
              val idx = checkEntity (dtd,inDtd) aq one
          in (SOME(AV_ENTITY idx),a)
          end
-      fun takeEntities (dtd,inDtd) (aq as (a,_)) toks = 
-         let val _ = checkList (isaName,IT_NAME,IT_ENT_NAME) aq toks 
+      fun takeEntities (dtd,inDtd) (aq as (a,_)) toks =
+         let val _ = checkList (isaName,IT_NAME,IT_ENT_NAME) aq toks
              val idxs = map (checkEntity (dtd,inDtd) aq) toks
          in (SOME(AV_ENTITIES idxs),a)
          end
@@ -8681,17 +8681,17 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the notation's index  is not  *)
       (* in the list given as 1st arg.                                      *)
       (*--------------------------------------------------------------------*)
-      fun takeNotation is (dtd,inDtd) (aq as (a,q)) toks = 
-         let val one = checkOne (isaName,IT_NAME,IT_NOT_NAME) aq toks 
+      fun takeNotation is (dtd,inDtd) (aq as (a,q)) toks =
+         let val one = checkOne (isaName,IT_NAME,IT_NOT_NAME) aq toks
              val idx = AttNot2Index dtd one
              val _ = if member idx is then ()
                      else let val nots = map (Index2AttNot dtd) is
                               val err = ERR_MUST_BE_AMONG(IT_NOT_NAME,one,nots)
                           in raise AttValue (hookError(a,(getPos q,err)))
-                          end 
+                          end
          in (SOME(AV_NOTATION(is,idx)),a)
          end
-            
+
       (*--------------------------------------------------------------------*)
       (* Convert a list of tokens into an enumerated att value. 3.3.1:      *)
       (*                                                                    *)
@@ -8703,8 +8703,8 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the token's index is not      *)
       (* in the list given as 1st arg.                                      *)
       (*--------------------------------------------------------------------*)
-      fun takeGroup is (dtd,_) (aq as (a,q)) toks = 
-         let val one = checkOne (isNmToken,IT_NMTOKEN,IT_NMTOKEN) aq toks 
+      fun takeGroup is (dtd,_) (aq as (a,q)) toks =
+         let val one = checkOne (isNmToken,IT_NMTOKEN,IT_NMTOKEN) aq toks
              val idx = AttNot2Index dtd one
              val _ = if member idx is then ()
                      else let val toks = map (Index2AttNot dtd) is
@@ -8713,7 +8713,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                           end
          in (SOME(AV_GROUP(is,idx)),a)
          end
-               
+
       (*--------------------------------------------------------------------*)
       (* Given an attribute type and a list of characters, construct the    *)
       (* corresponding AttValue.                                            *)
@@ -8722,18 +8722,18 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* is ill-formed.                                                     *)
       (*--------------------------------------------------------------------*)
       fun makeAttValue dtd (a,q) (aidx,attType,ext,inDtd,cs) =
-         if attType=AT_CDATA 
+         if attType=AT_CDATA
             then let val cv = Data2Vector cs
                  in if !O_VALIDATE andalso hasDtd dtd
                        then (cv,(SOME(AV_CDATA cv),checkAttSpec (a,q) (aidx,cs)))
                     else (cv,(NONE,a))
                  end
-         else 
-            if !O_VALIDATE andalso hasDtd dtd then 
-               let 
+         else
+            if !O_VALIDATE andalso hasDtd dtd then
+               let
                   val a1 = checkAttSpec (a,q) (aidx,cs)
                   val (cv,toks) = splitAttValue cs
-                  val a2 = 
+                  val a2 =
                      if ext andalso standsAlone dtd
                         then let val cdata = Data2Vector cs
                              in if cdata=cv then a1
@@ -8743,7 +8743,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                                      end
                              end
                      else a1
-               in case attType 
+               in case attType
                     of AT_NMTOKEN => (cv,(SOME(AV_NMTOKEN(checkOne(isNmToken,IT_NMTOKEN,
                                                                    IT_NMTOKEN) (a2,q) toks)),a2))
                      | AT_NMTOKENS => (cv,(SOME(AV_NMTOKENS toks),a2)) before
@@ -8759,7 +8759,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                                                        "AT_CDATA in the innermost case")
                end
             else (normAttValue cs,(NONE,a))
-               
+
       (*--------------------------------------------------------------------*)
       (* given an attribute value literal and the attribute type, generate  *)
       (* the AttValue, and check whether it complies with its default value.*)
@@ -8776,11 +8776,11 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* return the value as a AttPresent value.                            *)
       (*--------------------------------------------------------------------*)
-      fun checkAttValue dtd (a,q) ((aidx,attType,defVal,ext),literal,cs) = 
+      fun checkAttValue dtd (a,q) ((aidx,attType,defVal,ext),literal,cs) =
          let val (cv,(av,a1)) = makeAttValue dtd (a,q) (aidx,attType,ext,false,cs)
-         in if !O_VALIDATE andalso hasDtd dtd then 
-            case defVal 
-              of AD_FIXED((def,cv',_),_) => 
+         in if !O_VALIDATE andalso hasDtd dtd then
+            case defVal
+              of AD_FIXED((def,cv',_),_) =>
                  if cv=cv' then (AP_PRESENT(literal,cv,av),a1)
                  else raise AttValue
                     (hookError(a1,(getPos q,ERR_FIXED_VALUE(Index2AttNot dtd aidx,cv,cv'))))
@@ -8793,27 +8793,27 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* since the lexical constraints are checked when the default is      *)
       (* declared we only need to check whether notations are declared and  *)
-      (* entities are declared and unparsed. An ID attribute cannot be      *) 
+      (* entities are declared and unparsed. An ID attribute cannot be      *)
       (* defaulted, so no need to check for duplicate ID attributes.        *)
       (*--------------------------------------------------------------------*)
       fun checkDefaultValue dtd (a,q,pos) av =
-         let 
-            fun checkEntity (idx,a) = 
+         let
+            fun checkEntity (idx,a) =
                let val (ent,_) = getGenEnt dtd idx
                in case ent
                     of GE_UNPARSED _ => a
                      | GE_NULL => hookError(a,(getPos q,ERR_UNDECLARED
                                                (IT_GEN_ENT,Index2GenEnt dtd idx,
                                                 LOC_ATT_DEFAULT pos)))
-                     | _ => hookError(a,(getPos q,ERR_MUST_BE_UNPARSED 
+                     | _ => hookError(a,(getPos q,ERR_MUST_BE_UNPARSED
                                          (Index2GenEnt dtd idx,LOC_ATT_DEFAULT pos)))
                end
-            
+
             fun checkNotation (idx,a) =
                if hasNotation dtd idx then a
                else hookError(a,(getPos q,ERR_UNDECLARED
                                  (IT_NOTATION,Index2AttNot dtd idx,LOC_ATT_DEFAULT pos)))
-         in 
+         in
             case av
               of SOME(AV_ENTITY i) => checkEntity (i,a)
                | SOME(AV_ENTITIES is) => foldl checkEntity a is
@@ -8840,9 +8840,9 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* return the AttSpecList of all attributes for this tag.             *)
       (*--------------------------------------------------------------------*)
-      fun genMissingAtts dtd (a,q) (defs,specd) = 
-         let 
-            fun default a (idx,(v as (_,_,av),(pos,checked)),ext) = 
+      fun genMissingAtts dtd (a,q) (defs,specd) =
+         let
+            fun default a (idx,(v as (_,_,av),(pos,checked)),ext) =
                let val a1 = if ext andalso !O_VALIDATE andalso standsAlone dtd
                                then let val err = ERR_STANDALONE_DEF(Index2AttNot dtd idx)
                                         val _ = setStandAlone dtd (not (!O_ERROR_MINIMIZE))
@@ -8851,17 +8851,17 @@ functor DtdAttributes (structure Dtd           : Dtd
                             else a
                    val a2 = if !O_VALIDATE andalso not (!checked andalso !O_ERROR_MINIMIZE)
                                then checkDefaultValue dtd (a1,q,pos) av before checked := true
-                            else a1 
+                            else a1
                in (AP_DEFAULT v,a1)
                end
             fun doit a nil = (specd,a)
-              | doit a ((idx,_,dv,ext)::rest) = 
-               let val (value,a1) = 
-                  case dv 
+              | doit a ((idx,_,dv,ext)::rest) =
+               let val (value,a1) =
+                  case dv
                     of AD_DEFAULT v => default a (idx,v,ext)
                      | AD_FIXED v => default a (idx,v,ext)
                      | AD_IMPLIED => (AP_IMPLIED,a)
-                     | AD_REQUIRED => 
+                     | AD_REQUIRED =>
                        let val a1 = if not (!O_VALIDATE) then a
                                     else hookError(a,(getPos q,
                                                       ERR_MISSING_ATT(Index2AttNot dtd idx)))
@@ -8883,7 +8883,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* return nothing.                                                    *)
       (*--------------------------------------------------------------------*)
       fun handleUndeclAtt dtd (a,q) (aidx,att,eidx,elem) =
-         if !O_ERROR_MINIMIZE then 
+         if !O_ERROR_MINIMIZE then
             let val {decl,atts,errAtts} = getElement dtd eidx
             in if member aidx errAtts then a
                else let val a1 = if !O_VALIDATE andalso hasDtd dtd
@@ -8903,7 +8903,7 @@ functor DtdAttributes (structure Dtd           : Dtd
                            else a
               in checkAttName (a1,q) att
               end
-           
+
    end
 (* stop of ../../Parser/Dtd/dtdAttributes.sml *)
 (* start of ../../Parser/Dtd/dtdManager.sml *)
@@ -8921,7 +8921,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 (* Exceptions raised by functions in this structure:                        *)
 (*   initDtdTables     : none                                               *)
 (*   AttIdx2String     : NoSuchSymbol                                       *)
-(*   ElemIdx2String    : NoSuchIndex                                        *)         
+(*   ElemIdx2String    : NoSuchIndex                                        *)
 (*   GenEntIdx2String  : NoSuchIndex                                        *)
 (*   IdIdx2String      : NoSuchIndex                                        *)
 (*   NotIdx2String     : NoSuchIndex                                        *)
@@ -8938,15 +8938,15 @@ signature DtdManager =
 
       exception AttValue of AppData
 
-      val makeAttValue  : Dtd -> AppData * State 
-         -> int * Base.AttType * bool * bool * UniChar.Data 
+      val makeAttValue  : Dtd -> AppData * State
+         -> int * Base.AttType * bool * bool * UniChar.Data
          -> UniChar.Vector * (Base.AttValue option * AppData)
-      val checkAttValue : Dtd -> AppData * State 
+      val checkAttValue : Dtd -> AppData * State
          -> Base.AttDef * UniChar.Vector * UniChar.Data
          -> HookData.AttPresent * AppData
-      val genMissingAtts  : Dtd -> AppData * State 
+      val genMissingAtts  : Dtd -> AppData * State
          -> Base.AttDefList * HookData.AttSpecList -> HookData.AttSpecList * AppData
-      val handleUndeclAtt : Dtd -> AppData * State 
+      val handleUndeclAtt : Dtd -> AppData * State
          -> int * UniChar.Data * int * UniChar.Data -> AppData
       val handleUndeclElement : Dtd -> int -> Base.ElemInfo
 
@@ -8959,8 +8959,8 @@ signature DtdManager =
 
       val enterAttList : Dtd -> AppData * State -> int -> AppData
 
-      val addAttribute : Dtd -> AppData * State -> int * Base.AttDef             -> AppData 
-      val addElement   : Dtd -> AppData * State -> int * Base.ContentSpec * bool -> AppData 
+      val addAttribute : Dtd -> AppData * State -> int * Base.AttDef             -> AppData
+      val addElement   : Dtd -> AppData * State -> int * Base.ContentSpec * bool -> AppData
       val addGenEnt    : Dtd -> AppData * State -> int * Base.GenEntity * bool   -> AppData
       val addNotation  : Dtd -> AppData * State -> int * Base.ExternalId         -> AppData
       val addParEnt    : Dtd -> AppData * State -> int * Base.ParEntity * bool   -> AppData
@@ -8973,22 +8973,22 @@ functor DtdManager (structure Dtd           : Dtd
       structure Entities      = Entities      (structure Hooks = Hooks)
       structure DtdAttributes = DtdAttributes (structure Dtd = Dtd
                                                structure Entities = Entities
-                                               structure ParserOptions = ParserOptions)  
-      open 
+                                               structure ParserOptions = ParserOptions)
+      open
          Dtd
          DtdAttributes
    end
 (* stop of ../../Parser/Dtd/dtdManager.sml *)
 (* start of ../../Parser/Parse/parseBase.sml *)
-signature ParseBase = 
-   sig 
+signature ParseBase =
+   sig
       include Dfa DtdManager Resolve DfaOptions ParserOptions
 
       exception NoSuchChar of AppData * State
       exception NoSuchEntity of AppData * State
       exception NotFound of UniChar.Char * AppData * State
       exception SyntaxError of UniChar.Char * AppData * State
-      
+
       val expectedOrEnded : Errors.Expected * Errors.Location -> UniChar.Char -> Errors.Error
 
       val recoverXml  : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
@@ -9016,14 +9016,14 @@ functor ParseBase (structure Dtd           : Dtd
       structure DtdManager = DtdManager (structure Dtd = Dtd
                                          structure Hooks = Hooks
                                          structure ParserOptions = ParserOptions)
-      open 
+      open
          Base DtdManager DfaOptions Dfa Errors ParserOptions Resolve UniChar
-         
+
       exception NoSuchChar of AppData * State
       exception NoSuchEntity of AppData * State
       exception NotFound of UniChar.Char * AppData * State
       exception SyntaxError of UniChar.Char * AppData * State
-      
+
       fun expectedOrEnded (exp,ended) c =
          if c=0wx00 then ERR_ENDED_BY_EE ended
          else ERR_EXPECTED(exp,[c])
@@ -9036,18 +9036,18 @@ functor ParseBase (structure Dtd           : Dtd
    (* the typo is an omitted quote character.                            *)
    (*--------------------------------------------------------------------*)
    fun recoverXml caq =
-      let 
+      let
          fun do_lit ch (c,a,q) =
             case c
               of 0wx00 => (c,a,q)
-               | 0wx3F (* #"?" *) => 
+               | 0wx3F (* #"?" *) =>
                  let val (c1,a1,q1) = getChar (a,q)
                  in if c1=0wx3E (* #">" *) then (c1,a1,q1)
                     else do_lit ch (c1,a1,q1)
                  end
                | _ => if c=ch then (getChar (a,q))
                       else do_lit ch (getChar (a,q))
-         fun doit (c,a,q) = 
+         fun doit (c,a,q) =
             case c
               of 0wx00 => (c,a,q)
                | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -9057,18 +9057,18 @@ functor ParseBase (structure Dtd           : Dtd
                | 0wx3C (* #"<" *) => (c,a,q)
                | 0wx3E (* #">" *) => (getChar (a,q))
                | _ => doit (getChar (a,q))
-      in 
+      in
          doit caq
       end
-   
+
    fun recoverETag caq =
-      let 
+      let
          fun do_lit ch (c,a,q) =
             case c
               of 0wx00 => (c,a,q)
                | _ => if c=ch then (getChar (a,q))
                       else do_lit ch (getChar (a,q))
-         fun doit (c,a,q) = 
+         fun doit (c,a,q) =
             case c
               of 0wx00 => (c,a,q)
                | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -9077,18 +9077,18 @@ functor ParseBase (structure Dtd           : Dtd
                | 0wx3E (* #">" *) => (getChar (a,q))
                | 0wx3C (* #"<" *) => (c,a,q)
                | _ => doit (getChar (a,q))
-      in 
+      in
          doit caq
       end
-   
+
    fun recoverSTag caq =
-      let 
+      let
          fun do_lit ch (c,a,q) =
             case c
               of 0wx00 => (c,a,q)
                | _ => if c=ch then (getChar (a,q))
                       else do_lit ch (getChar (a,q))
-         fun doit (c,a,q) = 
+         fun doit (c,a,q) =
             case c
               of 0wx00 => (false,(c,a,q))
                | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -9101,12 +9101,12 @@ functor ParseBase (structure Dtd           : Dtd
                | 0wx3E (* #">" *) => (false,getChar (a,q))
                | 0wx3C (* #"<" *) => (false,(c,a,q))
                | _ => doit (getChar (a,q))
-      in 
+      in
          doit caq
       end
-   
-   fun recoverDecl hasSubset caq = 
-      let 
+
+   fun recoverDecl hasSubset caq =
+      let
          fun do_lit ch (c,a,q) =
             if c=0wx00 then (c,a,q)
             else if c=ch then getChar (a,q)
@@ -9149,18 +9149,18 @@ functor ParseBase (structure Dtd           : Dtd
 
 
 
-signature ParseNames =  
+signature ParseNames =
    sig
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseNameLit : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State 
+      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State
          -> bool * UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
    end
 
@@ -9172,36 +9172,36 @@ signature ParseNames =
 (*   parseName     : NotFound                                               *)
 (*   parseNmtoken  : NotFound                                               *)
 (*--------------------------------------------------------------------------*)
-functor ParseNames (structure ParseBase : ParseBase) 
-   : ParseNames = 
+functor ParseNames (structure ParseBase : ParseBase)
+   : ParseNames =
 struct
-   open  
+   open
       Errors ParseBase UniClasses
-         
+
       (*--------------------------------------------------------------------*)
       (* parse (the remainder of) a name or nmtoken.                        *)
       (*                                                                    *)
-      (*   [5]     Name ::= (Letter | '_' | ':') (NameChar)*                *) 
+      (*   [5]     Name ::= (Letter | '_' | ':') (NameChar)*                *)
       (*                                                                    *)
-      (* raise NotFound if no name/name start character comes first.        *)   
+      (* raise NotFound if no name/name start character comes first.        *)
       (*                                                                    *)
       (* return the name as a list of characters, together with the next    *)
       (* character and the remaining state.                                 *)
       (*--------------------------------------------------------------------*)
-      fun parseName' (c,a,q) = 
-         if isName c 
+      fun parseName' (c,a,q) =
+         if isName c
             then let val (cs,caq1) = parseName'(getChar(a,q))
                  in (c::cs,caq1)
                  end
          else (nil,(c,a,q))
-      fun parseName (c,a,q) = 
-         if isNms c 
+      fun parseName (c,a,q) =
+         if isNms c
             then let val (cs,caq1) = parseName'(getChar(a,q))
                  in (c::cs,caq1)
                  end
          else raise NotFound(c,a,q)
-      fun parseNmtoken (c,a,q) = 
-         if isName c 
+      fun parseNmtoken (c,a,q) =
+         if isName c
             then let val (cs,caq1) = parseName'(getChar(a,q))
                  in (c::cs,caq1)
                  end
@@ -9211,14 +9211,14 @@ struct
       (* parse a name, additionally accumulating its characters in reverse  *)
       (* order to the first argument.                                       *)
       (*                                                                    *)
-      (* raise NotFound if no name/name start character comes first.        *)   
+      (* raise NotFound if no name/name start character comes first.        *)
       (*--------------------------------------------------------------------*)
-      fun parseNameLit cs (c,a,q) = 
+      fun parseNameLit cs (c,a,q) =
          let fun doit (cs,ns) (c,a,q) =
-            if isName c then doit (c::cs,c::ns) (getChar(a,q)) 
+            if isName c then doit (c::cs,c::ns) (getChar(a,q))
             else (cs,rev ns,(c,a,q))
-         in 
-            if isNms c then doit (c::cs,[c]) (getChar(a,q)) 
+         in
+            if isNms c then doit (c::cs,[c]) (getChar(a,q))
             else raise NotFound(c,a,q)
          end
       (*--------------------------------------------------------------------*)
@@ -9227,24 +9227,24 @@ struct
       (* are parsed but bypassed, and must thus be accumulated together     *)
       (* the other literal text.                                            *)
       (*                                                                    *)
-      (* print an error if no name/name start character comes first.        *)   
+      (* print an error if no name/name start character comes first.        *)
       (*                                                                    *)
       (* return a boolean indicating whether a name was found, the reverse  *)
       (* name as a list of characters, concatenated with the text in the    *)
       (* first arg, together with the next character and remaining state.   *)
       (*--------------------------------------------------------------------*)
       fun parseEntName (lit,text) (c,a,q) =
-         let 
-            fun doit (lit,text) (c,a,q) = 
+         let
+            fun doit (lit,text) (c,a,q) =
                if isName c then doit (c::lit,c::text) (getChar (a,q))
                else (true,lit,text,(c,a,q))
-         in 
+         in
             if isNms c then doit (c::lit,c::text) (getChar (a,q))
-            else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expAnEntName,[c])))  
-                 in (false,lit,text,(c,a1,q)) 
+            else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expAnEntName,[c])))
+                 in (false,lit,text,(c,a1,q))
                  end
          end
-            
+
    end
 
 (* stop of ../../Parser/Parse/parseNames.sml *)
@@ -9264,13 +9264,13 @@ signature ParseMisc =
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
       val parseNameLit : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State 
+      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State
          -> bool * UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseNames
@@ -9279,14 +9279,14 @@ signature ParseMisc =
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
 
-      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State
          -> bool * (UniChar.Data * (UniChar.Char * AppData * State))
-         
-      val skipEq : UniChar.Char * AppData * State 
+
+      val skipEq : UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val parseEq : UniChar.Char * AppData * State 
+      val parseEq : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -9305,12 +9305,12 @@ signature ParseMisc =
 (*   parseComment   : none                                                  *)
 (*   parseProcInstr : none                                                  *)
 (*--------------------------------------------------------------------------*)
-functor ParseMisc (structure ParseBase : ParseBase) 
+functor ParseMisc (structure ParseBase : ParseBase)
    : ParseMisc =
 struct
    structure ParseNames = ParseNames (structure ParseBase = ParseBase)
 
-   open 
+   open
       UniChar Errors ParseNames
 
    (*--------------------------------------------------------------------*)
@@ -9323,13 +9323,13 @@ struct
    (* Return type: Char * AppData * State                               *)
    (*--------------------------------------------------------------------*)
    fun skipSopt (c,a,q) =
-      case c 
+      case c
         of 0wx09 => skipSopt (getChar (a,q))
          | 0wx0A => skipSopt (getChar (a,q))
          | 0wx20 => skipSopt (getChar (a,q))
          | _ => (c,a,q)
    fun parseSopt cs (c,a,q) =
-      case c 
+      case c
         of 0wx09 => parseSopt (c::cs) (getChar (a,q))
          | 0wx0A => parseSopt (c::cs) (getChar (a,q))
          | 0wx20 => parseSopt (c::cs) (getChar (a,q))
@@ -9341,13 +9341,13 @@ struct
    (* the bool indicates whether white space was found or not.           *)
    (*--------------------------------------------------------------------*)
    fun skipSmay (c,a,q) =
-      case c 
+      case c
         of 0wx09 => (true,skipSopt (getChar (a,q)))
          | 0wx0A => (true,skipSopt (getChar (a,q)))
          | 0wx20 => (true,skipSopt (getChar (a,q)))
          | _ => (false,(c,a,q))
    fun parseSmay cs (c,a,q) =
-      case c 
+      case c
         of 0wx09 => (true,parseSopt (c::cs) (getChar (a,q)))
          | 0wx0A => (true,parseSopt (c::cs) (getChar (a,q)))
          | 0wx20 => (true,parseSopt (c::cs) (getChar (a,q)))
@@ -9359,7 +9359,7 @@ struct
    (*--------------------------------------------------------------------*)
    (* Return type: Char * AppData * State                                *)
    (*--------------------------------------------------------------------*)
-   fun skipS (c,a,q) = 
+   fun skipS (c,a,q) =
       case c
         of 0wx09 => skipSopt (getChar (a,q))
          | 0wx0A => skipSopt (getChar (a,q))
@@ -9376,16 +9376,16 @@ struct
    (*--------------------------------------------------------------------*)
    (* Return type: Char * AppData * State                               *)
    (*--------------------------------------------------------------------*)
-   fun skipEq caq = 
+   fun skipEq caq =
       let val (c1,a1,q1) = skipSopt caq
       in if c1=0wx3D then skipSopt (getChar (a1,q1))
          else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expEq,[c1])))
               in raise SyntaxError(c1,a2,q1)
               end
       end
-   fun parseEq caq = 
+   fun parseEq caq =
       let val (cs1,(c1,a1,q1)) = parseSopt nil caq
-      in if c1=0wx3D 
+      in if c1=0wx3D
             then let val (cs2,caq2)= parseSopt (c1::cs1) (getChar (a1,q1))
                  in (rev cs2,caq2)
                  end
@@ -9402,7 +9402,7 @@ struct
    (*   to retrieve the text of comments. For compatibility, the string  *)
    (*   "--" (double-hyphen) must not occur within comments.             *)
    (*                                                                    *)
-   (*   [15] Comment ::= '<!--' (  (Char - '-')                          *) 
+   (*   [15] Comment ::= '<!--' (  (Char - '-')                          *)
    (*                            | ('-' (Char - '-')))* '-->'            *)
    (*--------------------------------------------------------------------*)
    (* print an error and end the comment if an entity end is found.      *)
@@ -9413,17 +9413,17 @@ struct
    (* Return type: Char * AppData * State                               *)
    (*--------------------------------------------------------------------*)
    fun parseComment startPos aq =
-      let 
+      let
          fun check_end yet (a0,q0) =
             let val (c,a,q) = getChar (a0,q0)
             in if c=0wx2D (* #"-" *)
                   then let val (c1,a1,q1) = getChar (a,q)
-                       in if c1=0wx3E (* #">" *) 
+                       in if c1=0wx3E (* #">" *)
                              then let val cs = Data2Vector(rev yet)
                                       val a2 = hookComment(a1,((startPos,getPos q1),cs))
                                   in getChar(a2,q1)
                                   end
-                          else let val a2 = if not (!O_COMPATIBILITY) then a1 
+                          else let val a2 = if not (!O_COMPATIBILITY) then a1
                                             else hookError(a1,(getPos q0,ERR_FORBIDDEN_HERE
                                                                (IT_DATA [c,c],LOC_COMMENT)))
                                in doit (c::c::yet) (c1,a2,q1)
@@ -9431,7 +9431,7 @@ struct
                        end
                else doit (0wx2D::yet) (c,a,q)
             end
-          and doit yet (c,a,q) = 
+          and doit yet (c,a,q) =
              if c=0wx2D (* #"-" *) then check_end yet (a,q)
              else if c<>0wx00 then doit (c::yet) (getChar (a,q))
                   else let val err = ERR_ENDED_BY_EE LOC_COMMENT
@@ -9440,7 +9440,7 @@ struct
                            val a2 = hookComment(a1,((startPos,getPos q),cs))
                        in (c,a2,q)
                        end
-      in doit nil (getChar aq) 
+      in doit nil (getChar aq)
       end
 
    (*--------------------------------------------------------------------*)
@@ -9455,11 +9455,11 @@ struct
    (*--------------------------------------------------------------------*)
    (* Return type: AppData                                              *)
    (*--------------------------------------------------------------------*)
-   fun checkPiTarget (a,q) name = 
+   fun checkPiTarget (a,q) name =
       case name
-        of [c1,c2,c3] => if ((c1=0wx58 orelse c1=0wx78) andalso 
+        of [c1,c2,c3] => if ((c1=0wx58 orelse c1=0wx78) andalso
                              (c2=0wx4D orelse c2=0wx6D) andalso
-                             (c3=0wx4C orelse c3=0wx6C)) 
+                             (c3=0wx4C orelse c3=0wx6C))
                             then hookError(a,(getPos q,ERR_RESERVED(name,IT_TARGET)))
                          else a
          | _ => a
@@ -9479,9 +9479,9 @@ struct
    (* Return type: Char * AppData * State                               *)
    (*--------------------------------------------------------------------*)
    fun parseProcInstr' (startPos,target,txtPos,yetText) caq =
-      let 
-         fun doit text (c1,a1,q1) = 
-            case c1 
+      let
+         fun doit text (c1,a1,q1) =
+            case c1
               of 0wx00 => let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_PROC))
                           in (text,getPos q1,(c1,a2,q1))
                           end
@@ -9492,11 +9492,11 @@ struct
                                 | _ => doit (c1::text) (c2,a2,q2)
                           end
                | _ => doit (c1::text) (getChar (a1,q1))
-                    
-         val (cs,endPos,(c2,a2,q2)) = doit yetText caq  
+
+         val (cs,endPos,(c2,a2,q2)) = doit yetText caq
          val text = Data2Vector(rev cs)
          val a3 = hookProcInst(a2,((startPos,endPos),target,txtPos,text))
-      in 
+      in
          (c2,a3,q2)
       end
    (*--------------------------------------------------------------------*)
@@ -9513,22 +9513,22 @@ struct
    (* Return type: Char * AppData * State                               *)
    (*--------------------------------------------------------------------*)
    fun parseProcInstr startPos (a,q) =
-      let 
+      let
          (* NotFound is handled after the 'in .. end' *)
          val (target,(c1,a1,q1)) = parseName (getChar(a,q))
          val a1 = checkPiTarget (a1,q) target
-      in 
-         case c1 
-           of 0wx00 => 
-              let 
+      in
+         case c1
+           of 0wx00 =>
+              let
                  val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_PROC))
                  val a3 = hookProcInst(a2,((startPos,getPos q1),target,getPos q1,nullVector))
-              in (c1,a3,q1) 
+              in (c1,a3,q1)
               end
             | 0wx3F => (* #"?" *)
               let val (c2,a2,q2) = getChar (a1,q1)
               in case c2
-                   of 0wx3E => (* #">" *) 
+                   of 0wx3E => (* #">" *)
                       let val a3 = hookProcInst(a2,((startPos,getPos q2),target,
                                                     getPos q1,nullVector))
                       in getChar (a3,q2)
@@ -9537,14 +9537,14 @@ struct
                            in parseProcInstr' (startPos,target,getPos q1,[c1]) (c2,a3,q2)
                            end
               end
-            | _ => let val (hadS,(c2,a2,q2)) = skipSmay (c1,a1,q1) 
-                       val a3 = if hadS then a2 
+            | _ => let val (hadS,(c2,a2,q2)) = skipSmay (c1,a1,q1)
+                       val a3 = if hadS then a2
                                 else hookError(a2,(getPos q2,ERR_MISSING_WHITE))
                    in parseProcInstr' (startPos,target,getPos q2,nil) (c2,a3,q2)
                    end
       end
-   handle NotFound(c,a,q) => 
-      let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expATarget,[c]))) 
+   handle NotFound(c,a,q) =>
+      let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expATarget,[c])))
       in parseProcInstr' (startPos,nullData,getPos q,nil) (c,a1,q)
       end
 end
@@ -9555,13 +9555,13 @@ signature ParseXml =
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
       val parseNameLit : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State 
+      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State
          -> bool * UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -9569,20 +9569,20 @@ signature ParseXml =
       val skipS    : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
-      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State
          -> bool * (UniChar.Data * (UniChar.Char * AppData * State))
-      val parseEq : UniChar.Char * AppData * State 
+      val parseEq : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseMisc
 
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openExtern   : int * bool * Uri.Uri -> AppData * State 
+      val openExtern   : int * bool * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
    end
 
@@ -9594,17 +9594,17 @@ signature ParseXml =
 (*   openExtern   : none                                                    *)
 (*   openSubset   : NoSuchFile                                              *)
 (*--------------------------------------------------------------------------*)
-functor ParseXml (structure ParseBase : ParseBase) 
+functor ParseXml (structure ParseBase : ParseBase)
    : ParseXml =
 struct
    structure ParseMisc  = ParseMisc  (structure ParseBase = ParseBase)
 
-   open 
+   open
       Errors UniChar UniClasses UtilString
       ParseMisc
-         
+
    fun checkVersionNum (a,q) version =
-      if not (!O_CHECK_VERSION) orelse version="1.0" then a 
+      if not (!O_CHECK_VERSION) orelse version="1.0" then a
       else hookError(a,(getPos q,ERR_VERSION version))
 
    (*--------------------------------------------------------------------*)
@@ -9621,11 +9621,11 @@ struct
    (* return the version number as a string option, together with the    *)
    (* next character and state.                                          *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseVersionNum quote aq =
-      let 
-         fun doit text (c,a,q) = 
+      let
+         fun doit text (c,a,q) =
             if c=quote then (text,getChar (a,q))
             else if isVers c then doit (c::text) (getChar (a,q))
             else if c=0wx0
@@ -9639,16 +9639,16 @@ struct
 
          val (c1,a1,q1) = getChar aq
 
-         val (text,(c2,a2,q2)) = 
+         val (text,(c2,a2,q2)) =
             if isVers c1 then doit [c1] (getChar (a1,q1))
-            else if c1=quote 
+            else if c1=quote
                     then let val a2 = hookError(a1,(getPos q1,ERR_EMPTY LOC_VERSION))
                          in (nil,getChar (a2,q1))
                          end
-            else if c1=0wx00 
+            else if c1=0wx00
                     then let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_VERSION))
                              val a3 = hookError(a2,(getPos q1,ERR_EMPTY LOC_VERSION))
-                         in (nil,(c1,a3,q1)) 
+                         in (nil,(c1,a3,q1))
                          end
                  else let val err = ERR_FORBIDDEN_HERE(IT_CHAR c1,LOC_VERSION)
                           val a2 = hookError(a1,(getPos q1,err))
@@ -9656,7 +9656,7 @@ struct
                       end
          val version = Latin2String (rev text)
          val a3 = checkVersionNum (a2,q1) version
-      in 
+      in
          (SOME version,(c2,a3,q2))
       end
    (*--------------------------------------------------------------------*)
@@ -9669,19 +9669,19 @@ struct
    (* print an error and raise SyntaxState if no quote sign is found.    *)
    (*                                                                    *)
    (* return the version number as a string option, together with the    *)
-   (* next char and the remaining state.                                 *) 
+   (* next char and the remaining state.                                 *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseVersionInfo caq =
       let val (c1,a1,q1) = skipEq caq
       in case c1
-           of 0wx22 (* '""' *) => parseVersionNum c1 (a1,q1) 
-            | 0wx27 (* "'" *)  => parseVersionNum c1 (a1,q1) 
+           of 0wx22 (* '""' *) => parseVersionNum c1 (a1,q1)
+            | 0wx27 (* "'" *)  => parseVersionNum c1 (a1,q1)
             | _ => let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expLitQuote,[c1])))
-                   in raise SyntaxError(c1,a2,q1)       
+                   in raise SyntaxError(c1,a2,q1)
                    end
-      end   
+      end
 
    (*--------------------------------------------------------------------*)
    (* parse an encoding name, the quote character ("'" or '"') passed as *)
@@ -9689,10 +9689,10 @@ struct
    (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [81] EncName ::= [A-Za-z]                /* Encoding name        *)
-   (*                    ([A-Za-z0-9._] | '-')*     contains only Latin  *)  
-   (*                                               characters */        *) 
+   (*                    ([A-Za-z0-9._] | '-')*     contains only Latin  *)
+   (*                                               characters */        *)
    (*                                                                    *)
    (* print an error and end the literal if an entity end is found.      *)
    (* print an error if a disallowed character is found.                 *)
@@ -9700,11 +9700,11 @@ struct
    (* return the encoding name as a string option, together with the     *)
    (* next character and state.                                          *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseEncName quote aq =
-      let 
-         fun doit text (c,a,q) = 
+      let
+         fun doit text (c,a,q) =
             if c=quote then (text,getChar (a,q))
             else if isEnc c then doit (c::text) (getChar (a,q))
             else if c=0wx00
@@ -9718,13 +9718,13 @@ struct
 
          val (c1,a1,q1) = getChar aq
 
-         val (text,caq2) = 
+         val (text,caq2) =
             if isEncS c1 then doit [c1] (getChar (a1,q1))
-            else if c1=quote 
+            else if c1=quote
                     then let val a2 = hookError(a1,(getPos q1,ERR_EMPTY LOC_ENCODING))
-                         in (nil,getChar (a2,q1)) 
+                         in (nil,getChar (a2,q1))
                          end
-            else if c1=0wx00 
+            else if c1=0wx00
                     then let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_ENCODING))
                              val a3 = hookError(a2,(getPos q1,ERR_EMPTY LOC_ENCODING))
                          in (nil,(c1,a3,q1))
@@ -9734,7 +9734,7 @@ struct
                       end
 
          val enc = toUpperString (Latin2String (rev text))
-      in 
+      in
          (enc,caq2)
       end
    (*--------------------------------------------------------------------*)
@@ -9743,22 +9743,22 @@ struct
    (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error and raise SyntaxState if no '=' is found.           *)
    (* print an error and raise SyntaxState if no quote sign is found.    *)
    (*                                                                    *)
    (* return the encoding name as a string option, together with the     *)
-   (* next char and the remaining state.                                 *) 
+   (* next char and the remaining state.                                 *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseEncodingDecl caq =
-      let val (c1,a1,q1) = skipEq caq 
+      let val (c1,a1,q1) = skipEq caq
       in case c1
-           of 0wx22 (* '""' *) => parseEncName c1 (a1,q1) 
-            | 0wx27 (* "'" *)  => parseEncName c1 (a1,q1) 
+           of 0wx22 (* '""' *) => parseEncName c1 (a1,q1)
+            | 0wx27 (* "'" *)  => parseEncName c1 (a1,q1)
             | _ => let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expLitQuote,[c1])))
-                   in raise SyntaxError(c1,a2,q1)       
+                   in raise SyntaxError(c1,a2,q1)
                    end
       end
 
@@ -9769,64 +9769,64 @@ struct
    (*   [32] SDDecl ::= S 'standalone' Eq            [ VC: Standalone    *)
    (*                   ( ("'" ('yes' | 'no') "'")         Document      *)
    (*                   | ('"' ('yes' | 'no') '"'))        Declaration ] *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error and raise SyntaxState if no '=' is found.           *)
    (* print an error and raise SyntaxState if no literal is found.       *)
    (* print an error and end the literal if an entity end is found.      *)
    (* print an error if the literal is neither 'yes' nor 'no'.           *)
    (*                                                                    *)
    (* return the standalone status as a boolean option, together with    *)
-   (* the next character and the remaining state.                        *) 
+   (* the next character and the remaining state.                        *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseStandaloneDecl caq0 =
-      let 
+      let
          val (quote,a,q) = skipEq caq0
 
-         fun doit text (c,a,q) = 
+         fun doit text (c,a,q) =
             if c=quote then (text,getChar (a,q))
             else if c<>0wx0 then doit (c::text) (getChar (a,q))
                  else let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_LITERAL))
-                      in (text,(c,a1,q)) 
+                      in (text,(c,a1,q))
                       end
 
-         val caq1 as (_,_,q1) = 
+         val caq1 as (_,_,q1) =
             case quote
               of 0wx22 (* '""' *) => (getChar (a,q))
                | 0wx27 (* "'" *)  => (getChar (a,q))
                | _ => let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expLitQuote,[quote])))
-                      in raise SyntaxError(quote,a1,q)  
+                      in raise SyntaxError(quote,a1,q)
                       end
          val (text,caq2) = doit nil caq1
-      in 
+      in
          case text
            of [0wx73,0wx65,0wx79] (* reversed "yes" *) => (SOME true,caq2)
             | [0wx6f,0wx6e]       (* reversed "no"  *) => (SOME false,caq2)
-            | revd => let val (c2,a2,q2) = caq2 
+            | revd => let val (c2,a2,q2) = caq2
                           val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expNoYes,revd)))
                       in (NONE,(c2,a3,q2))
-                      end   
+                      end
       end
 
    (*--------------------------------------------------------------------*)
    (* parse an xml declaration starting after 'xml ' (i.e. the first     *)
    (* white space character is already consumed). Cf. 2.8:               *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [23] XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S?'?>'*)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [24] VersionInfo ::= S 'version' Eq (' VersionNum '              *)
    (*                                       | " VersionNum ")            *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [32] SDDecl ::= S 'standalone' Eq             [ VC: Standalone   *)
    (*                   ( ("'" ('yes' | 'no') "'")         Document      *)
    (*                   | ('"' ('yes' | 'no') '"'))        Declaration ] *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* default version, encoding and standalone status to NONE.           *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error if no leading white space is found.                 *)
    (* print an error whenever a wrong name is encountered.               *)
    (* print an Error if no VersionInfo is found.                         *)
@@ -9837,147 +9837,147 @@ struct
    (*                                                                    *)
    (* return the corresponding XmlDecl option and the next char & state. *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseXmlDecl auto caq =
-      let 
+      let
          (*-----------------------------------------------------------------*)
          (* skip the '?>' at the end of the xml declaration.                *)
-         (*                                                                 *) 
-         (* print an error and raise SyntaxState if no '?>' is found.       *) 
-         (*                                                                 *) 
+         (*                                                                 *)
+         (* print an error and raise SyntaxState if no '?>' is found.       *)
+         (*                                                                 *)
          (* return the info passed as first arg, and the next char & state. *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun skipXmlDeclEnd enc res (c,a,q) = 
-            if c=0wx3F (* "#?" *) 
+         fun skipXmlDeclEnd enc res (c,a,q) =
+            if c=0wx3F (* "#?" *)
                then let val (c1,a1,q1) = getChar (a,q)
                     in if c1=0wx3E (* #">" *) then (enc,SOME res,getChar (a1,q1))
-                       else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1]))) 
+                       else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1])))
                             in raise SyntaxError (c1,a2,q1)
                             end
                     end
-            else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expProcEnd,[c]))) 
+            else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expProcEnd,[c])))
                  in raise SyntaxError (c,a1,q)
                  end
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the keyword 'standalone', the version *)
-         (* and encoding already parsed and given in the first arg.         *) 
-         (*                                                                 *) 
+         (* and encoding already parsed and given in the first arg.         *)
+         (*                                                                 *)
          (* pass the version,encoding and sd status to skipXmlDeclEnd       *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseXmlDeclAfterS enc (v,e) caq = 
-            let 
+         fun parseXmlDeclAfterS enc (v,e) caq =
+            let
                val (alone,caq1) = parseStandaloneDecl caq
                val caq2 = skipSopt caq1
             in skipXmlDeclEnd enc (v,e,alone) caq2
             end
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the encoding declaration, the version *)
-         (* and encoding already parsed and given in the first arg.         *) 
-         (*                                                                 *) 
-         (* print an error if a name other than 'standalone' is found.      *) 
-         (*                                                                 *) 
+         (* and encoding already parsed and given in the first arg.         *)
+         (*                                                                 *)
+         (* print an error if a name other than 'standalone' is found.      *)
+         (*                                                                 *)
          (* pass the version and encoding to parseXmlDeclAfterS.            *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseXmlDeclBeforeS enc (v,e) caq = 
+         fun parseXmlDeclBeforeS enc (v,e) caq =
             let
                val (hadS,caq1 as (_,_,q1)) = skipSmay caq
                val (name,(c2,a2,q2)) = parseName caq1 (* NotFound handled below *)
-               val a3 = if hadS then a2 
+               val a3 = if hadS then a2
                         else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
-            in case name 
-                 of [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+            in case name
+                 of [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
                   (* "standalone" *) parseXmlDeclAfterS enc (v,e) (c2,a3,q2)
                   | _ => let val a4 = hookError(a3,(getPos q1,ERR_EXPECTED(expStandOpt,name)))
                          in parseXmlDeclAfterS enc (v,e) (c2,a4,q2)
                          end
             end
-         handle NotFound caq => (* exception raised by parseName *) 
-            skipXmlDeclEnd enc (v,e,NONE) caq 
+         handle NotFound caq => (* exception raised by parseName *)
+            skipXmlDeclEnd enc (v,e,NONE) caq
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the keyword 'encoding', the version   *)
-         (* already parsed and given in the first arg.                      *) 
-         (*                                                                 *) 
+         (* already parsed and given in the first arg.                      *)
+         (*                                                                 *)
          (* pass the version and encoding and to parseXmlDeclBeforeS        *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseXmlDeclAfterE ver caq = 
-            let 
+         fun parseXmlDeclAfterE ver caq =
+            let
                val (enc,(c1,a1,q1)) = parseEncodingDecl caq
                val (a2,q2,enc1) = changeAuto(a1,q1,enc)
-            in 
+            in
                parseXmlDeclBeforeS enc1 (ver,SOME enc) (c1,a2,q2)
             end
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the version info, the version already *)
-         (* parsed and given in the first arg.                              *) 
-         (*                                                                 *) 
+         (* parsed and given in the first arg.                              *)
+         (*                                                                 *)
          (* print an error if a name other than 'encoding' or 'standalone'  *)
-         (* is found.                                                       *) 
-         (*                                                                 *) 
+         (* is found.                                                       *)
+         (*                                                                 *)
          (* pass obtained/default values to parseXmlDeclAfter[E|S] or to    *)
          (* skipXmlDeclEnd.                                                 *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseXmlDeclBeforeE ver caq = 
+         fun parseXmlDeclBeforeE ver caq =
             let
                val (hadS,caq1 as (_,_,q1)) = skipSmay caq
                val (name,(c2,a2,q2)) = parseName caq1 (* NotFound handled below *)
-               val a3 = if hadS then a2 
+               val a3 = if hadS then a2
                         else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
-            in 
-               case name 
-                 of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => 
+            in
+               case name
+                 of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] =>
                   (* "encoding" *) parseXmlDeclAfterE ver (c2,a3,q2)
-                  | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+                  | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
                   (* "standalone" *) parseXmlDeclAfterS auto (ver,NONE) (c2,a3,q2)
                   | _ => let val a4 = hookError(a3,(getPos q1,ERR_EXPECTED(expEncStand,name)))
                          in parseXmlDeclAfterE ver (c2,a4,q2)
                          end
             end
-         handle NotFound caq => (* exception raised by parseName *) 
-            skipXmlDeclEnd auto (ver,NONE,NONE) caq 
+         handle NotFound caq => (* exception raised by parseName *)
+            skipXmlDeclEnd auto (ver,NONE,NONE) caq
 
          (*-----------------------------------------------------------------*)
          (* do the main work. if the first name is not 'version' then it    *)
-         (* might be 'encoding' or 'standalone'. Then take the default      *) 
+         (* might be 'encoding' or 'standalone'. Then take the default      *)
          (* NONE for version and - if needed - encoding and call the        *)
          (* appropriate function. otherwise assume a typo and parse the     *)
-         (* version number, then call parseXmlDeclBeforeE. if no name is    *) 
+         (* version number, then call parseXmlDeclBeforeE. if no name is    *)
          (* found at all, proceed with skipXmlDeclEnd.                      *)
          (*                                                                 *)
          (* print an error and raise SyntaxState if an entity end is found. *)
          (* print an error and raise SyntaxState if appropriate.            *)
          (* print an error if a name other than 'version' is found.         *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         val caq1 as (_,_,q1) = skipSopt caq 
-         val (name,(caq2 as (c2,a2,q2))) = parseName caq1 
+         val caq1 as (_,_,q1) = skipSopt caq
+         val (name,(caq2 as (c2,a2,q2))) = parseName caq1
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expVersion,[c])
                                            val a1 = hookError(a,(getPos q,err))
                                        in raise SyntaxError (c,a1,q)
                                        end
-      in 
+      in
          if name=[0wx76,0wx65,0wx72,0wx73,0wx69,0wx6f,0wx6e] (* "version" *)
-            then let val (ver,caq3) = parseVersionInfo caq2 
+            then let val (ver,caq3) = parseVersionInfo caq2
                  in parseXmlDeclBeforeE ver caq3
                  end
          else let val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expVersion,name)))
               in case name
-                   of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => 
+                   of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] =>
                     (* "encoding" *) parseXmlDeclAfterE NONE (c2,a3,q2)
-                    | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+                    | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
                     (* "standalone" *) parseXmlDeclAfterS auto (NONE,NONE) (c2,a3,q2)
-                    | _ => let val (ver,caq3) = parseVersionInfo (c2,a3,q2) 
+                    | _ => let val (ver,caq3) = parseVersionInfo (c2,a3,q2)
                            in parseXmlDeclBeforeE ver caq3
                            end
               end
@@ -9986,7 +9986,7 @@ struct
       (* catch entity end exceptions raised by subfunctions, print an   *)
       (* error and re-raise the exception.                              *)
       (*----------------------------------------------------------------*)
-   handle SyntaxError(c,a,q) => 
+   handle SyntaxError(c,a,q) =>
       let val err = if c=0wx0 then ERR_ENDED_BY_EE LOC_XML_DECL
                     else ERR_CANT_PARSE LOC_XML_DECL
           val a1 = hookError(a,(getPos q,err))
@@ -9996,17 +9996,17 @@ struct
    (*--------------------------------------------------------------------*)
    (* parse a text declaration starting after 'xml ' (i.e. the first     *)
    (* white space character is already consumed). Cf. 2.8:               *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [77] TextDecl ::= '<?xml' VersionInfo? EncodingDecl S? '?>'      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [24] VersionInfo ::= S 'version' Eq (' VersionNum '              *)
    (*                                       | " VersionNum ")            *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* default version and encoding to NONE.                              *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error if no leading white space is found.                 *)
    (* print an error whenever a wrong name is encountered.               *)
    (* print an Error if no EncodingDecl is found.                        *)
@@ -10017,21 +10017,21 @@ struct
    (*                                                                    *)
    (* return the corresponding TextDecl option and the next char & state.*)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseTextDecl auto caq =
-      let 
+      let
          (*-----------------------------------------------------------------*)
          (* skip the '?>' at the end of the text declaration.               *)
-         (*                                                                 *) 
-         (* print an error and raise SyntaxState if no '?>' is found.       *) 
-         (*                                                                 *) 
+         (*                                                                 *)
+         (* print an error and raise SyntaxState if no '?>' is found.       *)
+         (*                                                                 *)
          (* return the info passed as first arg, and the next char & state. *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun skipTextDeclEnd enc res (c,a,q) = 
-            if c=0wx3F (* "#?" *) 
+         fun skipTextDeclEnd enc res (c,a,q) =
+            if c=0wx3F (* "#?" *)
                then let val (c1,a1,q1) = getChar (a,q)
                     in if c1=0wx3E (* #">" *) then (enc,SOME res,getChar (a1,q1))
                        else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1])))
@@ -10043,14 +10043,14 @@ struct
                  end
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the keyword 'encoding', the version   *)
-         (* already parsed and given in the first arg.                      *) 
-         (*                                                                 *) 
+         (* already parsed and given in the first arg.                      *)
+         (*                                                                 *)
          (* pass the version and encoding and to skipTextDeclEnd.           *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseTextDeclAfterE ver caq = 
-            let 
+         fun parseTextDeclAfterE ver caq =
+            let
                val (enc,(c1,a1,q1)) = parseEncodingDecl caq
                val (a2,q2,enc1) = changeAuto(a1,q1,enc)
                val caq3 = skipSopt (c1,a2,q2)
@@ -10058,25 +10058,25 @@ struct
             end
          (*-----------------------------------------------------------------*)
          (* parse the remainder after the version info, the version given   *)
-         (* as first argument.                                              *) 
-         (*                                                                 *) 
-         (* print an error and raise SyntaxState is no name is found.       *) 
-         (* print an error if a name other than 'encoding' is found.        *) 
-         (*                                                                 *) 
+         (* as first argument.                                              *)
+         (*                                                                 *)
+         (* print an error and raise SyntaxState is no name is found.       *)
+         (* print an error if a name other than 'encoding' is found.        *)
+         (*                                                                 *)
          (* pass obtained/default values to parseTextDeclAfterE.            *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         fun parseTextDeclBeforeE ver caq = 
+         fun parseTextDeclBeforeE ver caq =
             let
-               val caq1 as (_,_,q1) = skipS caq 
+               val caq1 as (_,_,q1) = skipS caq
                val (name,caq2) = parseName caq1
                   handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEncoding,[c])
                                                  val a1 = hookError(a,(getPos q,err))
                                              in raise SyntaxError (c,a1,q)
                                              end
-            in 
-               if name=[0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] (* "encoding" *) 
+            in
+               if name=[0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] (* "encoding" *)
                   then parseTextDeclAfterE ver caq2
                else let val (c2,a2,q2) = caq2
                         val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expEncoding,name)))
@@ -10086,31 +10086,31 @@ struct
          (*-----------------------------------------------------------------*)
          (* do the main work. if the first name is neither 'version' nor    *)
          (* 'encoding' then assume typo of 'version'. Then parse the        *)
-         (* version number, call parseTextDeclBeforeE. if no name is found  *) 
+         (* version number, call parseTextDeclBeforeE. if no name is found  *)
          (* at all, proceed with skipTextDeclEnd.                           *)
          (*                                                                 *)
          (* print an error and raise SyntaxState if appropriate.            *)
          (* print an error if a name other than 'version' or 'encoding' is  *)
          (* found.                                                          *)
          (*-----------------------------------------------------------------*)
-         (* might raise: SyntaxState                                        *) 
+         (* might raise: SyntaxState                                        *)
          (*-----------------------------------------------------------------*)
-         val caq1 as (_,_,q1) = skipSopt caq 
-         val (name,caq2) = parseName caq1 
+         val caq1 as (_,_,q1) = skipSopt caq
+         val (name,caq2) = parseName caq1
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEncVers,[c])
                                            val a1 = hookError(a,(getPos q,err))
                                        in raise SyntaxError(c,a1,q)
                                        end
-      in case name 
+      in case name
            of [0wx76,0wx65,0wx72,0wx73,0wx69,0wx6f,0wx6e] => (* "version" *)
-              let val (ver,caq3) = parseVersionInfo caq2 
+              let val (ver,caq3) = parseVersionInfo caq2
               in parseTextDeclBeforeE ver caq3
               end
             | [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => (* "encoding" *)
               parseTextDeclAfterE NONE caq2
             | _ => let val (c2,a2,q2) = caq2
                        val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expEncVers,name)))
-                       val (ver,caq3) = parseVersionInfo (c2,a3,q2) 
+                       val (ver,caq3) = parseVersionInfo (c2,a3,q2)
                    in parseTextDeclBeforeE ver caq3
                    end
       end
@@ -10118,13 +10118,13 @@ struct
       (* catch entity end exceptions raised by subfunctions, print an   *)
       (* error and re-raise the exception.                              *)
       (*----------------------------------------------------------------*)
-   handle SyntaxError(c,a,q) => 
+   handle SyntaxError(c,a,q) =>
       let val err = if c=0wx0 then ERR_ENDED_BY_EE LOC_TEXT_DECL
                     else ERR_CANT_PARSE LOC_TEXT_DECL
           val a1 = hookError(a,(getPos q,err))
       in (auto,NONE,recoverXml(c,a1,q))
       end
-         
+
    (*--------------------------------------------------------------------*)
    (* check for the string "<?xml" followed by a white space. The first  *)
    (* paramter seen is a prefix of that string already consued. If the   *)
@@ -10134,14 +10134,14 @@ struct
    (* return a boolean indicating wheher the string was found, together  *)
    (* with the remaining app data and state.                             *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun checkForXml aq =
-      let 
+      let
          val unseen = [0wx3c,0wx3f,0wx78,0wx6d,0wx6c]
-         fun doit (seen,unseen) (a,q) = 
+         fun doit (seen,unseen) (a,q) =
             let val (c1,a1,q1) = getChar (a,q)
-            in case unseen 
+            in case unseen
                  of nil => if isS c1 then (true,(a1,q1))
                            else (false,(a1,ungetChars(q1,rev(c1::seen))))
                   | c::cs => if c1=c then doit (c1::seen,cs) (a1,q1)
@@ -10163,7 +10163,7 @@ struct
    (* parse it, if no, possibly print a warning.                         *)
    (*                                                                    *)
    (* Return the encoding of the entity, the optional declaration and    *)
-   (* the next char, app data and state.                                 *) 
+   (* the next char, app data and state.                                 *)
    (*--------------------------------------------------------------------*)
    fun findTextDecl (parseDecl,warn) auto aq =
       let val (hasXml,aq1) = checkForXml aq
@@ -10188,9 +10188,9 @@ struct
    (* return the optional text declaration and the resulting first char  *)
    (* together with the new state.                                       *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun openExtern (id,isParam,uri) (a,q) = 
+   fun openExtern (id,isParam,uri) (a,q) =
       let val (q1,auto) = pushExtern (q,id,isParam,uri)
       in findTextDecl (parseTextDecl,false) auto (a,q1)
       end
@@ -10204,9 +10204,9 @@ struct
    (*                                                                    *)
    (* return the optional text declaration and the first char and state. *)
    (*--------------------------------------------------------------------*)
-   (* might raise: NoSuchFile                                            *) 
+   (* might raise: NoSuchFile                                            *)
    (*--------------------------------------------------------------------*)
-   fun openSubset uri a = 
+   fun openSubset uri a =
       let val (q,auto) = pushSpecial (EXT_SUBSET,SOME uri)
       in findTextDecl (parseTextDecl,false) auto (a,q)
       end
@@ -10221,11 +10221,11 @@ struct
    (*                                                                    *)
    (* return the optional xml declaration and the first char and state.  *)
    (*--------------------------------------------------------------------*)
-   (* might raise: NoSuchFile                                            *) 
+   (* might raise: NoSuchFile                                            *)
    (*--------------------------------------------------------------------*)
-   fun openDocument uri a = 
+   fun openDocument uri a =
       let val (q,auto) = pushSpecial (DOC_ENTITY,uri)
-      in findTextDecl (parseXmlDecl,!O_WARN_XML_DECL) auto (a,q) 
+      in findTextDecl (parseXmlDecl,!O_WARN_XML_DECL) auto (a,q)
       end
    handle NoSuchFile fmsg => raise CantOpenFile(fmsg,a)
 end
@@ -10236,11 +10236,11 @@ signature ParseRefs =
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State 
+      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State
          -> bool * UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -10248,45 +10248,45 @@ signature ParseRefs =
       val skipS    : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
-      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State
          -> bool * (UniChar.Data * (UniChar.Char * AppData * State))
-      val parseEq : UniChar.Char * AppData * State 
+      val parseEq : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
-      val openExtern   : int * Uri.Uri -> AppData * State 
+      val openExtern   : int * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseXml
 
       val parseCharRef : AppData * State -> UniChar.Char *  AppData * State
-      val parseGenRef  : Dtd -> UniChar.Char * AppData * State 
+      val parseGenRef  : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.GenEntity) * (AppData * State)
-      val parseParRef  : Dtd -> UniChar.Char * AppData * State 
+      val parseParRef  : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.ParEntity) * (AppData * State)
 
-      val parseCharRefLit : UniChar.Data -> AppData * State 
+      val parseCharRefLit : UniChar.Data -> AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseGenRefLit  : Dtd -> UniChar.Data -> UniChar.Char *  AppData * State 
+      val parseGenRefLit  : Dtd -> UniChar.Data -> UniChar.Char *  AppData * State
          -> UniChar.Data * ((int * Base.GenEntity) *  (AppData * State))
-      val parseParRefLit  : Dtd -> UniChar.Data -> UniChar.Char *  AppData * State 
+      val parseParRefLit  : Dtd -> UniChar.Data -> UniChar.Char *  AppData * State
          -> UniChar.Data * ((int * Base.ParEntity) *  (AppData * State))
 
       val skipCharRef   : AppData * State -> (UniChar.Char *  AppData * State)
       val skipReference : UniChar.Char * AppData * State -> (UniChar.Char *  AppData * State)
 
-      val skipPS    : Dtd -> UniChar.Char * AppData * State 
+      val skipPS    : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSopt : Dtd -> UniChar.Char * AppData * State 
+      val skipPSopt : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSmay : Dtd -> UniChar.Char * AppData * State 
+      val skipPSmay : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
-      val skipPSdec : Dtd -> UniChar.Char * AppData * State 
+      val skipPSdec : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
     end
 
@@ -10305,7 +10305,7 @@ signature ParseRefs =
 (*   skipReference : none                                                   *)
 (*--------------------------------------------------------------------------*)
 functor ParseRefs (structure ParseBase : ParseBase)
-   : ParseRefs = 
+   : ParseRefs =
 struct
    structure ParseXml   = ParseXml   (structure ParseBase = ParseBase)
 
@@ -10336,18 +10336,18 @@ struct
    (* return the character referred to, and the remaining state.         *)
    (*--------------------------------------------------------------------*)
    fun parseCharRef aq =
-      let 
+      let
          (*--------------------------------------------------------------*)
          (* parse a (hexa)decimal number, accumulating the value in the  *)
          (* first parameter.                                             *)
          (*                                                              *)
          (* return the numbers value as a Char.                          *)
          (*--------------------------------------------------------------*)
-         fun do_hex_n yet (c,a,q) = 
+         fun do_hex_n yet (c,a,q) =
             case hexValue c
               of NONE => (yet,(c,a,q))
                | SOME v => do_hex_n (0wx10*yet+v) (getChar (a,q))
-         fun do_dec_n yet (c,a,q) = 
+         fun do_dec_n yet (c,a,q) =
             case decValue c
               of NONE => (yet,(c,a,q))
                | SOME v => do_dec_n (0wx0A*yet+v) (getChar (a,q))
@@ -10359,7 +10359,7 @@ struct
          (* return the numbers value as a Char.                          *)
          (*--------------------------------------------------------------*)
          fun do_hex_1 (c,a,q) =
-            case hexValue c 
+            case hexValue c
               of SOME v => do_hex_n v (getChar (a,q))
                | NONE => let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expHexDigit,[c])))
                          in raise SyntaxError(c,a1,q)
@@ -10373,17 +10373,17 @@ struct
          (* return the number's value as a Char.                         *)
          (*--------------------------------------------------------------*)
          fun do_dec_1 (c,a,q) =
-            case decValue c 
+            case decValue c
               of SOME v => do_dec_n v (getChar (a,q))
-               | NONE => if c=0wx78 (* #"x" *) 
+               | NONE => if c=0wx78 (* #"x" *)
                             then do_hex_1 (getChar (a,q))
                          else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expDigitX,[c])))
                               in raise SyntaxError(c,a1,q)
                               end
-                               
+
          val (ch,(c1,a1,q1)) = do_dec_1 (getChar aq)
 
-         val _ = if c1=0wx3B then () 
+         val _ = if c1=0wx3B then ()
                  else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expSemi,[c1])))
                       in raise SyntaxError(c1,a2,q1)
                       end
@@ -10395,18 +10395,18 @@ struct
       in (ch,a1,q1)
       end
    fun parseCharRefLit cs aq =
-      let 
+      let
          (*--------------------------------------------------------------*)
          (* parse a (hexa)decimal number, accumulating the value in the  *)
          (* first parameter.                                             *)
          (*                                                              *)
          (* return the numbers value as a Char.                          *)
          (*--------------------------------------------------------------*)
-         fun do_hex_n (cs,yet) (c,a,q) = 
+         fun do_hex_n (cs,yet) (c,a,q) =
             case hexValue c
               of NONE => (cs,yet,(c,a,q))
                | SOME v => do_hex_n (c::cs,0wx10*yet+v) (getChar (a,q))
-         fun do_dec_n (cs,yet) (c,a,q) = 
+         fun do_dec_n (cs,yet) (c,a,q) =
             case decValue c
               of NONE => (cs,yet,(c,a,q))
                | SOME v => do_dec_n (c::cs,0wx0A*yet+v) (getChar (a,q))
@@ -10418,7 +10418,7 @@ struct
          (* return the numbers value as a Char.                          *)
          (*--------------------------------------------------------------*)
          fun do_hex_1 cs (c,a,q) =
-            case hexValue c 
+            case hexValue c
               of SOME v => do_hex_n (c::cs,v) (getChar (a,q))
                | NONE => let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expHexDigit,[c])))
                          in raise SyntaxError(c,a1,q)
@@ -10432,17 +10432,17 @@ struct
          (* return the number's value as a Char.                         *)
          (*--------------------------------------------------------------*)
          fun do_dec_1 cs (c,a,q) =
-            case decValue c 
+            case decValue c
               of SOME v => do_dec_n (c::cs,v) (getChar (a,q))
-               | NONE => if c=0wx78 (* #"x" *) 
+               | NONE => if c=0wx78 (* #"x" *)
                             then do_hex_1 (c::cs) (getChar (a,q))
                          else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expDigitX,[c])))
                               in raise SyntaxError(c,a1,q)
                               end
-                               
+
          val (cs1,ch,(c1,a1,q1)) = do_dec_1 cs (getChar aq)
 
-         val _ = if c1=0wx3B then () 
+         val _ = if c1=0wx3B then ()
                  else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expSemi,[c1])))
                       in raise SyntaxError(c1,a2,q1)
                       end
@@ -10504,24 +10504,24 @@ struct
    (*                                                                    *)
    (* return the entity referred to, and the remaining state.            *)
    (*--------------------------------------------------------------------*)
-   fun parseGenRef dtd (caq as (_,_,q)) = 
-      let 
+   fun parseGenRef dtd (caq as (_,_,q)) =
+      let
          val (name,(c1,a1,q1)) = parseName caq
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                            val a1 = hookError(a,(getPos q,err))
                                        in raise SyntaxError(c,a1,q)
                                        end
-         val _ = if c1=0wx3B then () 
+         val _ = if c1=0wx3B then ()
                  else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expSemi,[c1])))
                       in raise SyntaxError(c1,a2,q1)
                       end
-                                                    
+
          val idx = GenEnt2Index dtd name
-         val (ent,ext) = getGenEnt dtd idx 
-               
+         val (ent,ext) = getGenEnt dtd idx
+
          val _ = (* check whether entity is undeclared/unparsed/open *)
             case ent
-              of GE_NULL => 
+              of GE_NULL =>
                  if entitiesWellformed dtd
                     then let val err = ERR_UNDEC_ENTITY(ENT_GENERAL,name)
                              val a2 = hookError(a1,(getPos q,err))
@@ -10537,41 +10537,41 @@ struct
                                       val a2 = hookError(a1,(getPos q,err))
                                   in raise NoSuchEntity (a2,q1)
                                   end
-               | _ => if isOpen(idx,false,q1) 
+               | _ => if isOpen(idx,false,q1)
                          then let val err = ERR_RECURSIVE_ENTITY(ENT_GENERAL,name)
                                   val a2 = hookError(a1,(getPos q,err))
                               in raise NoSuchEntity (a2,q1)
                               end
                       else ()
-                            
-         val a2 = 
+
+         val a2 =
             if ext andalso !O_VALIDATE andalso standsAlone dtd andalso inDocEntity q1
                then let val _ = if !O_ERROR_MINIMIZE then setStandAlone dtd false else ()
                     in hookError(a1,(getPos q,ERR_STANDALONE_ENT(ENT_GENERAL,name)))
                     end
             else a1
 
-      in ((idx,ent),(a2,q1))        
+      in ((idx,ent),(a2,q1))
       end
-   fun parseGenRefLit dtd cs (caq as (_,_,q)) = 
-      let 
+   fun parseGenRefLit dtd cs (caq as (_,_,q)) =
+      let
          val (cs1,name,(c1,a1,q1)) = parseNameLit cs caq
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                            val a1 = hookError(a,(getPos q,err))
                                        in raise SyntaxError(c,a1,q)
                                        end
-         val _ = if c1=0wx3B then () 
+         val _ = if c1=0wx3B then ()
                  else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expSemi,[c1])))
                       in raise SyntaxError(c1,a2,q1)
                       end
-                                                    
+
          val idx = GenEnt2Index dtd name
-         val (ent,ext) = getGenEnt dtd idx 
-               
+         val (ent,ext) = getGenEnt dtd idx
+
          val _ = (* check whether entity is undeclared/unparsed/open *)
             case ent
-              of GE_NULL => 
-                 if entitiesWellformed dtd 
+              of GE_NULL =>
+                 if entitiesWellformed dtd
                     then let val err = ERR_UNDEC_ENTITY(ENT_GENERAL,name)
                              val a2 = hookError(a1,(getPos q,err))
                          in raise NoSuchEntity (a2,q1)
@@ -10586,14 +10586,14 @@ struct
                                       val a2 = hookError(a1,(getPos q,err))
                                   in raise NoSuchEntity (a2,q1)
                                   end
-               | _ => if isOpen(idx,false,q1) 
+               | _ => if isOpen(idx,false,q1)
                          then let val err = ERR_RECURSIVE_ENTITY(ENT_GENERAL,name)
                                   val a2 = hookError(a1,(getPos q,err))
                               in raise NoSuchEntity (a2,q1)
                               end
                       else ()
-                            
-         val a2 = 
+
+         val a2 =
             if ext andalso !O_VALIDATE andalso standsAlone dtd andalso inDocEntity q1
                then let val _ = if !O_ERROR_MINIMIZE then setStandAlone dtd false else ()
                     in hookError(a1,(getPos q,ERR_STANDALONE_ENT(ENT_GENERAL,name)))
@@ -10639,31 +10639,31 @@ struct
    (* print an error and raise SyntaxError if no name is found, or if no *)
    (* semicolon follows it.                                              *)
    (* print an error and return PE_NULL if the reference is to an        *)
-   (* undeclared or open entity.                                         *) 
+   (* undeclared or open entity.                                         *)
    (*                                                                    *)
    (* return the entity referred to, and the remaining state.            *)
    (*--------------------------------------------------------------------*)
-   fun parseParRef dtd (caq as (_,_,q)) = 
-      let 
-         val (name,(c1,a1,q1)) = parseName caq 
+   fun parseParRef dtd (caq as (_,_,q)) =
+      let
+         val (name,(c1,a1,q1)) = parseName caq
             handle NotFound(c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                           val a1 = hookError(a,(getPos q,err))
                                       in raise SyntaxError(c,a1,q)
                                       end
-                  
-         val _ = if c1=0wx3B then () 
+
+         val _ = if c1=0wx3B then ()
                  else let val err = ERR_EXPECTED(expSemi,[c1])
                           val a2 = hookError(a1,(getPos q1,err))
                       in raise SyntaxError(c1,a2,q1)
                       end
-                       
+
          val _ = setExternal dtd;
          val idx = ParEnt2Index dtd name
-         val (ent,ext) = getParEnt dtd idx 
-               
+         val (ent,ext) = getParEnt dtd idx
+
          val _ = (* check whether entity is declared *)
-            case ent 
-              of PE_NULL =>  
+            case ent
+              of PE_NULL =>
                  if entitiesWellformed dtd
                     then let val err = ERR_UNDEC_ENTITY(ENT_PARAMETER,name)
                              val a2 = hookError(a1,(getPos q,err))
@@ -10676,36 +10676,36 @@ struct
                               end
                       else ()
                (* check whether the entity is already open *)
-               | _ => if isOpen(idx,true,q1) 
+               | _ => if isOpen(idx,true,q1)
                          then let val err = ERR_RECURSIVE_ENTITY(ENT_PARAMETER,name)
                                   val a2 = hookError(a1,(getPos q,err))
                               in raise NoSuchEntity (a2,q1)
                               end
                       else ()
-      in ((idx,ent),(a1,q1))     
+      in ((idx,ent),(a1,q1))
       end
-   fun parseParRefLit dtd cs (caq as (_,_,q)) = 
-      let 
-         val (cs1,name,(c1,a1,q1)) = parseNameLit cs caq 
+   fun parseParRefLit dtd cs (caq as (_,_,q)) =
+      let
+         val (cs1,name,(c1,a1,q1)) = parseNameLit cs caq
             handle NotFound(c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                           val a1 = hookError(a,(getPos q,err))
                                       in raise SyntaxError(c,a1,q)
                                       end
-                  
-         val _ = if c1=0wx3B then () 
+
+         val _ = if c1=0wx3B then ()
                  else let val err = ERR_EXPECTED(expSemi,[c1])
                           val a2 = hookError(a1,(getPos q1,err))
                       in raise SyntaxError(c1,a2,q1)
                       end
-                       
+
          val _ = setExternal dtd;
          val idx = ParEnt2Index dtd name
-         val (ent,ext) = getParEnt dtd idx 
-               
+         val (ent,ext) = getParEnt dtd idx
+
          val _ = (* check whether entity is declared *)
-            case ent 
-              of PE_NULL =>  
-                 if entitiesWellformed dtd 
+            case ent
+              of PE_NULL =>
+                 if entitiesWellformed dtd
                     then let val err = ERR_UNDEC_ENTITY(ENT_PARAMETER,name)
                              val a2 = hookError(a1,(getPos q,err))
                          in raise NoSuchEntity (a2,q1)
@@ -10717,7 +10717,7 @@ struct
                               end
                       else ()
                (* check whether the entity is already open *)
-               | _ => if isOpen(idx,true,q1) 
+               | _ => if isOpen(idx,true,q1)
                          then let val err = ERR_RECURSIVE_ENTITY(ENT_PARAMETER,name)
                                   val a2 = hookError(a1,(getPos q,err))
                               in raise NoSuchEntity (a2,q1)
@@ -10735,17 +10735,17 @@ struct
    (*                                                                    *)
    (* return the remaining state.                                        *)
    (*--------------------------------------------------------------------*)
-   fun skipReference caq = 
-      let val (_,(c1,a1,q1)) = parseName caq 
-      in if c1=0wx3B then getChar (a1,q1) 
+   fun skipReference caq =
+      let val (_,(c1,a1,q1)) = parseName caq
+      in if c1=0wx3B then getChar (a1,q1)
          else let val err = ERR_EXPECTED(expSemi,[c1])
                   val a2 = hookError(a1,(getPos q1,err))
-              in (c1,a2,q1)    
+              in (c1,a2,q1)
               end
       end
    handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                   val a1 = hookError(a,(getPos q,err))
-                              in (c,a1,q)           
+                              in (c,a1,q)
                               end
 
    (*--------------------------------------------------------------------*)
@@ -10759,17 +10759,17 @@ struct
    (* return the remaining char and state.                               *)
    (*--------------------------------------------------------------------*)
    fun skipCharRef aq =
-      let 
+      let
          (*--------------------------------------------------------------*)
          (* skip a (hexa)decimal number.                                 *)
          (*--------------------------------------------------------------*)
-         fun skip_ximal isX (c,a,q) = 
+         fun skip_ximal isX (c,a,q) =
             if isX c then skip_ximal isX (getChar (a,q)) else (c,a,q)
-                               
+
          val (c1,a1,q1) = getChar aq
-         val (c2,a2,q2) = 
+         val (c2,a2,q2) =
             if isDec c1 then skip_ximal isDec (getChar (a1,q1))
-            else if c1=0wx78 (* #"x" *) 
+            else if c1=0wx78 (* #"x" *)
                     then let val (c2,a2,q2) = getChar (a1,q1)
                          in if isHex c2 then skip_ximal isHex (getChar (a2,q2))
                             else let val err = ERR_EXPECTED(expHexDigit,[c2])
@@ -10780,8 +10780,8 @@ struct
                  else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expDigitX,[c1])))
                       in raise SyntaxError (c1,a2,q1)
                       end
-                                   
-      in if c2=0wx3B then getChar (a2,q2) 
+
+      in if c2=0wx3B then getChar (a2,q2)
          else (c2,hookError(a2,(getPos q2,ERR_EXPECTED(expSemi,[c2]))),q2)
       end
    handle SyntaxError caq => caq
@@ -10814,7 +10814,7 @@ struct
    (* handle a parameter entity reference                                *)
    (*--------------------------------------------------------------------*)
    fun doParRef dtd (caq as (c,a,q)) =
-      if inDocEntity q 
+      if inDocEntity q
          then let val err = ERR_FORBIDDEN_HERE(IT_PAR_REF,LOC_INT_DECL)
                   val a1 = hookError(a,(getPos q,err))
               in skipReference (c,a1,q)
@@ -10824,7 +10824,7 @@ struct
                 of PE_NULL => getChar (a1,q1)
                  | PE_INTERN (_,rep) => getChar(a1,(pushIntern(q1,id,true,rep)))
                  | PE_EXTERN extId => #3(openExtern(id,true,resolveExtId extId) (a1,q1))
-                   handle CantOpenFile(fmsg,a) 
+                   handle CantOpenFile(fmsg,a)
                    => let val err = ERR_NO_SUCH_FILE fmsg
                           val a1 = hookError(a,(getPos q1,err))
                       in (getChar(a1,q1))
@@ -10843,11 +10843,11 @@ struct
    (* return the following character and the remaining state.            *)
    (*--------------------------------------------------------------------*)
    fun skipPSopt dtd caq =
-      let fun doit (c,a,q) = 
+      let fun doit (c,a,q) =
          case c
-           of 0wx00 => 
-              if isSpecial q then (c,a,q) 
-              else let val a1 = if !O_VALIDATE andalso inDocEntity q 
+           of 0wx00 =>
+              if isSpecial q then (c,a,q)
+              else let val a1 = if !O_VALIDATE andalso inDocEntity q
                                    then hookError(a,(getPos q,ERR_EE_INT_SUBSET))
                                 else a
                    in doit (getChar (a1,q))
@@ -10871,10 +10871,10 @@ struct
    (* following character with the remaining state.                      *)
    (*--------------------------------------------------------------------*)
    fun skipPSmay dtd (c,a,q) =
-      case c 
-        of 0wx00 => 
-           if isSpecial q then (false,(c,a,q)) 
-           else let val a1 = if !O_VALIDATE andalso inDocEntity q 
+      case c
+        of 0wx00 =>
+           if isSpecial q then (false,(c,a,q))
+           else let val a1 = if !O_VALIDATE andalso inDocEntity q
                                 then hookError(a,(getPos q,ERR_EE_INT_SUBSET))
                              else a
                 in (true,skipPSopt dtd (getChar (a1,q)))
@@ -10895,11 +10895,11 @@ struct
    (*                                                                    *)
    (* return the following character and the remaining state.            *)
    (*--------------------------------------------------------------------*)
-   fun skipPS dtd (c,a,q) = 
+   fun skipPS dtd (c,a,q) =
       case c
-        of 0wx00 => 
+        of 0wx00 =>
            if isSpecial q then (c,hookError(a,(getPos q,ERR_MISSING_WHITE)),q)
-           else let val a1 = if !O_VALIDATE andalso inDocEntity q 
+           else let val a1 = if !O_VALIDATE andalso inDocEntity q
                                 then hookError(a,(getPos q,ERR_EE_INT_SUBSET))
                              else a
                 in skipPSopt dtd (getChar (a1,q))
@@ -10922,12 +10922,12 @@ struct
    (* return a boolean whether a '%' was found,  the following character *)
    (* and the remaining state.                                           *)
    (*--------------------------------------------------------------------*)
-   fun skipPSdec dtd caq = 
-      let fun doit req (c,a,q) = 
+   fun skipPSdec dtd caq =
+      let fun doit req (c,a,q) =
          case c
-           of 0wx00 => 
-              if isSpecial q then (false,(c,a,q)) 
-              else let val a1 = if !O_VALIDATE andalso inDocEntity q 
+           of 0wx00 =>
+              if isSpecial q then (false,(c,a,q))
+              else let val a1 = if !O_VALIDATE andalso inDocEntity q
                                    then hookError(a,(getPos q,ERR_EE_INT_SUBSET))
                                 else a
                    in doit false (getChar (a1,q))
@@ -10947,20 +10947,20 @@ struct
                                 else a
                    in (false,(c,a1,q))
                    end
-      in 
-         doit true caq 
+      in
+         doit true caq
       end
 end
 (* stop of ../../Parser/Parse/parseRefs.sml *)
 (* start of ../../Parser/Parse/parseLiterals.sml *)
-signature ParseLiterals = 
+signature ParseLiterals =
    sig
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -10968,48 +10968,48 @@ signature ParseLiterals =
       val skipS    : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
-      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State
          -> bool * (UniChar.Data * (UniChar.Char * AppData * State))
-      val parseEq : UniChar.Char * AppData * State 
+      val parseEq : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
-      val openExtern   : int * Uri.Uri -> AppData * State 
+      val openExtern   : int * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
 
       val skipCharRef     : AppData * State -> (UniChar.Char *  AppData * State)
       val skipReference   : UniChar.Char * AppData * State -> (UniChar.Char *  AppData * State)
-      val parseGenRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseGenRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.GenEntity) * (AppData * State)
-      val parseParRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseParRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.ParEntity) * (AppData * State)
-      val parseCharRefLit : UniChar.Data -> AppData * State 
+      val parseCharRefLit : UniChar.Data -> AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val skipPS    : Dtd -> UniChar.Char * AppData * State 
+      val skipPS    : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSopt : Dtd -> UniChar.Char * AppData * State 
+      val skipPSopt : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSmay : Dtd -> UniChar.Char * AppData * State 
+      val skipPSmay : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
-      val skipPSdec : Dtd -> UniChar.Char * AppData * State 
+      val skipPSdec : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseRefs
 
-      val parseSystemLiteral : UniChar.Char * AppData * State 
+      val parseSystemLiteral : UniChar.Char * AppData * State
          -> Uri.Uri * UniChar.Char * (UniChar.Char * AppData * State)
-      val parsePubidLiteral  : UniChar.Char * AppData * State 
+      val parsePubidLiteral  : UniChar.Char * AppData * State
          -> string * UniChar.Char * (UniChar.Char * AppData * State)
 
-      val parseAttValue : Dtd -> UniChar.Char * AppData * State 
+      val parseAttValue : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Vector * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntityValue : Dtd -> (UniChar.Vector * UniChar.Vector -> 'a) 
-         -> UniChar.Char * AppData * State 
+      val parseEntityValue : Dtd -> (UniChar.Vector * UniChar.Vector -> 'a)
+         -> UniChar.Char * AppData * State
          -> 'a * (UniChar.Char * AppData * State)
    end
 
@@ -11022,17 +11022,17 @@ signature ParseLiterals =
 (*   parseAttValue      : NotFound                                          *)
 (*   parseEntityValue   : NotFound                                          *)
 (*--------------------------------------------------------------------------*)
-functor ParseLiterals (structure ParseBase : ParseBase) 
-   : ParseLiterals =   
+functor ParseLiterals (structure ParseBase : ParseBase)
+   : ParseLiterals =
 struct
    structure ParseRefs  = ParseRefs  (structure ParseBase = ParseBase)
 
    open
       Base UniChar Errors UniClasses Uri
-      ParseRefs 
+      ParseRefs
 
    val THIS_MODULE = "ParseLiterals"
-      
+
       (*--------------------------------------------------------------------*)
       (* parse a system literal, the quote character ("'" or '"') already --*)
       (* read and passed as first argument.  cf. 2.3:                       *)
@@ -11047,24 +11047,24 @@ struct
       (* return the literal as a string together with the next character    *)
       (* and remaining state.                                               *)
       (*--------------------------------------------------------------------*)
-      (* might raise: none                                                  *) 
+      (* might raise: none                                                  *)
       (*--------------------------------------------------------------------*)
       fun parseSystemLiteral' quote aq =
-         let 
-            fun doit text (c,a,q) = 
+         let
+            fun doit text (c,a,q) =
                if c=quote then (text,getChar (a,q))
-               else if c=0wx0 
+               else if c=0wx0
                        then let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_SYS_LIT))
                             in (text,(c,a1,q))
                             end
-               else if c>0wx7F andalso !O_WARN_NON_ASCII_URI 
+               else if c>0wx7F andalso !O_WARN_NON_ASCII_URI
                        then let val a1 = hookWarning(a,(getPos q,WARN_NON_ASCII_URI c))
                             in doit (c::text) (getChar(a1,q))
                             end
                     else doit (c::text) (getChar(a,q))
-            
+
             val (text,caq1) = doit nil (getChar aq)
-         in 
+         in
             (Data2Uri(rev text),quote,caq1)
          end
       (*--------------------------------------------------------------------*)
@@ -11072,19 +11072,19 @@ struct
       (*                                                                    *)
       (*   [11] SystemLiteral ::= ('"' [^"]* '"') | ("'" [^']* "'")         *)
       (*                                                                    *)
-      (* raise NotFound if neither '"' nor "'" comes first.                 *)   
+      (* raise NotFound if neither '"' nor "'" comes first.                 *)
       (*                                                                    *)
       (* return the literal as a string together with the next character    *)
       (* and remaining state.                                               *)
       (*--------------------------------------------------------------------*)
-      (* might raise: NotFound                                              *) 
+      (* might raise: NotFound                                              *)
       (*--------------------------------------------------------------------*)
-      fun parseSystemLiteral (c,a,q) = 
-         if c=0wx22 (* "'" *) orelse 
-            c=0wx27 (* '"' *) 
+      fun parseSystemLiteral (c,a,q) =
+         if c=0wx22 (* "'" *) orelse
+            c=0wx27 (* '"' *)
             then parseSystemLiteral' c (a,q)
          else raise NotFound (c,a,q)
-                     
+
       (*--------------------------------------------------------------------*)
       (* parse a pubid literal, the quote character ("'" or '"') already ---*)
       (* read and passed as first argument.  cf. 2.3:                       *)
@@ -11098,31 +11098,31 @@ struct
       (* return the literal as a string together with the next character    *)
       (* and remaining state.                                               *)
       (*--------------------------------------------------------------------*)
-      (* might raise: none                                                  *) 
+      (* might raise: none                                                  *)
       (*--------------------------------------------------------------------*)
       fun parsePubidLiteral' quote aq =
-         let 
-            fun doit (hadSpace,atStart,text) aq = 
+         let
+            fun doit (hadSpace,atStart,text) aq =
                let val (c1,a1,q1) = getChar aq
-               in case c1 
+               in case c1
                     of 0wx00 => let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_PUB_LIT))
-                                in (text,(c1,a2,q1)) 
+                                in (text,(c1,a2,q1))
                                 end
                      | 0wx0A => doit (true,atStart,text) (a1,q1)
                      | 0wx20 => doit (true,atStart,text) (a1,q1)
-                     | _ => 
+                     | _ =>
                        if c1=quote then (text,getChar (a1,q1))
-                       else if not (isPubid c1) 
+                       else if not (isPubid c1)
                                then let val err = ERR_FORBIDDEN_HERE(IT_CHAR c1,LOC_PUB_LIT)
                                         val a2 = hookError(a1,(getPos q1,err))
                                     in doit (hadSpace,atStart,text) (a2,q1)
                                     end
-                       else if hadSpace andalso not atStart 
+                       else if hadSpace andalso not atStart
                                then doit (false,false,c1::0wx20::text) (a1,q1)
                             else doit (false,false,c1::text) (a1,q1)
-               end 
+               end
             val (text,caq1) = doit (false,true,nil) aq
-         in 
+         in
             (Latin2String(rev text),quote,caq1)
          end
       (*--------------------------------------------------------------------*)
@@ -11131,16 +11131,16 @@ struct
       (*   [12]  PubidLiteral ::= '"' PubidChar* '"'                        *)
       (*                        | "'" (PubidChar - "'")* "'"                *)
       (*                                                                    *)
-      (* raise NotFound if neither '"' nor "'" comes first.                 *)   
+      (* raise NotFound if neither '"' nor "'" comes first.                 *)
       (*                                                                    *)
       (* return the literal as a string together with the next character    *)
       (* and remaining state.                                               *)
       (*--------------------------------------------------------------------*)
-      (* might raise: NotFound                                              *) 
+      (* might raise: NotFound                                              *)
       (*--------------------------------------------------------------------*)
-      fun parsePubidLiteral (c,a,q) = 
-         if c=0wx22 (* "'" *) orelse 
-            c=0wx27 (* '"' *) 
+      fun parsePubidLiteral (c,a,q) =
+         if c=0wx22 (* "'" *) orelse
+            c=0wx27 (* '"' *)
             then parsePubidLiteral' c (a,q)
          else raise NotFound (c,a,q)
 
@@ -11176,10 +11176,10 @@ struct
       (* return argument con applied to the entity value as a char buffer,  *)
       (* and the remaining char and state.                                  *)
       (*--------------------------------------------------------------------*)
-      (* might raise: none                                                  *) 
+      (* might raise: none                                                  *)
       (*--------------------------------------------------------------------*)
       fun parseEntityValue' dtd (quote,con) aq =
-         let fun doit (level,hadCr,lit,text) (c1,a1,q1) = 
+         let fun doit (level,hadCr,lit,text) (c1,a1,q1) =
             case c1
               of 0wx00 => if level=0 then let val err = ERR_ENDED_BY_EE LOC_ENT_VALUE
                                               val a2 = hookError(a1,(getPos q1,err))
@@ -11187,34 +11187,34 @@ struct
                                           end
                           else doit (level-1,false,lit,text) (getChar (a1,q1))
                | 0wx25 => (* #"%" *)
-                 let val (level1,lit1,caq2) = 
-                    if inDocEntity q1 
+                 let val (level1,lit1,caq2) =
+                    if inDocEntity q1
                        then let val err = ERR_FORBIDDEN_HERE(IT_PAR_REF,LOC_INT_DECL)
                                 val a2 = hookError(a1,(getPos q1,err))
                             in (level,lit,skipReference (getChar(a2,q1)))
                             end
                     else
-                       let val (lit1,((id,ent),(a2,q2))) = 
+                       let val (lit1,((id,ent),(a2,q2))) =
                           if level=0 then parseParRefLit dtd (c1::lit) (getChar(a1,q1))
                           else (lit,parseParRef dtd (getChar(a1,q1)))
                        in case ent
                             of PE_NULL => (level,lit1,getChar(a2,q2))
-                             | PE_INTERN(_,rep) => 
+                             | PE_INTERN(_,rep) =>
                                let val q3 = pushIntern(q2,id,true,rep)
                                in (level+1,lit1,getChar(a2,q3))
                                end
-                             | PE_EXTERN extId => 
-                               let 
+                             | PE_EXTERN extId =>
+                               let
                                   val fname = resolveExtId extId
                                   val caq3 = #3(openExtern (id,true,fname) (a2,q2))
                                in (level+1,lit1,caq3)
-                               end handle CantOpenFile(fmsg,a) 
+                               end handle CantOpenFile(fmsg,a)
                                => let val err = ERR_NO_SUCH_FILE fmsg
                                       val a1 = hookError(a,(getPos q1,err))
                                   in (level,lit1,getChar(a1,q1))
                                   end
                        end (* ignore syntax errors in references *)
-                    handle SyntaxError caq => (level,lit,caq) 
+                    handle SyntaxError caq => (level,lit,caq)
                          | NoSuchEntity aq => (level,lit,getChar aq)
                  in doit (level1,false,lit1,text) caq2
                  end
@@ -11225,8 +11225,8 @@ struct
                         (* it's a character reference.                      *)
                         (*--------------------------------------------------*)
                         then (if level=0
-                                 then 
-                                    let val (lit3,(ch,a3,q3)) = 
+                                 then
+                                    let val (lit3,(ch,a3,q3)) =
                                        parseCharRefLit (c2::c1::lit) (a2,q2)
                                     in doit (level,false,lit3,ch::text) (getChar(a3,q3))
                                     end
@@ -11239,12 +11239,12 @@ struct
                      (*-----------------------------------------------------*)
                      (* it's a general entity reference.                    *)
                      (*-----------------------------------------------------*)
-                     else let 
-                             val (fnd,lit3,text3,(c3,a3,q3)) = 
+                     else let
+                             val (fnd,lit3,text3,(c3,a3,q3)) =
                                 parseEntName (c1::lit,c1::text) (c2,a2,q2)
-                             val (lit4,text4,caq4) = 
+                             val (lit4,text4,caq4) =
                                 if not fnd then (lit,text,(c3,a3,q3))
-                                else if c3=0wx3B (* #";" *) 
+                                else if c3=0wx3B (* #";" *)
                                         then (c3::lit3,c3::text3,(getChar(a3,q3)))
                                      else let val err = ERR_EXPECTED(expSemi,[c3])
                                               val a4 = hookError(a3,(getPos q3,err))
@@ -11256,16 +11256,16 @@ struct
                  end
                | 0wx0A => doit (level,false,if level=0 then c1::lit else lit,
                                 if hadCr then text else c1::text) (getChar (a1,q1))
-               | 0wx0D => doit (level,true,if level=0 then c1::lit else lit,0wx0A::text) 
+               | 0wx0D => doit (level,true,if level=0 then c1::lit else lit,0wx0A::text)
                           (getChar (a1,q1))
                | _ => if c1=quote andalso level=0 then (lit,text,getChar(a1,q1))
-                      else doit (level,false,if level=0 then c1::lit else lit,c1::text) 
+                      else doit (level,false,if level=0 then c1::lit else lit,c1::text)
                          (getChar (a1,q1))
 
             val (lit,text,caq1) = doit (0,false,nil,nil) (getChar aq)
             val literal = Data2Vector(quote::rev(quote::lit))
             val repText = Data2Vector(rev text)
-         in 
+         in
             (con(literal,repText),caq1)
          end
       (*--------------------------------------------------------------------*)
@@ -11274,16 +11274,16 @@ struct
       (*   [9]   EntityValue ::= '"' ([^%&"] | PEReference | Reference)* '"'*)
       (*                      |  "'" ([^%&'] | PEReference | Reference)* "'"*)
       (*                                                                    *)
-      (* raise NotFound if neither '"' nor "'" comes first.                 *)   
+      (* raise NotFound if neither '"' nor "'" comes first.                 *)
       (*                                                                    *)
-      (* return the entity value as a char buffer, and the remaining char   *) 
+      (* return the entity value as a char buffer, and the remaining char   *)
       (* and state.                                                         *)
       (*--------------------------------------------------------------------*)
-      (* might raise: NotFound                                              *) 
+      (* might raise: NotFound                                              *)
       (*--------------------------------------------------------------------*)
-      fun parseEntityValue dtd con (c,a,q) = 
-         if c=0wx22 (* "'" *) orelse 
-            c=0wx27 (* '"' *) 
+      fun parseEntityValue dtd con (c,a,q) =
+         if c=0wx22 (* "'" *) orelse
+            c=0wx27 (* '"' *)
             then parseEntityValue' dtd (c,con) (a,q)
          else raise NotFound (c,a,q)
 
@@ -11324,20 +11324,20 @@ struct
       (* getChar (external entities), we don't need to care about that.     *)
       (*--------------------------------------------------------------------*)
       (* print an error and end the literal if an entity end is found.      *)
-      (* print an error if a general entity reference is ill-formed.        *) 
+      (* print an error if a general entity reference is ill-formed.        *)
       (* print an error if a reference to an external or unparsed entity is *)
       (* found.                                                             *)
       (* print an error if character '<' appears literally.                 *)
       (*                                                                    *)
       (* handle any errors in references by ignoring them syntactically.    *)
-      (* raise NotFound if neither '"' nor "'" comes first.                 *)   
+      (* raise NotFound if neither '"' nor "'" comes first.                 *)
       (*                                                                    *)
-      (* return the list of chars in the value, and the next char and state *) 
+      (* return the list of chars in the value, and the next char and state *)
       (*--------------------------------------------------------------------*)
-      (* might raise: NotFound                                              *) 
+      (* might raise: NotFound                                              *)
       (*--------------------------------------------------------------------*)
       fun parseAttValue dtd (quote,a,q) =
-         let fun doit (lhlt as (level,lit,text)) (c1,a1,q1) = 
+         let fun doit (lhlt as (level,lit,text)) (c1,a1,q1) =
             case c1
               of 0wx00 => if level=0 then let val err = ERR_ENDED_BY_EE LOC_ATT_VALUE
                                               val a2 = hookError(a1,(getPos q1,err))
@@ -11345,16 +11345,16 @@ struct
                                           end
                           else doit (level-1,lit,text) (getChar (a1,q1))
                | 0wx26 => (* #"&" *)
-                 let 
+                 let
                     val (c2,a2,q2) = getChar (a1,q1)
-                    val ((level1,lit1,text1),caq3) = 
+                    val ((level1,lit1,text1),caq3) =
                        (if c2=0wx23 (* #"#" *)
                            (*--------------------------------------------------*)
                            (* it's a character reference.                      *)
                            (*--------------------------------------------------*)
                            then if level=0
-                                   then 
-                                      let val (lit3,(ch,a3,q3)) = 
+                                   then
+                                      let val (lit3,(ch,a3,q3)) =
                                          parseCharRefLit (c2::c1::lit) (a2,q2)
                                       in ((level,lit3,ch::text),getChar(a3,q3))
                                       end
@@ -11364,17 +11364,17 @@ struct
                         (*-----------------------------------------------------*)
                         (* it's a general entity reference.                    *)
                         (*-----------------------------------------------------*)
-                        else 
-                           let val (lit3,((id,ent),(a3,q3))) = 
+                        else
+                           let val (lit3,((id,ent),(a3,q3))) =
                               if level=0 then parseGenRefLit dtd (c1::lit) (c2,a2,q2)
                               else (nil,parseGenRef dtd (c2,a2,q2))
                            in case ent
                                 of GE_NULL => ((level,lit3,text),getChar(a3,q3))
-                                 | GE_INTERN(_,rep) => 
+                                 | GE_INTERN(_,rep) =>
                                    let val q4 = pushIntern(q3,id,false,rep)
                                    in ((level+1,lit3,text),getChar (a3,q4))
                                    end
-                                 | GE_EXTERN _ => 
+                                 | GE_EXTERN _ =>
                                    let val err = ERR_ILLEGAL_ENTITY
                                       (ENT_EXTERNAL,Index2GenEnt dtd id,LOC_ATT_VALUE)
                                        val a4 = hookError(a3,(getPos q2,err))
@@ -11397,30 +11397,30 @@ struct
                               val lit1 = if level=0 then c1::lit else lit
                           in doit (level,lit1,c1::text) (getChar (a2,q1))
                           end
-               | _ => if isS c1 then doit (level,if level=0 then c1::lit else lit,0wx20::text) 
+               | _ => if isS c1 then doit (level,if level=0 then c1::lit else lit,0wx20::text)
                           (getChar (a1,q1))
                       else (if c1=quote andalso level=0 then (lit,text,getChar (a1,q1))
-                            else doit (level,if level=0 then c1::lit else lit,c1::text) 
+                            else doit (level,if level=0 then c1::lit else lit,c1::text)
                                (getChar (a1,q1)))
-             
 
-             val _ = if quote=0wx22 orelse quote=0wx27 (* "'",'"' *) then () 
+
+             val _ = if quote=0wx22 orelse quote=0wx27 (* "'",'"' *) then ()
                      else raise NotFound (quote,a,q)
              val (lit,text,caq1) = doit (0,nil,nil) (getChar(a,q))
-         in 
+         in
             (Data2Vector(quote::rev(quote::lit)),rev text,caq1)
          end
    end
 (* stop of ../../Parser/Parse/parseLiterals.sml *)
 (* start of ../../Parser/Parse/parseTags.sml *)
-signature ParseTags = 
+signature ParseTags =
    sig
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -11429,47 +11429,47 @@ signature ParseTags =
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
 
-      val openExtern   : int * Uri.Uri -> AppData * State 
+      val openExtern   : int * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
 
       val skipCharRef     : AppData * State -> (UniChar.Char *  AppData * State)
       val skipReference   : UniChar.Char * AppData * State -> (UniChar.Char *  AppData * State)
-      val parseGenRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseGenRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.GenEntity) * (AppData * State)
-      val parseParRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseParRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.ParEntity) * (AppData * State)
-      val parseCharRefLit : UniChar.Data -> AppData * State 
+      val parseCharRefLit : UniChar.Data -> AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val skipPS    : Dtd -> UniChar.Char * AppData * State 
+      val skipPS    : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSopt : Dtd -> UniChar.Char * AppData * State 
+      val skipPSopt : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
-      val skipPSmay : Dtd -> UniChar.Char * AppData * State 
+      val skipPSmay : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
-      val skipPSdec : Dtd -> UniChar.Char * AppData * State 
+      val skipPSdec : Dtd -> UniChar.Char * AppData * State
          -> bool * (UniChar.Char * AppData * State)
 
-      val parseSystemLiteral : UniChar.Char * AppData * State 
+      val parseSystemLiteral : UniChar.Char * AppData * State
          -> Uri.Uri * UniChar.Char * (UniChar.Char * AppData * State)
-      val parsePubidLiteral  : UniChar.Char * AppData * State 
+      val parsePubidLiteral  : UniChar.Char * AppData * State
          -> string * UniChar.Char * (UniChar.Char * AppData * State)
-      val parseAttValue : Dtd -> UniChar.Char * AppData * State 
+      val parseAttValue : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Vector * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntityValue : Dtd -> (UniChar.Vector * UniChar.Vector -> 'a) 
-         -> UniChar.Char * AppData * State 
+      val parseEntityValue : Dtd -> (UniChar.Vector * UniChar.Vector -> 'a)
+         -> UniChar.Char * AppData * State
          -> 'a * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseLiterals
 
       val skipTag   : Errors.Location -> AppData * State -> (UniChar.Char * AppData * State)
 
-      val parseETag : Dtd -> AppData * State 
+      val parseETag : Dtd -> AppData * State
          -> int * UniChar.Data * Errors.Position * (UniChar.Char * AppData * State)
-      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State 
+      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State
          -> (HookData.StartTagInfo * Base.ElemInfo) * (UniChar.Char * AppData * State)
    end
 
@@ -11481,19 +11481,19 @@ signature ParseTags =
 (*   parseETag : SyntaxState                                                *)
 (*   parseSTag : SyntaxState                                                *)
 (*--------------------------------------------------------------------------*)
-functor ParseTags (structure ParseBase : ParseBase) 
+functor ParseTags (structure ParseBase : ParseBase)
    : ParseTags =
 struct
    structure ParseLiterals = ParseLiterals (structure ParseBase = ParseBase)
 
    open
-      UtilList 
+      UtilList
       Base Errors UniClasses
-      ParseLiterals 
+      ParseLiterals
 
    (*--------------------------------------------------------------------*)
    (* parse an end-tag, the "</" already read. 3.1:                      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [42] ETag ::= '</' Name S? '>'                                   *)
    (*                                                                    *)
    (* and 3. states:                                                     *)
@@ -11505,15 +11505,15 @@ struct
    (* print an error, recover and raise SyntaxState if no name is found. *)
    (* print an error and recover if no ">" is found.                     *)
    (* print an error if the element is not declared.                     *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* return the index of the element, and the next char and state.      *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseETag dtd aq = 
+   fun parseETag dtd aq =
       let
          val caq0 as (_,_,q0) = getChar aq
-         val (elem,(c1,a1,q1)) = parseName caq0 
+         val (elem,(c1,a1,q1)) = parseName caq0
             handle NotFound (c,a,q) => let val err = expectedOrEnded (expAName,LOC_ETAG) c
                                            val a1 = hookError(a,(getPos q,err))
                                            val caq1 = recoverETag (c,a1,q)
@@ -11521,8 +11521,8 @@ struct
                                        end
          val idx = Element2Index dtd elem
          val elemInfo as {decl,...} = getElement dtd idx
-         val a1' = if isSome decl then a1 
-                   else let val a2 = if not (!O_VALIDATE andalso hasDtd dtd) then a1 
+         val a1' = if isSome decl then a1
+                   else let val a2 = if not (!O_VALIDATE andalso hasDtd dtd) then a1
                                      else let val err = ERR_UNDECLARED(IT_ELEM,elem,LOC_ETAG)
                                               val a1' = hookError(a1,(getPos q0,err))
                                               val _ = if not (!O_ERROR_MINIMIZE) then ()
@@ -11534,7 +11534,7 @@ struct
 
          val (cs,(c2,a2,q2)) = parseSopt nil (c1,a1',q1)
          val space = rev cs
-      in 
+      in
          if c2=0wx3E (* #">" *) then (idx,space,getPos q2,getChar(a2,q2))
          else let val err = expectedOrEnded (expGt,LOC_ETAG) c2
                   val a3 = hookError(a2,(getPos q2,err))
@@ -11546,7 +11546,7 @@ struct
    (*--------------------------------------------------------------------*)
    (* parse a start-tag or an empty-element-tag, the "<" already read.   *)
    (* 3.1:                                                               *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [40]      STag ::= '<' Name (S Attribute)* S? '>'                *)
    (*                                           [ WFC: Unique Att Spec ] *)
    (*   [41] Attribute ::= Name Eq AttValue [ VC: Attribute Value Type ] *)
@@ -11581,16 +11581,16 @@ struct
    (* print an error and ignore the attribute if an attribute is         *)
    (* specified twice.                                                   *)
    (* print an error if an attribute is not declared.                    *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* return the index of the element, its ElemInfo, the list of         *)
    (* AttSpecs (specified and omitted atts) and a boolean whether it was *)
    (* an empty-element-tag, together with the next char and state.       *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseSTag dtd startPos (caq as (_,_,q)) = 
-      let 
-         val (elem,(c1,a1,q1)) = parseName caq 
+   fun parseSTag dtd startPos (caq as (_,_,q)) =
+      let
+         val (elem,(c1,a1,q1)) = parseName caq
             handle NotFound (c,a,q) => let val err = expectedOrEnded (expAName,LOC_STAG) c
                                            val a1 = hookError(a,(getPos q,err))
                                            val (_,caq1) = recoverSTag (c,a1,q)
@@ -11601,11 +11601,11 @@ struct
          val defs = case atts
                       of NONE => nil
                        | SOME (defs,_) => defs
-         val (a1',elemInfo) = 
+         val (a1',elemInfo) =
             if isSome decl then (a1,elemInfo)
-            else 
-               let val (a2,newInfo) = 
-                  if not (!O_VALIDATE andalso hasDtd dtd) then (a1,elemInfo) 
+            else
+               let val (a2,newInfo) =
+                  if not (!O_VALIDATE andalso hasDtd dtd) then (a1,elemInfo)
                   else let val err = ERR_UNDECLARED(IT_ELEM,elem,LOC_STAG)
                            val a1' = hookError(a1,(getPos q,err))
                            val newInfo = if not (!O_ERROR_MINIMIZE) then elemInfo
@@ -11614,20 +11614,20 @@ struct
                        end
                in (checkElemName (a2,q) elem,newInfo)
                end
-            
+
          val hscaq2 = parseSmay nil (c1,a1',q1)
-               
-         (*--------------------------------------------------------------*)            
+
+         (*--------------------------------------------------------------*)
          (* yet are the indices of attributes encountered yet, old are   *)
          (* the valid attributes specified yet, and todo are the defs of *)
          (* attributes yet to be specified. hadS indicates whether white *)
          (* space preceded.                                              *)
-         (*--------------------------------------------------------------*)            
-         fun doit (yet,old,todo) (hadS,(sp,(c,a,q))) = 
-            case c 
+         (*--------------------------------------------------------------*)
+         fun doit (yet,old,todo) (hadS,(sp,(c,a,q))) =
+            case c
               of 0wx3E (* #">" *) => (old,todo,sp,false,q,getChar(a,q))
-               | 0wx2F (* #"/" *) => 
-                 let val (c1,a1,q1) = getChar(a,q) 
+               | 0wx2F (* #"/" *) =>
+                 let val (c1,a1,q1) = getChar(a,q)
                  in if c1=0wx3E (* #">" *) then (old,todo,sp,true,q1,getChar(a1,q1))
                     else let val err = expectedOrEnded (expGt,LOC_STAG) c1
                              val a2 = hookError(a1,(getPos q1,err))
@@ -11635,59 +11635,59 @@ struct
                          in (old,todo,sp,mt,q,caq2)
                          end
                  end
-               | _ => 
-                 if not (isNms c) 
+               | _ =>
+                 if not (isNms c)
                     then let val err = expectedOrEnded (expAttSTagEnd,LOC_STAG) c
                              val a1 = hookError(a,(getPos q,err))
                              val (mt,caq1) = recoverSTag (c,a1,q)
                          in (old,todo,sp,mt,q,caq1)
                          end
-                 else 
-                    let(* first parse the name of the attribute          *)  
+                 else
+                    let(* first parse the name of the attribute          *)
                        val (att,(c1,a1,q1)) = parseName (c,a,q)
-                       val a2 = if hadS then a1 
+                       val a2 = if hadS then a1
                                 else hookError(a1,(getPos q,ERR_MISSING_WHITE))
-                             
+
                        (* now get its index, check whether it already    *)
                        (* occurred and get its definition.               *)
                        val aidx = AttNot2Index dtd att
-                       val (hadIt,a3) = 
-                          if member aidx yet 
+                       val (hadIt,a3) =
+                          if member aidx yet
                              then (true,hookError(a2,(getPos q,ERR_MULT_ATT_SPEC att)))
                           else (false,a2)
 
                        val (def,rest) = findAndDelete (fn (i,_,_,_) => i=aidx) todo
                        val a4 = if isSome def orelse hadIt then a3
-                                else handleUndeclAtt dtd (a3,q) (aidx,att,eidx,elem) 
+                                else handleUndeclAtt dtd (a3,q) (aidx,att,eidx,elem)
 
                        (* consume the " = ", ignore errors               *)
-                       val (eq,caq5 as (_,_,q5)) = parseEq (c1,a4,q1) 
+                       val (eq,caq5 as (_,_,q5)) = parseEq (c1,a4,q1)
                           handle SyntaxError caq => ([0wx3D],caq)
-                             
+
                        (* now parse the attribute value                  *)
                        val (literal,value,(c6,a6,q6)) = parseAttValue dtd caq5
 
                        (* possibly make a new AttSpec                    *)
                        val space = rev sp
-                       val (new,a7) = 
-                          if hadIt then (old,a6) 
-                          else case def 
-                                 of NONE => 
+                       val (new,a7) =
+                          if hadIt then (old,a6)
+                          else case def
+                                 of NONE =>
                                     if !O_VALIDATE andalso hasDtd dtd then (old,a6)
-                                    else (let val (attVal,a7) = checkAttValue dtd (a6,q5) 
+                                    else (let val (attVal,a7) = checkAttValue dtd (a6,q5)
                                              (defaultAttDef aidx,literal,value)
                                           in ((aidx,attVal,SOME(space,eq))::old,a7)
                                           end
                                              handle AttValue a => (old,a))
-                                  | SOME ad => 
-                                       let val (attVal,a7) = checkAttValue dtd (a6,q5) 
+                                  | SOME ad =>
+                                       let val (attVal,a7) = checkAttValue dtd (a6,q5)
                                           (ad,literal,value)
                                        in ((aidx,attVal,SOME(space,eq))::old,a7)
                                        end
                                     handle AttValue a => (old,a)
                        val hscaq8 = parseSmay nil (c6,a7,q6)
-                    in 
-                       doit (aidx::yet,new,rest) hscaq8 
+                    in
+                       doit (aidx::yet,new,rest) hscaq8
                     end
                  handle NotFound (c,a,q) (* raised by parseAttValue above     *)
                  => let val err = expectedOrEnded (expLitQuote,LOC_STAG) c
@@ -11695,13 +11695,13 @@ struct
                         val (mt,caq1) = recoverSTag (c,a1,q)
                     in (old,todo,sp,mt,q,caq1)
                     end
-                    
+
          val (specd,todo,sp,empty,qe,(c3,a3,q3)) = doit (nil,nil,defs) hscaq2
          val space = rev sp
 
          (* generate the defaults for unspecified attributes *)
          val (all,a4) = genMissingAtts dtd (a3,qe) (todo,rev specd)
-      in 
+      in
          ((((startPos,getPos q3),eidx,all,space,empty),elemInfo),(c3,a4,q3))
       end
 
@@ -11715,17 +11715,17 @@ struct
    (*                                                                    *)
    (* return the remaining char and state.                               *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun skipTag loc aq = 
-      let 
+   fun skipTag loc aq =
+      let
          fun do_lit ch (c,a,q) =
             if c=0wx00 then let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE loc))
                             in (c,a1,q)
                             end
             else if c=ch then doit (getChar(a,q))
                  else do_lit ch (getChar(a,q))
-                       
+
          and doit (c,a,q) =
             case c
               of 0wx00 => let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE loc))
@@ -11734,14 +11734,14 @@ struct
                | 0wx22 (* #"\""*) => do_lit c (getChar(a,q))
                | 0wx27 (* #"'" *) => do_lit c (getChar(a,q))
                | 0wx2F (* #"/" *) => (case getChar(a,q)
-                                        of (0wx3E,a1,q1) (* #">" *) => getChar(a1,q1) 
+                                        of (0wx3E,a1,q1) (* #">" *) => getChar(a1,q1)
                                          | caq1 => doit caq1)
                | 0wx3E (* #">" *) => getChar(a,q)
                | _ => doit(getChar(a,q))
       in doit (getChar aq)
       end
 end
-                        
+
 (* stop of ../../Parser/Parse/parseTags.sml *)
 (* start of ../../Parser/Parse/parseDecl.sml *)
 signature ParseDecl =
@@ -11749,7 +11749,7 @@ signature ParseDecl =
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -11758,45 +11758,45 @@ signature ParseDecl =
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
 
-      val openExtern   : int * Uri.Uri -> AppData * State 
+      val openExtern   : int * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
 
       val skipCharRef     : AppData * State -> (UniChar.Char *  AppData * State)
       val skipReference   : UniChar.Char * AppData * State -> (UniChar.Char *  AppData * State)
-      val parseGenRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseGenRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.GenEntity) * (AppData * State)
-      val parseParRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseParRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.ParEntity) * (AppData * State)
-      val parseCharRefLit : UniChar.Data -> AppData * State 
+      val parseCharRefLit : UniChar.Data -> AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
-      val skipPSopt       : Dtd -> UniChar.Char * AppData * State 
+      val skipPSopt       : Dtd -> UniChar.Char * AppData * State
          -> UniChar.Char * AppData * State
 
       val skipTag   : Errors.Location -> AppData * State -> (UniChar.Char * AppData * State)
-      val parseETag : Dtd -> AppData * State 
+      val parseETag : Dtd -> AppData * State
          -> int * UniChar.Data * Errors.Position * (UniChar.Char * AppData * State)
-      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State 
+      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State
          -> (HookData.StartTagInfo * Base.ElemInfo) * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseTags
 
       val skipDecl : bool -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
 
-      val parseExtIdSub : Dtd -> UniChar.Char * AppData * State 
-         -> Base.ExternalId * bool * (UniChar.Char * AppData * State) 
-      
-      val parseEntityDecl   : Dtd -> EntId * Errors.Position * bool 
-         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State 
-      val parseElementDecl  : Dtd -> EntId * Errors.Position * bool 
-         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State 
-      val parseNotationDecl : Dtd -> EntId * Errors.Position * bool 
-         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State 
-      val parseAttListDecl  : Dtd -> EntId * Errors.Position * bool 
-         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State 
+      val parseExtIdSub : Dtd -> UniChar.Char * AppData * State
+         -> Base.ExternalId * bool * (UniChar.Char * AppData * State)
+
+      val parseEntityDecl   : Dtd -> EntId * Errors.Position * bool
+         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
+      val parseElementDecl  : Dtd -> EntId * Errors.Position * bool
+         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
+      val parseNotationDecl : Dtd -> EntId * Errors.Position * bool
+         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
+      val parseAttListDecl  : Dtd -> EntId * Errors.Position * bool
+         -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
    end
 
 (*--------------------------------------------------------------------------*)
@@ -11810,16 +11810,16 @@ signature ParseDecl =
 (*   parseNotationDecl : none                                               *)
 (*   parseAttListDecl  : none                                               *)
 (*--------------------------------------------------------------------------*)
-functor ParseDecl (structure ParseBase : ParseBase) 
+functor ParseDecl (structure ParseBase : ParseBase)
    : ParseDecl =
-struct 
+struct
    structure ParseTags = ParseTags (structure ParseBase = ParseBase)
 
-   open 
+   open
       UtilInt UtilList
       Base Errors HookData
       ParseTags
-      
+
    (*--------------------------------------------------------------------*)
    (* skip a markup declaration, the initial "<!" and name already read. *)
    (* ignore ">" if within a literal. yake care of internal subset if    *)
@@ -11829,10 +11829,10 @@ struct
    (*                                                                    *)
    (* return the remaining char and state.                               *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun skipDecl hasSubset caq = 
-      let 
+   fun skipDecl hasSubset caq =
+      let
          fun do_lit ch (c,a,q) =
             if c=0wx00 then (c,a,q)
             else if c=ch then getChar (a,q)
@@ -11852,7 +11852,7 @@ struct
                | _ => do_subset (getChar(a,q))
          fun doit (c,a,q) =
             case c
-              of 0wx00 => (c,hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_DECL)),q) 
+              of 0wx00 => (c,hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_DECL)),q)
                | 0wx22 (* #"\"""*) => doit (do_lit c (getChar(a,q)))
                | 0wx27 (* #"'" *) => doit (do_lit c (getChar(a,q)))
                | 0wx3E (* #">" *) => getChar(a,q)
@@ -11861,16 +11861,16 @@ struct
                | _ => doit (getChar(a,q))
       in doit caq
       end
-   
+
    (*--------------------------------------------------------------------*)
    (* parse an external id, or a public id if the first arg is true.     *)
    (* Cf. 4.2.2 and 4.7:                                                 *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [75] ExternalID ::= 'SYSTEM' S SystemLiteral                     *)
    (*                     | 'PUBLIC' S PubidLiteral S SystemLiteral      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [83]   PublicID ::= 'PUBLIC' S PubidLiteral                      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* raise NotFound if no name is found first.                          *)
    (* print an error if white space is missing.                          *)
    (* print an error and raise SyntaxState if a wrong name is found.     *)
@@ -11884,26 +11884,26 @@ struct
    (* might raise: NotFound SyntaxState                                  *)
    (*--------------------------------------------------------------------*)
    fun parseExternalId dtd optSys (caq as (_,_,q))=
-      let 
+      let
          (* do not handle NotFound: in this case no extId was found *)
          val (name,caq1) = parseName caq
-         val caq2 as (_,_,q2)= skipPS dtd caq1 
-      in 
+         val caq2 as (_,_,q2)= skipPS dtd caq1
+      in
          case name
            of [0wx50,0wx55,0wx42,0wx4c,0wx49,0wx43] => (* "PUBLIC" *)
-              let 
+              let
                  val (pub,pquote,caq3) = parsePubidLiteral caq2
                     handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expLitQuote,[c])
                                                    val a1 = hookError(a,(getPos q,err))
                                                in raise SyntaxError (c,a1,q)
-                                               end 
+                                               end
                  val (hadS,caq4 as (_,_,q4)) = skipPSmay dtd caq3
-              in let 
+              in let
                     val (sys,squote,(c5,a5,q5)) = parseSystemLiteral caq4
                     val base = getUri q4
                     val a6 = if hadS then a5 else hookError(a5,(getPos q4,ERR_MISSING_WHITE))
                     val (hadS6,caq6) = skipPSmay dtd (c5,a6,q5)
-                 in 
+                 in
                     (EXTID(SOME(pub,pquote),SOME(base,sys,squote)),hadS6,caq6)
                  end
               handle NotFound (c,a,q) => (* no system id *)
@@ -11912,9 +11912,9 @@ struct
                       in raise SyntaxError (c,a1,q)
                       end
               end
-              
+
             | [0wx53,0wx59,0wx53,0wx54,0wx45,0wx4d] => (* "SYSTEM" *)
-              let 
+              let
                  val (sys,squote,caq3) = parseSystemLiteral caq2
                     handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expLitQuote,[c])
                                                    val a1 = hookError(a,(getPos q,err))
@@ -11922,7 +11922,7 @@ struct
                                                end
                  val base = getUri q2
                  val (hadS,caq4) = skipPSmay dtd caq3
-              in 
+              in
                  (EXTID(NONE,SOME(base,sys,squote)),hadS,caq4)
               end
 
@@ -11933,7 +11933,7 @@ struct
       end
    (*--------------------------------------------------------------------*)
    (* parse an external id in an entity definition. Cf. 4.2.2:           *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an Error and raise SyntaxState if no external id is found.   *)
    (*--------------------------------------------------------------------*)
    (* might raise: SyntaxState                                           *)
@@ -11944,7 +11944,7 @@ struct
                                  end
    (*--------------------------------------------------------------------*)
    (* parse an external or public id in a notation declaration.          *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an Error and raise SyntaxState if neither external nor       *)
    (* public id is found.                                                *)
    (*--------------------------------------------------------------------*)
@@ -11956,7 +11956,7 @@ struct
                                  end
    (*--------------------------------------------------------------------*)
    (* parse an external id for the external subset.                      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* raise NotFound if no external id is found.                         *)
    (*--------------------------------------------------------------------*)
    (* might raise: NotFound SyntaxState                                  *)
@@ -11984,30 +11984,30 @@ struct
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseParEntDecl dtd (startEnt,startPos,ext) caq =
-      let 
-         val caq1 as (_,_,q1) = skipPS dtd caq 
+      let
+         val caq1 as (_,_,q1) = skipPS dtd caq
 
          val (name,caq2) = parseName caq1
-            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c]) 
+            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnEntName,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                                        end
          val idx = ParEnt2Index dtd name
-         val caq3 = skipPS dtd caq2 
+         val caq3 = skipPS dtd caq2
 
-         val (ent,(c4,a4,q4)) = 
+         val (ent,(c4,a4,q4)) =
             let val (ent,caq4) = parseEntityValue dtd PE_INTERN caq3
                 val caq5 = skipPSopt dtd caq4
             in (ent,caq5)
             end
-         handle NotFound caq => 
+         handle NotFound caq =>
             let val (extId,_,caq1) = parseExtIdEnt dtd caq
             in (PE_EXTERN extId,caq1)
             end
 
          val a5 = if useParamEnts() orelse not ext then addParEnt dtd (a4,q1) (idx,ent,ext) else a4
          val a6 = hookDecl(a5,((startPos,getPos q4),DEC_PAR_ENT(idx,ent,ext)))
-      in 
-         if c4<>0wx3E (* #">" *) 
+      in
+         if c4<>0wx3E (* #">" *)
             then let val a7 = hookError(a6,(getPos q4,ERR_EXPECTED(expGt,[c4])))
                  in raise SyntaxError(c4,a7,q4)
                  end
@@ -12051,44 +12051,44 @@ struct
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseGenEntDecl dtd (startEnt,startPos,ext) (caq as (_,_,q)) =
-      let 
+      let
          val (name,caq1) = parseName caq
-            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEntNamePero,[c]) 
+            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEntNamePero,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                                        end
          val idx = GenEnt2Index dtd name
-         val caq2 = skipPS dtd caq1 
+         val caq2 = skipPS dtd caq1
 
-         val (ent,expEnd,(c3,a3,q3)) = 
+         val (ent,expEnd,(c3,a3,q3)) =
             (*-----------------------------------------------------------*)
             (* Try for an internal entity. Then '>' must follow.         *)
             (*-----------------------------------------------------------*)
-            let 
+            let
                val (ent,caq3) = parseEntityValue dtd GE_INTERN caq2
                val caq4 = skipPSopt dtd caq3
-            in 
+            in
                (ent,expGt,caq4)
             end
          handle NotFound cq => (* raised by parseEntityValue *)
             (*-----------------------------------------------------------*)
             (* Must be external. First parse the external identifier.    *)
             (*-----------------------------------------------------------*)
-            let 
+            let
                val (extId,hadS,caq1 as (_,_,q1)) = parseExtIdEnt dtd caq2
-            in let 
+            in let
                   (*-----------------------------------------------------*)
                   (* Does a name follow? Then is must be 'NDATA' and the *)
                   (* notation name follows. Thus the entity is unparsed. *)
                   (* Also, only '>' may come next.                       *)
                   (* NotFound is handled at the end of the let.          *)
                   (*-----------------------------------------------------*)
-                  val (key,(c2,a2,q2)) = parseName caq1 
+                  val (key,(c2,a2,q2)) = parseName caq1
                   val a3 = if hadS then a2 else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
                   val a4 = if key = [0wx4e,0wx44,0wx41,0wx54,0wx41] (* "NDATA" *) then a3
                            else hookError(a3,(getPos q1,ERR_EXPECTED(expGtNdata,key)))
-                                 
-                  val caq5 as (_,_,q5) = skipPS dtd (c2,a4,q2) 
-                           
+
+                  val caq5 as (_,_,q5) = skipPS dtd (c2,a4,q2)
+
                   val (not,caq6) = parseName caq5
                      handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expANotName,[c])
                                                     val a1 = hookError(a,(getPos q,err))
@@ -12096,21 +12096,21 @@ struct
                                                 end
                   val notIdx = AttNot2Index dtd not
                   val caq7 = skipPSopt dtd caq6
-               in 
+               in
                   (GE_UNPARSED(extId,notIdx,getPos q5),expGt,caq7)
                end
-            handle NotFound caq => 
+            handle NotFound caq =>
                (*--------------------------------------------------------*)
                (* No 'NDATA' present, so it's parsed external entity.    *)
                (* A 'NDATA' might have followed.                         *)
                (*--------------------------------------------------------*)
                (GE_EXTERN extId,expGtNdata,caq)
             end
-                       
+
          val a4 = if useParamEnts() orelse not ext then addGenEnt dtd (a3,q) (idx,ent,ext) else a3
          val a5 = hookDecl(a4,((startPos,getPos q3),DEC_GEN_ENT(idx,ent,ext)))
-      in 
-         if c3<>0wx3E (* #">" *) 
+      in
+         if c3<>0wx3E (* #">" *)
             then let val a6 = hookError(a5,(getPos q3,ERR_EXPECTED(expGt,[c3])))
                  in raise SyntaxError(c3,a6,q3)
                  end
@@ -12142,15 +12142,15 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseEntityDecl dtd pars caq = 
-      let 
-         val (hadPero,caq1) = skipPSdec dtd caq 
-      in 
+   fun parseEntityDecl dtd pars caq =
+      let
+         val (hadPero,caq1) = skipPSdec dtd caq
+      in
          if hadPero then parseParEntDecl dtd pars caq1
          else parseGenEntDecl dtd pars caq1
       end
-   handle exn as SyntaxError (c,a,q) => 
-      let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_ENT_DECL)) 
+   handle exn as SyntaxError (c,a,q) =>
+      let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_ENT_DECL))
                    else a
       in recoverDecl false (c,a1,q)
       end
@@ -12178,21 +12178,21 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseNotationDecl dtd (startEnt,startPos,ext) caq =
-      let 
-         val caq1 as (_,_,q1) = skipPS dtd caq 
+      let
+         val caq1 as (_,_,q1) = skipPS dtd caq
          val (name,caq2) = parseName caq1
-            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expANotName,[c]) 
+            handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expANotName,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                                        end
          val idx = AttNot2Index dtd name
-         val caq3 = skipPS dtd caq2 
-               
+         val caq3 = skipPS dtd caq2
+
          val (extId,_,(c4,a4,q4)) = parseExtIdNot dtd caq3
-                       
+
          val a5 = if useParamEnts() orelse not ext then addNotation dtd (a4,q1) (idx,extId) else a4
          val a6 = hookDecl(a5,((startPos,getPos q4),DEC_NOTATION(idx,extId,ext)))
-      in 
-         if c4<>0wx3E (* #">" *) 
+      in
+         if c4<>0wx3E (* #">" *)
             then let val a7 = hookError(a6,(getPos q4,ERR_EXPECTED(expGt,[c4])))
                  in raise SyntaxError (c4,a7,q4)
                  end
@@ -12201,8 +12201,8 @@ struct
               in getChar(a7,q4)
               end
       end
-   handle exn as SyntaxError(c,a,q) => 
-      let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_NOT_DECL)) 
+   handle exn as SyntaxError(c,a,q) =>
+      let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_NOT_DECL))
                    else a
       in recoverDecl false (c,a1,q)
       end
@@ -12213,7 +12213,7 @@ struct
    (* given as first arg. Cf. 3.2.1/2:                                   *)
    (*                                                                    *)
    (*   Validity Constraint: Proper Group/PE Nesting                     *)
-   (*   Parameter-entity replacement text must be properly nested with   *) 
+   (*   Parameter-entity replacement text must be properly nested with   *)
    (*   parenthetized groups. That is to say, if either of the opening   *)
    (*   or closing parentheses in a choice, seq, or Mixed construct is   *)
    (*   contained in the replacement text for a parameter entity, both   *)
@@ -12239,28 +12239,28 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseMixed dtd lparEnt (caq as (_,_,q)) = 
-      let 
-         fun doit is (c,a,q) = 
-            case c 
-              of 0wx29 (* #")" *) => 
+   fun parseMixed dtd lparEnt (caq as (_,_,q)) =
+      let
+         fun doit is (c,a,q) =
+            case c
+              of 0wx29 (* #")" *) =>
                  let val a1 = if not (!O_VALIDATE) orelse getEntId q=lparEnt then a
                               else hookError(a,(getPos q,ERR_GROUP_ENT_NESTING LOC_MIXED))
                  in (rev is,getChar(a1,q))
                  end
-               | 0wx7C (* #"|" *) => 
+               | 0wx7C (* #"|" *) =>
                  let
                     val caq1 as (_,_,q1) = skipPSopt dtd (getChar(a,q))
-                          
+
                     val (name,(c2,a2,q2)) = parseName caq1
                        handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAName,[c])
                                                       val a1 = hookError(a,(getPos q,err))
                                                   in raise SyntaxError (c,a1,q)
                                                   end
                     val i = Element2Index dtd name
-                    val (newis,a3) = 
+                    val (newis,a3) =
                        if not (member i is) then (i::is,a2)
-                       else let val a3 = if !O_VALIDATE 
+                       else let val a3 = if !O_VALIDATE
                                             then hookError(a2,(getPos q1,ERR_MULT_MIXED name))
                                          else a2
                             in (is,a3)
@@ -12271,7 +12271,7 @@ struct
                | _ => let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expBarRpar,[c])))
                       in raise SyntaxError (c,a1,q)
                       end
-                    
+
          val (name,(c1,a1,q1)) = parseName caq
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expPcdata,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
@@ -12279,16 +12279,16 @@ struct
          val a2 = case name
                     of [0wx50,0wx43,0wx44,0wx41,0wx54,0wx41] (* "PCDATA" *) => a1
                      | _ => hookError(a1,(getPos q,ERR_EXPECTED(expPcdata,name)))
-                         
+
          val caq2 = skipPSopt dtd (c1,a2,q1)
          val (is,(c3,a3,q3)) = doit nil caq2
-               
+
          val caq4 = if c3=0wx2A (* #"*" *) then getChar(a3,q3)
-                    else let val a4 = if null is then a3 
+                    else let val a4 = if null is then a3
                                       else hookError(a3,(getPos q3,ERR_EXPECTED(expRep,[c3])))
                          in (c3,a4,q3)
                          end
-      in 
+      in
          (CT_MIXED is,caq4)
       end
 
@@ -12315,7 +12315,7 @@ struct
    (* parse a content particle. Cf. 3.2.1:                               *)
    (*                                                                    *)
    (*   Validity Constraint: Proper Group/PE Nesting                     *)
-   (*   Parameter-entity replacement text must be properly nested with   *) 
+   (*   Parameter-entity replacement text must be properly nested with   *)
    (*   parenthetized groups. ...                                        *)
    (*                                                                    *)
    (* (see also parseMixed)                                              *)
@@ -12333,33 +12333,33 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseCP dtd (c,a,q) = 
+   fun parseCP dtd (c,a,q) =
       case c
-        of 0wx28 (* #"(" *) => 
-           let 
+        of 0wx28 (* #"(" *) =>
+           let
               val lparEnt = getEntId q
               val caq1 = skipPSopt dtd (getChar (a,q))
            in parseGroup dtd lparEnt caq1
            end
          | _ => (* must be an element name *)
-           let 
+           let
               val (name,caq1) = parseName (c,a,q)
                  handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expElemLpar,[c])
                                                 val a1 = hookError(a,(getPos q,err))
                                             in raise SyntaxError (c,a1,q)
                                             end
               val idx = Element2Index dtd name
-           in 
+           in
               parseOcc (CM_ELEM idx) caq1
            end
-        
+
    (*--------------------------------------------------------------------*)
    (* parse a seq/choice, the first content particle and the connector   *)
    (* already parsed; the connector, the type of group and the entity id *)
    (* of the opening parenthesis are given in first arg. Cf. 3.2.1:      *)
    (*                                                                    *)
    (*   Validity Constraint: Proper Group/PE Nesting                     *)
-   (*   Parameter-entity replacement text must be properly nested with   *) 
+   (*   Parameter-entity replacement text must be properly nested with   *)
    (*   parenthetized groups. ...                                        *)
    (*                                                                    *)
    (* (see also parseMixed)                                              *)
@@ -12384,9 +12384,9 @@ struct
          let
             val caq1 = skipPSopt dtd caq
             val (cp,caq2) = parseCP dtd caq1
-            val (c3,a3,q3) = skipPSopt dtd caq2 
-         in 
-            if c3=0wx29 (* #")" ( *) 
+            val (c3,a3,q3) = skipPSopt dtd caq2
+         in
+            if c3=0wx29 (* #")" ( *)
                then let val a4 = if not (!O_VALIDATE) orelse getEntId q3=lparEnt then a3
                                  else hookError(a3,(getPos q3,ERR_GROUP_ENT_NESTING loc))
                     in ([cp],getChar(a4,q3))
@@ -12398,10 +12398,10 @@ struct
                        in raise SyntaxError (c3,hookError(a3,(getPos q3,err)),q3)
                        end)
          end
-      in 
+      in
          doit caq
       end
-                                        
+
    (*--------------------------------------------------------------------*)
    (* parse a seq/choice, the first content particle parsed; the entity  *)
    (* id of the opening parenthesis are given in first arg. Cf. 3.2.1:   *)
@@ -12422,21 +12422,21 @@ struct
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    and parseGroup dtd lparEnt caq =
-      let 
+      let
          val (cp,caq1) = parseCP dtd caq
          val (c2,a2,q2) = skipPSopt dtd caq1
-         val (group,caq3) = 
+         val (group,caq3) =
             case c2
-              of 0wx29 (* #")" *) => 
+              of 0wx29 (* #")" *) =>
                  let val a3 = if not (!O_VALIDATE) orelse getEntId q2=lparEnt then a2
                               else hookError(a2,(getPos q2,ERR_GROUP_ENT_NESTING LOC_SEQ))
                  in (CM_SEQ[cp],getChar(a3,q2))
                  end
-               | 0wx2C (* #"," *) => 
+               | 0wx2C (* #"," *) =>
                  let val (cps,caq3) = parseGroup' dtd (c2,LOC_SEQ,lparEnt) (getChar(a2,q2))
                  in (CM_SEQ(cp::cps),caq3)
                  end
-               | 0wx7C (* #"|" *) => 
+               | 0wx7C (* #"|" *) =>
                  let val (cps,caq3) = parseGroup' dtd (c2,LOC_CHOICE,lparEnt) (getChar(a2,q2))
                  in (CM_ALT(cp::cps),caq3)
                  end
@@ -12445,12 +12445,12 @@ struct
                       end
       in parseOcc group caq3
       end
-   
+
    (*--------------------------------------------------------------------*)
    (* parse a content specification. Cf. 3.2/3.2.1:                      *)
    (*                                                                    *)
    (*   Validity Constraint: Proper Group/PE Nesting                     *)
-   (*   Parameter-entity replacement text must be properly nested with   *) 
+   (*   Parameter-entity replacement text must be properly nested with   *)
    (*   parenthetized groups. That is to say, if either of the opening   *)
    (*   or closing parentheses in a choice, seq, or Mixed construct is   *)
    (*   contained in the replacement text for a parameter entity, both   *)
@@ -12461,8 +12461,8 @@ struct
    (*   [47] children ::= (choice | seq) ('?' | '*' | '+')?              *)
    (*                                                                    *)
    (*   [49] choice ::= '(' S? cp ( S? '|' S? cp )* S? ')' [ VC:Proper   *)
-   (*   [50]    seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'      Group/PE *)  
-   (*                                                           Nesting ]*) 
+   (*   [50]    seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'      Group/PE *)
+   (*                                                           Nesting ]*)
    (*                                                                    *)
    (*   [51] Mixed ::= '(' S? '#PCDATA'           [ VC: Proper Group/PE  *)
    (*                   (S? '|' S? Name)* S? ')*'       Nesting ]        *)
@@ -12483,25 +12483,25 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseContentSpec dtd curr (c,a,q) = 
+   fun parseContentSpec dtd curr (c,a,q) =
       case c
-        of 0wx28 (* #"(" *) => 
-           let 
+        of 0wx28 (* #"(" *) =>
+           let
               val (c1,a1,q1) = skipPSopt dtd (getChar(a,q))
               val lparEnt = getEntId q
-           in 
-              if c1=0wx23 (* #"#" *) 
-                 then parseMixed dtd lparEnt (getChar(a1,q1)) 
+           in
+              if c1=0wx23 (* #"#" *)
+                 then parseMixed dtd lparEnt (getChar(a1,q1))
               else let val (cm,(c2,a2,q2)) = parseGroup dtd lparEnt (c1,a1,q1)
-                       val (dfa,a3) = (makeDfa cm,a2) handle Ambiguous(a,n1,n2) 
-                          => if !O_COMPATIBILITY 
+                       val (dfa,a3) = (makeDfa cm,a2) handle Ambiguous(a,n1,n2)
+                          => if !O_COMPATIBILITY
                                 then let val err = ERR_AMBIGUOUS(Index2Element dtd a,n1,n2)
                                          val a3 = hookError(a2,(getPos q,err))
                                          val dfa = makeChoiceDfa cm
                                      in (dfa,a3)
                                      end
                              else (makeAmbiguous cm,a2) handle DfaTooLarge max
-                                => let val a3 = if !O_DFA_WARN_TOO_LARGE 
+                                => let val a3 = if !O_DFA_WARN_TOO_LARGE
                                                    then hookWarning
                                                       (a2,(getPos q,WARN_DFA_TOO_LARGE(curr,max)))
                                                 else a2
@@ -12512,12 +12512,12 @@ struct
                    end
            end
          | _ => (* must be ANY or EMPTY *)
-           let 
+           let
               val (name,caq1 as (c1,a1,q1)) = parseName (c,a,q)
-                 handle NotFound (c,a,q) => 
+                 handle NotFound (c,a,q) =>
                     let val err = ERR_EXPECTED(expContSpec,[c])
                     in raise SyntaxError(c,hookError(a,(getPos q,err)),q)
-                    end 
+                    end
            in case name
                 of [0wx41,0wx4e,0wx59]             (* "ANY"   *) => (CT_ANY,caq1)
                  | [0wx45,0wx4d,0wx50,0wx54,0wx59] (* "EMPTY" *) => (CT_EMPTY,caq1)
@@ -12550,25 +12550,25 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseElementDecl dtd (startEnt,startPos,ext) caq =
-      let 
-         val (caq1 as (_,_,q1))= skipPS dtd caq 
+      let
+         val (caq1 as (_,_,q1))= skipPS dtd caq
          val (name,(c2,a2,q2)) = parseName caq1
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnElemName,[c])
                                        in raise SyntaxError(c,hookError(a,(getPos q,err)),q)
                                        end
          val a3 = checkElemName (a2,q1) name
          val idx = Element2Index dtd name
-         val caq3 = skipPS dtd (c2,a3,q2) 
-               
+         val caq3 = skipPS dtd (c2,a3,q2)
+
          val (contSpec,(c4,a4,q4)) = parseContentSpec dtd name caq3
 
-         val a5 = if useParamEnts() orelse not ext then addElement dtd (a4,q1) (idx,contSpec,ext) 
+         val a5 = if useParamEnts() orelse not ext then addElement dtd (a4,q1) (idx,contSpec,ext)
                   else a4
          val a5' = hookDecl(a5,((startPos,getPos q4),DEC_ELEMENT(idx,contSpec,ext)))
 
          val (c6,a6,q6) = skipPSopt dtd (c4,a5',q4)
-      in  
-         if c6<>0wx3E (* #">" *) 
+      in
+         if c6<>0wx3E (* #">" *)
             then let val a7 = hookError(a6,(getPos q6,ERR_EXPECTED(expGt,[c6])))
                  in raise SyntaxError(c6,a7,q6)
                  end
@@ -12577,7 +12577,7 @@ struct
               in getChar(a7,q6)
               end
       end
-   handle exn as SyntaxError (c,a,q) => 
+   handle exn as SyntaxError (c,a,q) =>
       let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_ELEM_DECL))
                    else a
       in recoverDecl false (c,a1,q)
@@ -12601,8 +12601,8 @@ struct
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseEnumerated dtd (expWhat,parseToken,Token2Index) caq =
-      let fun doit idxs caq = 
-         let 
+      let fun doit idxs caq =
+         let
             val caq1 as (_,_,q1) = skipPSopt dtd caq
             val (nt,(c2,a2,q2)) = parseToken caq1
                handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expWhat,[c])
@@ -12611,7 +12611,7 @@ struct
             val (idx,a3) = Token2Index dtd (a2,q1) nt
             val (c4,a4,q4) = skipPSopt dtd (c2,a3,q2)
             val newIdxs = insertInt(idx,idxs)
-         in case c4 
+         in case c4
               of 0wx7C (* #"|" *) => doit newIdxs (getChar(a4,q4))
                | 0wx29 (* #")" *) => (newIdxs,getChar(a4,q4))
                | _ => let val a5 = hookError(a4,(getPos q4,ERR_EXPECTED(expBarRpar,[c4])))
@@ -12634,7 +12634,7 @@ struct
    (*--------------------------------------------------------------------*)
    fun Token2NmtokenIndex dtd (a,_) token = (AttNot2Index dtd token,a)
    fun Token2NotationIndex dtd (a,q) token =
-      let 
+      let
          val idx = AttNot2Index dtd token
          val a1 = if not (!O_VALIDATE) orelse hasNotation dtd idx then a
                   else hookError(a,(getPos q,ERR_UNDECLARED(IT_NOTATION,token,LOC_NONE)))
@@ -12675,9 +12675,9 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
-   fun parseAttType dtd elem (c,a,q) = 
-      if c=0wx28 (* #"(" *) then 
-         let val (idxs,caq1) = parseEnumerated dtd 
+   fun parseAttType dtd elem (c,a,q) =
+      if c=0wx28 (* #"(" *) then
+         let val (idxs,caq1) = parseEnumerated dtd
             (expANameToken,parseNmtoken,Token2NmtokenIndex) (getChar(a,q))
          in (AT_GROUP idxs,caq1)
          end
@@ -12685,28 +12685,28 @@ struct
          handle NotFound cq => let val err = ERR_EXPECTED(expAttType,[c])
                                in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                                end
-           in case name 
-                of [0wx43,0wx44,0wx41,0wx54,0wx41] (* "CDATA" *) => 
+           in case name
+                of [0wx43,0wx44,0wx41,0wx54,0wx41] (* "CDATA" *) =>
                    (AT_CDATA,caq1)
-                 | [0wx49,0wx44] (* "ID" *) => 
+                 | [0wx49,0wx44] (* "ID" *) =>
                    (AT_ID,caq1)
-                 | [0wx49,0wx44,0wx52,0wx45,0wx46] (* "IDREF" *) => 
+                 | [0wx49,0wx44,0wx52,0wx45,0wx46] (* "IDREF" *) =>
                    (AT_IDREF,caq1)
-                 | [0wx49,0wx44,0wx52,0wx45,0wx46,0wx53] (* "IDREFS" *) => 
+                 | [0wx49,0wx44,0wx52,0wx45,0wx46,0wx53] (* "IDREFS" *) =>
                    (AT_IDREFS,caq1)
-                 | [0wx45,0wx4e,0wx54,0wx49,0wx54,0wx59] (* "ENTITY" *) => 
+                 | [0wx45,0wx4e,0wx54,0wx49,0wx54,0wx59] (* "ENTITY" *) =>
                    (AT_ENTITY,caq1)
-                 | [0wx45,0wx4e,0wx54,0wx49,0wx54,0wx49,0wx45,0wx53] (* "ENTITIES" *) => 
+                 | [0wx45,0wx4e,0wx54,0wx49,0wx54,0wx49,0wx45,0wx53] (* "ENTITIES" *) =>
                    (AT_ENTITIES,caq1)
-                 | [0wx4e,0wx4d,0wx54,0wx4f,0wx4b,0wx45,0wx4e] (* "NMTOKEN" *) => 
+                 | [0wx4e,0wx4d,0wx54,0wx4f,0wx4b,0wx45,0wx4e] (* "NMTOKEN" *) =>
                    (AT_NMTOKEN,caq1)
-                 | [0wx4e,0wx4d,0wx54,0wx4f,0wx4b,0wx45,0wx4e,0wx53] (* "NMTOKEN" *) => 
+                 | [0wx4e,0wx4d,0wx54,0wx4f,0wx4b,0wx45,0wx4e,0wx53] (* "NMTOKEN" *) =>
                    (AT_NMTOKENS,caq1)
-                 | [0wx4e,0wx4f,0wx54,0wx41,0wx54,0wx49,0wx4f,0wx4e] (* "NOTATION" *) => 
+                 | [0wx4e,0wx4f,0wx54,0wx41,0wx54,0wx49,0wx4f,0wx4e] (* "NOTATION" *) =>
                    let val (c2,a2,q2) = skipPSopt dtd caq1
-                   in case c2 
-                        of 0wx28 (* #"(" *) => 
-                           let val (idxs,caq3) = parseEnumerated dtd 
+                   in case c2
+                        of 0wx28 (* #"(" *) =>
+                           let val (idxs,caq3) = parseEnumerated dtd
                               (expANotName,parseName,Token2NotationIndex) (getChar(a2,q2))
                            in (AT_NOTATION idxs,caq3)
                            end
@@ -12714,7 +12714,7 @@ struct
                                 in raise SyntaxError(c2,hookError(a2,(getPos q2,err)),q2)
                                 end
                    end
-                 | _ => let val a2 = hookError(a1,(getPos q,ERR_EXPECTED(expAttType,name))) 
+                 | _ => let val a2 = hookError(a1,(getPos q,ERR_EXPECTED(expAttType,name)))
                         in raise SyntaxError (c1,a2,q1)
                         end
            end
@@ -12748,52 +12748,52 @@ struct
    (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseDefaultDecl dtd (aidx,attType) (c,a,q) =
-      if c=0wx23 (* #"#" *) then  
-         let 
+      if c=0wx23 (* #"#" *) then
+         let
             val caq0 as (_,_,q0) = (getChar(a,q))
             val (name,caq1) = parseName caq0
                handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAttDefKey,[c])
                                           in raise SyntaxError(c,hookError(a,(getPos q,err)),q)
                                           end
-         in case name 
-              of [0wx46,0wx49,0wx58,0wx45,0wx44] (* "FIXED" *) => 
-                 let 
-                    val caq2 as (_,_,q2) = skipPS dtd caq1 
+         in case name
+              of [0wx46,0wx49,0wx58,0wx45,0wx44] (* "FIXED" *) =>
+                 let
+                    val caq2 as (_,_,q2) = skipPS dtd caq1
                     val (lit,text,(c3,a3,q3)) = parseAttValue dtd caq2
                        handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expLitQuote,[c])
                                                       val a1 = hookError(a,(getPos q,err))
                                                   in raise SyntaxError (c,a1,q)
                                                   end
-                 in 
-                    if !O_VALIDATE andalso isIdType attType 
+                 in
+                    if !O_VALIDATE andalso isIdType attType
                        then let val a4 = hookError(a3,(getPos q,ERR_ID_DEFAULT))
                             in (AD_IMPLIED,(c3,a4,q3))
                             end
-                    else 
-                       let val (cv,(av,a4)) = makeAttValue dtd (a3,q2) 
+                    else
+                       let val (cv,(av,a4)) = makeAttValue dtd (a3,q2)
                           (aidx,attType,false,true,text)
                        in (AD_FIXED((lit,cv,av),(getPos q2,ref false)),(c3,a4,q3))
                        end
                       handle AttValue a => (AD_IMPLIED,(c3,a,q3))
                  end
 
-               | [0wx49,0wx4d,0wx50,0wx4c,0wx49,0wx45,0wx44] (* "IMPLIED" *) => 
+               | [0wx49,0wx4d,0wx50,0wx4c,0wx49,0wx45,0wx44] (* "IMPLIED" *) =>
                  (AD_IMPLIED,caq1)
-               | [0wx52,0wx45,0wx51,0wx55,0wx49,0wx52,0wx45,0wx44] (* "REQUIRED" *) => 
+               | [0wx52,0wx45,0wx51,0wx55,0wx49,0wx52,0wx45,0wx44] (* "REQUIRED" *) =>
                  (AD_REQUIRED,caq1)
                | _ => let val (c1,a1,q1) = caq1
                           val a2 = hookError(a1,(getPos q0,ERR_EXPECTED(expAttDefKey,name)))
                       in raise SyntaxError (c1,a2,q1)
                       end
          end
-      else let 
+      else let
               val (lit,text,(c1,a1,q1)) = parseAttValue dtd (c,a,q)
                  handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expQuoteRni,[c])
                                                 val a1 = hookError(a,(getPos q,err))
                                             in raise SyntaxError(c,a1,q)
                                             end
-           in 
-              if !O_VALIDATE andalso isIdType attType 
+           in
+              if !O_VALIDATE andalso isIdType attType
                  then let val a2 = hookError(a1,(getPos q,ERR_ID_DEFAULT))
                       in (AD_IMPLIED,(c1,a2,q1))
                       end
@@ -12818,26 +12818,26 @@ struct
    (* might raise: NotFound SyntaxState                                  *)
    (*--------------------------------------------------------------------*)
    fun parseAttDef dtd (elem,ext) caq =
-      let 
+      let
          val (hadS,caq1 as (_,_,q1)) = skipPSmay dtd caq
-            
+
          val (name,(c2,a2,q2)) = parseName caq1 (* NotFound falls through to the next level *)
          val a3 = if hadS then a2 else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
          val a4 = checkAttName (a3,q1) name
          val idx = AttNot2Index dtd name
-            
-         val caq5 = skipPS dtd (c2,a4,q2) 
+
+         val caq5 = skipPS dtd (c2,a4,q2)
          val (attType,caq6) = parseAttType dtd elem caq5
-         val caq7 = skipPS dtd caq6 
-               
+         val caq7 = skipPS dtd caq6
+
          val (attDef,(c8,a8,q8)) = parseDefaultDecl dtd (idx,attType) caq7
-            
-         val a9 = if useParamEnts() orelse not ext 
+
+         val a9 = if useParamEnts() orelse not ext
                      then addAttribute dtd (a8,q1) (elem,(idx,attType,attDef,ext)) else a8
-      in 
+      in
          ((idx,attType,attDef),(c8,a9,q8))
       end
-   
+
    (*--------------------------------------------------------------------*)
    (* parse an attribute-list declaration, the initial '<!ATTLIST'       *)
    (* already read. The unique entity id of the '<!' is given as first   *)
@@ -12863,9 +12863,9 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseAttListDecl dtd (startEnt,startPos,ext) caq = 
-      let 
-         val caq1 as (_,_,q1) = skipPS dtd caq 
+   fun parseAttListDecl dtd (startEnt,startPos,ext) caq =
+      let
+         val caq1 as (_,_,q1) = skipPS dtd caq
          val (name,(c2,a2,q2)) = parseName caq1
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAnElemName,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
@@ -12874,19 +12874,19 @@ struct
          val idx = Element2Index dtd name
 
          val a4 = if !O_VALIDATE orelse not ext then enterAttList dtd (a3,q1) idx else a3
-               
-         fun doit attDefs caq = 
+
+         fun doit attDefs caq =
             let val (attDef,caq1) = parseAttDef dtd (idx,ext) caq
-               handle NotFound (c,a,q) => raise NotFound 
+               handle NotFound (c,a,q) => raise NotFound
                   (c,hookDecl(a,((startPos,getPos q),DEC_ATTLIST(idx,rev attDefs,ext))),q)
                     | SyntaxError (c,a,q) => raise SyntaxError
                   (c,hookDecl(a,((startPos,getPos q),DEC_ATTLIST(idx,rev attDefs,ext))),q)
             in doit (attDef::attDefs) caq1
             end
-                           
+
          val (c5,a5,q5) = doit nil (c2,a4,q2) handle NotFound caq => caq
-      in 
-         if c5 <> 0wx3E (* #">" *) 
+      in
+         if c5 <> 0wx3E (* #">" *)
             then let val a6 = hookError(a5,(getPos q5,ERR_EXPECTED(expAttNameGt,[c5])))
                  in raise SyntaxError (c5,a6,q5)
                  end
@@ -12895,7 +12895,7 @@ struct
               in getChar(a6,q5)
               end
       end
-   handle exn as SyntaxError (c,a,q) => 
+   handle exn as SyntaxError (c,a,q) =>
       let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_ATT_DECL))
                    else a
       in recoverDecl false (c,a,q)
@@ -12903,40 +12903,40 @@ struct
 end
 (* stop of ../../Parser/Parse/parseDecl.sml *)
 (* start of ../../Parser/Parse/parseDtd.sml *)
-signature ParseDtd = 
+signature ParseDtd =
    sig
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
-      val openExtern   : int * Uri.Uri -> AppData * State 
+      val openExtern   : int * Uri.Uri -> AppData * State
          -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
 
       val skipCharRef     : AppData * State -> (UniChar.Char *  AppData * State)
       val skipReference   : UniChar.Char * AppData * State -> (UniChar.Char *  AppData * State)
-      val parseGenRef     : Dtd -> UniChar.Char * AppData * State 
+      val parseGenRef     : Dtd -> UniChar.Char * AppData * State
          -> (int * Base.GenEntity) * (AppData * State)
-      val parseCharRefLit : UniChar.Data -> AppData * State 
+      val parseCharRefLit : UniChar.Data -> AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
       val parseProcInstr : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
 
       val skipTag   : Errors.Location -> AppData * State -> (UniChar.Char * AppData * State)
-      val parseETag : Dtd -> AppData * State 
+      val parseETag : Dtd -> AppData * State
          -> int * UniChar.Data * Errors.Position * (UniChar.Char * AppData * State)
-      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State 
+      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State
          -> (HookData.StartTagInfo * Base.ElemInfo) * (UniChar.Char * AppData * State)
 
       val skipDecl : bool -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       ----------------------------------------------------------------------*)
       include ParseDecl
-      
-      val parseDocTypeDecl : Dtd -> (UniChar.Char * AppData * State) 
+
+      val parseDocTypeDecl : Dtd -> (UniChar.Char * AppData * State)
          -> int option * (UniChar.Char * AppData * State)
    end
 
@@ -12946,15 +12946,15 @@ signature ParseDtd =
 (* Exceptions raised by functions in this structure:                        *)
 (*   parseDocTypeDecl : none                                                *)
 (*--------------------------------------------------------------------------*)
-functor ParseDtd (structure ParseBase : ParseBase) 
+functor ParseDtd (structure ParseBase : ParseBase)
    : ParseDtd =
-struct 
+struct
    structure ParseDecl = ParseDecl (structure ParseBase = ParseBase)
 
-   open 
+   open
       Base UniChar Errors
       ParseDecl
-      
+
    (*--------------------------------------------------------------------*)
    (* parse a markup declaration other than a processing instruction,    *)
    (* "<!" already consumed. The unique entity id of the initial '<!' is *)
@@ -12988,26 +12988,26 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseMarkupDecl dtd (startEnt,startPos) (c,a,q) =
-      case c 
+      case c
         of 0wx2D => (* #"-" *)
            let val (c1,a1,q1) = getChar (a,q)
-           in if c1<>0wx2D (* #"-" *) 
+           in if c1<>0wx2D (* #"-" *)
                  then let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expDash,[c1])))
                       in recoverDecl false (c1,a2,q1)
                       end
               else parseComment startPos (a1,q1)
            end
-         | _ => let 
+         | _ => let
                    val (name,caq1) = parseName (c,a,q)
                       handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expStartMarkup,[c])
                                                      val a1 = hookError(a,(getPos q,err))
                                                  in raise SyntaxError (c,a1,q)
                                                  end
                    val ext = hasExternal dtd
-                in case name 
-                     of [0wx45,0wx4c,0wx45,0wx4d,0wx45,0wx4e,0wx54] (* "ELEMENT" *) => 
+                in case name
+                     of [0wx45,0wx4c,0wx45,0wx4d,0wx45,0wx4e,0wx54] (* "ELEMENT" *) =>
                         parseElementDecl dtd (startEnt,startPos,ext) caq1
-                      | [0wx41,0wx54,0wx54,0wx4c,0wx49,0wx53,0wx54] (* "ATTLIST" *) => 
+                      | [0wx41,0wx54,0wx54,0wx4c,0wx49,0wx53,0wx54] (* "ATTLIST" *) =>
                         parseAttListDecl dtd (startEnt,startPos,ext) caq1
                       | [0wx4e,0wx4f,0wx54,0wx41,0wx54,0wx49,0wx4f,0wx4e] (* "NOTATION" *) =>
                         parseNotationDecl dtd (startEnt,startPos,ext) caq1
@@ -13046,27 +13046,27 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun skipIgnored caq = 
-      let 
+   fun skipIgnored caq =
+      let
          (*--------------------------------------------------------------*)
          (* level counts the nesting of conditional sections.            *)
          (* if the second char after a "<" ("]") is not a "[" ("]"), it  *)
          (* can nevertheless start another delimiter and is therefore    *)
          (* fed into a recursive call of doit.                           *)
          (*--------------------------------------------------------------*)
-         fun doit level (c,a,q) = 
+         fun doit level (c,a,q) =
             case c
-              of 0wx00 => (c,hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_IGNORED)),q) 
-               | 0wx3C (* #"<" *) =>  
+              of 0wx00 => (c,hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_IGNORED)),q)
+               | 0wx3C (* #"<" *) =>
                  let val (c1,a1,q1) = getChar (a,q)
-                 in if c1=0wx21 (* #"!" *) 
+                 in if c1=0wx21 (* #"!" *)
                        then let val (c2,a2,q2) = (getChar(a1,q1))
                             in if c2=0wx5B (* #"[" *) then doit (level+1) (getChar(a2,q2))
                                else doit level (c2,a2,q2)
                             end
                     else doit level (c1,a1,q1)
                  end
-               | 0wx5D (* #"]" *) => 
+               | 0wx5D (* #"]" *) =>
                  let val (c1,a1,q1) = getChar (a,q)
                  in if c1=0wx5D (* #"]" *) then doit' level (getChar (a1,q1))
                     else doit level (c1,a1,q1)
@@ -13077,16 +13077,16 @@ struct
          (* the real second "]". Therefore doit' loops as long as it     *)
          (* finds "]"'s.                                                 *)
          (*--------------------------------------------------------------*)
-         and doit' level (c,a,q) = 
+         and doit' level (c,a,q) =
             case c
               of 0wx3E (* #">" *) =>  if level>0 then doit (level-1) (getChar (a,q))
                                       else getChar (a,q)
                | 0wx5D (* #"]" *) => doit' level (getChar (a,q))
                | _ => doit level (c,a,q)
-      in 
+      in
          doit 0 caq
       end
-      
+
    (*--------------------------------------------------------------------*)
    (* parse the internal or external subset of the dtd. handle included  *)
    (* sections by counting their nesting level. Cf 2.8:                  *)
@@ -13136,9 +13136,9 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseSubset dtd caq = 
-      let 
-         datatype CondStatus = IGNORE | INCLUDE 
+   fun parseSubset dtd caq =
+      let
+         datatype CondStatus = IGNORE | INCLUDE
 
          fun do_data caq =
             let fun doit hadError ws (c,a,q) =
@@ -13162,17 +13162,17 @@ struct
             in (c1,a2,q1)
             end
 
-         fun doit cond (c,a,q) = 
+         fun doit cond (c,a,q) =
             case c
-              of 0wx00 => 
-                 if isSpecial q 
+              of 0wx00 =>
+                 if isSpecial q
                     (*---------------------------------------------------*)
                     (* the external subset ends at and of special entity.*)
-                    (* so does the internal subset, but with error.      *) 
+                    (* so does the internal subset, but with error.      *)
                     (*---------------------------------------------------*)
-                    then 
-                       let val a1 = 
-                          if inDocEntity q 
+                    then
+                       let val a1 =
+                          if inDocEntity q
                              then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_INT_SUBSET))
                           else if cond=0 then a
                                else hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_INCLUDED))
@@ -13181,27 +13181,27 @@ struct
                  else let val a1 = hookEntEnd (a,getPos q)
                       in doit cond (getChar(a1,q))
                       end
-                       
+
                (* ignore errors in parameter references -----------------*)
-               | 0wx25 (* #"%" *) =>  
-                      let 
-                         val caq2 = 
+               | 0wx25 (* #"%" *) =>
+                      let
+                         val caq2 =
                             let val ((id,ent),(a1,q1)) = parseParRef dtd (getChar(a,q))
-                            in if !O_VALIDATE orelse !O_INCLUDE_PARAM_ENTS then 
+                            in if !O_VALIDATE orelse !O_INCLUDE_PARAM_ENTS then
                                case ent
                                  of PE_NULL => getChar(a1,q1)
-                                  | PE_INTERN(_,rep) => 
-                                    let 
+                                  | PE_INTERN(_,rep) =>
+                                    let
                                        val q2 = pushIntern(q1,id,true,rep)
                                        val a2 = hookParRef(a1,((getPos q,getPos q1),id,ent,true))
                                     in getChar(a2,q2)
                                     end
-                                  | PE_EXTERN extId => 
-                                    let 
+                                  | PE_EXTERN extId =>
+                                    let
                                        val a2 = hookParRef(a1,((getPos q,getPos q1),id,ent,true))
-                                       val caq3 = 
+                                       val caq3 =
                                           #3(openExtern (id,true,resolveExtId extId) (a2,q1))
-                                          handle CantOpenFile(fmsg,a) 
+                                          handle CantOpenFile(fmsg,a)
                                           => let val err = ERR_NO_SUCH_FILE fmsg
                                                  val a1 = hookError(a,(getPos q1,err))
                                                  val a2 = hookEntEnd (a1,getPos q1)
@@ -13217,21 +13217,21 @@ struct
                          handle SyntaxError caq => caq
                               | NoSuchEntity aq => getChar aq
                       in doit cond caq2
-                      end 
+                      end
 
-               | 0wx3C (* #"<" *) =>  
+               | 0wx3C (* #"<" *) =>
                       let val (c1,a1,q1) = getChar(a,q)
                       in case c1
                            of 0wx3F => (* #"?" *)
                               let val caq2 = parseProcInstr (getPos q) (a1,q1)
                               in doit cond caq2
                               end
-                            | 0wx21 => (* #"!" *) 
+                            | 0wx21 => (* #"!" *)
                               let val (c2,a2,q2) = (getChar(a1,q1))
-                              in if c2=0wx5B (* #"[" *) 
+                              in if c2=0wx5B (* #"[" *)
                                     then do_cond cond q (a2,q2)
-                                 else 
-                                    let val caq3 = parseMarkupDecl dtd 
+                                 else
+                                    let val caq3 = parseMarkupDecl dtd
                                        (getEntId q,getPos q) (c2,a2,q2)
                                     in doit cond caq3
                                     end
@@ -13247,21 +13247,21 @@ struct
                | _ => let val caq1 = do_data (c,a,q)
                       in doit cond caq1
                       end
-                      
+
          and do_brack cond q0 (c,a,q) =
             if inDocEntity q then (c,a,q)
-            else if c=0wx5D (* #"]" *) 
+            else if c=0wx5D (* #"]" *)
                     then let val (c1,a1,q1) = getChar(a,q)
                          in if c1=0wx3E (* #">" *)
                                (* ignore wrong "]]>"'s ------------------*)
-                               then if cond=0 
+                               then if cond=0
                                        then let val err = ERR_FORBIDDEN_HERE(IT_DATA [c,c,c1],
                                                                              LOC_OUT_COND)
                                                 val a2 = hookError(a1,(getPos q0,err))
                                             in doit cond (getChar(a2,q1))
                                             end
                                     else doit (cond-1) (getChar(a1,q1))
-                            (* the second "]" may start another "]]>" ---*) 
+                            (* the second "]" may start another "]]>" ---*)
                             else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1])))
                                  in do_brack cond q (c1,a2,q1)
                                  end
@@ -13271,7 +13271,7 @@ struct
                       end
 
          and do_cond cond q0 (a,q) =
-            let 
+            let
                (* marked sections are forbidden in the internal subset. -*)
                val inInt = inDocEntity q
                val a1 = if inInt then hookError (a,(getPos q0,ERR_FORBIDDEN_HERE
@@ -13280,12 +13280,12 @@ struct
 
                val caq2 as (_,_,q2) = skipPSopt dtd (getChar(a1,q))
 
-               val (status,caq3) = 
-                  let 
-                     val (name,(c3,a3,q3)) = parseName caq2 
+               val (status,caq3) =
+                  let
+                     val (name,(c3,a3,q3)) = parseName caq2
                      (* ignore sections with bad status keyword ---------*)
-                     val (status,a4) = 
-                        case name 
+                     val (status,a4) =
+                        case name
                           of [0wx49,0wx47,0wx4e,0wx4f,0wx52,0wx45] => (IGNORE,a3)
                            | [0wx49,0wx4e,0wx43,0wx4c,0wx55,0wx44,0wx45] => (INCLUDE,a3)
                            | _ => let val err = ERR_EXPECTED(expCondStatus,name)
@@ -13294,7 +13294,7 @@ struct
                                   end
                      val (c5,a5,q5) = skipPSopt dtd (c3,a4,q3)
                   in (* ignore sections without "[" after keyword -------*)
-                     if c5=0wx5B then (status,getChar(a5,q5)) 
+                     if c5=0wx5B then (status,getChar(a5,q5))
                      else let val a6 = hookError(a5,(getPos q5,ERR_EXPECTED(expLbrack,[c5])))
                           in (IGNORE,(c5,a6,q5))
                           end
@@ -13303,13 +13303,13 @@ struct
                                               val a1 = hookError(a,(getPos q,err))
                                           in (IGNORE,(c,a1,q))
                                           end
-            in 
+            in
                (* ignore sections in the internal subset ----------------*)
-               case (status,inInt) 
+               case (status,inInt)
                  of (INCLUDE,_) => doit (cond+1) caq3
                   | (_,_)       => doit cond (skipIgnored caq3)
             end
-      in 
+      in
          doit 0 caq
       end
 
@@ -13320,7 +13320,7 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseInternalSubset dtd (a,q) = 
+   fun parseInternalSubset dtd (a,q) =
       let val a1 = hookSubset (a,getPos q)
       in parseSubset dtd (getChar(a1,q))
       end
@@ -13337,8 +13337,8 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseExternalSubset dtd (a,q) extId = 
-      let 
+   fun parseExternalSubset dtd (a,q) extId =
+      let
          val uri = resolveExtId extId
          val (enc,textDecl,(c1,a1,q1)) = openSubset uri a
          val a2 = hookExtSubset (a1,(uri,enc,textDecl))
@@ -13364,12 +13364,12 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseDocTypeDecl dtd caq = 
-      let 
+   fun parseDocTypeDecl dtd caq =
+      let
          val _ = setHasDtd dtd
-         val caq1 = skipS caq 
-                  
-         val (doc,caq2) = parseName caq1 
+         val caq1 = skipS caq
+
+         val (doc,caq2) = parseName caq1
             handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expAName,[c])
                                        in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                                        end
@@ -13377,41 +13377,41 @@ struct
 
          val (hadS,caq3 as (_,_,q3)) = skipSmay caq2
          val (ext,(c4,a4,q4)) = let val (extId,_,(c4,a4,q4)) = parseExtIdSub dtd caq3
-                                    val a5 = if hadS then a4 
+                                    val a5 = if hadS then a4
                                              else hookError(a4,(getPos q3,ERR_MISSING_WHITE))
                                 in (SOME extId,(c4,a5,q4))
                                 end
                              handle NotFound caq => (NONE,caq)
-                                          
+
          val a4' = hookDocType(a4,(idx,ext))
          val (c5,a5,q5) = case c4
-                            of 0wx5B (* #"[" *) => 
+                            of 0wx5B (* #"[" *) =>
                                let val caq5 = parseInternalSubset dtd (a4',q4)
                                in skipSopt caq5
                                end
                              | _ => (c4,a4',q4)
-                                       
-         val a6 = case ext 
+
+         val a6 = case ext
                     of NONE => a5
                      | SOME extId => let val _ = setExternal dtd
-                                     in if !O_VALIDATE orelse !O_INCLUDE_PARAM_ENTS 
+                                     in if !O_VALIDATE orelse !O_INCLUDE_PARAM_ENTS
                                            then parseExternalSubset dtd (a5,q5) extId
                                         else a5
                                      end
-                                       
+
          val a7 = checkMultEnum dtd (a6,q5)
          val a7'= checkPreDefined dtd (a7,q5)
          val a8 = checkUnparsed dtd a7'
-                                       
+
          val (c9,a9,q9) = if c5=0wx3E (* #">" *) then getChar(a8,q5)
                           else let val err = expectedOrEnded(expGt,LOC_DOC_DECL) c5
-                                   val a9 = hookError(a8,(getPos q5,err)) 
+                                   val a9 = hookError(a8,(getPos q5,err))
                                in recoverDecl false (c5,a9,q5)
                                end
-      in 
+      in
          (SOME idx,(c9,hookEndDtd(a9,getPos q9),q9))
       end
-   handle exn as SyntaxError(c,a,q) => 
+   handle exn as SyntaxError(c,a,q) =>
       let val a1 = if c=0wx00 then hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_DOC_DECL))
                    else a
           val (c2,a2,q2) = recoverDecl true (c,a1,q)
@@ -13424,11 +13424,11 @@ signature ParseContent =
    sig
       (*----------------------------------------------------------------------
       include ParseBase
-      
-      val parseName    : UniChar.Char * AppData * State 
+
+      val parseName    : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
 
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
          -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
 
       val skipCharRef   : AppData * State -> (UniChar.Char *  AppData * State)
@@ -13438,21 +13438,21 @@ signature ParseContent =
       val parseProcInstr : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
 
       val skipTag   : Errors.Location -> AppData * State -> (UniChar.Char * AppData * State)
-      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State 
+      val parseSTag : Dtd -> Errors.Position -> UniChar.Char * AppData * State
          -> (HookData.StartTagInfo * Base.ElemInfo) * (UniChar.Char * AppData * State)
 
       val skipDecl : bool -> UniChar.Char * AppData * State -> UniChar.Char * AppData * State
 
-      val parseDocTypeDecl : Dtd -> (UniChar.Char * AppData * State) 
+      val parseDocTypeDecl : Dtd -> (UniChar.Char * AppData * State)
          -> int option * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseDtd
 
       val skipBadSection : UniChar.Char * AppData * State -> (UniChar.Char * AppData * State)
 
-      val parseElement : Dtd * int list * State * (HookData.StartTagInfo * Base.ElemInfo) 
+      val parseElement : Dtd * int list * State * (HookData.StartTagInfo * Base.ElemInfo)
          * (UniChar.Char * AppData * State)
-         -> (int * UniChar.Data * Errors.Position * Errors.Position) option 
+         -> (int * UniChar.Data * Errors.Position * Errors.Position) option
          * (UniChar.Char * AppData * State)
    end
 
@@ -13463,7 +13463,7 @@ signature ParseContent =
 (*   skipBadSection : none                                                  *)
 (*   parseElement   : none                                                  *)
 (*--------------------------------------------------------------------------*)
-functor ParseContent (structure ParseBase : ParseBase) 
+functor ParseContent (structure ParseBase : ParseBase)
    : ParseContent =
 struct
    structure ParseDtd = ParseDtd (structure ParseBase = ParseBase)
@@ -13471,7 +13471,7 @@ struct
    open
       Base Errors UniChar UniClasses UtilList
       ParseDtd
-      
+
    val THIS_MODULE = "ParseContent"
    val DATA_BUFSIZE = 1024
    val dataBuffer = Array.array(DATA_BUFSIZE,0w0:UniChar.Char)
@@ -13497,15 +13497,15 @@ struct
          (* for a sequence of "]"s, check whether the last two are       *)
          (* followed by a ">"                                            *)
          (*--------------------------------------------------------------*)
-         fun checkEnd aq = 
+         fun checkEnd aq =
             let val (c1,a1,q1) = getChar aq
             in case c1
                  of 0wx3E (* #">" *) => getChar(a1,q1)
                   | 0wx5D (* #"]" *) => checkEnd(a1,q1)
                   | _ => doit(c1,a1,q1)
             end
-         and doit (c,a,q) = 
-            case c 
+         and doit (c,a,q) =
+            case c
               of 0wx00 => let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_CDATA))
                           in (c,a1,q)
                           end
@@ -13516,7 +13516,7 @@ struct
                | _ => doit (getChar(a,q))
       in doit caq
       end
-   
+
    (*--------------------------------------------------------------------*)
    (* parse a cdata section, the initial "<![CDATA[" already consumed.   *)
    (* cf. 2.5:                                                           *)
@@ -13533,15 +13533,15 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseCDataSection' (aq as (_,q)) =
-      let 
+      let
          (*--------------------------------------------------------------*)
          (* for a sequence of "]"s, check whether the last two are       *)
          (* followed by a ">"                                            *)
          (*--------------------------------------------------------------*)
-         fun doEnd (text,q0,q1) (a2,q2) = 
+         fun doEnd (text,q0,q1) (a2,q2) =
             let val (c3,a3,q3) = getChar (a2,q2)
             in case c3
-                 of 0wx00 => 
+                 of 0wx00 =>
                     let val a4 = hookError(a3,(getPos q3,ERR_ENDED_BY_EE LOC_CDATA))
                     in (0wx5D::text,getPos q2,(c3,a4,q3))
                     end
@@ -13552,7 +13552,7 @@ struct
          and doBrack (text,q0) (a1,q1) =
             let val (c2,a2,q2) = getChar(a1,q1)
             in case c2
-                 of 0wx00 => 
+                 of 0wx00 =>
                     let val a3 = hookError(a2,(getPos q2,ERR_ENDED_BY_EE LOC_CDATA))
                     in (0wx5D::text,getPos q1,(c2,a3,q2))
                     end
@@ -13561,8 +13561,8 @@ struct
             end
          and doit text (a,q) =
             let val (c1,a1,q1) = getChar(a,q)
-            in case c1 
-                 of 0wx00 => 
+            in case c1
+                 of 0wx00 =>
                     let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_CDATA))
                     in (text,getPos q,(c1,a2,q1))
                     end
@@ -13571,9 +13571,9 @@ struct
             end
          val (c1,a1,q1) = getChar aq
          val startPos = getPos q1
-         val (cs,endPos,(c2,a2,q2)) = 
-            case c1 
-              of 0wx00 => 
+         val (cs,endPos,(c2,a2,q2)) =
+            case c1
+              of 0wx00 =>
                  let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_CDATA))
                  in (nil,getPos q,(c1,a2,q1))
                  end
@@ -13600,27 +13600,27 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseCDataSection startPos aq =
-      let 
-         val caq0 as (_,_,q0) = (getChar aq) 
+      let
+         val caq0 as (_,_,q0) = (getChar aq)
          val (name,(c1,a1,q1)) = parseName caq0
             handle NotFound (c,a,q) => let val err = expectedOrEnded(expCdata,LOC_CDATA) c
                                        in raise SyntaxError(c,hookError(a,(getPos q,err)),q)
                                        end
-                                    
+
          val _ = if name = [0wx43,0wx44,0wx41,0wx54,0wx41] (* "CDATA" *) then ()
                  else let val err = ERR_EXPECTED(expCdata,name)
                       in raise SyntaxError(c1,hookError(a1,(getPos q0,err)),q1)
                       end
-                   
+
          val _ = if c1=0wx5B (* #"[" *) then ()
                  else let val err = expectedOrEnded(expLbrack,LOC_CDATA) c1
                       in raise SyntaxError(c1,hookError(a1,(getPos q1,err)),q1)
                       end
-      in 
+      in
          parseCDataSection'(a1,q1)
-      end      
+      end
    handle SyntaxError caq => skipBadSection caq
-         
+
    (*--------------------------------------------------------------------*)
    (* parse element or empty content. The second arg holds the unique    *)
    (* number of the element's first characters's entity, the index of    *)
@@ -13670,22 +13670,22 @@ struct
    (*--------------------------------------------------------------------*)
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun parseElementContent dtd (openElems,startEnt,curr,dfa,ext,mt) caq = 
-      let       
+   fun parseElementContent dtd (openElems,startEnt,curr,dfa,ext,mt) caq =
+      let
          (*--------------------------------------------------------------*)
          (* check whether the dfa allows a transition/an end tag here.   *)
          (* print an error if not. After a transition return the new     *)
          (* dfa state.                                                   *)
          (*--------------------------------------------------------------*)
-         fun fin_elem (a,pos,dfa,p) = 
+         fun fin_elem (a,pos,dfa,p) =
             if dfaFinal(dfa,p) then a
             else hookError(a,(pos,ERR_ENDED_EARLY(Index2Element dtd curr)))
-         fun trans_elem (a,q,dfa,p,el) = 
+         fun trans_elem (a,q,dfa,p,el) =
             let val p1 = dfaTrans(dfa,p,el)
             in if p1<>dfaError then (p1,a)
                else let val err = ERR_BAD_ELEM(Index2Element dtd curr,Index2Element dtd el)
                     in (p1,hookError(a,(getPos q,err)))
-                    end 
+                    end
             end
 
          (*--------------------------------------------------------------*)
@@ -13695,8 +13695,8 @@ struct
          (* add the white space as data to the user data.                *)
          (* return the next char and state.                              *)
          (*--------------------------------------------------------------*)
-         fun do_char_elem (c0,a0,q0) = 
-            let 
+         fun do_char_elem (c0,a0,q0) =
+            let
                (*--------------------------------------------------------------*)
                (* read data characters until the next "<", "&" or entity end.  *)
                (* add the data to the user data when an error occurs or no     *)
@@ -13704,8 +13704,8 @@ struct
                (*                                                              *)
                (* return the modified user data with the next char and state.  *)
                (*--------------------------------------------------------------*)
-               fun data_hook(a,q,cs) = 
-                  if null cs then a 
+               fun data_hook(a,q,cs) =
+                  if null cs then a
                   else hookData(a,((getPos q0,getPos q),Data2Vector(rev cs),true))
                fun after_error (caq as (c,a,q)) =
                   case c
@@ -13713,13 +13713,13 @@ struct
                      | 0wx26 (* #"&" *) => caq
                      | 0wx3C (* #"<" *) => caq
                      | _ => after_error(getChar(a,q))
-               fun do_data (yet,aq as (_,q)) = 
+               fun do_data (yet,aq as (_,q)) =
                   let val (c1,a1,q1) = getChar aq
                   in case c1
                        of 0wx00            => (c1,data_hook(a1,q,yet),q1)
                         | 0wx26 (* #"&" *) => (c1,data_hook(a1,q,yet),q1)
                         | 0wx3C (* #"<" *) => (c1,data_hook(a1,q,yet),q1)
-                        | _ => 
+                        | _ =>
                           if isS c1 then do_data (c1::yet,(a1,q1))
                           else let val a2 = data_hook(a1,q,yet)
                                    val err = ERR_ELEM_CONTENT(IT_DATA nil)
@@ -13727,8 +13727,8 @@ struct
                                in after_error (getChar(a3,q1))
                                end
                   end
-            in 
-               if isS c0 then 
+            in
+               if isS c0 then
                   let val a1 = if not (ext andalso standsAlone dtd) then a0
                                else let val err = ERR_STANDALONE_ELEM(Index2Element dtd curr)
                                         val _ = setStandAlone dtd (not (!O_ERROR_MINIMIZE))
@@ -13743,7 +13743,7 @@ struct
          (*--------------------------------------------------------------*)
          (* consume a reference, handling errors by ignoring them.       *)
          (*--------------------------------------------------------------*)
-         fun do_ref (q,(c1,a1,q1)) = 
+         fun do_ref (q,(c1,a1,q1)) =
             if c1=0wx23 (* #"#" *)
                (*------------------------------------------------------*)
                (* it's a character reference.                          *)
@@ -13757,23 +13757,23 @@ struct
             (*---------------------------------------------------------*)
             else let val ((id,ent),(a2,q2)) = parseGenRef dtd (c1,a1,q1)
                  in case ent
-                      of GE_NULL => 
+                      of GE_NULL =>
                          let val a3 = hookGenRef(a2,((getPos q,getPos q2),id,ent,false))
                          in (getChar(a3,q2))
                          end
-                       | GE_INTERN(_,rep) => 
-                         let 
+                       | GE_INTERN(_,rep) =>
+                         let
                             val q3 = pushIntern(q2,id,false,rep)
                             val a3 = hookGenRef(a2,((getPos q,getPos q2),id,ent,true))
                          in (getChar(a3,q3))
                          end
-                       | GE_EXTERN ext => 
-                         if !O_VALIDATE orelse !O_INCLUDE_EXT_PARSED 
-                            then 
-                               let 
+                       | GE_EXTERN ext =>
+                         if !O_VALIDATE orelse !O_INCLUDE_EXT_PARSED
+                            then
+                               let
                                   val a3 = hookGenRef(a2,((getPos q,getPos q2),id,ent,true))
                                   val caq4 = #3(openExtern (id,false,resolveExtId ext) (a3,q2))
-                                     handle CantOpenFile(fmsg,a) 
+                                     handle CantOpenFile(fmsg,a)
                                      => let val err = ERR_NO_SUCH_FILE fmsg
                                             val a2 = hookError(a,(getPos q2,err))
                                             val a3 = hookEntEnd(a2,getPos q2)
@@ -13784,7 +13784,7 @@ struct
                          else let val a3 = hookGenRef(a2,((getPos q,getPos q2),id,ent,false))
                               in getChar(a3,q2)
                               end
-                       | GE_UNPARSED _ => 
+                       | GE_UNPARSED _ =>
                               raise InternalError
                                  (THIS_MODULE,"parseElementContent",
                                   "parseGenRef returned GE_UNPARSED")
@@ -13794,7 +13794,7 @@ struct
              (*-------------------------------------------------------*)
           handle SyntaxError caq => caq
                | NoSuchEntity aq => getChar aq
-                                    
+
          (*--------------------------------------------------------------*)
          (* handle an end-tag. finish the element in the user data and   *)
          (* return.                                                      *)
@@ -13804,19 +13804,19 @@ struct
          (* print an error if the element's first character was not in   *)
          (* the same entity.                                             *)
          (*--------------------------------------------------------------*)
-         and do_etag (p,etag as (elem,space,startPos,endPos),(c,a,q)) = 
-            let 
-               fun checkNesting a = 
+         and do_etag (p,etag as (elem,space,startPos,endPos),(c,a,q)) =
+            let
+               fun checkNesting a =
                   if getEntId q=startEnt then a
                   else hookError(a,(startPos,ERR_ELEM_ENT_NESTING(Index2Element dtd curr)))
-            in 
+            in
                if elem=curr then let val a1 = fin_elem (a,startPos,dfa,p)
                                      val a2 = checkNesting a1
                                      val a3 = hookEndTag
                                         (a2,((startPos,endPos),curr,SOME(elem,space)))
                                  in (NONE,(c,a3,q))
                                  end
-               else if member elem openElems 
+               else if member elem openElems
                        then let val err = ERR_OMITTED_END_TAG(Index2Element dtd curr)
                                 val a1 = hookError(a,(startPos,err))
                                 val a2 = fin_elem (a1,startPos,dfa,p)
@@ -13843,15 +13843,15 @@ struct
          (*--------------------------------------------------------------*)
          and do_lt (p,q,(c1,a1,q1)) =
             case c1
-              of 0wx21 (* #"!" *) => 
+              of 0wx21 (* #"!" *) =>
                  (*------------------------------------------------------*)
                  (* its a declaration, cdata section or comment.         *)
                  (* Only comments are valid.                             *)
                  (*------------------------------------------------------*)
                  let val (c2,a2,q2) = getChar(a1,q1)
-                     val caq3 =  
+                     val caq3 =
                         case c2
-                          of 0wx2D (* #"-" *) => 
+                          of 0wx2D (* #"-" *) =>
                              let val (c3,a3,q3) = getChar(a2,q2)
                              in if c3=0wx2D then parseComment (getPos q) (a3,q3)
                                 else let val err = ERR_EXPECTED(expDash,[c3])
@@ -13859,27 +13859,27 @@ struct
                                      in recoverDecl false (c3,a4,q3)
                                      end
                              end
-                           | 0wx5B (* #"[" *) => 
+                           | 0wx5B (* #"[" *) =>
                              let val a3 = hookError(a2,(getPos q2,ERR_ELEM_CONTENT IT_CDATA))
                              in skipBadSection (getChar(a3,q2))
                              end
                            | _ => (c2,hookError(a2,(getPos q2,ERR_EXPECTED(expDash,[c2]))),q2)
                  in do_elem(p,caq3)
                  end
-               | 0wx2F (* #"/" *) => 
+               | 0wx2F (* #"/" *) =>
                  (let val (elem,space,endPos,caq2) = parseETag dtd (a1,q1)
                   in do_etag (p,(elem,space,getPos q,endPos),caq2)
                   end
                      handle SyntaxError caq => do_elem(p,caq))
                | 0wx3F (* #"?" *) => do_elem (p,parseProcInstr (getPos q) (a1,q1))
-               | _ => 
+               | _ =>
                  (*------------------------------------------------------*)
                  (* it's a start tag. the recursive call to parseElement *)
                  (* might return an end-tag that has to be consumed.     *)
                  (*------------------------------------------------------*)
-                 if isNms c1 then 
-                    let val (p1,(opt,caq2)) = 
-                       (let val (stag as ((_,elem,_,_,_),_),(c2,a2,q2)) = 
+                 if isNms c1 then
+                    let val (p1,(opt,caq2)) =
+                       (let val (stag as ((_,elem,_,_,_),_),(c2,a2,q2)) =
                            parseSTag dtd (getPos q) (c1,a1,q1)
                             val (p1,a3) = trans_elem (a2,q1,dfa,p,elem)
                         in (p1,parseElement (dtd,curr::openElems,q,stag,(c2,a3,q2)))
@@ -13891,17 +13891,17 @@ struct
                     end
                  else let val err = ERR_FORBIDDEN_HERE(IT_CHAR 0wx3C,LOC_CONTENT)
                           val a2 = hookError(a1,(getPos q,err))
-                      in do_elem (p,(c1,a2,q1)) 
+                      in do_elem (p,(c1,a2,q1))
                       end
 
          (*--------------------------------------------------------------*)
          (* do element content. handle the document end by printing an   *)
          (* error and finishing like with an end-tag.                    *)
          (*--------------------------------------------------------------*)
-         and do_elem (p,(c,a,q)) = 
-            case c 
-              of 0wx00 => if isSpecial q 
-                             then let val err = ERR_OMITTED_END_TAG(Index2Element dtd curr) 
+         and do_elem (p,(c,a,q)) =
+            case c
+              of 0wx00 => if isSpecial q
+                             then let val err = ERR_OMITTED_END_TAG(Index2Element dtd curr)
                                       val a1 = hookError(a,(getPos q,err))
                                       val pos = getPos q
                                       val a2 = fin_elem (a1,pos,dfa,p)
@@ -13914,31 +13914,31 @@ struct
                | 0wx26 (* #"&" *) => do_elem (p,do_ref (q,getChar(a,q)))
                | 0wx3C (* #"<" *) => do_lt (p,q,getChar(a,q))
                | _ => do_elem (p,do_char_elem (c,a,q))
-                                              
+
          (*--------------------------------------------------------------*)
          (* do empty content. if the first thing to come is the current  *)
          (* element's end-tag, finish it. Otherwise print an error and   *)
-         (* continue as for element content.                             *) 
+         (* continue as for element content.                             *)
          (*--------------------------------------------------------------*)
-         and do_empty (c,a,q) = 
-            if c<>0wx3C (* #"<" *) 
+         and do_empty (c,a,q) =
+            if c<>0wx3C (* #"<" *)
                then let val a1 = hookError(a,(getPos q,ERR_NONEMPTY(Index2Element dtd curr)))
                     in do_elem (dfaInitial,(c,a1,q))
                     end
-            else 
+            else
                let val (c1,a1,q1) = getChar(a,q)
-               in if c1<>0wx2F (* #"/" *) 
+               in if c1<>0wx2F (* #"/" *)
                      then let val err = ERR_NONEMPTY(Index2Element dtd curr)
                               val a2 = hookError(a1,(getPos q,err))
                           in do_lt (dfaInitial,q,(c1,a2,q1))
                           end
                   else let val (elem,space,endPos,caq2) = parseETag dtd (a1,q1)
                        in do_etag (dfaInitial,(elem,space,getPos q,endPos),caq2)
-                       end 
+                       end
                     handle SyntaxError caq => do_elem (dfaInitial,caq)
                end
-               
-      in if mt then do_empty caq 
+
+      in if mt then do_empty caq
          else do_elem (dfaInitial,caq)
       end
 
@@ -13995,7 +13995,7 @@ struct
    (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    and parseMixedContent dtd (openElems,startEnt,curr,validate) caq =
-      let 
+      let
          (*--------------------------------------------------------------*)
          (* read data characters until the next "<", "&" or entity end.  *)
          (* add the data to the user data when an error occurs or no     *)
@@ -14004,79 +14004,79 @@ struct
          (* return the modified user data with the next char and state.  *)
          (*--------------------------------------------------------------*)
          fun do_data (br,(c0,a0,q0)) =
-            let 
+            let
                val pos0 = ref (getPos q0)
                val _ = Array.update(dataBuffer,0,c0)
 
-               fun data_hook (i,(a,q)) = 
+               fun data_hook (i,(a,q)) =
                   hookData(a,((!pos0,getPos q),Array.extract(dataBuffer,0,SOME i),false))
-               fun takeOne (c,qE,i,aq as (a,q)) = 
+               fun takeOne (c,qE,i,aq as (a,q)) =
                   if i<DATA_BUFSIZE then (i+1,aq) before Array.update(dataBuffer,i,c)
                   else let val a1 = data_hook(i,(a,qE))
                            val _ = pos0 := getPos q
                            val _ =  Array.update(dataBuffer,0,c)
                        in (1,(a1,q))
                        end
-               fun do_br (n,(i,aq as (_,q))) = 
-                  let val (c1,a1,q1) = getChar aq 
+               fun do_br (n,(i,aq as (_,q))) =
+                  let val (c1,a1,q1) = getChar aq
                   in case c1
                        of 0wx00            => (c1,data_hook(i,(a1,q)),q1)
                         | 0wx26 (* #"&" *) => (c1,data_hook(i,(a1,q)),q1)
                         | 0wx3C (* #"<" *) => (c1,data_hook(i,(a1,q)),q1)
                         | 0wx5D (* #"]" *) => do_br (n+1,takeOne(c1,q,i,(a1,q1)))
-                        | 0wx3E (* #">" *) => 
-                          let val a2 = if n=1 then a1 
-                                       else hookError(a1,(getPos q1,ERR_MUST_ESCAPE c1)) 
+                        | 0wx3E (* #">" *) =>
+                          let val a2 = if n=1 then a1
+                                       else hookError(a1,(getPos q1,ERR_MUST_ESCAPE c1))
                           in doit (takeOne(c1,q,i,(a2,q1)))
                           end
                         | _ => doit (takeOne(c1,q,i,(a1,q1)))
                   end
-               and doit (i,aq as (_,q)) = 
+               and doit (i,aq as (_,q)) =
                   let val (c1,a1,q1) = getChar aq
                   in case c1
                        of 0wx00            => (c1,data_hook(i,(a1,q)),q1)
                         | 0wx26 (* #"&" *) => (c1,data_hook(i,(a1,q)),q1)
                         | 0wx3C (* #"<" *) => (c1,data_hook(i,(a1,q)),q1)
-                        | 0wx5D (* #"]" *) => if !O_COMPATIBILITY 
+                        | 0wx5D (* #"]" *) => if !O_COMPATIBILITY
                                                  then do_br (1,takeOne(c1,q,i,(a1,q1)))
                                               else doit (takeOne(c1,q,i,(a1,q1)))
                         | _ => doit (takeOne(c1,q,i,(a1,q1)))
                   end
-            in 
+            in
                if br then do_br (1,(1,(a0,q0)))
                else doit (1,(a0,q0))
             end
          (*
          fun do_data (br,(c0,a0,q0)) =
-            let 
-               fun data_hook (yet,(a,q)) = 
+            let
+               fun data_hook (yet,(a,q)) =
                   hookData(a,((getPos q0,getPos q),Data2Vector(rev yet),false))
-               fun do_br (n,yet,aq as (_,q)) = 
-                  let val (c1,a1,q1) = getChar aq 
-                  in case c1
-                       of 0wx00            => (c1,data_hook(yet,(a1,q)),q1)
-                        | 0wx26 (* #"&" *) => (c1,data_hook(yet,(a1,q)),q1)
-                        | 0wx3C (* #"<" *) => (c1,data_hook(yet,(a1,q)),q1)
-                        | 0wx5D (* #"]" *) => do_br (n+1,c1::yet,(a1,q1))
-                        | 0wx3E (* #">" *) => 
-                          let val a2 = if n=1 then a1 
-                                       else hookError(a1,(getPos q1,ERR_MUST_ESCAPE c1)) 
-                          in doit (c1::yet,(a2,q1))
-                          end
-                        | _ => doit (c1::yet,(a1,q1))
-                  end
-               and doit (yet,aq as (_,q)) = 
+               fun do_br (n,yet,aq as (_,q)) =
                   let val (c1,a1,q1) = getChar aq
                   in case c1
                        of 0wx00            => (c1,data_hook(yet,(a1,q)),q1)
                         | 0wx26 (* #"&" *) => (c1,data_hook(yet,(a1,q)),q1)
                         | 0wx3C (* #"<" *) => (c1,data_hook(yet,(a1,q)),q1)
-                        | 0wx5D (* #"]" *) => if !O_COMPATIBILITY 
+                        | 0wx5D (* #"]" *) => do_br (n+1,c1::yet,(a1,q1))
+                        | 0wx3E (* #">" *) =>
+                          let val a2 = if n=1 then a1
+                                       else hookError(a1,(getPos q1,ERR_MUST_ESCAPE c1))
+                          in doit (c1::yet,(a2,q1))
+                          end
+                        | _ => doit (c1::yet,(a1,q1))
+                  end
+               and doit (yet,aq as (_,q)) =
+                  let val (c1,a1,q1) = getChar aq
+                  in case c1
+                       of 0wx00            => (c1,data_hook(yet,(a1,q)),q1)
+                        | 0wx26 (* #"&" *) => (c1,data_hook(yet,(a1,q)),q1)
+                        | 0wx3C (* #"<" *) => (c1,data_hook(yet,(a1,q)),q1)
+                        | 0wx5D (* #"]" *) => if !O_COMPATIBILITY
                                                  then do_br (1,c1::yet,(a1,q1))
                                               else doit (c1::yet,(a1,q1))
                         | _ => doit (c1::yet,(a1,q1))
                   end
-            in 
+            in
                if br then do_br (1,[0wx5D],(a0,q0))
                else doit ([c0],(a0,q0))
             end
@@ -14085,7 +14085,7 @@ struct
          (*--------------------------------------------------------------*)
          (* consume a reference, handling errors by ignoring them.       *)
          (*--------------------------------------------------------------*)
-         fun do_ref (q0,(c,a,q)) = 
+         fun do_ref (q0,(c,a,q)) =
             if c=0wx23 (* #"#" *)
                (*------------------------------------------------------*)
                (* it's a character reference.                          *)
@@ -14096,29 +14096,29 @@ struct
                     in getChar(a2,q1)
                     end
                  handle SyntaxError caq => caq
-                      | NoSuchChar aq => getChar aq 
+                      | NoSuchChar aq => getChar aq
             (*---------------------------------------------------------*)
             (* it's a general entity reference.                        *)
             (*---------------------------------------------------------*)
             else let val ((id,ent),(a1,q1)) = parseGenRef dtd (c,a,q)
                  in case ent
-                      of GE_NULL => 
+                      of GE_NULL =>
                          let val a2 = hookGenRef(a1,((getPos q0,getPos q1),id,ent,false))
                          in getChar(a2,q1)
                          end
-                       | GE_INTERN(_,rep) => 
-                         let 
+                       | GE_INTERN(_,rep) =>
+                         let
                             val q2 = pushIntern(q1,id,false,rep)
                             val a2 = hookGenRef(a1,((getPos q0,getPos q1),id,ent,true))
                          in getChar(a2,q2)
                          end
-                       | GE_EXTERN ext => 
-                         if !O_VALIDATE orelse !O_INCLUDE_EXT_PARSED 
-                            then 
-                               let 
+                       | GE_EXTERN ext =>
+                         if !O_VALIDATE orelse !O_INCLUDE_EXT_PARSED
+                            then
+                               let
                                   val a2 = hookGenRef(a1,((getPos q0,getPos q1),id,ent,true))
                                   val caq3 = #3(openExtern (id,false,resolveExtId ext) (a2,q1))
-                                     handle CantOpenFile(fmsg,a) 
+                                     handle CantOpenFile(fmsg,a)
                                      => let val err = ERR_NO_SUCH_FILE fmsg
                                             val a1 = hookError(a,(getPos q1,err))
                                             val a2 = hookEntEnd(a1,getPos q1)
@@ -14129,7 +14129,7 @@ struct
                          else let val a2 = hookGenRef(a1,((getPos q0,getPos q1),id,ent,false))
                               in getChar(a2,q1)
                               end
-                       | GE_UNPARSED _ => 
+                       | GE_UNPARSED _ =>
                               raise InternalError
                                  ("THIS_MODULE","parseMixedContent",
                                   "parseGenRef returned GE_UNPARSED")
@@ -14138,8 +14138,8 @@ struct
              (* handle any errors in references by ignoring them.     *)
              (*-------------------------------------------------------*)
           handle SyntaxError caq => caq
-               | NoSuchEntity aq => getChar aq 
-                                    
+               | NoSuchEntity aq => getChar aq
+
          (*--------------------------------------------------------------*)
          (* handle an end-tag. finish the element in the user data and   *)
          (* return.                                                      *)
@@ -14149,18 +14149,18 @@ struct
          (* print an error if the element's first character was not in   *)
          (* the same entity.                                             *)
          (*--------------------------------------------------------------*)
-         and do_etag (etag as (elem,space,startPos,endPos),(c,a,q)) = 
-            let 
-               fun checkNesting a = 
+         and do_etag (etag as (elem,space,startPos,endPos),(c,a,q)) =
+            let
+               fun checkNesting a =
                   if getEntId q=startEnt then a
                   else hookError(a,(startPos,ERR_ELEM_ENT_NESTING(Index2Element dtd curr)))
-            in 
+            in
                if elem=curr then let val a1 = checkNesting a
                                      val a2 = hookEndTag
                                         (a1,((startPos,endPos),curr,SOME(elem,space)))
                                  in (NONE,(c,a2,q))
                                  end
-               else if member elem openElems 
+               else if member elem openElems
                        then let val err = ERR_OMITTED_END_TAG(Index2Element dtd curr)
                                 val a1 = hookError(a,(startPos,err))
                                 val a2 = hookEndTag(a1,((startPos,endPos),curr,NONE))
@@ -14186,15 +14186,15 @@ struct
          (*--------------------------------------------------------------*)
          and do_lt (q,(c1,a1,q1)) =
             case c1
-              of 0wx21 (* #"!" *) => 
+              of 0wx21 (* #"!" *) =>
                  (*------------------------------------------------------*)
                  (* its a declaration, cdata section or comment.         *)
                  (* Only comments and cdata sections are valid.          *)
                  (*------------------------------------------------------*)
                  let val (c2,a2,q2) = getChar(a1,q1)
-                     val caq3 =  
+                     val caq3 =
                         case c2
-                          of 0wx2D (* #"-" *) => 
+                          of 0wx2D (* #"-" *) =>
                              let val (c3,a3,q3) = getChar(a2,q2)
                              in if c3=0wx2D then parseComment (getPos q) (a3,q3)
                                 else let val err = ERR_EXPECTED(expDash,[c3])
@@ -14203,24 +14203,24 @@ struct
                                      end
                              end
                            | 0wx5B (* #"[" *) => parseCDataSection (getPos q) (a2,q2)
-                           | _ => 
+                           | _ =>
                              (c2,hookError(a2,(getPos q2,ERR_EXPECTED(expDashLbrack,[c2]))),q2)
                  in do_mixed caq3
                  end
-               | 0wx2F (* #"/" *) => 
+               | 0wx2F (* #"/" *) =>
                  (let val (elem,space,endPos,caq2) = parseETag dtd (a1,q1)
                   in do_etag ((elem,space,getPos q,endPos),caq2)
                   end
                      handle SyntaxError caq => do_mixed caq)
                | 0wx3F (* #"?" *) => do_mixed (parseProcInstr (getPos q) (a1,q1))
-               | _ => 
+               | _ =>
                  (*------------------------------------------------------*)
                  (* it's a start tag. the recursive call to parseElement *)
                  (* might return an end-tag that has to be consumed.     *)
                  (*------------------------------------------------------*)
-                 if isNms c1 then 
-                    let val (opt,caq2) = 
-                       (let val (stag as ((_,elem,_,_,_),_),(c2,a2,q2)) = 
+                 if isNms c1 then
+                    let val (opt,caq2) =
+                       (let val (stag as ((_,elem,_,_,_),_),(c2,a2,q2)) =
                            parseSTag dtd (getPos q) (c1,a1,q1)
                             val a3 = validate (a2,q1) elem
                         in parseElement (dtd,curr::openElems,q,stag,(c2,a3,q2))
@@ -14239,9 +14239,9 @@ struct
          (* do mixed content. handle the document end by printing an     *)
          (* error and finishing like with an end-tag.                    *)
          (*--------------------------------------------------------------*)
-         and do_mixed (c,a,q) = 
-            case c 
-              of 0wx00 => if isSpecial q 
+         and do_mixed (c,a,q) =
+            case c
+              of 0wx00 => if isSpecial q
                              then let val err = ERR_OMITTED_END_TAG(Index2Element dtd curr)
                                       val a1 = hookError(a,(getPos q,err))
                                       val pos = getPos q
@@ -14255,7 +14255,7 @@ struct
                | 0wx3C (* #"<" *) => do_lt (q,getChar(a,q))
                | 0wx5D => do_mixed (do_data (!O_COMPATIBILITY,(c,a,q)))
                | _ => do_mixed (do_data (false,(c,a,q)))
-      in 
+      in
          do_mixed caq
       end
 
@@ -14275,29 +14275,29 @@ struct
    (*   can only be used, for elements which are declared EMPTY.         *)
    (*--------------------------------------------------------------------*)
    and parseElement (dtd,openElems,q0,(stag as (_,curr,_,_,mt),elemInfo),(c,a,q)) =
-      let 
+      let
          (*--------------------------------------------------------------*)
-         (* validate whether an element is allowed in mixed/any content. *) 
+         (* validate whether an element is allowed in mixed/any content. *)
          (*--------------------------------------------------------------*)
          fun trans_any (a,_) _ = a
-         fun trans_mixed is (a,q) i = 
+         fun trans_mixed is (a,q) i =
             if member i is then a
             else let val err = ERR_BAD_ELEM(Index2Element dtd curr,Index2Element dtd i)
                  in hookError(a,(getPos q,err))
                  end
-      in 
+      in
          (*-----------------------------------------------------------*)
          (* For empty-element tags, verify that the element's declar. *)
          (* allows empty content.                                     *)
          (*-----------------------------------------------------------*)
-         if mt then 
-            let val a1 = 
+         if mt then
+            let val a1 =
                if not (!O_VALIDATE andalso hasDtd dtd) then a
-               else 
+               else
                   case #decl elemInfo
                     of (SOME(CT_EMPTY,_)) => a
-                     | (SOME(CT_ELEMENT(_,dfa),_)) => 
-                       if not (dfaFinal(dfa,dfaInitial)) 
+                     | (SOME(CT_ELEMENT(_,dfa),_)) =>
+                       if not (dfaFinal(dfa,dfaInitial))
                           then hookError(a,(getPos q0,ERR_EMPTY_TAG(Index2Element dtd curr)))
                        else if not (!O_INTEROPERABILITY) then a
                             else hookError
@@ -14312,27 +14312,27 @@ struct
          (* requires an empty-element tag, or empty content, then     *)
          (* call the appropriate function that parses the content.    *)
          (*-----------------------------------------------------------*)
-         else 
+         else
             let val startEnt = getEntId q0
-            in if !O_VALIDATE then  
+            in if !O_VALIDATE then
                case getOpt(#decl elemInfo,(CT_ANY,false))
-                 of (CT_ANY,_) => parseMixedContent dtd  
+                 of (CT_ANY,_) => parseMixedContent dtd
                     (openElems,startEnt,curr,trans_any) (c,hookStartTag(a,stag),q)
-                  | (CT_MIXED is,_) => parseMixedContent dtd 
-                    (openElems,startEnt,curr,trans_mixed is) (c,hookStartTag(a,stag),q) 
-                  | (CT_ELEMENT(_,dfa),ext) => parseElementContent dtd 
-                    (openElems,startEnt,curr,dfa,ext,false) 
-                    (c,hookStartTag(a,stag),q) 
-                  | (CT_EMPTY,_) => 
+                  | (CT_MIXED is,_) => parseMixedContent dtd
+                    (openElems,startEnt,curr,trans_mixed is) (c,hookStartTag(a,stag),q)
+                  | (CT_ELEMENT(_,dfa),ext) => parseElementContent dtd
+                    (openElems,startEnt,curr,dfa,ext,false)
+                    (c,hookStartTag(a,stag),q)
+                  | (CT_EMPTY,_) =>
                     let val a1 = if not (!O_INTEROPERABILITY) then a
                                  else let val err = ERR_MUST_BE_EMPTY(Index2Element dtd curr)
                                       in hookError(a,(getPos q0,err))
                                       end
                         val a2 = hookStartTag(a1,stag)
-                    in parseElementContent dtd 
+                    in parseElementContent dtd
                        (openElems,startEnt,curr,emptyDfa,false,true) (c,a2,q)
                     end
-               else parseMixedContent dtd 
+               else parseMixedContent dtd
                   (openElems,startEnt,curr,trans_any) (c,hookStartTag(a,stag),q)
             end
       end
@@ -14345,21 +14345,21 @@ end
 (* Exceptions raised by functions in this structure:                        *)
 (*   parseDocTypeDecl : none                                                *)
 (*--------------------------------------------------------------------------*)
-functor Parse 
+functor Parse
    (structure Dtd           : Dtd
-    structure Hooks         : Hooks 
+    structure Hooks         : Hooks
     structure Resolve       : Resolve
-    structure ParserOptions : ParserOptions) : 
+    structure ParserOptions : ParserOptions) :
        sig
-          val parseDocument : Uri.Uri option -> Dtd.Dtd option -> Hooks.AppData -> Hooks.AppFinal 
+          val parseDocument : Uri.Uri option -> Dtd.Dtd option -> Hooks.AppData -> Hooks.AppFinal
        end
-      = 
+      =
 struct
    structure ParseBase = ParseBase (structure Dtd = Dtd
                                     structure Hooks = Hooks
                                     structure Resolve = Resolve
-                                    structure ParserOptions = ParserOptions) 
-      
+                                    structure ParserOptions = ParserOptions)
+
    structure ParseContent = ParseContent (structure ParseBase = ParseBase)
 
    open
@@ -14368,22 +14368,22 @@ struct
 
    val THIS_MODULE = "ParseContent"
 
-   datatype Where = 
+   datatype Where =
       PROLOG
     | EPILOG
     | INSTANCE of int option
-         
+
    fun locOf wher =
-      case wher 
+      case wher
         of PROLOG => LOC_PROLOG
          | INSTANCE _ => LOC_PROLOG
          | EPILOG => LOC_EPILOG
 
    fun checkRoot dtd (a,q) (doc,stag as ((_,elem,_,_,_),_)) =
-      if !O_VALIDATE 
+      if !O_VALIDATE
          then case doc
                 of NONE => a
-                 | SOME doc => 
+                 | SOME doc =>
                    if doc=elem then a
                    else let val err = ERR_ROOT_ELEM(Index2Element dtd doc,
                                                     Index2Element dtd elem)
@@ -14392,7 +14392,7 @@ struct
       else a
 
    fun parseDoc dtd caq =
-      let 
+      let
          fun do_data wher caq =
             let fun doit hadError ws (c,a,q) =
                case c
@@ -14413,10 +14413,10 @@ struct
                          else hookWhite(a1,Data2Vector (rev ws))
             in (c1,a2,q1)
             end
-                            
+
          fun do_decl wher q0 (c,a,q) =
             case c
-              of 0wx2D (* #"-" *) => 
+              of 0wx2D (* #"-" *) =>
                  let val (c1,a1,q1) = getChar(a,q)
                  in if c1=0wx2D then (wher,parseComment (getPos q0) (a1,q1))
                     else let val err = ERR_EXPECTED(expDash,[c1])
@@ -14425,52 +14425,52 @@ struct
                          in (wher,caq2)
                          end
                  end
-               | 0wx5B (* #"[" *) => 
-                 let 
+               | 0wx5B (* #"[" *) =>
+                 let
                     val err = ERR_FORBIDDEN_HERE (IT_CDATA,locOf wher)
                     val a1 = hookError(a,(getPos q0,err))
                     val caq2 = skipBadSection (getChar(a1,q))
                  in (wher,caq2)
                  end
-               | _ => 
-                 case wher 
-                   of PROLOG => 
+               | _ =>
+                 case wher
+                   of PROLOG =>
                       (let val (name,(c1,a1,q1)) = parseName (c,a,q)
-                          handle NotFound (c,a,q) => 
+                          handle NotFound (c,a,q) =>
                              let val err = expectedOrEnded(expDashDocLbrk,LOC_DECL) c
                              in raise SyntaxError (c,hookError(a,(getPos q,err)),q)
                              end
-                             
-                           val _ = if name=[0wx44,0wx4f,0wx43,0wx54,0wx59,0wx50,0wx45] 
+
+                           val _ = if name=[0wx44,0wx4f,0wx43,0wx54,0wx59,0wx50,0wx45]
                                    (* "DOCTYPE" *) then ()
                                    else let val err = ERR_EXPECTED(expDashDocLbrk,name)
                                             val a2 = hookError(a1,(getPos q,err))
                                         in raise SyntaxError (c1,a2,q1)
                                         end
-                                        
+
                            val (doc,caq2) = parseDocTypeDecl dtd (c1,a1,q1)
                        in (INSTANCE doc,caq2)
                        end
                           handle SyntaxError caq => (PROLOG,recoverDecl true caq))
-                          
+
                     | _ => let val loc = if wher=EPILOG then LOC_EPILOG else LOC_AFTER_DTD
                                val err = ERR_FORBIDDEN_HERE (IT_DECL,loc)
                                val a1 = hookError(a,(getPos q0,err))
                                val caq2 = skipDecl true (c,a1,q)
                            in (wher,caq2)
                            end
-                           
-         and doit wher (c,a,q) = 
-            case c 
+
+         and doit wher (c,a,q) =
+            case c
               of 0wx00 => if isSpecial q then (wher,(a,q))
                           else doit wher (getChar(a,q))
                (*--------------------------------------------------------------*)
-               (* References are forbidden outside the document element        *) 
+               (* References are forbidden outside the document element        *)
                (*--------------------------------------------------------------*)
-               | 0wx26 (* #"&" *) => 
-                 let 
+               | 0wx26 (* #"&" *) =>
+                 let
                     val (c1,a1,q1) = getChar(a,q)
-                    val caq2 = 
+                    val caq2 =
                        if c1=0wx23 (* #"#" *)
                           then let val err = ERR_FORBIDDEN_HERE(IT_CHAR_REF,locOf wher)
                                    val a2 = hookError(a1,(getPos q,err))
@@ -14482,52 +14482,52 @@ struct
                             end
                  in doit wher caq2
                  end
-               | 0wx3C (* #"<" *) => 
+               | 0wx3C (* #"<" *) =>
                  let val (c1,a1,q1) = getChar (a,q)
                  in case c1
-                      of 0wx21 (* #"!" *) => 
+                      of 0wx21 (* #"!" *) =>
                          let val (wher1,caq2) = do_decl wher q (getChar(a1,q1))
                          in doit wher1 caq2
                          end
-                       | 0wx2F (* #"/" *) => 
-                         let 
+                       | 0wx2F (* #"/" *) =>
+                         let
                             val err = ERR_FORBIDDEN_HERE(IT_ETAG,locOf wher)
                             val a2 = hookError(a1,(getPos q,err))
                             val caq3 = skipTag LOC_ETAG (a2,q1)
                          in doit wher caq3
                          end
                        | 0wx3F (* #"?" *) => doit wher (parseProcInstr (getPos q) (a1,q1))
-                       | _ => 
-                         if isName c1 then 
-                            let val wher1 = 
+                       | _ =>
+                         if isName c1 then
+                            let val wher1 =
                                case wher
                                  of PROLOG => INSTANCE NONE
                                   | _ => wher
-                            in case wher1 
-                                 of PROLOG => 
+                            in case wher1
+                                 of PROLOG =>
                                     raise InternalError(THIS_MODULE,"parseDoc.doit","")
-                                  | EPILOG => 
-                                    let 
+                                  | EPILOG =>
+                                    let
                                        val err = ERR_FORBIDDEN_HERE(IT_STAG,LOC_EPILOG)
                                        val a2 = hookError(a1,(getPos q,err))
                                        val caq3 = skipTag LOC_STAG (a2,q1)
                                     in doit EPILOG caq3
                                     end
-                                  | INSTANCE doc => 
-                                    (let 
-                                        val a2 = 
+                                  | INSTANCE doc =>
+                                    (let
+                                        val a2 =
                                            if not (!O_VALIDATE) orelse isSome doc then a1
                                            else hookError(a1,(getPos q,ERR_NO_DTD))
-                                        val (stag,(c3,a3,q3)) = parseSTag 
+                                        val (stag,(c3,a3,q3)) = parseSTag
                                            dtd (getPos q) (c1,a2,q1)
                                         val a4 = checkRoot dtd (a3,q1) (doc,stag)
-                                        val (opt,(c5,a5,q5)) = parseElement 
+                                        val (opt,(c5,a5,q5)) = parseElement
                                            (dtd,nil,q,stag,(c3,a4,q3))
                                         val a6 = checkDefinedIds dtd (a5,q5)
                                      in case opt
                                           of NONE => doit EPILOG (c5,a6,q5)
-                                           | SOME (_,_,startPos,_) => 
-                                             let 
+                                           | SOME (_,_,startPos,_) =>
+                                             let
                                                 val err = ERR_FORBIDDEN_HERE(IT_ETAG,LOC_EPILOG)
                                                 val a7 = hookError(a6,(startPos,err))
                                              in doit EPILOG (c5,a7,q5)
@@ -14543,34 +14543,34 @@ struct
                | _ => let val caq1 = do_data wher (c,a,q)
                       in doit wher caq1
                       end
-      in 
+      in
          doit PROLOG caq
-      end              
+      end
 
    (* to false. (cf. 2.9)                                                *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   ... If ... there is no standalone document declaration, the      *)
    (*   value "no" is assumed.                                           *)
-   fun parseDocument uriOpt dtdOpt a = 
-      let 
-         val dtd = case dtdOpt 
-                     of NONE => initDtdTables () 
-                      | SOME dtd => dtd 
+   fun parseDocument uriOpt dtdOpt a =
+      let
+         val dtd = case dtdOpt
+                     of NONE => initDtdTables ()
+                      | SOME dtd => dtd
          val (enc,xmlDecl,(c1,a1,q1)) = openDocument uriOpt a
          val uri = getUri q1
-         val alone = case xmlDecl 
+         val alone = case xmlDecl
                        of (SOME(_,_,SOME sa)) => sa
                         | _ => false
          val _ = if alone then setStandAlone dtd true else ()
          val a2 = hookXml(a1,(uri,enc,xmlDecl))
          val (wher,(a3,q3)) = parseDoc dtd (c1,a2,q1)
          val _ = closeAll q3
-         val a4 = case wher 
+         val a4 = case wher
                     of EPILOG => a3
                      | _ => hookError(a3,(getPos q3,ERR_ENDED_IN_PROLOG))
       in hookFinish a4
       end
-   handle CantOpenFile(fmsg,a) => 
+   handle CantOpenFile(fmsg,a) =>
       let val a1 = hookError(a,(nullPosition,ERR_NO_SUCH_FILE fmsg))
       in hookFinish a1
       end
@@ -14599,7 +14599,7 @@ signature CatError =
        | LOC_NOCOMMENT
        | LOC_PUBID
        | LOC_SYSID
-         
+
       datatype Expected =
          EXP_NAME
        | EXP_LITERAL
@@ -14608,7 +14608,7 @@ signature CatError =
          ERR_DECODE_ERROR of Decode.Error.DecodeError
        | ERR_NO_SUCH_FILE of string * string
        | ERR_ILLEGAL_HERE of UniChar.Char * Location
-       | ERR_MISSING_WHITE 
+       | ERR_MISSING_WHITE
        | ERR_EOF of Location
        | ERR_EXPECTED of Expected * UniChar.Char
        | ERR_XML of Errors.Error
@@ -14618,15 +14618,15 @@ signature CatError =
       val catMessage : CatError -> string list
    end
 
-structure CatError : CatError = 
+structure CatError : CatError =
    struct
       open Errors UtilError UtilString
 
-      type Position = string * int * int 
+      type Position = string * int * int
       val nullPosition = ("",0,0)
 
-      fun Position2String (fname,l,c) = 
-         if fname="" then "" 
+      fun Position2String (fname,l,c) =
+         if fname="" then ""
          else String.concat ["[",fname,":",Int2String l,".",Int2String c,"]"]
 
       datatype Location =
@@ -14637,15 +14637,15 @@ structure CatError : CatError =
        | LOC_SYSID
 
       fun Location2String loc =
-         case loc 
+         case loc
            of LOC_CATALOG => "catalog file"
             | LOC_COMMENT => "comment"
             | LOC_NOCOMMENT => "something other than a comment"
             | LOC_PUBID   => "public identifier"
             | LOC_SYSID   => "system identifier"
-      
+
       fun InLocation2String loc =
-         case loc 
+         case loc
            of LOC_CATALOG => "in a catalog file"
             | LOC_COMMENT => "in a comment"
             | LOC_NOCOMMENT => "outside of comments"
@@ -14665,7 +14665,7 @@ structure CatError : CatError =
          ERR_DECODE_ERROR of Decode.Error.DecodeError
        | ERR_NO_SUCH_FILE of string * string
        | ERR_ILLEGAL_HERE of UniChar.Char * Location
-       | ERR_MISSING_WHITE 
+       | ERR_MISSING_WHITE
        | ERR_EOF of Location
        | ERR_EXPECTED of Expected * UniChar.Char
        | ERR_XML of Error
@@ -14676,21 +14676,21 @@ structure CatError : CatError =
          case err
            of ERR_DECODE_ERROR err => Decode.Error.decodeMessage err
             | ERR_NO_SUCH_FILE(f,msg) => ["Could not open file",quoteErrorString f,"("^msg^")"]
-              
-            | ERR_ILLEGAL_HERE (c,loc) => 
+
+            | ERR_ILLEGAL_HERE (c,loc) =>
               ["Character",quoteErrorChar c,"is not allowed",InLocation2String loc]
-              
+
             | ERR_MISSING_WHITE => ["Missing white space"]
             | ERR_EOF loc => [toUpperFirst (Location2String loc),"ended by end of file"]
-            | ERR_EXPECTED (exp,c) => 
+            | ERR_EXPECTED (exp,c) =>
               ["Expected",Expected2String exp,"but found",quoteErrorChar c]
 
             | ERR_XML err => errorMessage err
-            | ERR_MISSING_ATT(elem,att) => 
+            | ERR_MISSING_ATT(elem,att) =>
               ["Element",quoteErrorData elem,"has no",quoteErrorData att,"attribute"]
-            | ERR_NON_PUBID(att,cs) => 
+            | ERR_NON_PUBID(att,cs) =>
               ["Value specified for attribute",quoteErrorData att,"contains non-PublicId",
-               case cs 
+               case cs
                  of [c] => "character"^quoteErrorChar c
                   | cs => List2xString ("characters ",", ","") quoteErrorChar cs]
    end
@@ -14722,7 +14722,7 @@ signature CatParams =
 
 
 
-structure KeyUri : Key = 
+structure KeyUri : Key =
    struct
       type Key = Uri.Uri
 
@@ -14732,7 +14732,7 @@ structure KeyUri : Key =
       val hash     = Uri.hashUri
    end
 
-structure UriDict = Dict (structure Key = KeyUri) 
+structure UriDict = Dict (structure Key = KeyUri)
 (* stop of ../../Unicode/Uri/uriDict.sml *)
 (* start of ../../Catalog/catData.sml *)
 
@@ -14745,7 +14745,7 @@ structure CatData =
        | E_EXTEND of Uri.Uri
        | E_MAP of string * Uri.Uri
        | E_REMAP of Uri.Uri * Uri.Uri
-         
+
       type Catalog = Uri.Uri * CatEntry list
    end
 (* stop of ../../Catalog/catData.sml *)
@@ -14759,34 +14759,34 @@ structure CatData =
 
 
 
-signature CatFile = 
+signature CatFile =
    sig
       type CatFile
       type Position
-         
-      val catOpenFile  : Uri.Uri -> CatFile 
+
+      val catOpenFile  : Uri.Uri -> CatFile
       val catCloseFile : CatFile -> unit
       val catGetChar   : CatFile -> UniChar.Char * CatFile
       val catPos       : CatFile -> CatError.Position
    end
 
-functor CatFile ( structure Params : CatParams ) : CatFile = 
+functor CatFile ( structure Params : CatParams ) : CatFile =
    struct
-      open UniChar CatError Decode Params Uri UtilError 
+      open UniChar CatError Decode Params Uri UtilError
 
-      (* column, line, break *)  
+      (* column, line, break *)
       type PosInfo = int * int * bool
       val startPos = (0,1,false)
 
       datatype CatFile =
-         NOFILE of string * PosInfo 
+         NOFILE of string * PosInfo
        | DIRECT of DecFile * PosInfo
 
       fun catPos cf =
-         case cf 
+         case cf
            of NOFILE (uri,(col,line,_)) => (uri,line,col)
             | DIRECT (dec,(col,line,_)) => (decName dec,line,col)
-              
+
       fun catOpenFile uri =
          let val dec = decOpenUni(SOME uri,!O_CATALOG_ENC)
          in DIRECT(dec,startPos)
@@ -14794,7 +14794,7 @@ functor CatFile ( structure Params : CatParams ) : CatFile =
       handle NoSuchFile fmsg => let val _ = catError(nullPosition,ERR_NO_SUCH_FILE fmsg)
                                 in NOFILE(Uri2String uri,startPos)
                                 end
-         
+
       fun catCloseFile cf =
          case cf
            of NOFILE _ => ()
@@ -14803,7 +14803,7 @@ functor CatFile ( structure Params : CatParams ) : CatFile =
       fun catGetChar cf =
          case cf
            of NOFILE _ => (0wx00,cf)
-            | DIRECT(dec,(col,line,brk)) => 
+            | DIRECT(dec,(col,line,brk)) =>
               (let val (c,dec1) = decGetChar dec
                in case c
                     of 0wx09 => (c,DIRECT(dec1,(col+1,line,false)))
@@ -14813,11 +14813,11 @@ functor CatFile ( structure Params : CatParams ) : CatFile =
                      | _     => if c>=0wx20 then (c,DIRECT(dec1,(col+1,line,false)))
                                 else let val err = ERR_ILLEGAL_HERE(c,LOC_CATALOG)
                                          val _ = catError(catPos cf,err)
-                                     in catGetChar(DIRECT(dec1,(col+1,line,false))) 
+                                     in catGetChar(DIRECT(dec1,(col+1,line,false)))
                                      end
-               end 
+               end
                   handle DecEof dec => (0wx00,NOFILE(decName dec,(col,line,brk)))
-                       | DecError(dec,_,err) => 
+                       | DecError(dec,_,err) =>
                      let val _ = catError(catPos cf,ERR_DECODE_ERROR err)
                      in catGetChar(DIRECT(dec,(col,line,false)))
                      end
@@ -14843,26 +14843,26 @@ signature SocatParse =
 functor SocatParse ( structure Params : CatParams ) : SocatParse =
    struct
       structure CatFile = CatFile ( structure Params = Params )
-      
+
       open CatData CatError CatFile Params UniChar UniClasses Uri
 
       exception SyntaxError of UniChar.Char * CatFile.CatFile
       exception NotFound of UniChar.Char * CatFile.CatFile
-      
+
       val getChar = catGetChar
 
-      fun parseName' (c,f) = 
+      fun parseName' (c,f) =
          if isName c then let val (cs,cf1) = parseName' (getChar f)
                           in (c::cs,cf1)
                           end
          else (nil,(c,f))
-      fun parseName (c,f) = 
+      fun parseName (c,f) =
          if isNms c then let val (cs,cf1) = parseName' (getChar f)
                          in (c::cs,cf1)
                          end
          else raise NotFound (c,f)
 
-      datatype Keyword = 
+      datatype Keyword =
          KW_BASE
        | KW_CATALOG
        | KW_DELEGATE
@@ -14870,8 +14870,8 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
        | KW_SYSTEM
        | KW_OTHER of UniChar.Data
 
-      fun parseKeyword cf = 
-         let 
+      fun parseKeyword cf =
+         let
             val (name,cf1) = parseName cf
             val kw = case name
                        of [0wx42,0wx41,0wx53,0wx45] => KW_BASE
@@ -14884,8 +14884,8 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
          end
 
       fun parseSysLit' quote f =
-         let 
-            fun doit text (c,f) = 
+         let
+            fun doit text (c,f) =
                if c=quote then (text,getChar f)
                else if c<>0wx0 then doit (c::text) (getChar f)
                     else let val _ = catError(catPos f,ERR_EOF LOC_SYSID)
@@ -14894,26 +14894,26 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
             val (text,cf1) = doit nil (getChar f)
          in (Data2Uri(rev text),cf1)
          end
-      fun parseSysLit req (c,f) = 
-         if c=0wx22 orelse c=0wx27 then parseSysLit' c f 
+      fun parseSysLit req (c,f) =
+         if c=0wx22 orelse c=0wx27 then parseSysLit' c f
          else if req then let val _ = catError(catPos f,ERR_EXPECTED(EXP_LITERAL,c))
-                          in raise SyntaxError (c,f) 
+                          in raise SyntaxError (c,f)
                           end
               else raise NotFound (c,f)
 
       fun parsePubLit' quote f =
-         let 
-            fun doit (hadSpace,atStart,text) (c,f) = 
+         let
+            fun doit (hadSpace,atStart,text) (c,f) =
                case c
                  of 0wx0 => let val _ = catError(catPos f,ERR_EOF LOC_PUBID)
                             in (text,(c,f))
                             end
                   | 0wx0A => doit (true,atStart,text) (getChar f)
                   | 0wx20 => doit (true,atStart,text) (getChar f)
-                  | _ => 
+                  | _ =>
                     if c=quote then (text,getChar f)
-                    else if isPubid c 
-                            then if hadSpace andalso not atStart 
+                    else if isPubid c
+                            then if hadSpace andalso not atStart
                                     then doit (false,false,c::0wx20::text) (getChar f)
                                  else doit (false,false,c::text) (getChar f)
                          else let val _ = catError(catPos f,ERR_ILLEGAL_HERE(c,LOC_PUBID))
@@ -14922,14 +14922,14 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
             val (text,cf1) = doit (false,true,nil) (getChar f)
          in (Latin2String(rev text),cf1)
          end
-      fun parsePubLit (c,f) = 
-         if c=0wx22 orelse c=0wx27 then parsePubLit' c f 
+      fun parsePubLit (c,f) =
+         if c=0wx22 orelse c=0wx27 then parsePubLit' c f
          else let val _ = catError(catPos f,ERR_EXPECTED(EXP_LITERAL,c))
-              in raise SyntaxError (c,f) 
+              in raise SyntaxError (c,f)
               end
 
       fun skipComment (c,f) =
-         case c 
+         case c
            of 0wx00 => let val _ = catError(catPos f,ERR_EOF LOC_COMMENT)
                        in (c,f)
                        end
@@ -14938,7 +14938,7 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                        end
             | _ => skipComment (getChar f)
       fun skipCopt (c,f) =
-         case c 
+         case c
            of 0wx00 => (c,f)
             | 0wx2D => let val (c1,f1) = getChar f
                        in if c1=0wx2D then skipComment (getChar f1)
@@ -14948,15 +14948,15 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                        end
             | _ => (c,f)
 
-      fun skipScomm req0 cf = 
+      fun skipScomm req0 cf =
          let
             fun endit req (c,f) =
-               if req andalso c<>0wx00 
+               if req andalso c<>0wx00
                   then let val _ = catError(catPos f,ERR_MISSING_WHITE)
-                       in (c,f) 
-                       end 
+                       in (c,f)
+                       end
                else (c,f)
-            fun doit req (c,f) = 
+            fun doit req (c,f) =
                case c
                  of 0wx00 => endit req (c,f)
                   | 0wx09 => doit false (getChar f)
@@ -14964,9 +14964,9 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                   | 0wx20 => doit false (getChar f)
                   | 0wx22 => endit req (c,f)
                   | 0wx27 => endit req (c,f)
-                  | 0wx2D => 
+                  | 0wx2D =>
                     let val (c1,f1) = getChar f
-                    in if c1=0wx2D 
+                    in if c1=0wx2D
                           then let val _ = if not req then ()
                                            else catError(catPos f1,ERR_MISSING_WHITE)
                                    val cf1 = skipComment (getChar f1)
@@ -14976,23 +14976,23 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                             in doit req (c1,f1)
                             end
                     end
-                  | _ => if isNms c then endit req (c,f) 
+                  | _ => if isNms c then endit req (c,f)
                          else let val _ = catError(catPos f,ERR_ILLEGAL_HERE(c,LOC_NOCOMMENT))
                               in doit req (getChar f)
                               end
          in doit req0 cf
          end
-      
-      val skipWS = skipScomm true 
-      val skipCommWS = (skipScomm false) o skipCopt 
+
+      val skipWS = skipScomm true
+      val skipCommWS = (skipScomm false) o skipCopt
       val skipWSComm = skipScomm false
 
       fun skipOther cf =
-         let 
+         let
             val cf1 = skipWS cf
             val cf2 = let val (_,cf') = parseName cf1
                       in skipWS cf'
-                      end 
+                      end
                    handle NotFound cf => cf
 
             fun doit cf =
@@ -15005,63 +15005,63 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
          end
 
       fun parseBase cf =
-         let 
+         let
             val cf1 = skipWS cf
             val (lit,cf2) = parseSysLit true cf1
             val cf3 = skipWS cf2
-         in 
+         in
             (SOME(E_BASE lit),cf3)
          end
 
       fun parseExtend cf =
-         let 
+         let
             val cf1 = skipWS cf
             val (lit,cf2) = parseSysLit true cf1
             val cf3 = skipWS cf2
-         in 
+         in
             (SOME(E_EXTEND lit),cf3)
          end
 
       fun parseDelegate cf =
-         let 
+         let
             val cf1 = skipWS cf
             val (pub,cf2) = parsePubLit cf1
             val cf3 = skipWS cf2
             val (sys,cf4) = parseSysLit true cf3
             val cf5 = skipWS cf4
-         in 
+         in
             (SOME(E_DELEGATE(pub,sys)),cf5)
          end
 
       fun parseRemap cf =
-         let 
+         let
             val cf1 = skipWS cf
             val (sys0,cf2) = parseSysLit true cf1
             val cf3 = skipWS cf2
             val (sys,cf4) = parseSysLit true cf3
             val cf5 = skipWS cf4
-         in 
+         in
             (SOME(E_REMAP(sys0,sys)),cf5)
          end
 
       fun parseMap cf =
-         let 
+         let
             val cf1 = skipWS cf
             val (pub,cf2) = parsePubLit cf1
             val cf3 = skipWS cf2
             val (sys,cf4) = parseSysLit true cf3
             val cf5 = skipWS cf4
-         in 
+         in
             (SOME(E_MAP(pub,sys)),cf5)
          end
 
       fun recover cf =
-         let 
-            fun do_lit q (c,f) = 
-               if c=0wx00 then (c,f) 
-               else if c=q then getChar f 
+         let
+            fun do_lit q (c,f) =
+               if c=0wx00 then (c,f)
+               else if c=q then getChar f
                     else do_lit q (getChar f)
-            fun do_com (c,f) = 
+            fun do_com (c,f) =
                case c
                   of 0wx00 => (c,f)
                    | 0wx2D => let val (c1,f1) = getChar f
@@ -15072,8 +15072,8 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
             fun doit (c,f) =
                case c
                  of 0wx00 => (c,f)
-                  | 0wx22 => doit (do_lit c (getChar f)) 
-                  | 0wx27 => doit (do_lit c (getChar f)) 
+                  | 0wx22 => doit (do_lit c (getChar f))
+                  | 0wx27 => doit (do_lit c (getChar f))
                   | 0wx2D => let val (c1,f1) = getChar f
                              in if c1=0wx2D then doit (do_com (getChar f1))
                                 else doit (c1,f1)
@@ -15082,8 +15082,8 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                          else doit (getChar f)
          in doit cf
          end
-      
-      fun parseEntry (cf as (c,f)) = 
+
+      fun parseEntry (cf as (c,f)) =
          let val (kw,cf1) = parseKeyword cf handle NotFound cf => raise SyntaxError cf
          in case kw
               of KW_BASE => parseBase cf1
@@ -15096,7 +15096,7 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
       handle SyntaxError cf => (NONE,recover cf)
 
       fun parseDocument cf =
-         let 
+         let
             fun doit (c,f) =
                if c=0wx0 then nil before catCloseFile f
                else let val (opt,cf1) = parseEntry (c,f)
@@ -15107,21 +15107,21 @@ functor SocatParse ( structure Params : CatParams ) : SocatParse =
                     end
 
             val cf1 = skipCommWS cf
-         in 
+         in
             doit cf1
          end
 
-      fun parseSoCat uri = 
-         let 
+      fun parseSoCat uri =
+         let
             val f = catOpenFile uri
             val cf1 = getChar f
-         in 
+         in
             (uri,parseDocument cf1)
          end
    end
 (* stop of ../../Catalog/socatParse.sml *)
 (* start of ../../Catalog/catDtd.sml *)
-signature CatDtd = 
+signature CatDtd =
    sig
       type Dtd
 
@@ -15139,10 +15139,10 @@ signature CatDtd =
       val Index2Element : Dtd -> int -> UniChar.Data
    end
 
-structure CatDtd =  
+structure CatDtd =
    struct
       open Dtd
-         
+
       val baseGi     = UniChar.String2Data "Base"
       val delegateGi = UniChar.String2Data "Delegate"
       val extendGi   = UniChar.String2Data "Extend"
@@ -15153,17 +15153,17 @@ structure CatDtd =
       val pubidAtt   = UniChar.String2Data "PublicId"
       val sysidAtt   = UniChar.String2Data "SystemId"
 
-      fun initDtdTables () = 
-         let 
+      fun initDtdTables () =
+         let
             val dtd = Dtd.initDtdTables()
             val _ = app (ignore o (Element2Index dtd)) [baseGi,delegateGi,extendGi,mapGi,remapGi]
             val _ = app (ignore o (AttNot2Index dtd)) [hrefAtt,pubidAtt,sysidAtt]
          in dtd
          end
 
-      local 
+      local
          val dtd = initDtdTables()
-      in 
+      in
          val baseIdx     = Element2Index dtd baseGi
          val delegateIdx = Element2Index dtd delegateGi
          val extendIdx   = Element2Index dtd extendGi
@@ -15177,14 +15177,14 @@ structure CatDtd =
    end
 (* stop of ../../Catalog/catDtd.sml *)
 (* start of ../../Parser/Params/ignore.sml *)
-structure IgnoreHooks = 
+structure IgnoreHooks =
    struct
       type AppData = unit
       type AppFinal = unit
 
       fun hookXml(a,_) = a
       fun hookFinish a = a
-         
+
       fun hookError(a,_) = a
       fun hookWarning(a,_) = a
 
@@ -15212,7 +15212,7 @@ structure IgnoreHooks =
 (* start of ../../Catalog/catHooks.sml *)
 signature CatHooks =
    sig
-      type AppData = CatData.CatEntry list 
+      type AppData = CatData.CatEntry list
 
       val initCatHooks : unit -> AppData
    end
@@ -15220,46 +15220,46 @@ signature CatHooks =
 functor CatHooks (structure Params : CatParams
                   structure Dtd    : CatDtd   ) =
    struct
-      open 
+      open
          Dtd HookData IgnoreHooks Params UniChar UniClasses Uri UtilList
          CatData CatError
 
-      type AppData = Dtd * CatEntry list 
+      type AppData = Dtd * CatEntry list
       type AppFinal = CatEntry list
 
       fun initCatHooks dtd = (dtd,nil)
 
       fun hookError (a,(pos,err)) = a before catError (pos,ERR_XML err)
-         
-      fun getAtt dtd (pos,elem,att,trans) atts = 
+
+      fun getAtt dtd (pos,elem,att,trans) atts =
          let
-            val cvOpt = findAndMap 
+            val cvOpt = findAndMap
                (fn (i,ap,_) => if i<>att then NONE
-                               else case ap 
+                               else case ap
                                       of AP_DEFAULT(_,cv,_) => SOME cv
                                        | AP_PRESENT(_,cv,_) => SOME cv
                                        | _ => NONE)
                atts
-         in case cvOpt 
+         in case cvOpt
               of SOME cv => trans (pos,att) cv
                | NONE => NONE before catError
                  (pos,ERR_MISSING_ATT(Index2Element dtd elem,Index2AttNot dtd att))
          end
 
-      fun makePubid dtd (pos,att) cv = 
-         let val (cs,bad) = 
+      fun makePubid dtd (pos,att) cv =
+         let val (cs,bad) =
             Vector.foldr
             (fn (c,(cs,bad)) => if isPubid c then (Char2char c::cs,bad)
-                                else (cs,c::bad)) 
+                                else (cs,c::bad))
             (nil,nil) cv
          in if null bad then SOME(String.implode cs)
             else NONE before catError(pos,ERR_NON_PUBID(Index2AttNot dtd att,bad))
          end
 
       fun makeUri (pos,att) cv = SOME cv
-  
-      fun hookStartTag (a as (dtd,items),((_,pos),elem,atts,_,_)) = 
-         if elem=baseIdx 
+
+      fun hookStartTag (a as (dtd,items),((_,pos),elem,atts,_,_)) =
+         if elem=baseIdx
             then let val hrefOpt = getAtt dtd (pos,elem,hrefIdx,makeUri) atts
                  in case hrefOpt
                       of NONE => a
@@ -15269,7 +15269,7 @@ functor CatHooks (structure Params : CatParams
                  then let val hrefOpt = getAtt dtd (pos,elem,hrefIdx,makeUri) atts
                           val pubidOpt = getAtt dtd (pos,elem,pubidIdx,makePubid dtd) atts
                       in case (hrefOpt,pubidOpt)
-                           of (SOME href,SOME pubid) => 
+                           of (SOME href,SOME pubid) =>
                               (dtd,E_DELEGATE(pubid,Vector2Uri href)::items)
                             | _ => a
                       end
@@ -15283,7 +15283,7 @@ functor CatHooks (structure Params : CatParams
                  then let val hrefOpt = getAtt dtd (pos,elem,hrefIdx,makeUri) atts
                           val pubidOpt = getAtt dtd (pos,elem,pubidIdx,makePubid dtd) atts
                       in case (hrefOpt,pubidOpt)
-                           of (SOME href,SOME pubid) => 
+                           of (SOME href,SOME pubid) =>
                               (dtd,E_MAP(pubid,Vector2Uri href)::items)
                             | _ => a
                       end
@@ -15291,12 +15291,12 @@ functor CatHooks (structure Params : CatParams
                  then let val hrefOpt = getAtt dtd (pos,elem,hrefIdx,makeUri) atts
                           val sysidOpt = getAtt dtd (pos,elem,sysidIdx,makeUri) atts
                       in case (hrefOpt,sysidOpt)
-                           of (SOME href,SOME sysid) => 
+                           of (SOME href,SOME sysid) =>
                               (dtd,E_REMAP(Vector2Uri sysid,Vector2Uri href)::items)
                             | _ => a
                       end
               else a
-                 
+
       fun hookFinish (_,items) = rev items
    end
 (* stop of ../../Catalog/catHooks.sml *)
@@ -15306,20 +15306,20 @@ signature CatParse =
       val parseCatalog  : Uri.Uri -> CatData.Catalog
    end
 
-functor CatParse (structure Params : CatParams) : CatParse = 
+functor CatParse (structure Params : CatParams) : CatParse =
    struct
-      structure SocatParse = SocatParse (structure Params = Params) 
+      structure SocatParse = SocatParse (structure Params = Params)
 
-      structure ParserOptions = 
+      structure ParserOptions =
          struct
             structure Options = ParserOptions()
             open Options
-               
-            local 
-               fun setDefaults() = 
-                  let 
+
+            local
+               fun setDefaults() =
+                  let
                      val _ = setParserDefaults()
-                        
+
                      val _ = O_WARN_MULT_ENUM      := false
                      val _ = O_WARN_XML_DECL       := false
                      val _ = O_WARN_ATT_NO_ELEM    := false
@@ -15328,15 +15328,15 @@ functor CatParse (structure Params : CatParams) : CatParse =
                      val _ = O_WARN_MULT_ATT_DEF   := false
                      val _ = O_WARN_MULT_ATT_DECL  := false
                      val _ = O_WARN_SHOULD_DECLARE := false
-                        
+
                      val _ = O_VALIDATE            := false
                      val _ = O_COMPATIBILITY       := false
                      val _ = O_INTEROPERABILITY    := false
-                        
+
                      val _ = O_INCLUDE_EXT_PARSED  := true
                   in ()
                   end
-            in 
+            in
                val setParserDefaults = setDefaults
             end
 
@@ -15347,26 +15347,26 @@ functor CatParse (structure Params : CatParams) : CatParse =
                                structure Hooks = CatHooks
                                structure Resolve = ResolveNull
                                structure ParserOptions = ParserOptions)
-         
+
       open CatHooks CatDtd Parse ParserOptions SocatParse Uri
 
-      fun parseXmlCat uri = 
-         let 
+      fun parseXmlCat uri =
+         let
             val _ = setParserDefaults()
             val dtd = initDtdTables()
             val items = parseDocument (SOME uri) (SOME dtd) (initCatHooks dtd)
-         in 
+         in
             (uri,items)
          end
 
       fun isSocatSuffix x = x="soc" orelse x="SOC"
       fun isXmlSuffix x = x="xml" orelse x="XML"
 
-      fun parseCatalog uri = 
+      fun parseCatalog uri =
          let val suffix = uriSuffix uri
-         in if isSocatSuffix suffix then parseSoCat uri 
+         in if isSocatSuffix suffix then parseSoCat uri
             else (if isXmlSuffix suffix then parseXmlCat uri
-                  else (if !O_PREFER_SOCAT then parseSoCat uri 
+                  else (if !O_PREFER_SOCAT then parseSoCat uri
                         else parseXmlCat uri))
          end
    end
@@ -15386,15 +15386,15 @@ signature Catalog =
       val resolveExtId : string option * (Uri.Uri * Uri.Uri) option -> Uri.Uri option
    end
 
-functor Catalog ( structure Params : CatParams ) : Catalog = 
+functor Catalog ( structure Params : CatParams ) : Catalog =
    struct
       structure CatParse = CatParse ( structure Params = Params )
 
       open CatData CatParse Params Uri UriDict
 
       val catDict = makeDict("catalog",6,NONE:Catalog option)
-         
-      fun getCatalog uri = 
+
+      fun getCatalog uri =
          let val idx = getIndex(catDict,uri)
          in case getByIndex(catDict,idx)
               of SOME cat => cat
@@ -15404,71 +15404,71 @@ functor Catalog ( structure Params : CatParams ) : Catalog =
                          end
          end
 
-      datatype SearchType =  
+      datatype SearchType =
           SYS of Uri
         | PUB of string
-      datatype SearchResult = 
+      datatype SearchResult =
           FOUND of Uri * Uri
         | NOTFOUND of Uri list
-          
+
       fun searchId id =
          let
             fun searchOne (base,other) nil = NOTFOUND other
-              | searchOne (base,other) (entry::entries) = 
+              | searchOne (base,other) (entry::entries) =
                case entry
-                 of E_BASE path => 
+                 of E_BASE path =>
                     let val newBase = uriJoin(base,path)
                     in searchOne (newBase,other) entries
                     end
-                  | E_EXTEND path => 
+                  | E_EXTEND path =>
                     let val fullPath = uriJoin(base,path)
-                    in searchOne (base,fullPath::other) entries 
+                    in searchOne (base,fullPath::other) entries
                     end
-                  | E_DELEGATE(prefix,path) => 
+                  | E_DELEGATE(prefix,path) =>
                     (case id
-                       of PUB pid => if String.isPrefix prefix pid 
+                       of PUB pid => if String.isPrefix prefix pid
                                         then let val fullPath = uriJoin(base,path)
                                              in searchOne (base,fullPath::other) entries
                                              end
-                                     else searchOne (base,other) entries 
+                                     else searchOne (base,other) entries
                         | SYS _ => searchOne (base,other) entries)
-                  | E_MAP(pubid,path) => 
-                    (case id 
+                  | E_MAP(pubid,path) =>
+                    (case id
                        of PUB pid => if pubid=pid then FOUND (base,path)
                                      else searchOne (base,other) entries
                         | _ => searchOne (base,other) entries)
-                  | E_REMAP(sysid,path) => 
+                  | E_REMAP(sysid,path) =>
                     (case id
                        of SYS sid => if sysid=sid then FOUND(base,path)
-                                     else searchOne (base,other) entries 
+                                     else searchOne (base,other) entries
                         | _ => searchOne (base,other) entries)
-                        
+
             fun searchLevel other nil = NOTFOUND(rev other)
-              | searchLevel other (fname::fnames) = 
-               let 
+              | searchLevel other (fname::fnames) =
+               let
                   val (base,entries) = getCatalog fname
-               in 
-                  case searchOne (base,other) entries 
+               in
+                  case searchOne (base,other) entries
                     of FOUND bp => FOUND bp
                      | NOTFOUND other' => searchLevel other' fnames
                end
 
-            fun searchAll fnames = 
+            fun searchAll fnames =
                if null fnames then NONE
                else case searchLevel nil fnames
                       of FOUND bp => SOME bp
                        | NOTFOUND other => searchAll other
 
             val fnames = !O_CATALOG_FILES
-         in 
+         in
             case id
               of PUB _ => searchAll fnames
                | SYS _ => if !O_SUPPORT_REMAP then searchAll fnames else NONE
          end
 
       fun resolveExtId (pub,sys) =
-         let 
-            fun resolvePubCat () = 
+         let
+            fun resolvePubCat () =
                case pub
                  of NONE => NONE
                   | SOME id => case searchId (PUB id)
@@ -15476,14 +15476,14 @@ functor Catalog ( structure Params : CatParams ) : Catalog =
                                   | SOME(base,sysid) => case searchId (SYS sysid)
                                                           of NONE => SOME(base,sysid)
                                                            | new => new
-                                                            
-            fun resolveSysCat () = 
-               case sys 
+
+            fun resolveSysCat () =
+               case sys
                  of NONE => NONE
                   | SOME(base,id) => searchId (SYS id)
 
             fun resolveCat () =
-               if !O_PREFER_SYSID 
+               if !O_PREFER_SYSID
                   then case resolveSysCat ()
                          of NONE => resolvePubCat ()
                           | found => found
@@ -15492,18 +15492,18 @@ functor Catalog ( structure Params : CatParams ) : Catalog =
                        | found => found
 
             fun resolve () =
-               if !O_PREFER_CATALOG 
+               if !O_PREFER_CATALOG
                   then case resolveCat ()
                          of NONE => (case sys
                                        of NONE => NONE
                                         | SOME(base,id) => SOME(base,id))
                           | found => found
-               else case sys 
+               else case sys
                       of NONE => resolvePubCat ()
                        | SOME(base,id) => SOME(base,id)
-         in 
-            if null (!O_CATALOG_FILES) 
-               then case sys 
+         in
+            if null (!O_CATALOG_FILES)
+               then case sys
                       of NONE => NONE
                        | SOME(base,id) => SOME (uriJoin (base,id))
             else case resolve ()
@@ -15520,10 +15520,10 @@ functor Catalog ( structure Params : CatParams ) : Catalog =
 
 
 
-functor ResolveCatalog ( structure Params : CatParams ) : Resolve = 
+functor ResolveCatalog ( structure Params : CatParams ) : Resolve =
    struct
       structure Catalog = Catalog ( structure Params = Params )
-         
+
       open Base Errors
 
       fun resolveExtId (id as EXTID(pub,sys)) =
@@ -15531,7 +15531,7 @@ functor ResolveCatalog ( structure Params : CatParams ) : Resolve =
                           of NONE => NONE
                            | SOME (str,_) => SOME str
              val sys1 = case sys
-                          of NONE => NONE 
+                          of NONE => NONE
                            | SOME (base,file,_) => SOME(base,file)
          in case Catalog.resolveExtId (pub1,sys1)
               of NONE => raise NoSuchFile ("","Could not generate system identifier")
@@ -15548,7 +15548,7 @@ signature CatOptions =
       val O_PREFER_CATALOG : bool ref
       val O_SUPPORT_REMAP  : bool ref
       val O_CATALOG_ENC    : Encoding.Encoding ref
-         
+
       val setCatalogDefaults : unit -> unit
       val setCatalogOptions  : Options.Option list * (string -> unit) -> Options.Option list
 
@@ -15557,7 +15557,7 @@ signature CatOptions =
 
 functor CatOptions () : CatOptions =
    struct
-      open Encoding Options Uri 
+      open Encoding Options Uri
 
       val O_CATALOG_FILES  = ref nil: Uri list ref
       val O_PREFER_SOCAT   = ref false
@@ -15566,8 +15566,8 @@ functor CatOptions () : CatOptions =
       val O_SUPPORT_REMAP  = ref true
       val O_CATALOG_ENC    = ref LATIN1
 
-      fun setCatalogDefaults() = 
-         let 
+      fun setCatalogDefaults() =
+         let
             val _ = O_CATALOG_FILES  := nil
             val _ = O_PREFER_SOCAT   := false
             val _ = O_PREFER_SYSID   := false
@@ -15576,17 +15576,17 @@ functor CatOptions () : CatOptions =
             val _ = O_CATALOG_ENC    := LATIN1
          in ()
          end
-      
-      val catalogUsage = 
+
+      val catalogUsage =
          [U_ITEM(["-C <url>","--catalog=<url>"],"Use catalog <url>"),
           U_ITEM(["--catalog-syntax=(soc|xml)"],"Default syntax for catalogs (xml)"),
-          U_ITEM(["--catalog-encoding=<enc>"],"Default encoding for Socat catalogs (LATIN1)"), 
+          U_ITEM(["--catalog-encoding=<enc>"],"Default encoding for Socat catalogs (LATIN1)"),
           U_ITEM(["--catalog-remap=[(yes|no)]"],"Support remapping of system identifiers (yes)"),
           U_ITEM(["--catalog-priority=(map|remap|sys)"],"Resolving strategy in catalogs (map)")
           ]
 
-      fun setCatalogOptions (opts,doError) = 
-         let 
+      fun setCatalogOptions (opts,doError) =
+         let
             val catalogs = ref nil:string list ref
 
             fun hasNoArg key = "option "^key^" has no argument"
@@ -15599,13 +15599,13 @@ functor CatOptions () : CatOptions =
             val syntaxName  = "'soc' or 'xml'"
 
             fun do_catalog valOpt =
-               case valOpt 
+               case valOpt
                  of NONE => doError(mustHave "--catalog")
                   | SOME s => catalogs := s::(!catalogs)
 
             fun do_prio valOpt =
-               let fun set(cat,sys) = (O_PREFER_CATALOG := cat; O_PREFER_SYSID := sys) 
-               in case valOpt 
+               let fun set(cat,sys) = (O_PREFER_CATALOG := cat; O_PREFER_SYSID := sys)
+               in case valOpt
                     of NONE => doError(mustHave "--catalog-priority")
                      | SOME "map" => set(true,false)
                      | SOME "remap" => set(true,true)
@@ -15614,27 +15614,27 @@ functor CatOptions () : CatOptions =
                end
 
             fun do_enc valOpt =
-               case valOpt 
+               case valOpt
                  of NONE => doError(mustHave "--catalog-encoding")
-                  | SOME s => case isEncoding s 
+                  | SOME s => case isEncoding s
                                 of NOENC => doError("unsupported encoding "^s)
                                  | enc => O_CATALOG_ENC := enc
 
             fun do_remap valOpt =
-               case valOpt 
+               case valOpt
                  of NONE => doError(mustHave "--catalog-remap")
                   | SOME "no" => O_SUPPORT_REMAP := false
                   | SOME "yes" => O_SUPPORT_REMAP := true
                   | SOME s => doError(mustBe("catalog-remap",yesNo))
 
             fun do_syntax valOpt =
-               case valOpt 
+               case valOpt
                  of NONE => doError(mustHave "--catalog-syntax")
                   | SOME "soc" => O_PREFER_SOCAT := true
                   | SOME "xml" => O_PREFER_SOCAT := false
                   | SOME s => doError(mustBe("catalog-remap",syntaxName))
 
-            fun do_long(key,valOpt) = 
+            fun do_long(key,valOpt) =
                case key
                  of "catalog" => true before do_catalog valOpt
                   | "catalog-remap" => true before do_remap valOpt
@@ -15644,32 +15644,32 @@ functor CatOptions () : CatOptions =
                   | _ => false
 
             fun do_short cs opts =
-               case cs 
+               case cs
                  of nil => doit opts
-                  | [#"C"] => 
-                    (case opts 
+                  | [#"C"] =>
+                    (case opts
                        of OPT_STRING s::opts1 => (catalogs := s::(!catalogs);
                                                   doit opts1)
                         | _ => let val _ = doError (mustHave "-C")
                                in doit opts
                                end)
-                  | cs => 
+                  | cs =>
                     let val cs1 = List.filter
                        (fn c => if #"C"<>c then true
                                 else false before doError (mustHave "-C")) cs
                     in if null cs1 then doit opts else (OPT_SHORT cs1)::doit opts
                     end
-                 
+
             and doit nil = nil
               | doit (opt::opts) =
                case opt
                  of OPT_NOOPT => opts
-                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts 
+                  | OPT_LONG(key,value) => if do_long(key,value) then doit opts
                                            else opt::doit opts
                   | OPT_SHORT cs => do_short cs opts
                   | OPT_NEG cs => opt::doit opts
                   | OPT_STRING s => opt::doit opts
-         
+
             val opts1 = doit opts
             val uris = map String2Uri (!catalogs)
             val _ = O_CATALOG_FILES := uris
@@ -15685,21 +15685,21 @@ signature NullOptions =
       val O_ERROR_LINEWIDTH : int ref
 
       val setNullDefaults : unit -> unit
-      val setNullOptions  : Options.Option list * (string -> unit) 
+      val setNullOptions  : Options.Option list * (string -> unit)
          -> bool * bool * string option * string option
 
       val nullUsage : Options.Usage
    end
 
-structure NullOptions : NullOptions = 
+structure NullOptions : NullOptions =
    struct
       open Options
 
       val O_SILENT          = ref false
       val O_ERROR_DEVICE    = ref TextIO.stdErr
-      val O_ERROR_LINEWIDTH = ref 80 
+      val O_ERROR_LINEWIDTH = ref 80
 
-      val nullUsage = 
+      val nullUsage =
          [U_ITEM(["-s","--silent"],"Suppress reporting of errors and warnings"),
           U_ITEM(["-e <file>","--error-output=<file>"],"Redirect errors to file (stderr)"),
           U_SEP,
@@ -15709,7 +15709,7 @@ structure NullOptions : NullOptions =
           ]
 
       fun setNullDefaults () =
-         let  
+         let
             val _ = O_SILENT              := false
             val _ = O_ERROR_DEVICE        := TextIO.stdErr
          in ()
@@ -15722,43 +15722,43 @@ structure NullOptions : NullOptions =
             fun hasNoArg pre key = String.concat ["option ",pre,key," expects no argument"]
             fun mustHave pre key = String.concat ["option ",pre,key," must have an argument"]
 
-            fun check_noarg(key,valOpt) = 
-               if isSome valOpt then optError (hasNoArg "--" key) else () 
+            fun check_noarg(key,valOpt) =
+               if isSome valOpt then optError (hasNoArg "--" key) else ()
 
             fun do_long (pars as (v,h,e,f)) (key,valOpt) =
-               case key 
+               case key
                  of "help" => (v,true,e,f) before check_noarg(key,valOpt)
                   | "version" => (true,h,e,f) before check_noarg(key,valOpt)
                   | "silent" => pars before O_SILENT := true before check_noarg(key,valOpt)
-                  | "error-output" => 
+                  | "error-output" =>
                     (case valOpt
                        of NONE => pars before optError (mustHave "--" key)
                         | SOME s => (v,h,SOME s,f))
                   | _ => pars before optError(unknown "--" key)
-                        
+
             fun do_short (pars as (v,h,e,f)) (cs,opts) =
-               case cs 
+               case cs
                  of nil => doit pars opts
                   | [#"e"] => (case opts
                                  of OPT_STRING s::opts1 => doit (v,h,SOME s,f) opts1
                                   | _ => (optError (hasNoArg "-" "e"); doit pars opts))
                   | cs => doit (foldr
-                                (fn (c,pars) 
+                                (fn (c,pars)
                                  => case c
                                       of #"e" => pars before optError (hasNoArg "-" "e")
                                        | #"s" => pars before O_SILENT := true
                                        | #"?" => (v,true,e,f)
-                                       | c => pars before 
+                                       | c => pars before
                                          optError (unknown "-" (String.implode [c])))
                                 pars cs) opts
-                    
+
             and doit pars nil = pars
               | doit (pars as (v,h,e,f)) (opt::opts) =
-               case opt 
+               case opt
                  of OPT_LONG(key,valOpt) => doit (do_long pars (key,valOpt)) opts
                   | OPT_SHORT cs => do_short pars (cs,opts)
-                  | OPT_STRING s => if isSome f 
-                                       then let val _ = optError(onlyOne "input file") 
+                  | OPT_STRING s => if isSome f
+                                       then let val _ = optError(onlyOne "input file")
                                             in doit pars opts
                                             end
                                     else doit (v,h,e,SOME s) opts
@@ -15782,16 +15782,16 @@ structure NullHooks =
       val nullStart = OS.Process.success
 
       fun printError(pos,err) = if !O_SILENT then () else TextIO.output
-         (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH) 
+         (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH)
           (Position2String pos
            ::(if isFatalError err then "Fatal error:" else "Error:")
            ::errorMessage err))
       fun printWarning(pos,warn) = if !O_SILENT then () else TextIO.output
-         (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH) 
+         (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH)
           (Position2String pos^" Warning:"::warningMessage warn))
 
       fun hookError   (_,pe) = OS.Process.failure before printError pe
-      fun hookWarning (status,pw) = status before printWarning pw 
+      fun hookWarning (status,pw) = status before printWarning pw
    end
 (* stop of nullHooks.sml *)
 (* start of null.sml *)
@@ -15801,52 +15801,52 @@ structure Null =
       structure CatOptions = CatOptions ()
       structure CatParams =
          struct
-            open CatError CatOptions NullOptions Uri UtilError 
+            open CatError CatOptions NullOptions Uri UtilError
 
             fun catError(pos,err) = if !O_SILENT then () else TextIO.output
-               (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH) 
+               (!O_ERROR_DEVICE,formatMessage (4,!O_ERROR_LINEWIDTH)
                 (Position2String pos^" Error in catalog:"::catMessage err))
          end
-      structure Resolve   = ResolveCatalog (structure Params  = CatParams) 
-      structure ParseNull = Parse          (structure Dtd = Dtd 
+      structure Resolve   = ResolveCatalog (structure Params  = CatParams)
+      structure ParseNull = Parse          (structure Dtd = Dtd
                                             structure Hooks = NullHooks
                                             structure Resolve = Resolve
                                             structure ParserOptions = ParserOptions)
 
       fun parseNull uri = ParseNull.parseDocument uri NONE NullHooks.nullStart
 
-      open 
+      open
          CatOptions NullOptions Options ParserOptions Uri
 
       val usage = List.concat [parserUsage,[U_SEP],catalogUsage,[U_SEP],nullUsage]
 
-      exception Exit of OS.Process.status 
-         
-      fun null(prog,args) = 
-         let 
+      exception Exit of OS.Process.status
+
+      fun null(prog,args) =
+         let
             val prog = "fxp"
             val hadError = ref false
-               
-            fun optError msg = 
+
+            fun optError msg =
                let val _ = TextIO.output(TextIO.stdErr,msg^".\n")
                in hadError := true
                end
-            fun exitError msg = 
+            fun exitError msg =
                let val _ = TextIO.output(TextIO.stdErr,msg^".\n")
-               in raise Exit OS.Process.failure 
+               in raise Exit OS.Process.failure
                end
-            fun exitHelp prog = 
+            fun exitHelp prog =
                let val _ = printUsage TextIO.stdOut prog usage
-               in raise Exit OS.Process.success 
+               in raise Exit OS.Process.success
                end
-            fun exitVersion prog = 
+            fun exitVersion prog =
                let val _ = app print [prog," version ",Version.FXP_VERSION,"\n"]
-               in raise Exit OS.Process.success 
+               in raise Exit OS.Process.success
                end
-            
+
             fun summOpt prog = "For a summary of options type "^prog^" --help"
             fun noFile(f,cause) = "can't open file '"^f^"': "^exnMessage cause
-               
+
             val opts = parseOptions args
             val _ = setParserDefaults()
             val opts1 = setParserOptions (opts,optError)
@@ -15857,7 +15857,7 @@ structure Null =
             val _ = if !hadError then exitError (summOpt prog) else ()
             val _ = if vers then exitVersion prog else ()
             val _ = if help then exitHelp prog else ()
-            val _ = case err 
+            val _ = case err
                       of SOME "-" => O_ERROR_DEVICE := TextIO.stdErr
                        | SOME f => (O_ERROR_DEVICE := TextIO.openOut f
                                     handle IO.Io {cause,...} => exitError(noFile(f,cause)))
@@ -15868,11 +15868,11 @@ structure Null =
             val _ = if isSome err then TextIO.closeOut (!O_ERROR_DEVICE) else ()
          in status
          end
-      handle Exit status => status 
-           | exn => 
-         let val _ = TextIO.output 
+      handle Exit status => status
+           | exn =>
+         let val _ = TextIO.output
             (TextIO.stdErr,prog^": Unexpected exception: "^exnMessage exn^".\n")
-         in OS.Process.failure 
+         in OS.Process.failure
          end
    end
 

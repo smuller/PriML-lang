@@ -1,7 +1,7 @@
 functor F (P: PACK_WORD) =
    struct
       val v = Word8Vector.tabulate (11, Word8.fromInt)
-         
+
       fun p i = print (concat [LargeWord.toString (P.subVec (v, i)), "\n"])
 
       val _ = (p 0; p 1)

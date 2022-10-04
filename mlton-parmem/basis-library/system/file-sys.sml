@@ -76,7 +76,7 @@ structure OS_FileSys =
                let
                   val {isAbs, arcs, ...} = P.fromString (readLink link)
                   val arcs = List.@ (arcs, rest)
-               in 
+               in
                   if isAbs
                      then gotoRoot (n-1, arcs, vol)
                   else walkPath (n-1, pathFromRoot, arcs, vol)

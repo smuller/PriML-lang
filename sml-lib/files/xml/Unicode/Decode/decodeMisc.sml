@@ -1,4 +1,4 @@
-signature DecodeMisc = 
+signature DecodeMisc =
    sig
       val getCharAscii  : DecodeFile.File -> UniChar.Char * DecodeFile.File
       val getCharEbcdic : DecodeFile.File -> UniChar.Char * DecodeFile.File
@@ -6,17 +6,17 @@ signature DecodeMisc =
       val getCharLatin1 : DecodeFile.File -> UniChar.Char * DecodeFile.File
    end
 
-structure DecodeMisc : DecodeMisc = 
+structure DecodeMisc : DecodeMisc =
    struct
-      open 
+      open
 	 UniChar DecodeFile DecodeError
-	 
+
       fun getCharEof f = raise EndOfFile f
 
       (*--------------------------------------------------------------------*)
       (* ASCII characters must be lower than 0wx80                          *)
       (*--------------------------------------------------------------------*)
-      fun getCharAscii f = 
+      fun getCharAscii f =
 	 let val (b,f1) = getByte f
 	 in if b<0wx80 then (Byte2Char b,f1)
 	    else raise DecodeError(f1,false,ERR_ILLEGAL_CHAR(b,"ASCII"))
@@ -33,7 +33,7 @@ structure DecodeMisc : DecodeMisc =
       (* EBCDIC is mapped to the first plane of Unicode.                    *)
       (*--------------------------------------------------------------------*)
       (* according to rfc-1345 (and gnu recode experiments) *)
-      val ebcdic2latinTab = Vector.fromList 
+      val ebcdic2latinTab = Vector.fromList
 	  [0wx00,0wx01,0wx02,0wx03,0wx9C,0wx09,0wx86,0wx7F,
 	   0wx97,0wx8D,0wx8E,0wx0B,0wx0C,0wx0D,0wx0E,0wx0F,
 	   0wx10,0wx11,0wx12,0wx13,0wx9D,0wx85,0wx08,0wx87,
@@ -66,8 +66,8 @@ structure DecodeMisc : DecodeMisc =
 	   0wx59,0wx5A,0wxF4,0wxF5,0wxF6,0wxF7,0wxF8,0wxF9,
 	   0wx30,0wx31,0wx32,0wx33,0wx34,0wx35,0wx36,0wx37,
 	   0wx38,0wx39,0wxFA,0wxFB,0wxFC,0wxFD,0wxFE,0wxFF
-	   ] 
-	   
+	   ]
+
       fun ebcdic2latin b = Vector.sub(ebcdic2latinTab,Word8.toInt b)
 
       fun getCharEbcdic f = let val (b,f1) = getByte f

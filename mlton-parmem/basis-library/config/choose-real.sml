@@ -13,9 +13,9 @@ signature CHOOSE_REALN_ARG =
       val fReal64: Real64.real t
    end
 
-functor ChooseRealN_Real32 (A : CHOOSE_REALN_ARG) : 
-   sig val f : Real32.real A.t end = 
+functor ChooseRealN_Real32 (A : CHOOSE_REALN_ARG) :
+   sig val f : Real32.real A.t end =
    struct val f = A.fReal32 val _ = A.fReal64 end
-functor ChooseRealN_Real64 (A : CHOOSE_REALN_ARG) : 
-   sig val f : Real64.real A.t end = 
+functor ChooseRealN_Real64 (A : CHOOSE_REALN_ARG) :
+   sig val f : Real64.real A.t end =
    struct val _ = A.fReal32 val f = A.fReal64 end

@@ -166,13 +166,13 @@ structure AstToSpec = struct
           | valty C (A.Numeric (_, _, A.UNSIGNED, A.INT, _)) = Spec.BASIC Spec.UINT
           | valty C (A.Numeric (_, _, A.SIGNED, A.LONG, _)) = Spec.BASIC Spec.SLONG
           | valty C (A.Numeric (_, _, A.UNSIGNED, A.LONG, _)) = Spec.BASIC Spec.ULONG
-          | valty C (A.Numeric (_, _, A.SIGNED, A.LONGLONG, _)) = 
+          | valty C (A.Numeric (_, _, A.SIGNED, A.LONGLONG, _)) =
               Spec.BASIC Spec.SLONGLONG
-          | valty C (A.Numeric (_, _, A.UNSIGNED, A.LONGLONG, _)) = 
+          | valty C (A.Numeric (_, _, A.UNSIGNED, A.LONGLONG, _)) =
               Spec.BASIC Spec.ULONGLONG
           | valty C (A.Numeric (_, _, _, A.FLOAT, _)) = Spec.BASIC Spec.FLOAT
           | valty C (A.Numeric (_, _, _, A.DOUBLE, _)) = Spec.BASIC Spec.DOUBLE
-          | valty C (A.Numeric (_, _, _, A.LONGDOUBLE, _)) = 
+          | valty C (A.Numeric (_, _, _, A.LONGDOUBLE, _)) =
               Spec.UNIMPLEMENTED "long double"
           | valty C (A.Array (NONE, t)) = valty C (A.Pointer t)
           | valty C (A.Array (SOME (n, _), t)) =
@@ -336,7 +336,7 @@ structure AstToSpec = struct
                     val fields = build (members, 0, (0, false))
                 in
                     structs := { src = srcOf location,
-                                 tag = tag, 
+                                 tag = tag,
                                  anon = anon,
                                  size = Word.fromInt ssize,
                                  exclude = not (includedSU (tag, location)),
@@ -347,7 +347,7 @@ structure AstToSpec = struct
 
         and unionty (tid, name, C, members, location) = let
             val (tag_stem, anon) = tagname (name, C, tid)
-            val tag = reported_tagname (tag_stem, anon)     
+            val tag = reported_tagname (tag_stem, anon)
             val C' = mk_context_su (tag_stem, anon)
             val ty = Spec.UNION tag
             val lsz = ref 0

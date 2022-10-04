@@ -10,7 +10,7 @@
 
    The reader structure includes functions that generate readers from
    files or CharVector.vectors in memory. Recall that
-   CharVector.vector is the same type as string. 
+   CharVector.vector is the same type as string.
 *)
 
 signature READER =
@@ -49,7 +49,7 @@ sig
     val rl32 : reader -> int
     val rb16 : reader -> int
     val rb32 : reader -> int
-        
+
     val rlw16 : reader -> Word32.word
     val rlw32 : reader -> Word32.word
     val rbw16 : reader -> Word32.word
@@ -75,11 +75,11 @@ sig
     (* grab a zero-terminated string without altering the position *)
     val strzat : reader -> int -> string
 
-    (* without terminating carraige return or newline. 
+    (* without terminating carraige return or newline.
        considers EOF to end the line, as well. *)
     val line : reader -> string option
 
-    (* token f r 
+    (* token f r
        Read the next token (if any) from the reader r. A
        token is some sequence of characters for which f(c) is
        false. Leading characters for which f(c) is true are

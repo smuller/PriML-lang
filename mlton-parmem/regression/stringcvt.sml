@@ -5,8 +5,8 @@ fun e1 seq e2 = e2;
 fun check b = if b then "OK" else "WRONG";
 fun check' f = (if f () then "OK" else "WRONG") handle _ => "EXN";
 
-fun range (from, to) p = 
-    let open Int 
+fun range (from, to) p =
+    let open Int
     in
         (from > to) orelse (p from) andalso (range (from+1, to) p)
     end;
@@ -17,7 +17,7 @@ fun tst0 s s' = print (s ^ "    \t" ^ s' ^ "\n");
 fun tst  s b = tst0 s (check  b);
 fun tst' s f = tst0 s (check' f);
 
-fun tstrange s bounds = (tst s) o range bounds  
+fun tstrange s bounds = (tst s) o range bounds
 
 
 (* test/stringcvt.sml -- 1995-10-26, 1996-07-05 *)
@@ -28,7 +28,7 @@ use "auxil.sml";
 
 val _ = print "\nFile stringcvt.sml: Testing structure StringCvt...\n";
 
-local 
+local
     open StringCvt
     (* Read all upper case letters, skip lowercase letters, scan an
      * integer, and return the excess characters: *)
@@ -39,7 +39,7 @@ local
             val src2         = dropl Char.isLower getc src1
         in case Int.scan DEC getc src2 of
             NONE            => NONE
-          | SOME (i, src3)  => 
+          | SOME (i, src3)  =>
                 let val str2 = takel (fn _ => true) getc src3
                 in SOME((str1, i, str2), src3) end
         end
@@ -47,31 +47,31 @@ local
     (* Testing TextIO.scanStream: *)
 
     val tmpfile = "textio.tmp";
-    fun putandscan scan s = 
-        let open TextIO 
+    fun putandscan scan s =
+        let open TextIO
             val os = openOut tmpfile
             val _  = output(os, s)
-            val _  = closeOut os 
+            val _  = closeOut os
             val is = openIn tmpfile
         in
             scanStream scan is
-            before 
+            before
             closeIn is
         end;
-            
-    fun testtrip (s, res) = 
+
+    fun testtrip (s, res) =
         scanString triple s = res
         andalso putandscan triple s = res
 
     datatype result = Bool of bool | Int of int
 
-    fun backtrack getc src = 
+    fun backtrack getc src =
         case Bool.scan getc src of
             SOME(b, rest) => SOME (Bool b, rest)
-          | NONE          => 
+          | NONE          =>
                 case Int.scan StringCvt.DEC getc src of
                     SOME(i, rest) => SOME(Int i, rest)
-                  | NONE   => 
+                  | NONE   =>
                         case Int.scan StringCvt.HEX getc src of
                             SOME(i, rest) => SOME(Int i, rest)
                           | NONE   => NONE
@@ -82,7 +82,7 @@ local
 
 in
 
-val test1 = 
+val test1 =
     tst' "test1" (fn _ =>
            padLeft #"#" 0 "abcdef" = "abcdef"
            andalso padLeft #"#" 6 "abcdef" = "abcdef"
@@ -90,7 +90,7 @@ val test1 =
            andalso padLeft #"#" 10 "abcdef" = "####abcdef"
            andalso padLeft #"#" ~3 "abcdef" = "abcdef");
 
-val test2 = 
+val test2 =
     tst' "test2" (fn _ =>
            padRight #"#" 0 "abcdef" = "abcdef"
            andalso padRight #"#" 6 "abcdef" = "abcdef"
@@ -98,7 +98,7 @@ val test2 =
            andalso padRight #"#" 10 "abcdef" = "abcdef####"
            andalso padRight #"#" ~3 "abcdef" = "abcdef");
 
-val test3 = 
+val test3 =
     tst' "test3" (fn _ =>
     testtrip ("", NONE)
     andalso testtrip(" a1", NONE)
@@ -108,7 +108,7 @@ val test3 =
     andalso testtrip(" *1", NONE)
     andalso testtrip("ABC *1", NONE));
 
-val test4 = 
+val test4 =
     tst' "test4" (fn _ =>
     testtrip ("1", SOME("", 1, ""))
     andalso testtrip ("1", SOME("", 1, ""))
@@ -126,7 +126,7 @@ val test5 =
     andalso testtrip ("azbc  1a123+ +&D", SOME("", 1, "a123+ +&D"))
     andalso testtrip ("azbc  1a123+ +&D", SOME("", 1, "a123+ +&D")))
 
-val test6 = 
+val test6 =
     tst' "test6" (fn _ =>
     testtrip ("~1234a123+ +&D", SOME("", ~1234, "a123+ +&D"))
     andalso testtrip ("~1234a123+ +&D", SOME("", ~1234, "a123+ +&D"))
@@ -148,36 +148,36 @@ val test7 =
     andalso testtrip ("Aazbc  1a123+ +&D", SOME("A", 1, "a123+ +&D"))
     andalso testtrip ("ABCDEFGazbc  1a123+ +&D", SOME("ABCDEFG", 1, "a123+ +&D")))
 
-val test8 = 
+val test8 =
     tst' "test8" (fn _ =>
     testtrip ("A~1234a123+ +&D", SOME("A", ~1234, "a123+ +&D"))
-    andalso 
+    andalso
     testtrip ("ABCDEFG~1234a123+ +&D", SOME("ABCDEFG", ~1234, "a123+ +&D"))
     andalso testtrip ("Aa~1234a123+ +&D", SOME("A", ~1234, "a123+ +&D"))
-    andalso 
+    andalso
     testtrip ("ABCDEFGa~1234a123+ +&D", SOME("ABCDEFG", ~1234, "a123+ +&D"))
     andalso testtrip ("Aazbc~1234a123+ +&D", SOME("A", ~1234, "a123+ +&D"))
-    andalso 
+    andalso
     testtrip ("ABCDEFGazbc~1234a123+ +&D", SOME("ABCDEFG", ~1234, "a123+ +&D"))
     andalso testtrip ("Aazbc  ~1234a123+ +&D", SOME("A", ~1234, "a123+ +&D"))
-    andalso 
+    andalso
     testtrip ("ABCDEFGazbc  ~1234a123+ +&D", SOME("ABCDEFG", ~1234, "a123+ +&D")))
 
-val test9 = 
+val test9 =
     tst' "test9" (fn _ =>
-    let fun getstring b getc src = 
+    let fun getstring b getc src =
             SOME(takel (fn _ => b) getc src, src)
         fun dup 0 s = s
           | dup n s = dup (n-1) (s^s);
         val longstring = dup 13 "abcDEFGHI"
-    in 
-        scanString (getstring true) longstring = SOME longstring 
+    in
+        scanString (getstring true) longstring = SOME longstring
         andalso scanString (getstring false) longstring = SOME ""
         andalso putandscan (getstring true) longstring = SOME longstring
     end)
 
-val test10 = 
-    tst' "test10" (fn _ => 
+val test10 =
+    tst' "test10" (fn _ =>
            List.all testback
            [("false",  SOME (Bool false)),
             ("true",   SOME (Bool true)),
@@ -190,7 +190,7 @@ val test10 =
             ("",       NONE),
             ("gryf",   NONE)
             ]);
-    
+
 (*val _ = FileSys.remove tmpfile*)
 
 end

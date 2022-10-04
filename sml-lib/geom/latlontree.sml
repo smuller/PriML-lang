@@ -17,7 +17,7 @@ struct
     val xzero = 0.0
     val yzero = 0.0
     fun dist p pp = LatLon.dist_meters (p, pp)
-        
+
     (* PERF: Probably a straightforward formula for great circles
        along lines of latitude and longitude, but this also suffices *)
     fun xdist (x1 : xpos, x2 : xpos) = dist (pos (x1, yzero)) (pos (x2, yzero))

@@ -26,9 +26,9 @@ structure Array =
 
 structure Vector =
    struct
-      open Vector 
-      (* Don't mutate the array after you apply fromArray, because vectors 
-       * are supposed to be immutable and the optimizer depends on this.  
+      open Vector
+      (* Don't mutate the array after you apply fromArray, because vectors
+       * are supposed to be immutable and the optimizer depends on this.
        *)
       val fromArrayUnsafe = _prim "Array_toVector": 'a array -> 'a vector;
       val length = _prim "Vector_length": 'a vector -> SeqIndex.int;

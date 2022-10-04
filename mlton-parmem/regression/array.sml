@@ -5,8 +5,8 @@ fun e1 seq e2 = e2;
 fun check b = if b then "OK" else "WRONG";
 fun check' f = (if f () then "OK" else "WRONG") handle _ => "EXN";
 
-fun range (from, to) p = 
-    let open Int 
+fun range (from, to) p =
+    let open Int
     in
         (from > to) orelse (p from) andalso (range (from+1, to) p)
     end;
@@ -17,30 +17,30 @@ fun tst0 s s' = print (s ^ "    \t" ^ s' ^ "\n");
 fun tst  s b = tst0 s (check  b);
 fun tst' s f = tst0 s (check' f);
 
-fun tstrange s bounds = (tst s) o range bounds  
+fun tstrange s bounds = (tst s) o range bounds
 
-(* test/array.sml -- some test cases for Array 
+(* test/array.sml -- some test cases for Array
    PS 1994-12-10, 1995-06-14, 1995-11-07 *)
 
 val _ = print "Testing Array...\n"
 
 local
-    open Array 
+    open Array
     infix 9 sub
     val array0 : int array = fromList []
     fun extract (arr, s, l) = ArraySlice.vector (ArraySlice.slice (arr, s, l))
     val copy = fn {src, si, len, dst, di} =>
       ArraySlice.copy {src = ArraySlice.slice (src, si, len),
                        dst = dst, di = di}
-    fun foldli f b (arr, s, l) = 
+    fun foldli f b (arr, s, l) =
       ArraySlice.foldli (fn (i,x,y) => f (i+s,x,y)) b (ArraySlice.slice (arr, s, l))
-    fun foldri f b (arr, s, l) = 
+    fun foldri f b (arr, s, l) =
       ArraySlice.foldri (fn (i,x,y) => f (i+s,x,y)) b (ArraySlice.slice (arr, s, l))
-    fun appi f (arr, s, l) = 
+    fun appi f (arr, s, l) =
       ArraySlice.appi (fn (i,x) => f (i+s,x)) (ArraySlice.slice (arr, s, l))
-    fun modifyi f (arr, s, l) = 
+    fun modifyi f (arr, s, l) =
       ArraySlice.modifyi (fn (i,x) => f (i+s,x)) (ArraySlice.slice (arr, s, l))
-    fun findi f (arr, s, l) = 
+    fun findi f (arr, s, l) =
       ArraySlice.findi (fn (i,x) => f (i+s,x)) (ArraySlice.slice (arr, s, l))
 in
 
@@ -50,18 +50,18 @@ val c = fromList [1,11,21,31,41,51,61];
 
 val test1 = tst' "test1" (fn () => a<>c);
 
-val test2 = 
-    tst' "test2" (fn () => 
+val test2 =
+    tst' "test2" (fn () =>
            array(0, 11) <> array0
            andalso array(0,()) <> tabulate(0, fn _ => ())
-           andalso tabulate(0, fn _ => ()) <> fromList [] 
-           andalso fromList [] <> fromList [] 
+           andalso tabulate(0, fn _ => ()) <> fromList []
+           andalso fromList [] <> fromList []
            andalso array(0, ()) <> array(0, ())
            andalso tabulate(0, fn _ => ()) <> tabulate(0, fn _ => ()));
 
 val d = tabulate(100, fn i => i mod 7 * 10 + 1);
 
-val test3 = 
+val test3 =
     tst' "test3" (fn () => d sub 27 = 61);
 
 val test4a = tst0 "test4a"
@@ -72,12 +72,12 @@ val test4b = tst0 "test4b"
              ((tabulate(~1, fn i => i) seq "WRONG")
             handle Size => "OK" | _ => "WRONG");
 
-val test4c = 
+val test4c =
   tst' "test4c" (fn () => length (tabulate(0, fn i => i div 0)) = 0);
 
-val test5a = 
+val test5a =
     tst' "test5a" (fn () => length (fromList []) = 0 andalso length a = 7);
-val test5b = 
+val test5b =
     tst' "test5b" (fn () => length array0 = 0);
 
 val test6a = tst0 "test6a" ((c sub ~1 seq "WRONG") handle Subscript => "OK" | _ => "WRONG");
@@ -85,10 +85,10 @@ val test6b = tst0 "test6b" ((c sub 7  seq "WRONG") handle Subscript => "OK" | _ 
 val test6c = tst' "test6c" (fn () => c sub 0 = 1);
 
 val e = array(203, 0);
-val _ = (copy{src=d, si=0, dst=e, di=0,        len=NONE}; 
+val _ = (copy{src=d, si=0, dst=e, di=0,        len=NONE};
          copy{src=b, si=0, dst=e, di=length d, len=NONE};
          copy{src=d, si=0, dst=e, di=length d + length b, len=NONE});
-         
+
 fun a2v a = extract(a, 0, NONE);
 val ev = Vector.concat [a2v d, a2v b, a2v d]; (* length e = 203 *)
 
@@ -103,24 +103,24 @@ val f = extract (e, 100, SOME 3);
 
 val test9 = tst' "test9" (fn () => f = a2v b);
 
-val test9a = 
+val test9a =
     tst' "test9a" (fn () => ev = extract(e, 0, SOME (length e))
            andalso ev = extract(e, 0, NONE));
-val test9b = 
+val test9b =
     tst' "test9b" (fn () => Vector.fromList [] = extract(e, 100, SOME 0));
-val test9c = (extract(e, ~1, SOME (length e))  seq "WRONG") 
+val test9c = (extract(e, ~1, SOME (length e))  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9d = (extract(e, length e+1, SOME 0) seq "WRONG") 
+val test9d = (extract(e, length e+1, SOME 0) seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9e = (extract(e, 0, SOME (length e+1)) seq "WRONG") 
+val test9e = (extract(e, 0, SOME (length e+1)) seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9f = (extract(e, 20, SOME ~1)        seq "WRONG") 
+val test9f = (extract(e, 20, SOME ~1)        seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9g = (extract(e, ~1, NONE)  seq "WRONG") 
+val test9g = (extract(e, ~1, NONE)  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9h = (extract(e, length e+1, NONE) seq "WRONG") 
+val test9h = (extract(e, length e+1, NONE) seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
-val test9i = 
+val test9i =
     tst' "test9i" (fn () => a2v (fromList []) = extract(e, length e, SOME 0)
             andalso a2v (fromList []) = extract(e, length e, NONE));
 val test9j =
@@ -130,7 +130,7 @@ val _ = copy{src=e, si=0, dst=e, di=0, len=NONE};
 val g = array(203, 9999999);
 val _ = copy{src=e, si=0, dst=g, di=0, len=NONE};
 
-val test10a = tst' "test10a" (fn () => ev = extract(e, 0, SOME (length e)) 
+val test10a = tst' "test10a" (fn () => ev = extract(e, 0, SOME (length e))
                       andalso ev = extract(e, 0, NONE));
 val test10b = tst' "test10b" (fn () => ev = extract(g, 0, SOME (length g))
                       andalso ev = extract(g, 0, NONE));
@@ -149,40 +149,40 @@ val test10f = tst' "test10f" (fn () => a2v b = extract(g, 100, SOME 3));
 
 val _ = copy{src=g, si=202, dst=g, di=202, len=SOME 1};
 
-val test10g = 
+val test10g =
     tst' "test10g" (fn () => g sub 202 = 10 * (202-1-103) mod 7 + 1);
-val test10h = 
-    tst' "test10h" (fn () => (copy{src=array0, si=0, dst=array0, di=0, len=SOME 0}; 
+val test10h =
+    tst' "test10h" (fn () => (copy{src=array0, si=0, dst=array0, di=0, len=SOME 0};
                      array0 <> array(0, 999999)));
-val test10i = 
-    tst' "test10i" (fn () => (copy{src=array0, si=0, dst=array0, di=0, len=NONE}; 
+val test10i =
+    tst' "test10i" (fn () => (copy{src=array0, si=0, dst=array0, di=0, len=NONE};
                      array0 <> array(0, 999999)));
 
-val test11a = tst0 "test11a" ((copy{src=g, si= ~1, dst=g, di=0, len=NONE}; "WRONG") 
+val test11a = tst0 "test11a" ((copy{src=g, si= ~1, dst=g, di=0, len=NONE}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11b = tst0 "test11b" ((copy{src=g, si=0, dst=g, di= ~1, len=NONE}; "WRONG") 
+val test11b = tst0 "test11b" ((copy{src=g, si=0, dst=g, di= ~1, len=NONE}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11c = tst0 "test11c" ((copy{src=g, si=1, dst=g, di=0, len=NONE}; "OK") 
+val test11c = tst0 "test11c" ((copy{src=g, si=1, dst=g, di=0, len=NONE}; "OK")
               handle _ => "WRONG")
-val test11d = tst0 "test11d" ((copy{src=g, si=0, dst=g, di=1, len=NONE}; "WRONG") 
+val test11d = tst0 "test11d" ((copy{src=g, si=0, dst=g, di=1, len=NONE}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11e = tst0 "test11e" ((copy{src=g, si=203, dst=g, di=0, len=NONE}; "OK") 
+val test11e = tst0 "test11e" ((copy{src=g, si=203, dst=g, di=0, len=NONE}; "OK")
               handle _ => "WRONG")
 
-val test11f = tst0 "test11f" ((copy{src=g, si= ~1, dst=g, di=0, len=SOME (length g)}; "WRONG") 
+val test11f = tst0 "test11f" ((copy{src=g, si= ~1, dst=g, di=0, len=SOME (length g)}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11g = tst0 "test11g" ((copy{src=g, si=0, dst=g, di= ~1, len=SOME (length g)}; "WRONG") 
+val test11g = tst0 "test11g" ((copy{src=g, si=0, dst=g, di= ~1, len=SOME (length g)}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11h = tst0 "test11h" ((copy{src=g, si=1, dst=g, di=0, len=SOME (length g)}; "WRONG") 
+val test11h = tst0 "test11h" ((copy{src=g, si=1, dst=g, di=0, len=SOME (length g)}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11i = tst0 "test11i" ((copy{src=g, si=0, dst=g, di=1, len=SOME (length g)}; "WRONG") 
+val test11i = tst0 "test11i" ((copy{src=g, si=0, dst=g, di=1, len=SOME (length g)}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11j = tst0 "test11j" ((copy{src=g, si=0, dst=g, di=0, len=SOME (length g+1)}; "WRONG") 
+val test11j = tst0 "test11j" ((copy{src=g, si=0, dst=g, di=0, len=SOME (length g+1)}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
-val test11k = tst0 "test11k" ((copy{src=g, si=203, dst=g, di=0, len=SOME 1}; "WRONG") 
+val test11k = tst0 "test11k" ((copy{src=g, si=203, dst=g, di=0, len=SOME 1}; "WRONG")
               handle Subscript => "OK" | _ => "WRONG")
 
-local 
+local
     val v = ref 0
     fun setv c = v := c;
     fun addv c = v := c + !v;
@@ -193,9 +193,9 @@ local
     val inplist = [7,9,13];
     val inp = fromList inplist
     val pni = fromList (rev inplist)
-    fun copyinp a = 
+    fun copyinp a =
         copy{src=inp, si=0, dst=a, di=0, len=NONE}
-in 
+in
 
 val array0 = fromList [] : int array;
 
@@ -219,15 +219,15 @@ val test12c =
            andalso find (fn x => x=9) inp = SOME 9
            andalso (setv 0; find (fn x => (addv x; x=9)) inp; !v = 7+9));
 
-val test12d = 
+val test12d =
     tst' "test12d" (fn _ =>
            (setv 117; app setv array0; !v = 117)
            andalso (setv 0; app addv inp; !v = 7+9+13)
            andalso (app setv inp; !v = 13));
 
-val test12e = 
+val test12e =
     let val a = array(length inp, inp sub 0)
-    in 
+    in
         tst' "test12e" (fn _ =>
            (modify (~ : int -> int) array0; true)
            andalso (copyinp a; modify ~ a; foldr (op::) [] a = map ~ inplist)
@@ -311,12 +311,12 @@ val test14g = (findi (fn _ => true) (inp, 0, SOME 4) seq "WRONG")
 val test14h = (findi (fn _ => true) (inp, 2, SOME ~1) seq "WRONG")
            handle Subscript => "OK" | _ => "WRONG";
 
-val test15a = 
+val test15a =
     tst' "test15a" (fn _ =>
            (setvi (0,117); appi setvi (array0, 0, NONE); !v = 117)
            andalso (setvi (0,0); appi addvi (inp, 0, NONE); !v = 0+7+1+9+2+13)
            andalso (appi setvi (inp, 0, NONE); !v = 2+13));
-val test15b = 
+val test15b =
     tst' "test15b" (fn _ =>
            (setvi (0,117); appi setvi (array0, 0, SOME 0); !v = 117)
            andalso (setvi (0,0); appi addvi (inp, 0, SOME 0); !v = 0)
@@ -342,35 +342,35 @@ val test15g = tst0 "test15g" ((appi setvi (inp, 0, SOME 4) seq "WRONG")
 val test15h = tst0 "test15h" ((appi setvi (inp, 2, SOME ~1) seq "WRONG")
            handle Subscript => "OK" | _ => "WRONG");
 
-val test16a = 
+val test16a =
     let val a = array(length inp, inp sub 0)
-    in 
+    in
         tst' "test16a" (fn _ =>
            (modifyi (op +) (array0, 0, NONE); true)
            andalso (modifyi (op +) (array0, 0, SOME 0); true)
-           andalso (copyinp a; modifyi (op -) (a, 0, SOME 0); 
+           andalso (copyinp a; modifyi (op -) (a, 0, SOME 0);
                     foldr (op::) [] a = [7,9,13])
-           andalso (copyinp a; modifyi (op -) (a, 3, SOME 0); 
+           andalso (copyinp a; modifyi (op -) (a, 3, SOME 0);
                     foldr (op::) [] a = [7,9,13])
-           andalso (copyinp a; modifyi (op -) (a, 0, NONE); 
+           andalso (copyinp a; modifyi (op -) (a, 0, NONE);
                     foldr (op::) [] a = [~7,~8,~11])
-           andalso (copyinp a; modifyi (op -) (a, 0, SOME 3); 
+           andalso (copyinp a; modifyi (op -) (a, 0, SOME 3);
                     foldr (op::) [] a = [~7,~8,~11])
-           andalso (copyinp a; modifyi (op -) (a, 0, SOME 2); 
+           andalso (copyinp a; modifyi (op -) (a, 0, SOME 2);
                     foldr (op::) [] a = [~7,~8,13])
-           andalso (copyinp a; modifyi (op -) (a, 1, SOME 2); 
+           andalso (copyinp a; modifyi (op -) (a, 1, SOME 2);
                     foldr (op::) [] a = [7,~8,~11])
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 0, NONE); !v = 2+13)
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 0, SOME 3); !v = 2+13)
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 1, SOME 2); !v = 2+13)
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 0, SOME 2); !v = 1+9)
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 0, SOME 0); !v = 117)
-           andalso (copyinp a; setv 117; 
+           andalso (copyinp a; setv 117;
                     modifyi (fn x => (setvi x; 37)) (a, 3, SOME 0); !v = 117))
     end
 

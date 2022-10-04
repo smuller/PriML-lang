@@ -7,7 +7,7 @@ sig
   exception TextSVG of string
 
   (* Render a real as a string compatible with SVG syntax. Doesn't use ~ for
-     negative numbers, and avoids expontential notation for very small numbers. 
+     negative numbers, and avoids expontential notation for very small numbers.
      Can lose precision. *)
   val rtos : real -> string
 
@@ -16,22 +16,22 @@ sig
   type svggraphic
   val loadgraphic : string -> svggraphic
   (* Optionally scale it (as multiplicative factor), and rotate (as degrees). *)
-  val placegraphic : { graphic : svggraphic, x : real, y : real, 
+  val placegraphic : { graphic : svggraphic, x : real, y : real,
                        scale : real option, rotate : real option } -> string
   val graphicsize : svggraphic -> real * real
 
 
-  (* Give viewport. Generator is a freeform html-safe string; 
+  (* Give viewport. Generator is a freeform html-safe string;
      ignored if blank. *)
-  val svgheader : { x : int, y : int, 
-                    width : int, height : int, 
+  val svgheader : { x : int, y : int,
+                    width : int, height : int,
                     generator : string } -> string
   val svgfooter : unit -> string
 
 
   (* e.g. [("#FFFFFF", "this text is "), ("#0000FF", "blue")] *)
   type svgtext = (string * string) list
-  val svgtext : { x : real, y : real, face : string, size : real, 
+  val svgtext : { x : real, y : real, face : string, size : real,
                   text : svgtext } -> string
 
 end

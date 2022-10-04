@@ -1,5 +1,5 @@
 val dquote = "\""
-   
+
 val _ = print (concat [Bool.toString (isSome (Char.fromString dquote)), "\n"])
 
 val scan: string -> unit =

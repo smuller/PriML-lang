@@ -17,7 +17,7 @@ struct
                (* move to dir and come back *)
                | (file::rest) =>
                  let
-                     val new = OS.Path.toString 
+                     val new = OS.Path.toString
                                 {arcs = rev rest, isAbs=isAbs, vol=vol}
                      val old = OS.FileSys.getDir ()
                  in
@@ -50,7 +50,7 @@ struct
   (* imperative streams *)
   type 'a stream = unit -> 'a option
   (* but we want to implement them in a more efficient way *)
-  datatype 'a prestream = 
+  datatype 'a prestream =
       PS of unit -> ('a * 'a prestream) option
 
   fun ps_to_stream (PS ps) =
@@ -58,7 +58,7 @@ struct
           val r = ref ps
           fun next () =
               (case (!r) () of
-                   NONE => 
+                   NONE =>
                        let in
                            r := (fn _ => NONE);
                            NONE
@@ -103,7 +103,7 @@ struct
       end
   end
 
-  fun stream_app f s = 
+  fun stream_app f s =
       (case s () of
            NONE => ()
          | SOME a =>
@@ -116,7 +116,7 @@ struct
 
   fun ps_cons a f2 = PS (fn () => SOME(a, f2))
 
-  fun ps_delay ups = 
+  fun ps_delay ups =
       PS (fn () =>
           case ups () of
               PS f => f ())
@@ -144,7 +144,7 @@ struct
   (* works on Windows too. *)
   fun dirplus d p = OS.Path.concat (d, p)
 
-  local open FS 
+  local open FS
   in
 
     fun dirstream s =
@@ -154,7 +154,7 @@ struct
         val _ = stat s
         val d = opendir s
         fun re e nm =
-          let 
+          let
             val st = stat (dirplus s e)
           in
             { dir = ST.isDir st,
@@ -173,18 +173,18 @@ struct
            out for new basis versions. *)
 
        (*
-        val readdir = 
+        val readdir =
             (fn dd => (case readdir d of
                            "" => NONE
                          | xx => SOME xx) handle _ => NONE)
             *)
 
-   
+
         fun loop NONE () = (closedir d; ps_nil)
-          | loop (SOME ss) () = 
-              let 
+          | loop (SOME ss) () =
+              let
               in
-                let 
+                let
                     val tail = ps_delay (loop (readdir d))
                 in
                   ps_cons (re ss ss) tail
@@ -194,10 +194,10 @@ struct
 
         (* XXX what if I can't stat ..? *)
         val all =
-            ps_delay (fn () => 
+            ps_delay (fn () =>
                       ps_cons
                       (re "" ".")
-                      (ps_delay (fn () => 
+                      (ps_delay (fn () =>
                                  ps_cons
                                  (re ".." "..")
                                  (ps_delay (loop (readdir d))) )))
@@ -214,12 +214,12 @@ struct
   fun stream_filter f s () =
       case s () of
           NONE => NONE
-        | SOME item => 
+        | SOME item =>
               case f item of
                   false => stream_filter f s ()
                 | true => SOME item
-                  
-  fun glob s = 
+
+  fun glob s =
       case StringUtil.rfind "/" s of
            NONE =>
                (stream_filter (fn {name, ...} =>
@@ -230,7 +230,7 @@ struct
                val filemask = String.substring (s, i + 1, size s - (i + 1))
                val sm = dirstream dir
            in
-               (stream_filter 
+               (stream_filter
                 (fn {name, ...} =>
                  StringUtil.wcmatch filemask name) sm)
            end
@@ -238,12 +238,12 @@ struct
   fun ls f s =
       if StringUtil.all (StringUtil.isn'tchar #"*") s then
           dirapp f s
-      else 
+      else
           stream_app f (glob s)
 
   exception Seek
 
-  fun seekn x s = 
+  fun seekn x s =
       ignore (size (TextIO.inputN (s, x)) <> x andalso raise Seek)
 
   fun skipi 0 _ = ()

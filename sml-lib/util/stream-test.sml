@@ -19,7 +19,7 @@ struct
 
 	val smerge = S.merge_sorted Int.compare [s1, s2, s3]
 
-	val hn = headn 11 smerge 
+	val hn = headn 11 smerge
 	val _ = hn = [~1, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7]
 	    orelse (app (fn x => print (Int.toString x ^ " ")) hn;
 		    print "\n";

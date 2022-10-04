@@ -1,10 +1,10 @@
 
 (* the Port structure for mlton *)
 structure Port =
-struct 
+struct
 
   (* Have to compile with argument
-      -const 'Exn.keepHistory true' 
+      -const 'Exn.keepHistory true'
      in order for this to return anything useful. *)
   val exnhistory = MLton.Exn.history
 

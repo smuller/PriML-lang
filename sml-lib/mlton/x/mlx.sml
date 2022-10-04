@@ -845,8 +845,8 @@ struct
       | createpixmap _ _ _ _ _ = raise X "createpixmap: bad display or drawable"
 
     (* copyarea d src dest gc srcx srcy width height destx desty *)
-    fun copyarea (ref (SOME d)) (ref (SOME src)) (ref (SOME dest)) (ref (SOME gc)) 
-             srcx srcy width height destx desty = 
+    fun copyarea (ref (SOME d)) (ref (SOME src)) (ref (SOME dest)) (ref (SOME gc))
+             srcx srcy width height destx desty =
         let
             val cpa = _import "XCopyArea" : pointer * pointer * pointer * pointer *
                                           int * int * int * int * int * int -> unit ;

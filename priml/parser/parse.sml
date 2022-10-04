@@ -12,7 +12,7 @@
       structure gives the default parsing context.
 
       The "import" keyword causes the target file to be read in,
-      tokenized, and then prepended to the current input. 
+      tokenized, and then prepended to the current input.
 *)
 
 (* PERF: several phrases will parse, looking for a postfix operator
@@ -23,12 +23,12 @@
 structure Parse :> PARSE =
 struct
 
-  val root = (FSUtil.chdir_excursion 
+  val root = (FSUtil.chdir_excursion
               (CommandLine.name())
               (fn _ =>
                OS.FileSys.getDir ()))
 (*               Posix.FileSys.getcwd ())) *)
-    
+
   (* if running under NJ, default back to current dir, since
      we don't want to root ourselves at the sml/nj binary! *)
   val root = if Option.isSome (StringUtil.find "smlnj" root)
@@ -38,13 +38,13 @@ struct
   (* val () = print ("The root is: " ^ root ^ "\n") *)
 
   val ROOTMARKER = "#ROOT#"
-               
-  val rootp = Params.param root 
+
+  val rootp = Params.param root
     (SOME ("-root",
            "path to humlock installation (if different " ^
            "from location of humlock binary)")) "rootp"
 
-  val include_dirs = 
+  val include_dirs =
       Params.paramacc ["#ROOT#stdlib", "."]
                      (SOME ("-I",
                             "additional include directories", #",")) "include"
@@ -52,8 +52,8 @@ struct
   fun incdirs () =
     map (fn s =>
          if StringUtil.matchhead ROOTMARKER s
-         then 
-           FSUtil.dirplus (!rootp) (String.substring(s, 
+         then
+           FSUtil.dirplus (!rootp) (String.substring(s,
                                                      size ROOTMARKER,
                                                      size s - size ROOTMARKER))
          else s) (!include_dirs)
@@ -76,12 +76,12 @@ struct
 
   (* XXX idea *)
   (*
-  infixr 0 `` 
+  infixr 0 ``
   fun a `` b = a b
   fun ? s p x = p wth (fn y => (y, x)) || $(fn () => raise Parse s)
   *)
 
-  exception Impossible 
+  exception Impossible
 
   fun **(s, p) = p ## (fn pos => raise Parse ("@" ^ Pos.toString pos ^ ": " ^ s))
   infixr 4 **
@@ -104,8 +104,8 @@ struct
               handle _ => NONE
       in
           case List.mapPartial one (incdirs()) of
-              nil => raise Parse (f ^ " not found in any include dir (" ^ 
-                                  StringUtil.delimit "," (!include_dirs) ^ 
+              nil => raise Parse (f ^ " not found in any include dir (" ^
+                                  StringUtil.delimit "," (!include_dirs) ^
                                   ")")
             | [h] => h
             | h::_ =>
@@ -125,14 +125,14 @@ struct
   fun ifmany f [x] = x
     | ifmany f l = f l
 
-  val id = satisfy (fn ID s => true | _ => false) 
+  val id = satisfy (fn ID s => true | _ => false)
                wth (fn ID s => s | _ => raise Impossible)
 
   val world = id
 
   fun ptuple pl =
-      PRecord(ListUtil.mapi 
-              (fn (p, i) => 
+      PRecord(ListUtil.mapi
+              (fn (p, i) =>
                (Int.toString (i+1), p)) pl)
 
   val number = any when (fn INT i => SOME i | _ => NONE)
@@ -161,7 +161,7 @@ struct
            `LPAREN -- punt "expected ppat after LPAREN"
           ]
 
-  local 
+  local
       (* look for prodtypes separated by arrows.
          prodtypes are apptypes separated by *.
          apptypes are parenthesized, atomic, or applications. *)
@@ -171,11 +171,11 @@ struct
 
       and prodtype () = separate ($apptype) (`TIMES) wth ifmany
           (* create record 1:, 2:, ... *)
-             (fn l => TRec (ListUtil.mapi 
+             (fn l => TRec (ListUtil.mapi
                             (fn (t, n) => (itos (n+1), t)) l))
 
       and mostatomic () =
-          (* PERF backtracking since world is id 
+          (* PERF backtracking since world is id
              (but lookahead is at most 1) *)
           alt [`UNIT return TRec nil,
                number wth (TNum o Word32.toInt),
@@ -193,8 +193,8 @@ struct
           wth (foldl (fn (s, b) =>
                       TApp ([b], s)) t)
 
-      and apptype () = 
-          alt [(`LPAREN >> $arrowtype && 
+      and apptype () =
+          alt [(`LPAREN >> $arrowtype &&
                 (`COMMA >> $arrowtypes << `RPAREN)) && id
                (* then perhaps some more postfix applications *)
                -- (fn ((t, tt), s) => postfixapps (TApp(t :: tt, s))),
@@ -227,7 +227,7 @@ struct
                  || `LESSTHAN return "<" || `LESSEQUAL return "<="
 
   (* nonfix identifiers, or any identifier prefixed with op *)
-  fun fid G = expid suchthat (isnonfix G) || 
+  fun fid G = expid suchthat (isnonfix G) ||
               `OP >> `EQUALS return "=" ||
               `OP >> expid
 
@@ -256,7 +256,7 @@ struct
   val tyvars = alt [id wth LU.list,
                     `LPAREN >> separate id (`COMMA) << `RPAREN]
 
-  val datatypes = separate 
+  val datatypes = separate
       (id && `EQUALS &&
        (separate0 (expid && opt (`OF >> typ)) (`BAR)) wth
        (fn (b, (_, c)) => (b, c))) (`AND)
@@ -297,8 +297,8 @@ struct
                `LBRACE >> separate0 (call G recordbind) (`COMMA) << `RBRACE wth PRecord,
                fid G wth PVar,
                `LPAREN >> separate0 (call G pat) (`COMMA) << `RPAREN wth ifmany
-                  (fn pl => PRecord(ListUtil.mapi 
-                                    (fn (p, i) => 
+                  (fn pl => PRecord(ListUtil.mapi
+                                    (fn (p, i) =>
                                      (Int.toString (i+1), p)) pl))]
 
       and appat G =
@@ -309,10 +309,10 @@ struct
       and infixpat G =
           let
               val par =
-                  alt [expid when (LU.Alist.get op= G) 
-                         wth (fn (s,(prec, ass)) => 
-                              Opr(Infix(ass, prec, 
-                                        (fn (x,y) => 
+                  alt [expid when (LU.Alist.get op= G)
+                         wth (fn (s,(prec, ass)) =>
+                              Opr(Infix(ass, prec,
+                                        (fn (x,y) =>
                                          PApp(s, SOME (PRecord[("1", x),
                                                                ("2", y)])))))),
                        call G appat wth Atm]
@@ -341,27 +341,27 @@ struct
 *)
 
                (* Intended only for stdlib use *)
-               `PRIMAPP >> fid G && 
+               `PRIMAPP >> fid G &&
                  (opt (`LBRACE >> separate0 typ (`COMMA) << `RBRACE)) &&
                  `LPAREN >> separate0 (call G exp) (`COMMA) << `RPAREN
-                     wth (fn (f, (ts, args)) => Primapp (f, 
-                                                         (case ts of NONE => nil | SOME l => l), 
+                     wth (fn (f, (ts, args)) => Primapp (f,
+                                                         (case ts of NONE => nil | SOME l => l),
                                                          args)),
 
                `PRIMAPP -- punt "expected ID LBRACE TYPES RBRACE LPAREN VALS RPAREN after PRIMAPP",
 
                `LET >> "expected DECS after LET" **
-                   ((repeat (call G regulardec)) -- 
-                    (fn ds => 
+                   ((repeat (call G regulardec)) --
+                    (fn ds =>
                      `IN >> "expected EXP after IN" **
                      (separate (call G exp) (`SEMICOLON) << `END
-                      wth (fn es => #1 (foldrmark Let 
+                      wth (fn es => #1 (foldrmark Let
                                         (combinermark Seq es) ds))))),
 (*
                (* text is a little tricky because it contains
                   nested streams of tokens *)
                (!! any) when (fn (TEXT tl, pos) =>
-                         SOME 
+                         SOME
                          let
                              val l = map (fn STR s => (Constant(CString s))
                                           |  EXP s =>
@@ -381,7 +381,7 @@ struct
                (`LBRACE && `BAR) >> separate0 (call G exp) (`COMMA) << (`BAR && `RBRACE) wth Vector,
 
                `LBRACE >> "expected (LABEL = EXP,)s after LBRACE" **
-                    (separate0 (label && (`EQUALS >> call G exp)) (`COMMA) 
+                    (separate0 (label && (`EQUALS >> call G exp)) (`COMMA)
                        << `RBRACE wth Record),
 
                (* datafile expects a string literal next *)
@@ -389,7 +389,7 @@ struct
                             (stringlit
                                     wth (fn s =>
                                          let
-                                             val dat = 
+                                             val dat =
                                                tryopenwith StringUtil.readfile s
                                          in
                                              Constant(CString dat)
@@ -403,18 +403,18 @@ struct
                (`LPAREN && ` RPAREN) return (Record nil),
 
 
-               `LPAREN >> (call G exp) && 
-                           opt (alt [`SEMICOLON >> 
+               `LPAREN >> (call G exp) &&
+                           opt (alt [`SEMICOLON >>
                                         separate (call G exp) (`SEMICOLON)
                                         wth Util.A,
                                      `COMMA >> separate (call G exp) (`COMMA)
                                         wth Util.B]) << `RPAREN
                     wth (fn (e, NONE) => #1 e
-                          | (e, SOME(Util.A el)) => 
+                          | (e, SOME(Util.A el)) =>
                                    #1 (combinermark Seq (e::el))
-                          | (e, SOME(Util.B el)) => 
-                                Record(ListUtil.mapi 
-                                        (fn (e, i) => 
+                          | (e, SOME(Util.B el)) =>
+                                Record(ListUtil.mapi
+                                        (fn (e, i) =>
                                             (Int.toString (i + 1), e)) (e::el))),
                `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd)
                 wth ECmd,
@@ -425,15 +425,15 @@ struct
 
       and appexp G =
           let
-              fun mkinfix (s, x as (_,l), y) = 
+              fun mkinfix (s, x as (_,l), y) =
                   (App((Var s,l), (Record[("1",x),("2",y)],l), true),l)
-              fun mark ass prec f = 
+              fun mark ass prec f =
                   Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y),l))))
 
               val par =
                   alt [expid when (LU.Alist.get op= G)
                          wth (fn (s,(prec, ass)) =>
-                              Opr(Infix(ass, prec, (fn (x as (_,l),y) => 
+                              Opr(Infix(ass, prec, (fn (x as (_,l),y) =>
                                                     mkinfix (s, x, y))))),
                        `EQUALS return mark Non 1 (#1 o (fn (e1, e2) =>
                                                   mkinfix ("=", e1, e2))),
@@ -452,8 +452,8 @@ struct
                      wth (fn (a,SOME (_,m)) => Handle (a, m)
                            | ((a,_), NONE) => a)
 
-      and matching G = separate0 (call G pat && `DARROW && call G exp wth 
-                                  (fn (a,(_,c)) => (a,c))) (`BAR) 
+      and matching G = separate0 (call G pat && `DARROW && call G exp wth
+                                  (fn (a,(_,c)) => (a,c))) (`BAR)
 
       (* XXX use repeat to allow e : t : t : t *)
       and constrainexp G =
@@ -461,12 +461,12 @@ struct
                      wth (fn (a,SOME c) => Constrain (a, c)
                            | ((a, _),NONE) => a)
 
-      and exp G = 
+      and exp G =
           (* can only write cases with one object, though the
              ast allows multiple *)
           !!( alt [`CASE >> "expected EXP OF MATCHING after CASE" **
                    (call G exp && `OF && call G matching
-                      wth (fn (obj,(_,pel)) => Case([obj], 
+                      wth (fn (obj,(_,pel)) => Case([obj],
                                                     map (fn (p,e) =>
                                                          ([p], e))
                                                     pel,
@@ -474,12 +474,12 @@ struct
                       (* generalize these *)
                    `RAISE >> call G exp wth Raise,
 (*
-                   `SAY >> 
-                      (opt (`LBRACE >> 
-                           separate (label && opt (`EQUALS >> id) 
+                   `SAY >>
+                      (opt (`LBRACE >>
+                           separate (label && opt (`EQUALS >> id)
                                      wth (fn (l, NONE) => (l, l)
                                            | (l, SOME v) => (l, v))) (`COMMA)
-                           << `RBRACE) 
+                           << `RBRACE)
                         wth (fn NONE => nil
                               | SOME l => l))
                       && call G exp wth Say,
@@ -500,23 +500,23 @@ struct
                    (* XXX should instead rewrite this to a function in place
                           so that we don't HAVE to write (#l/t e) *)
 *)
-                   `HASH >> label && `DIVIDE && attype && call G exp 
+                   `HASH >> label && `DIVIDE && attype && call G exp
                       wth (fn (i, (_, (t, e))) => Proj(i, t, e)),
 
                    (* (`THROW >> call G exp) && (`TO >> call G exp) wth Throw, *)
 
                    `IF >> "expected EXP THEN EXP ELSE EXP after IF" **
-                   (call G exp && 
-                    `THEN && "expected EXP after THEN" ** call G exp && 
-                    `ELSE && "expected EXP after ELSE" ** call G exp 
+                   (call G exp &&
+                    `THEN && "expected EXP after THEN" ** call G exp &&
+                    `ELSE && "expected EXP after ELSE" ** call G exp
                       wth (fn (e as (_,l),(_,(t,(_,f)))) => If (e,t,f))),
 
-                   !!(`FN) && (separate0 (repeat1 (call G mapat) && 
-                                          (`DARROW return NONE) && 
+                   !!(`FN) && (separate0 (repeat1 (call G mapat) &&
+                                          (`DARROW return NONE) &&
                                           call G exp) (`BAR))
-                      wth (fn ((_, l), s) => 
+                      wth (fn ((_, l), s) =>
                            let val v = namedstring "anonfn"
-                           in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l), 
+                           in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l),
                                    (Var v, l))
                            end),
                    call G constrainexp,
@@ -527,17 +527,17 @@ struct
                   ])
 
       and funclause G =
-          repeat1 (call G mapat) && opt (`COLON >> typ) && `EQUALS && 
+          repeat1 (call G mapat) && opt (`COLON >> typ) && `EQUALS &&
            call G exp
            wth (fn (pats, (to, (_, e))) => (pats, to, e))
 
       and onefun' G =
-          expid -- (fn f => separate0 (call G funclause) 
-                    (`BAR >> expid suchthat (fn x => x = f)) wth 
+          expid -- (fn f => separate0 (call G funclause)
+                    (`BAR >> expid suchthat (fn x => x = f)) wth
                     (fn a => (f, a)))
 
       and onefun G =
-          alt [(`LPAREN >> separate id (`COMMA) << `RPAREN) && call G onefun' 
+          alt [(`LPAREN >> separate id (`COMMA) << `RPAREN) && call G onefun'
                    wth (fn (tv, (f, clauses)) => (tv, f, clauses)),
                call G onefun' wth (fn (f, clauses) => (nil, f, clauses))]
 
@@ -549,7 +549,7 @@ struct
 
       (* after processing a dec, either use the new fixity context or
          place the dec on the accumulator *)
-      and postdecs G (Util.A d) = call G decs -- 
+      and postdecs G (Util.A d) = call G decs --
                                     (fn (G,ds) => succeed (G, d :: ds))
         | postdecs _ (Util.B G) = call G decs
 
@@ -557,10 +557,10 @@ struct
                                     -- (fn s =>
                                          let
                                              (* XXX error messages *)
-                                             fun tokenize f = 
-                                                 Parsing.transform 
-                                                   Tokenize.token 
-                                                    (Pos.markstreamex f 
+                                             fun tokenize f =
+                                                 Parsing.transform
+                                                   Tokenize.token
+                                                    (Pos.markstreamex f
                                                       (tryopen f))
                                          in
                                              push (tokenize s)
@@ -571,25 +571,25 @@ struct
                         succeed (G,nil)]
 
       and infixdec G =
-          alt [(`INFIX || `INFIXR) && opt 
-               (any when (fn INT i => 
+          alt [(`INFIX || `INFIXR) && opt
+               (any when (fn INT i =>
                           if i >= 0w0 andalso i <= 0w9
-                          then SOME i 
-                          else NONE | _ => NONE)) && expid 
-                 wth (fn (fx, (preco, i)) => 
+                          then SOME i
+                          else NONE | _ => NONE)) && expid
+                 wth (fn (fx, (preco, i)) =>
                       LU.Sorted.insert fixcomp G (i, (Word32.toIntX
-                                                      (Option.getOpt 
-                                                      (preco, 0w4)), 
-                                                      case fx of 
-                                                          INFIX => Left 
+                                                      (Option.getOpt
+                                                      (preco, 0w4)),
+                                                      case fx of
+                                                          INFIX => Left
                                                         | _ => Right))),
-               `NONFIX >> expid wth (fn i => List.filter 
+               `NONFIX >> expid wth (fn i => List.filter
                                      (fn (j,_) => i <> j) G)
                  ]
 
       and bindword () = (`VAL return Val (* ||
                          `PUT return Put *)
-                         (* `LETA return Leta || 
+                         (* `LETA return Leta ||
                          `LETSHAM return Letsham *))
 
 
@@ -603,21 +603,21 @@ struct
               ]
 
       and regulardec G =
-         !!(alt [$bindword && (call G pat suchthat irrefutable) && `EQUALS && 
+         !!(alt [$bindword && (call G pat suchthat irrefutable) && `EQUALS &&
                    call G exp
                    wth (fn (b, (pat, (_, e))) => Val (nil, pat, e)),
-                 $bindword && tyvars && (call G pat suchthat irrefutable) && 
+                 $bindword && tyvars && (call G pat suchthat irrefutable) &&
                    `EQUALS && call G exp
                    wth (fn (b, (tv, (pat, (_, e)))) => Val (tv, pat, e)),
 
                  $bindword -- punt "expected bind declaration after VAL",
 
-                 `DO >> "expected EXP after DO" ** 
+                 `DO >> "expected EXP after DO" **
                    (call G exp wth Do),
 
-                 `TYPE >> id && `EQUALS && typ wth (fn (i,(_,t)) => 
+                 `TYPE >> id && `EQUALS && typ wth (fn (i,(_,t)) =>
                                                     Type (nil,i,t)),
-                 `TYPE >> tyvars && id && `EQUALS && typ 
+                 `TYPE >> tyvars && id && `EQUALS && typ
                    wth (fn (tv,(i,(_,t))) => Type(tv,i,t)),
 
                  `TYPE -- punt "expected type declaration after TYPE",
@@ -642,7 +642,7 @@ struct
                  `DATATYPE >> "expected DATATYPES after DATATYPE" **
                    alt [tyvars && datatypes wth Datatype,
                         datatypes wth (fn d => Datatype(nil, d))],
-                 `FUN >> opt (`INLINE) && 
+                 `FUN >> opt (`INLINE) &&
                    call G funs wth (fn (inl, fs) => Fun { inline = Option.isSome inl,
                                                           funs = fs }),
                  `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
@@ -691,7 +691,7 @@ struct
              (* XXX should support type annotation? *)
              `EXPORT >> `VAL >> alt[tyvars && id, succeed nil && id]
              && opt(`EQUALS >> call G exp) wth (fn ((atv,i),eo) => ExportVal (atv, i, eo)),
-             
+
              `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
              *)
       fun prog G =
@@ -704,8 +704,8 @@ struct
 (*
       fun unit G =
         alt [`UNIT >> "expected DECS after UNIT" **
-             (call G decs -- 
-              (fn (G,ds) => 
+             (call G decs --
+              (fn (G,ds) =>
                alt
                [`IN >> "expected EXPORTS after IN" **
                (repeat (call G export) << `END

@@ -123,7 +123,7 @@ structure LibBase : LIB_BASE =
           raise (Fail(concat[module, ".", func, ": ", msg]))
 
     val version = {
-            date = "June 1, 1996", 
+            date = "June 1, 1996",
             system = "SML/NJ Library",
             version_id = [1, 0]
           }
@@ -302,12 +302,12 @@ functor BinaryMapFn (K : ORD_KEY) : ORD_MAP =
     fun wt (i : int) = i + i + i
 
     datatype 'a map
-      = E 
+      = E
       | T of {
-          key : K.ord_key, 
-          value : 'a, 
-          cnt : int, 
-          left : 'a map, 
+          key : K.ord_key,
+          value : 'a,
+          cnt : int,
+          left : 'a map,
           right : 'a map
         }
 
@@ -333,19 +333,19 @@ local
     fun N(k,v,E,E) = T{key=k,value=v,cnt=1,left=E,right=E}
       | N(k,v,E,r as T n) = T{key=k,value=v,cnt=1+(#cnt n),left=E,right=r}
       | N(k,v,l as T n,E) = T{key=k,value=v,cnt=1+(#cnt n),left=l,right=E}
-      | N(k,v,l as T n,r as T n') = 
+      | N(k,v,l as T n,r as T n') =
           T{key=k,value=v,cnt=1+(#cnt n)+(#cnt n'),left=l,right=r}
 
-    fun single_L (a,av,x,T{key=b,value=bv,left=y,right=z,...}) = 
+    fun single_L (a,av,x,T{key=b,value=bv,left=y,right=z,...}) =
           N(b,bv,N(a,av,x,y),z)
       | single_L _ = raise Match
-    fun single_R (b,bv,T{key=a,value=av,left=x,right=y,...},z) = 
+    fun single_R (b,bv,T{key=a,value=av,left=x,right=y,...},z) =
           N(a,av,x,N(b,bv,y,z))
       | single_R _ = raise Match
     fun double_L (a,av,w,T{key=c,value=cv,left=T{key=b,value=bv,left=x,right=y,...},right=z,...}) =
           N(b,bv,N(a,av,w,x),N(c,cv,y,z))
       | double_L _ = raise Match
-    fun double_R (c,cv,T{key=a,value=av,left=w,right=T{key=b,value=bv,left=x,right=y,...},...},z) = 
+    fun double_R (c,cv,T{key=a,value=av,left=w,right=T{key=b,value=bv,left=x,right=y,...},...},z) =
           N(b,bv,N(a,av,w,x),N(c,cv,y,z))
       | double_R _ = raise Match
 
@@ -375,21 +375,21 @@ local
             in
               if rln < rrn then  single_L p  else  double_L p
             end
-        
+
           else if ln >= wt rn then  (*left is too big*)
             let val lln = numItems ll
                 val lrn = numItems lr
             in
               if lrn < lln then  single_R p  else  double_R p
             end
-    
+
           else T{key=k,value=v,cnt=ln+rn+1,left=l,right=r}
 
     local
       fun min (T{left=E,key,value,...}) = (key,value)
         | min (T{left,...}) = min left
         | min _ = raise Match
-  
+
       fun delmin (T{left=E,right,...}) = right
         | delmin (T{key,value,left,right,...}) = T'(key,value,delmin left,right)
         | delmin _ = raise Match
@@ -402,7 +402,7 @@ local
     end
 in
     fun mkDict () = E
-    
+
     fun singleton (x,v) = T{key=x,value=v,cnt=1,left=E,right=E}
 
     fun insert (E,x,v) = T{key=x,value=v,cnt=1,left=E,right=E}
@@ -413,7 +413,7 @@ in
           | _ => T{key=x,value=v,left=left,right=right,cnt= #cnt set}
     fun insert' ((k, x), m) = insert(m, k, x)
 
-    fun inDomain (set, x) = let 
+    fun inDomain (set, x) = let
           fun mem E = false
             | mem (T(n as {key,left,right,...})) = (case K.compare (x,key)
                  of GREATER => mem right
@@ -424,7 +424,7 @@ in
             mem set
           end
 
-    fun find (set, x) = let 
+    fun find (set, x) = let
           fun mem E = NONE
             | mem (T(n as {key,left,right,...})) = (case K.compare (x,key)
                  of GREATER => mem right
@@ -987,19 +987,19 @@ signature ORD_SET =
         (* Create a new set by applying a map function to the elements
          * of the set.
          *)
-     
+
     val app : (item -> unit) -> set -> unit
-        (* Apply a function to the entries of the set 
+        (* Apply a function to the entries of the set
          * in decreasing order
          *)
 
     val foldl : (item * 'b -> 'b) -> 'b -> set -> 'b
-        (* Apply a folding function to the entries of the set 
+        (* Apply a folding function to the entries of the set
          * in increasing order
          *)
 
     val foldr : (item * 'b -> 'b) -> 'b -> set -> 'b
-        (* Apply a folding function to the entries of the set 
+        (* Apply a folding function to the entries of the set
          * in decreasing order
          *)
 
@@ -1082,17 +1082,17 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     type item = K.ord_key
 
     datatype set
-      = E 
+      = E
       | T of {
-          elt : item, 
-          cnt : int, 
+          elt : item,
+          cnt : int,
           left : set,
           right : set
         }
 
     fun numItems E = 0
       | numItems (T{cnt,...}) = cnt
-        
+
     fun isEmpty E = true
       | isEmpty _ = false
 
@@ -1165,7 +1165,7 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
 
     fun concat3 (E,v,r) = add(r,v)
       | concat3 (l,v,E) = add(l,v)
-      | concat3 (l as T{elt=v1,cnt=n1,left=l1,right=r1}, v, 
+      | concat3 (l as T{elt=v1,cnt=n1,left=l1,right=r1}, v,
                   r as T{elt=v2,cnt=n2,left=l2,right=r2}) =
         if wt n1 < n2 then T'(v2,concat3(l,v,l2),r2)
         else if wt n2 < n1 then T'(v1,l1,concat3(r1,v,r))
@@ -1188,7 +1188,7 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     fun min (T{elt=v,left=E,...}) = v
       | min (T{left=l,...}) = min l
       | min _ = raise Match
-        
+
     fun delmin (T{left=E,right=r,...}) = r
       | delmin (T{elt=v,left=l,right=r,...}) = T'(v,delmin l,r)
       | delmin _ = raise Match
@@ -1199,7 +1199,7 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
 
     fun concat (E, s) = s
       | concat (s, E) = s
-      | concat (t1 as T{elt=v1,cnt=n1,left=l1,right=r1}, 
+      | concat (t1 as T{elt=v1,cnt=n1,left=l1,right=r1},
                   t2 as T{elt=v2,cnt=n2,left=l2,right=r2}) =
           if wt n1 < n2 then T'(v2,concat(t1,l2),r2)
           else if wt n2 < n1 then T'(v1,l1,concat(r1,t2))
@@ -1212,20 +1212,20 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
             if K.compare(v,lo) = GREATER
               then if K.compare(v,hi) = LESS then s else trim(lo,hi,l)
               else trim(lo,hi,r)
-                
+
       fun uni_bd (s,E,_,_) = s
-        | uni_bd (E,T{elt=v,left=l,right=r,...},lo,hi) = 
+        | uni_bd (E,T{elt=v,left=l,right=r,...},lo,hi) =
              concat3(split_gt(l,lo),v,split_lt(r,hi))
-        | uni_bd (T{elt=v,left=l1,right=r1,...}, 
+        | uni_bd (T{elt=v,left=l1,right=r1,...},
                    s2 as T{elt=v2,left=l2,right=r2,...},lo,hi) =
             concat3(uni_bd(l1,trim(lo,v,s2),lo,v),
-                v, 
+                v,
                 uni_bd(r1,trim(v,hi,s2),v,hi))
               (* inv:  lo < v < hi *)
 
         (* all the other versions of uni and trim are
          * specializations of the above two functions with
-         *     lo=-infinity and/or hi=+infinity 
+         *     lo=-infinity and/or hi=+infinity
          *)
 
       fun trim_lo (_, E) = E
@@ -1239,24 +1239,24 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
             case K.compare(v,hi) of
               LESS => s
             | _ => trim_hi(hi,l)
-                
+
       fun uni_hi (s,E,_) = s
-        | uni_hi (E,T{elt=v,left=l,right=r,...},hi) = 
+        | uni_hi (E,T{elt=v,left=l,right=r,...},hi) =
              concat3(l,v,split_lt(r,hi))
-        | uni_hi (T{elt=v,left=l1,right=r1,...}, 
+        | uni_hi (T{elt=v,left=l1,right=r1,...},
                    s2 as T{elt=v2,left=l2,right=r2,...},hi) =
             concat3(uni_hi(l1,trim_hi(v,s2),v),v,uni_bd(r1,trim(v,hi,s2),v,hi))
 
       fun uni_lo (s,E,_) = s
-        | uni_lo (E,T{elt=v,left=l,right=r,...},lo) = 
+        | uni_lo (E,T{elt=v,left=l,right=r,...},lo) =
              concat3(split_gt(l,lo),v,r)
-        | uni_lo (T{elt=v,left=l1,right=r1,...}, 
+        | uni_lo (T{elt=v,left=l1,right=r1,...},
                    s2 as T{elt=v2,left=l2,right=r2,...},lo) =
             concat3(uni_bd(l1,trim(lo,v,s2),lo,v),v,uni_lo(r1,trim_lo(v,s2),v))
 
       fun uni (s,E) = s
         | uni (E,s) = s
-        | uni (T{elt=v,left=l1,right=r1,...}, 
+        | uni (T{elt=v,left=l1,right=r1,...},
                 s2 as T{elt=v2,left=l2,right=r2,...}) =
             concat3(uni_hi(l1,trim_hi(v,s2),v), v, uni_lo(r1,trim_lo(v,s2),v))
 
@@ -1265,11 +1265,11 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
     end
 
       (* The old_union version is about 20% slower than
-       *  hedge_union in most cases 
+       *  hedge_union in most cases
        *)
     fun old_union (E,s2)  = s2
       | old_union (s1,E)  = s1
-      | old_union (T{elt=v,left=l,right=r,...},s2) = 
+      | old_union (T{elt=v,left=l,right=r,...},s2) =
           let val l2 = split_lt(s2,v)
               val r2 = split_gt(s2,v)
           in
@@ -1300,11 +1300,11 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
       fun treeIn (t,t') = let
             fun isIn E = true
               | isIn (T{elt,left=E,right=E,...}) = member(t',elt)
-              | isIn (T{elt,left,right=E,...}) = 
+              | isIn (T{elt,left,right=E,...}) =
                   member(t',elt) andalso isIn left
-              | isIn (T{elt,left=E,right,...}) = 
+              | isIn (T{elt,left=E,right,...}) =
                   member(t',elt) andalso isIn right
-              | isIn (T{elt,left,right,...}) = 
+              | isIn (T{elt,left,right,...}) =
                   member(t',elt) andalso isIn left andalso isIn right
             in
               isIn t
@@ -1376,13 +1376,13 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
           fun map'(acc, E) = acc
             | map'(acc, T{elt,left,right,...}) =
                 map' (add (map' (acc, left), f elt), right)
-          in 
+          in
             map' (E, set)
           end
 
     fun app apf =
          let fun apply E = ()
-               | apply (T{elt,left,right,...}) = 
+               | apply (T{elt,left,right,...}) =
                    (apply left;apf elt; apply right)
          in
            apply
@@ -1390,7 +1390,7 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
 
     fun foldl f b set = let
           fun foldf (E, b) = b
-            | foldf (T{elt,left,right,...}, b) = 
+            | foldf (T{elt,left,right,...}, b) =
                 foldf (right, f(elt, foldf (left, b)))
           in
             foldf (set, b)
@@ -1398,7 +1398,7 @@ functor BinarySetFn (K : ORD_KEY) : ORD_SET =
 
     fun foldr f b set = let
           fun foldf (E, b) = b
-            | foldf (T{elt,left,right,...}, b) = 
+            | foldf (T{elt,left,right,...}, b) =
                 foldf (left, f(elt, foldf (right, b)))
           in
             foldf (set, b)
@@ -2049,7 +2049,7 @@ signature TYPE =
     type 'a LabMap        = 'a LabMap.map
     type 'a TyVarMap      = 'a TyVarMap.map
     type 'a TyNameMap     = 'a TyNameMap.map
- 
+
 
     (* Types [Section 4.2] *)
 
@@ -2314,7 +2314,7 @@ structure Type :> TYPE =
 
       | tyvars'(FunType(tau1,tau2)) =
             TyVarSet.union(tyvars tau1, tyvars tau2)
- 
+
       | tyvars'(ConsType(taus,t)) =
             List.foldl (fn(tau,U) => TyVarSet.union(U, tyvars tau))
                        TyVarSet.empty taus
@@ -2336,7 +2336,7 @@ structure Type :> TYPE =
 
       | tynames'(FunType(tau1,tau2)) =
             TyNameSet.union(tynames tau1, tynames tau2)
- 
+
       | tynames'(ConsType(taus,t)) =
         let
             val T = List.foldl (fn(tau,T) => TyNameSet.union(T, tynames tau))
@@ -2940,7 +2940,7 @@ structure TypeFcn :> TYPEFCN =
         in
             Type.admitsEquality(Type.substitute mu tau)
         end
-    
+
 
     (* Eta-conversion [Section 4.4] *)
 
@@ -3250,7 +3250,7 @@ signature STATIC_ENV =
 
     type Str    = (ValStr, TyStr) Str'
     type StrEnv = Str StrIdMap                                  (* [SE] *)
- 
+
     type Env    = StrEnv * TyEnv * ValEnv                       (* [E] *)
 
 
@@ -3317,7 +3317,7 @@ structure StaticEnv :> STATIC_ENV =
 
     type Str    = (ValStr, TyStr) Str'
     type StrEnv = Str StrIdMap                                  (* [SE] *)
- 
+
     type Env    = StrEnv * TyEnv * ValEnv                       (* [E] *)
 
 
@@ -3441,7 +3441,7 @@ structure StaticEnv :> STATIC_ENV =
 
     fun maximiseEquality(TE,VE) =
         let
-            fun checkTyStr((theta,VE), (phi,changed)) = 
+            fun checkTyStr((theta,VE), (phi,changed)) =
                 let
                     val t = valOf(TypeFcn.toTyName theta)
                 in
@@ -3976,7 +3976,7 @@ signature STATIC_BASIS =
     val tyvars:         Basis  -> TyVarSet
     val tynamesF:       FunEnv -> TyNameSet
     val tynamesG:       SigEnv -> TyNameSet
- 
+
   end
 (* stop of STATIC_BASIS.sml *)
 (* start of StaticBasis.sml *)
@@ -4032,7 +4032,7 @@ structure StaticBasis :> STATIC_BASIS =
 
     fun tyvars (T,F,G,E) = TyVarSet.union(TyVarSet.union(
                                 tyvarsF F, tyvarsG G), StaticEnv.tyvars E)
-    
+
 
 
     fun tynamesG G =
@@ -4558,7 +4558,7 @@ structure AddrMap    = FinMapFn(type ord_key = Addr.Addr
 
 
 signature SVAL =
-  sig 
+  sig
 
     (* Type [Section 6.2] *)
 
@@ -4629,7 +4629,7 @@ structure SVal :> SVAL =
 
 
 signature VAL =
-  sig 
+  sig
 
     (* Import *)
 
@@ -4666,7 +4666,7 @@ signature VAL =
 
     val equal:      'a Val * 'a Val -> bool
 
-    val toBoolVal:  bool -> 'a Val 
+    val toBoolVal:  bool -> 'a Val
     val unpair:     'a Val -> ('a Val * 'a Val) option
 
   end
@@ -5675,7 +5675,7 @@ signature DYNAMIC_ENV =
                             ( FcnClosure Val * IdStatus
                             , (FcnClosure Val * IdStatus) VIdMap
                             ) Str' StrIdMap
-                          * (FcnClosure Val * IdStatus) VIdMap TyConMap 
+                          * (FcnClosure Val * IdStatus) VIdMap TyConMap
                           * (FcnClosure Val * IdStatus) VIdMap
                           )
                         * (*ValEnv*) (FcnClosure Val * IdStatus) VIdMap
@@ -5951,7 +5951,7 @@ signature INTERFACE =
 
     type Str    = (IdStatus, ValInt) Str'
     type StrInt = Str StrIdMap                                  (* [SI] *)
- 
+
     type Int    = StrInt * TyInt * ValInt                       (* [I] *)
 
 
@@ -5997,7 +5997,7 @@ structure Interface :> INTERFACE =
 
     type Str    = (IdStatus, ValInt) Str'
     type StrInt = Str StrIdMap                                  (* [SI] *)
- 
+
     type Int    = StrInt * TyInt * ValInt                       (* [I] *)
 
 
@@ -6110,7 +6110,7 @@ signature DYNAMIC_BASIS =
     val findFunId:      Basis * FunId     -> FunctorClosure option
     val findLongStrId:  Basis * longStrId -> Str option
     val findLongTyCon:  Basis * longTyCon -> ValEnv option
- 
+
   end
 (* stop of DYNAMIC_BASIS.sml *)
 (* start of DynamicBasis.sml *)
@@ -6845,7 +6845,7 @@ structure Pack :> PACK =
 
 
 signature BASVAL =
-  sig 
+  sig
 
     (* Import *)
 
@@ -7518,7 +7518,7 @@ structure EvalCore :> EVAL_CORE =
         (* [Rules 144 to 148] *)
         (case (DynamicEnv.findLongVId(E, longvid), v)
            of ( SOME(Val.VId vid, IdStatus.c),
-                     Val.VIdVal(vid',v') ) =>   
+                     Val.VIdVal(vid',v') ) =>
                  if vid = VId.fromString "ref" then
                     error(I, "runtime type error: address expected")
                  else if vid = vid' then
@@ -7533,7 +7533,7 @@ structure EvalCore :> EVAL_CORE =
                     raise FAIL
 
             | ( SOME(Val.ExVal(Val.ExName en),IdStatus.e),
-                     Val.ExVal(Val.ExNameVal(en',v')) ) =>      
+                     Val.ExVal(Val.ExNameVal(en',v')) ) =>
                  if en = en' then
                     (* [Rule 146] *)
                     let
@@ -7546,7 +7546,7 @@ structure EvalCore :> EVAL_CORE =
                     raise FAIL
 
             | ( SOME(Val.VId vid, IdStatus.c),
-                     Val.Addr a ) =>    
+                     Val.Addr a ) =>
                  if vid = VId.fromString "ref" then
                     (* [Rule 148] *)
                     let
@@ -7616,7 +7616,7 @@ signature INTBASIS =
 
     val findSigId:      IntBasis * SigId     -> Int option
     val findLongTyCon:  IntBasis * longTyCon -> ValInt option
- 
+
   end
 (* stop of INTBASIS.sml *)
 (* start of IntBasis.sml *)
@@ -7814,7 +7814,7 @@ structure EvalModule :> EVAL_MODULE =
             val E' = evalStrExp(
                         s,
                         B' plusSE
-                            StrIdMap.singleton(strid, 
+                            StrIdMap.singleton(strid,
                                 DynamicEnv.Str(Interface.cutdown(E, I))),
                         strexp')
         in
@@ -8357,7 +8357,7 @@ structure PrettyPrint :> PRETTY_PRINT =
     (* Convert a document *)
 
     fun primToString(PTEXT s) = s
-      | primToString(PLINE i) = 
+      | primToString(PLINE i) =
             String.implode(#"\n" :: List.tabulate(i, fn _ => #" "))
 
     val toString = String.concat o List.map primToString o layout
@@ -12122,7 +12122,7 @@ signature LR_TABLE =
                         | ACCEPT
                         | ERROR
         type table
-        
+
         val numStates : table -> int
         val numRules : table -> int
         val describeActions : table -> state ->
@@ -12154,7 +12154,7 @@ signature LR_TABLE =
    constructor function for a integer token might be
 
           INT: int * 'a * 'a -> 'a token.
- 
+
    This is not possible because we need to have tokens with the representation
    given below for the polymorphic parser.
 
@@ -12191,7 +12191,7 @@ signature LR_PARSER =
                      arg: 'arg,
                      saction : int *
                                '_c *
-                                (LrTable.state * ('_b * '_c * '_c)) list * 
+                                (LrTable.state * ('_b * '_c * '_c)) list *
                                 'arg ->
                                      LrTable.nonterm *
                                      ('_b * '_c * '_c) *
@@ -12230,7 +12230,7 @@ signature LEXER =
                 type pos
                 type svalue
            end
-        val makeLexer : (int -> string) -> unit -> 
+        val makeLexer : (int -> string) -> unit ->
          (UserDeclarations.svalue,UserDeclarations.pos) UserDeclarations.token
    end
 
@@ -12247,12 +12247,12 @@ signature ARG_LEXER =
                 type svalue
                 type arg
            end
-        val makeLexer : (int -> string) -> UserDeclarations.arg -> unit -> 
+        val makeLexer : (int -> string) -> UserDeclarations.arg -> unit ->
          (UserDeclarations.svalue,UserDeclarations.pos) UserDeclarations.token
    end
 
 (* PARSER_DATA: the signature of ParserData structures in {parser name}LrValsFun
-   produced by  SML-Yacc.  All such structures match this signature.  
+   produced by  SML-Yacc.  All such structures match this signature.
 
    The {parser name}LrValsFun produces a structure which contains all the values
    except for the lexer needed to call the polymorphic parser mentioned
@@ -12272,7 +12272,7 @@ signature PARSER_DATA =
 
          (* the type of the user-supplied argument to the parser *)
         type arg
- 
+
         (* the intended type of the result of the parser.  This value is
            produced by applying extract from the structure Actions to the
            final semantic value resultiing from a parse.
@@ -12289,7 +12289,7 @@ signature PARSER_DATA =
            a default value for the semantic stack.
          *)
 
-        structure Actions : 
+        structure Actions :
           sig
               val actions : int * pos *
                    (LrTable.state * (svalue * pos * pos)) list * arg->
@@ -12317,7 +12317,7 @@ signature PARSER_DATA =
         val table : LrTable.table
     end
 
-(* signature PARSER is the signature that most user parsers created by 
+(* signature PARSER is the signature that most user parsers created by
    SML-Yacc will match.
 *)
 
@@ -12337,7 +12337,7 @@ signature PARSER =
 
          (* the type of the user-supplied argument to the parser *)
         type arg
-        
+
         (* type svalue is the type of semantic values for the semantic value
            stack
          *)
@@ -12366,7 +12366,7 @@ signature PARSER =
     lexer takes an additional argument.
 *)
 
-signature ARG_PARSER = 
+signature ARG_PARSER =
     sig
         structure Token : TOKEN
         structure Stream : STREAM
@@ -12411,7 +12411,7 @@ functor Join(structure Lex : LEXER
 struct
     structure Token = ParserData.Token
     structure Stream = LrParser.Stream
- 
+
     exception ParseError = LrParser.ParseError
 
     type arg = ParserData.arg
@@ -12438,7 +12438,7 @@ struct
      val sameToken = Token.sameToken
 end
 
-(* functor JoinWithArg creates a variant of the parser structure produced 
+(* functor JoinWithArg creates a variant of the parser structure produced
    above.  In this case, the makeLexer take an additional argument before
    yielding a value of type unit -> (svalue,pos) token
  *)
@@ -12487,7 +12487,7 @@ end;
 (* stop of ml-yacc/lib/join.sml *)
 (* start of ml-yacc/lib/lrtable.sml *)
 (* ML-Yacc Parser Generator (c) 1989 Andrew W. Appel, David R. Tarditi *)
-structure LrTable : LR_TABLE = 
+structure LrTable : LR_TABLE =
     struct
         open Array List
         infix 9 sub
@@ -12507,7 +12507,7 @@ structure LrTable : LR_TABLE =
         val numStates = fn ({states,...} : table) => states
         val numRules = fn ({rules,...} : table) => rules
         val describeActions =
-           fn ({action,...} : table) => 
+           fn ({action,...} : table) =>
                    fn (STATE s) => action sub s
         val describeGoto =
            fn ({goto,...} : table) =>
@@ -12559,7 +12559,7 @@ struct
    type 'a stream = 'a str ref
 
    fun get(ref(EVAL t)) = t
-     | get(s as ref(UNEVAL f)) = 
+     | get(s as ref(UNEVAL f)) =
             let val t = (f(), ref(UNEVAL f)) in s := EVAL t; t end
 
    fun streamify f = ref(UNEVAL f)
@@ -12581,7 +12581,7 @@ end;
 
     This program is an implementation is the partial, deferred method discussed
     in the article.  The algorithm and data structures used in the program
-    are described below.  
+    are described below.
 
     This program assumes that all semantic actions are delayed.  A semantic
     action should produce a function from unit -> value instead of producing the
@@ -12593,7 +12593,7 @@ end;
 
     Data Structures:
     ----------------
-        
+
         * The parser:
 
            The state stack has the type
@@ -12601,7 +12601,7 @@ end;
                  (state * (semantic value * line # * line #)) list
 
            The parser keeps a queue of (state stack * lexer pair).  A lexer pair
-         consists of a terminal * value pair and a lexer.  This allows the 
+         consists of a terminal * value pair and a lexer.  This allows the
          parser to reconstruct the states for terminals to the left of a
          syntax error, and attempt to make error corrections there.
 
@@ -12613,7 +12613,7 @@ end;
     Algorithm:
     ----------
 
-        * The steady-state parser:  
+        * The steady-state parser:
 
             This parser keeps the length of the queue of state stacks at
         a steady state by always removing an element from the front when
@@ -12649,7 +12649,7 @@ end;
         tokens left unparsed, a queue, and an action option.
 *)
 
-signature FIFO = 
+signature FIFO =
   sig type 'a queue
       val empty : 'a queue
       exception Empty
@@ -12701,11 +12701,11 @@ structure LrParser :> LR_PARSER =
       type ('a,'b) lexpair = ('a,'b) lexv * (('a,'b) lexv Stream.stream)
       type ('a,'b) distanceParse =
                  ('a,'b) lexpair *
-                 ('a,'b) stack * 
+                 ('a,'b) stack *
                  (('a,'b) stack * ('a,'b) lexpair) Fifo.queue *
                  int ->
                    ('a,'b) lexpair *
-                   ('a,'b) stack * 
+                   ('a,'b) stack *
                    (('a,'b) stack * ('a,'b) lexpair) Fifo.queue *
                    int *
                    action option
@@ -12719,7 +12719,7 @@ structure LrParser :> LR_PARSER =
           showTerminal : term -> string,
           noShift : term -> bool}
 
-      local 
+      local
          val print = fn s => TextIO.output(TextIO.stdOut,s)
          val println = fn s => (print s; print "\n")
          val showState = fn (STATE s) => "STATE " ^ (Int.toString s)
@@ -12731,13 +12731,13 @@ structure LrParser :> LR_PARSER =
                   println(showState state);
                   printStack(rest, n+1))
             | nil => ()
-                
+
         fun prAction showTerminal
                  (stack as (state,_) :: _, next as (TOKEN (term,_),_), action) =
              (println "Parse: state stack:";
               printStack(stack, 0);
               print("       state="
-                         ^ showState state      
+                         ^ showState state
                          ^ " next="
                          ^ showTerminal term
                          ^ " action="
@@ -12757,7 +12757,7 @@ structure LrParser :> LR_PARSER =
         fixError is called with the arguments of parseStep (lexv,stack,and
         queue).  It returns the lexv, and a new stack and queue adjusted so
         that the lexv can be parsed *)
-        
+
     val ssParse =
       fn (table,showTerminal,saction,fixError,arg) =>
         let val prAction = prAction showTerminal
@@ -12787,7 +12787,7 @@ structure LrParser :> LR_PARSER =
                                     queue)
                        | _ => raise (ParseImpossible 197))
                  | ERROR => parseStep(fixError args)
-                 | ACCEPT => 
+                 | ACCEPT =>
                         (case stack
                          of (_,(topvalue,_,_)) :: _ =>
                                 let val (token,restLexer) = lexPair
@@ -12838,7 +12838,7 @@ structure LrParser :> LR_PARSER =
                  | ACCEPT => (lexPair,stack,queue,distance,SOME nextAction)
               end
            | parseStep _ = raise (ParseImpossible 242)
-        in parseStep : ('_a,'_b) distanceParse 
+        in parseStep : ('_a,'_b) distanceParse
         end
 
 (* mkFixError: function to create fixError function which adjusts parser state
@@ -12848,7 +12848,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
               preferred_change,noShift,
               showTerminal,error,...} : ('_a,'_b) ecRecord,
              distanceParse : ('_a,'_b) distanceParse,
-             minAdvance,maxAdvance) 
+             minAdvance,maxAdvance)
 
             (lexv as (TOKEN (term,value as (_,leftPos,_)),_),stack,queue) =
     let val _ = if DEBUG2 then
@@ -12862,7 +12862,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
         (* pull all the state * lexv elements from the queue *)
 
-        val stateList = 
+        val stateList =
            let fun f q = let val (elem,newQueue) = Fifo.get q
                          in elem :: (f newQueue)
                          end handle Fifo.Empty => nil
@@ -12910,9 +12910,9 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
         fun parse (lexPair,stack,queuePos : int) =
             case distanceParse(lexPair,stack,Fifo.empty,queuePos+maxAdvance+1)
-             of (_,_,_,distance,SOME ACCEPT) => 
-                        if maxAdvance-distance-1 >= 0 
-                            then maxAdvance 
+             of (_,_,_,distance,SOME ACCEPT) =>
+                        if maxAdvance-distance-1 >= 0
+                            then maxAdvance
                             else maxAdvance-distance-1
               | (_,_,_,distance,_) => maxAdvance - distance - 1
 
@@ -12926,9 +12926,9 @@ fun mkFixError({is_keyword,terms,errtermvalue,
         fun tryChange{lex,stack,pos,leftPos,rightPos,orig,new} =
              let val lex' = List.foldr (fn (t',p)=>(t',Stream.cons p)) lex new
                  val distance = parse(lex',stack,pos+length new-length orig)
-              in if distance >= minAdvance + keywordsDelta new 
+              in if distance >= minAdvance + keywordsDelta new
                    then [CHANGE{pos=pos,leftPos=leftPos,rightPos=rightPos,
-                                distance=distance,orig=orig,new=new}] 
+                                distance=distance,orig=orig,new=new}]
                    else []
              end
 
@@ -12957,7 +12957,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                  tryChange{lex=lexPair,stack=stack,
                            pos=queuePos,orig=[],new=[tokAt(t,l)],
                            leftPos=l,rightPos=l})
-                              
+
 (* trySubst: try to substitute tokens for the current terminal;
        return a list of the successes  *)
 
@@ -12974,8 +12974,8 @@ fun mkFixError({is_keyword,terms,errtermvalue,
      (* do_delete(toks,lexPair) tries to delete tokens "toks" from "lexPair".
          If it succeeds, returns SOME(toks',l,r,lp), where
              toks' is the actual tokens (with positions and values) deleted,
-             (l,r) are the (leftmost,rightmost) position of toks', 
-             lp is what remains of the stream after deletion 
+             (l,r) are the (leftmost,rightmost) position of toks',
+             lp is what remains of the stream after deletion
      *)
         fun do_delete(nil,lp as (TOKEN(_,(_,l,_)),_)) = SOME(nil,l,l,lp)
           | do_delete([t],(tok as TOKEN(t',(_,l,r)),lp')) =
@@ -12989,13 +12989,13 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                SOME(tok::deleted,l,r',lp'')
                           | NONE => NONE
                    else NONE
-                             
+
         fun tryPreferred((stack,lexPair),queuePos) =
             catList preferred_change (fn (delete,insert) =>
                if List.exists noShift delete then [] (* should give warning at
                                                  parser-generation time *)
                else case do_delete(delete,lexPair)
-                     of SOME(deleted,l,r,lp) => 
+                     of SOME(deleted,l,r,lp) =>
                             tryChange{lex=lp,stack=stack,pos=queuePos,
                                       leftPos=l,rightPos=r,orig=deleted,
                                       new=map (fn t=>(tokAt(t,r))) insert}
@@ -13008,7 +13008,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                               catList numStateList (tryDelete 2) @
                                 catList numStateList (tryDelete 3)
 
-        val findMaxDist = fn l => 
+        val findMaxDist = fn l =>
           foldr (fn (CHANGE {distance,...},high) => Int.max(distance,high)) 0 l
 
 (* maxDist: max distance past error taken that we could parse *)
@@ -13017,14 +13017,14 @@ fun mkFixError({is_keyword,terms,errtermvalue,
 
 (* remove changes which did not parse maxDist tokens past the error token *)
 
-        val changes = catList changes 
-              (fn(c as CHANGE{distance,...}) => 
+        val changes = catList changes
+              (fn(c as CHANGE{distance,...}) =>
                   if distance=maxDist then [c] else [])
 
-      in case changes 
+      in case changes
           of (l as change :: _) =>
               let fun print_msg (CHANGE {new,orig,leftPos,rightPos,...}) =
-                  let val s = 
+                  let val s =
                       case (orig,new)
                           of (_::_,[]) => "deleting " ^ (showTerms orig)
                            | ([],_::_) => "inserting " ^ (showTerms new)
@@ -13032,8 +13032,8 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                  " with " ^ (showTerms new)
                   in error ("syntax error: " ^ s,leftPos,rightPos)
                   end
-                   
-                  val _ = 
+
+                  val _ =
                       (if length l > 1 andalso DEBUG2 then
                            (print "multiple fixes possible; could fix it by:\n";
                             app print_msg l;
@@ -13061,7 +13061,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                                           end
                       in f (rev stateList,n)
                       end
-                
+
                   val CHANGE {pos,orig,new,...} = change
                   val (last,queueFront) = findNth pos
                   val (stack,lexPair) = last
@@ -13069,7 +13069,7 @@ fun mkFixError({is_keyword,terms,errtermvalue,
                   val lp1 = foldl(fn (_,(_,r)) => Stream.get r) lexPair orig
                   val lp2 = foldr(fn(t,r)=>(t,Stream.cons r)) lp1 new
 
-                  val restQueue = 
+                  val restQueue =
                       Fifo.put((stack,lp2),
                                foldl Fifo.put Fifo.empty queueFront)
 
@@ -13312,10 +13312,10 @@ structure DerivedFormsCore :> DERIVED_FORMS_CORE =
             C.PARTy(I, replaceTy tyvarseq_tyseq ty)
 
     and replaceTyRow tyvarseq_tyseq (C.TyRow(I, lab, ty, tyrow_opt)) =
-            C.TyRow(I, lab, replaceTy tyvarseq_tyseq ty, 
+            C.TyRow(I, lab, replaceTy tyvarseq_tyseq ty,
                        Option.map (replaceTyRow tyvarseq_tyseq) tyrow_opt)
 
-    and replaceTyseq tyvarseq_tyseq (C.Tyseq(I, tys)) =   
+    and replaceTyseq tyvarseq_tyseq (C.Tyseq(I, tys)) =
             C.Tyseq(I, List.map (replaceTy tyvarseq_tyseq) tys)
 
 
@@ -13325,14 +13325,14 @@ structure DerivedFormsCore :> DERIVED_FORMS_CORE =
             C.RECORDTy(I, Option.map (rewriteTyRow typbind) tyrow_opt)
 
       | rewriteTy typbind (C.TYCONTy(I, tyseq, longtycon)) =
-        let 
+        let
             val tyseq'          = rewriteTyseq typbind tyseq
             val (strids, tycon) = LongTyCon.explode longtycon
         in
             if not(List.null strids) then
                 C.TYCONTy(I, tyseq', longtycon)
             else
-                let 
+                let
                     val (tyvarseq', ty') = lookupTyCon(tycon, typbind)
                 in
                     replaceTy (tyvarseq',tyseq') ty'
@@ -13989,11 +13989,11 @@ sharing type ParserData.svalue = Tokens.svalue
 end
 (* stop of Parser.grm.sig *)
 (* start of Parser.grm.sml *)
-functor LrValsFn(structure Token: TOKEN) = 
+functor LrValsFn(structure Token: TOKEN) =
 struct
 structure ParserData=
 struct
-structure Header = 
+structure Header =
 struct
 (*                                                                              *)
 (* Standard ML syntactical analysis                                             *)
@@ -14133,7 +14133,7 @@ struct
 end
 structure LrTable = Token.LrTable
 structure Token = Token
-local open LrTable in 
+local open LrTable in
 val table=let val actionRows =
 "\
 \\001\000\001\000\000\000\000\000\
@@ -15659,7 +15659,7 @@ val gotoT =
 val numstates = 621
 val numrules = 330
 val s = ref "" and index = ref 0
-val string_to_int = fn () => 
+val string_to_int = fn () =>
 let val i = !index
 in index := i+2; Char.ord(String.sub(!s,i)) + Char.ord(String.sub(!s,i+1)) * 256
 end
@@ -15717,7 +15717,7 @@ end
 local open Header in
 type pos = int
 type arg = Infix.InfEnv
-structure MlyValue = 
+structure MlyValue =
 struct
 datatype svalue = VOID | ntVOID of unit ->  unit
  | LONGID of unit ->  (string list*string)
@@ -15847,7 +15847,7 @@ structure EC=
 struct
 open LrTable
 val is_keyword =
-fn (T 1) => true | (T 2) => true | (T 3) => true | (T 4) => true | (T 
+fn (T 1) => true | (T 2) => true | (T 3) => true | (T 4) => true | (T
 5) => true | (T 6) => true | (T 7) => true | (T 8) => true | (T 9)
  => true | (T 10) => true | (T 11) => true | (T 12) => true | (T 13)
  => true | (T 14) => true | (T 15) => true | (T 16) => true | (T 17)
@@ -15858,9 +15858,9 @@ fn (T 1) => true | (T 2) => true | (T 3) => true | (T 4) => true | (T
  => true | (T 50) => true | (T 51) => true | (T 52) => true | (T 53)
  => true | (T 54) => true | (T 55) => true | (T 56) => true | (T 57)
  => true | _ => false
-val preferred_change = 
+val preferred_change =
 nil
-val noShift = 
+val noShift =
 fn (T 0) => true | _ => false
 val showTerminal =
 fn (T 0) => "EOF"
@@ -15952,11 +15952,11 @@ val terms = (T 0) :: (T 1) :: (T 2) :: (T 3) :: (T 4) :: (T 5) :: (T 6
  :: (T 56) :: (T 57) :: (T 58) :: (T 59) :: (T 69) :: nil
 end
 structure Actions =
-struct 
+struct
 type int = Int.int
 exception mlyAction of int
 local open Header in
-val actions = 
+val actions =
 fn (i392:int,defaultPos,stack,
     (J0):arg) =>
 case (i392,stack)
@@ -15977,23 +15977,23 @@ of (0,rest671) => let val result=MlyValue.initInfix(fn _ => (
 | (5,(_,(_,ZERO1left,ZERO1right))::rest671) => let val result=
 MlyValue.scon(fn _ => ( SCon.fromInt 0 ))
  in (LrTable.NT 0,(result,ZERO1left,ZERO1right),rest671) end
-| (6,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) => 
+| (6,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) =>
 let val result=MlyValue.scon(fn _ => let val DIGIT as DIGIT1=DIGIT1 ()
  in ( SCon.fromInt DIGIT ) end
 )
  in (LrTable.NT 0,(result,DIGIT1left,DIGIT1right),rest671) end
 | (7,(_,(MlyValue.NUMERIC NUMERIC1,NUMERIC1left,NUMERIC1right))::
-rest671) => let val result=MlyValue.scon(fn _ => let val NUMERIC as 
+rest671) => let val result=MlyValue.scon(fn _ => let val NUMERIC as
 NUMERIC1=NUMERIC1 ()
  in ( SCon.fromInt NUMERIC ) end
 )
  in (LrTable.NT 0,(result,NUMERIC1left,NUMERIC1right),rest671) end
-| (8,(_,(MlyValue.INT INT1,INT1left,INT1right))::rest671) => let val 
+| (8,(_,(MlyValue.INT INT1,INT1left,INT1right))::rest671) => let val
 result=MlyValue.scon(fn _ => let val INT as INT1=INT1 ()
  in ( SCon.fromInt INT ) end
 )
  in (LrTable.NT 0,(result,INT1left,INT1right),rest671) end
-| (9,(_,(MlyValue.WORD WORD1,WORD1left,WORD1right))::rest671) => let 
+| (9,(_,(MlyValue.WORD WORD1,WORD1left,WORD1right))::rest671) => let
 val result=MlyValue.scon(fn _ => let val WORD as WORD1=WORD1 ()
  in ( SCon.fromWord WORD ) end
 )
@@ -16004,12 +16004,12 @@ STRING1 ()
  in ( SCon.fromString STRING ) end
 )
  in (LrTable.NT 0,(result,STRING1left,STRING1right),rest671) end
-| (11,(_,(MlyValue.CHAR CHAR1,CHAR1left,CHAR1right))::rest671) => let 
+| (11,(_,(MlyValue.CHAR CHAR1,CHAR1left,CHAR1right))::rest671) => let
 val result=MlyValue.scon(fn _ => let val CHAR as CHAR1=CHAR1 ()
  in ( SCon.fromChar CHAR ) end
 )
  in (LrTable.NT 0,(result,CHAR1left,CHAR1right),rest671) end
-| (12,(_,(MlyValue.REAL REAL1,REAL1left,REAL1right))::rest671) => let 
+| (12,(_,(MlyValue.REAL REAL1,REAL1left,REAL1right))::rest671) => let
 val result=MlyValue.scon(fn _ => let val REAL as REAL1=REAL1 ()
  in ( SCon.fromReal REAL ) end
 )
@@ -16017,12 +16017,12 @@ val result=MlyValue.scon(fn _ => let val REAL as REAL1=REAL1 ()
 | (13,(_,(_,ZERO1left,ZERO1right))::rest671) => let val result=
 MlyValue.d(fn _ => ( 0 ))
  in (LrTable.NT 1,(result,ZERO1left,ZERO1right),rest671) end
-| (14,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) => 
+| (14,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) =>
 let val result=MlyValue.d(fn _ => let val DIGIT as DIGIT1=DIGIT1 ()
  in ( DIGIT ) end
 )
  in (LrTable.NT 1,(result,DIGIT1left,DIGIT1right),rest671) end
-| (15,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
+| (15,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
 let val result=MlyValue.lab(fn _ => let val ALPHA as ALPHA1=ALPHA1 ()
  in ( Lab.fromString ALPHA ) end
 )
@@ -16036,18 +16036,18 @@ SYMBOL1 ()
 | (17,(_,(_,STAR1left,STAR1right))::rest671) => let val result=
 MlyValue.lab(fn _ => ( Lab.fromString "*" ))
  in (LrTable.NT 2,(result,STAR1left,STAR1right),rest671) end
-| (18,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) => 
+| (18,(_,(MlyValue.DIGIT DIGIT1,DIGIT1left,DIGIT1right))::rest671) =>
 let val result=MlyValue.lab(fn _ => let val DIGIT as DIGIT1=DIGIT1 ()
  in ( Lab.fromInt DIGIT ) end
 )
  in (LrTable.NT 2,(result,DIGIT1left,DIGIT1right),rest671) end
 | (19,(_,(MlyValue.NUMERIC NUMERIC1,NUMERIC1left,NUMERIC1right))::
-rest671) => let val result=MlyValue.lab(fn _ => let val NUMERIC as 
+rest671) => let val result=MlyValue.lab(fn _ => let val NUMERIC as
 NUMERIC1=NUMERIC1 ()
  in ( Lab.fromInt NUMERIC ) end
 )
  in (LrTable.NT 2,(result,NUMERIC1left,NUMERIC1right),rest671) end
-| (20,(_,(MlyValue.vid' vid'1,vid'1left,vid'1right))::rest671) => let 
+| (20,(_,(MlyValue.vid' vid'1,vid'1left,vid'1right))::rest671) => let
 val result=MlyValue.vid(fn _ => let val vid' as vid'1=vid'1 ()
  in ( vid' ) end
 )
@@ -16055,7 +16055,7 @@ val result=MlyValue.vid(fn _ => let val vid' as vid'1=vid'1 ()
 | (21,(_,(_,EQUALS1left,EQUALS1right))::rest671) => let val result=
 MlyValue.vid(fn _ => ( VId.fromString "=" ))
  in (LrTable.NT 3,(result,EQUALS1left,EQUALS1right),rest671) end
-| (22,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
+| (22,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
 let val result=MlyValue.vid'(fn _ => let val ALPHA as ALPHA1=ALPHA1 ()
  in ( VId.fromString ALPHA ) end
 )
@@ -16069,8 +16069,8 @@ SYMBOL1 ()
 | (24,(_,(_,STAR1left,STAR1right))::rest671) => let val result=
 MlyValue.vid'(fn _ => ( VId.fromString "*" ))
  in (LrTable.NT 4,(result,STAR1left,STAR1right),rest671) end
-| (25,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
-let val result=MlyValue.tycon(fn _ => let val ALPHA as ALPHA1=ALPHA1 
+| (25,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
+let val result=MlyValue.tycon(fn _ => let val ALPHA as ALPHA1=ALPHA1
 ()
  in ( TyCon.fromString ALPHA ) end
 )
@@ -16081,26 +16081,26 @@ SYMBOL1 ()
  in ( TyCon.fromString SYMBOL ) end
 )
  in (LrTable.NT 5,(result,SYMBOL1left,SYMBOL1right),rest671) end
-| (27,(_,(MlyValue.TYVAR TYVAR1,TYVAR1left,TYVAR1right))::rest671) => 
-let val result=MlyValue.tyvar(fn _ => let val TYVAR as TYVAR1=TYVAR1 
+| (27,(_,(MlyValue.TYVAR TYVAR1,TYVAR1left,TYVAR1right))::rest671) =>
+let val result=MlyValue.tyvar(fn _ => let val TYVAR as TYVAR1=TYVAR1
 ()
  in ( TyVar.fromString TYVAR ) end
 )
  in (LrTable.NT 6,(result,TYVAR1left,TYVAR1right),rest671) end
-| (28,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
-let val result=MlyValue.strid(fn _ => let val ALPHA as ALPHA1=ALPHA1 
+| (28,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
+let val result=MlyValue.strid(fn _ => let val ALPHA as ALPHA1=ALPHA1
 ()
  in ( StrId.fromString ALPHA ) end
 )
  in (LrTable.NT 7,(result,ALPHA1left,ALPHA1right),rest671) end
-| (29,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
-let val result=MlyValue.sigid(fn _ => let val ALPHA as ALPHA1=ALPHA1 
+| (29,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
+let val result=MlyValue.sigid(fn _ => let val ALPHA as ALPHA1=ALPHA1
 ()
  in ( SigId.fromString ALPHA ) end
 )
  in (LrTable.NT 8,(result,ALPHA1left,ALPHA1right),rest671) end
-| (30,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) => 
-let val result=MlyValue.funid(fn _ => let val ALPHA as ALPHA1=ALPHA1 
+| (30,(_,(MlyValue.ALPHA ALPHA1,ALPHA1left,ALPHA1right))::rest671) =>
+let val result=MlyValue.funid(fn _ => let val ALPHA as ALPHA1=ALPHA1
 ()
  in ( FunId.fromString ALPHA ) end
 )
@@ -16114,7 +16114,7 @@ rest671) => let val result=MlyValue.longvid(fn _ => let val longvid'
 | (32,(_,(_,EQUALS1left,EQUALS1right))::rest671) => let val result=
 MlyValue.longvid(fn _ => ( LongVId.fromId(VId.fromString "=") ))
  in (LrTable.NT 10,(result,EQUALS1left,EQUALS1right),rest671) end
-| (33,(_,(MlyValue.vid' vid'1,vid'1left,vid'1right))::rest671) => let 
+| (33,(_,(MlyValue.vid' vid'1,vid'1left,vid'1right))::rest671) => let
 val result=MlyValue.longvid'(fn _ => let val vid' as vid'1=vid'1 ()
  in ( LongVId.fromId vid' ) end
 )
@@ -16125,26 +16125,26 @@ val result=MlyValue.longvid'(fn _ => let val vid' as vid'1=vid'1 ()
  in ( LongVId.implode(toLongId VId.fromString LONGID) ) end
 )
  in (LrTable.NT 11,(result,LONGID1left,LONGID1right),rest671) end
-| (35,(_,(MlyValue.tycon tycon1,tycon1left,tycon1right))::rest671) => 
+| (35,(_,(MlyValue.tycon tycon1,tycon1left,tycon1right))::rest671) =>
 let val result=MlyValue.longtycon(fn _ => let val tycon as tycon1=
 tycon1 ()
  in ( LongTyCon.fromId tycon ) end
 )
  in (LrTable.NT 12,(result,tycon1left,tycon1right),rest671) end
 | (36,(_,(MlyValue.LONGID LONGID1,LONGID1left,LONGID1right))::rest671)
- => let val result=MlyValue.longtycon(fn _ => let val LONGID as 
+ => let val result=MlyValue.longtycon(fn _ => let val LONGID as
 LONGID1=LONGID1 ()
  in ( LongTyCon.implode(toLongId TyCon.fromString LONGID) ) end
 )
  in (LrTable.NT 12,(result,LONGID1left,LONGID1right),rest671) end
-| (37,(_,(MlyValue.strid strid1,strid1left,strid1right))::rest671) => 
+| (37,(_,(MlyValue.strid strid1,strid1left,strid1right))::rest671) =>
 let val result=MlyValue.longstrid(fn _ => let val strid as strid1=
 strid1 ()
  in ( LongStrId.fromId strid ) end
 )
  in (LrTable.NT 13,(result,strid1left,strid1right),rest671) end
 | (38,(_,(MlyValue.LONGID LONGID1,LONGID1left,LONGID1right))::rest671)
- => let val result=MlyValue.longstrid(fn _ => let val LONGID as 
+ => let val result=MlyValue.longstrid(fn _ => let val LONGID as
 LONGID1=LONGID1 ()
  in ( LongStrId.implode(toLongId StrId.fromString LONGID) ) end
 )
@@ -16154,8 +16154,8 @@ MlyValue.OP_opt(fn _ => ( WITHOp ))
  in (LrTable.NT 14,(result,OP1left,OP1right),rest671) end
 | (40,rest671) => let val result=MlyValue.OP_opt(fn _ => ( SANSOp ))
  in (LrTable.NT 14,(result,defaultPos,defaultPos),rest671) end
-| (41,(_,(MlyValue.scon scon1,sconleft as scon1left,sconright as 
-scon1right))::rest671) => let val result=MlyValue.atexp(fn _ => let 
+| (41,(_,(MlyValue.scon scon1,sconleft as scon1left,sconright as
+scon1right))::rest671) => let val result=MlyValue.atexp(fn _ => let
 val scon as scon1=scon1 ()
  in ( SCONAtExp(I(sconleft,sconright), scon) ) end
 )
@@ -16167,19 +16167,19 @@ OP_opt1 ()
 val longvid as longvid1=longvid1 ()
  in (
  LONGVIDAtExp(I(OP_optleft,longvidright),
-                                       OP_opt, longvid) 
+                                       OP_opt, longvid)
 ) end
 )
  in (LrTable.NT 15,(result,OP_opt1left,longvid1right),rest671) end
-| (43,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.exprow_opt 
-exprow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) => 
-let val result=MlyValue.atexp(fn _ => let val exprow_opt as 
+| (43,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.exprow_opt
+exprow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) =>
+let val result=MlyValue.atexp(fn _ => let val exprow_opt as
 exprow_opt1=exprow_opt1 ()
  in ( RECORDAtExp(I(LBRACEleft,RBRACEright), exprow_opt) ) end
 )
  in (LrTable.NT 15,(result,LBRACE1left,RBRACE1right),rest671) end
 | (44,(_,(MlyValue.lab lab1,_,labright as lab1right))::(_,(_,HASHleft
- as HASH1left,_))::rest671) => let val result=MlyValue.atexp(fn _ => 
+ as HASH1left,_))::rest671) => let val result=MlyValue.atexp(fn _ =>
 let val lab as lab1=lab1 ()
  in ( HASHAtExp(I(HASHleft,labright), lab) ) end
 )
@@ -16188,16 +16188,16 @@ let val lab as lab1=lab1 ()
 ))::rest671) => let val result=MlyValue.atexp(fn _ => (
  UNITAtExp(I(LPARleft,RPARright)) ))
  in (LrTable.NT 15,(result,LPAR1left,RPAR1right),rest671) end
-| (46,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.exp_COMMA_list2 
-exp_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) => 
-let val result=MlyValue.atexp(fn _ => let val exp_COMMA_list2 as 
+| (46,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.exp_COMMA_list2
+exp_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) =>
+let val result=MlyValue.atexp(fn _ => let val exp_COMMA_list2 as
 exp_COMMA_list21=exp_COMMA_list21 ()
  in ( TUPLEAtExp(I(LPARleft,RPARright), exp_COMMA_list2) ) end
 )
  in (LrTable.NT 15,(result,LPAR1left,RPAR1right),rest671) end
 | (47,(_,(_,_,RBRACKright as RBRACK1right))::(_,(
-MlyValue.exp_COMMA_list0 exp_COMMA_list01,_,_))::(_,(_,LBRACKleft as 
-LBRACK1left,_))::rest671) => let val result=MlyValue.atexp(fn _ => 
+MlyValue.exp_COMMA_list0 exp_COMMA_list01,_,_))::(_,(_,LBRACKleft as
+LBRACK1left,_))::rest671) => let val result=MlyValue.atexp(fn _ =>
 let val exp_COMMA_list0 as exp_COMMA_list01=exp_COMMA_list01 ()
  in ( LISTAtExp(I(LBRACKleft,RBRACKright),
                                     exp_COMMA_list0 ))
@@ -16218,7 +16218,7 @@ exp_SEMICOLON_list21 ()
 ::(_,(_,LETleft as LET1left,_))::rest671) => let val result=
 MlyValue.atexp(fn _ => let val pushInfix1=pushInfix1 ()
 val dec as dec1=dec1 ()
-val exp_SEMICOLON_list1 as exp_SEMICOLON_list11=exp_SEMICOLON_list11 
+val exp_SEMICOLON_list1 as exp_SEMICOLON_list11=exp_SEMICOLON_list11
 ()
 val popInfix1=popInfix1 ()
  in ( LETAtExp(I(LETleft,ENDright),
@@ -16233,8 +16233,8 @@ MlyValue.atexp(fn _ => let val exp as exp1=exp1 ()
 )
  in (LrTable.NT 15,(result,LPAR1left,RPAR1right),rest671) end
 | (51,(_,(MlyValue.exp_COMMA_list1 exp_COMMA_list11,
-exp_COMMA_list11left,exp_COMMA_list11right))::rest671) => let val 
-result=MlyValue.exp_COMMA_list0(fn _ => let val exp_COMMA_list1 as 
+exp_COMMA_list11left,exp_COMMA_list11right))::rest671) => let val
+result=MlyValue.exp_COMMA_list0(fn _ => let val exp_COMMA_list1 as
 exp_COMMA_list11=exp_COMMA_list11 ()
  in ( exp_COMMA_list1 ) end
 )
@@ -16245,21 +16245,21 @@ exp_COMMA_list11=exp_COMMA_list11 ()
  in (LrTable.NT 16,(result,defaultPos,defaultPos),rest671) end
 | (53,(_,(MlyValue.exp_COMMA_list1 exp_COMMA_list11,_,
 exp_COMMA_list11right))::_::(_,(MlyValue.exp exp1,exp1left,_))::
-rest671) => let val result=MlyValue.exp_COMMA_list1(fn _ => let val 
+rest671) => let val result=MlyValue.exp_COMMA_list1(fn _ => let val
 exp as exp1=exp1 ()
 val exp_COMMA_list1 as exp_COMMA_list11=exp_COMMA_list11 ()
  in ( exp::exp_COMMA_list1 ) end
 )
  in (LrTable.NT 17,(result,exp1left,exp_COMMA_list11right),rest671)
  end
-| (54,(_,(MlyValue.exp exp1,exp1left,exp1right))::rest671) => let val 
+| (54,(_,(MlyValue.exp exp1,exp1left,exp1right))::rest671) => let val
 result=MlyValue.exp_COMMA_list1(fn _ => let val exp as exp1=exp1 ()
  in ( exp::[] ) end
 )
  in (LrTable.NT 17,(result,exp1left,exp1right),rest671) end
 | (55,(_,(MlyValue.exp_COMMA_list1 exp_COMMA_list11,_,
 exp_COMMA_list11right))::_::(_,(MlyValue.exp exp1,exp1left,_))::
-rest671) => let val result=MlyValue.exp_COMMA_list2(fn _ => let val 
+rest671) => let val result=MlyValue.exp_COMMA_list2(fn _ => let val
 exp as exp1=exp1 ()
 val exp_COMMA_list1 as exp_COMMA_list11=exp_COMMA_list11 ()
  in ( exp::exp_COMMA_list1 ) end
@@ -16268,25 +16268,25 @@ val exp_COMMA_list1 as exp_COMMA_list11=exp_COMMA_list11 ()
  end
 | (56,(_,(MlyValue.exp_SEMICOLON_list1 exp_SEMICOLON_list11,_,
 exp_SEMICOLON_list11right))::_::(_,(MlyValue.exp exp1,exp1left,_))::
-rest671) => let val result=MlyValue.exp_SEMICOLON_list1(fn _ => let 
+rest671) => let val result=MlyValue.exp_SEMICOLON_list1(fn _ => let
 val exp as exp1=exp1 ()
-val exp_SEMICOLON_list1 as exp_SEMICOLON_list11=exp_SEMICOLON_list11 
+val exp_SEMICOLON_list1 as exp_SEMICOLON_list11=exp_SEMICOLON_list11
 ()
  in ( exp::exp_SEMICOLON_list1 ) end
 )
  in (LrTable.NT 19,(result,exp1left,exp_SEMICOLON_list11right),rest671
 ) end
-| (57,(_,(MlyValue.exp exp1,exp1left,exp1right))::rest671) => let val 
-result=MlyValue.exp_SEMICOLON_list1(fn _ => let val exp as exp1=exp1 
+| (57,(_,(MlyValue.exp exp1,exp1left,exp1right))::rest671) => let val
+result=MlyValue.exp_SEMICOLON_list1(fn _ => let val exp as exp1=exp1
 ()
  in ( exp::[] ) end
 )
  in (LrTable.NT 19,(result,exp1left,exp1right),rest671) end
 | (58,(_,(MlyValue.exp_SEMICOLON_list2 exp_SEMICOLON_list21,_,
 exp_SEMICOLON_list21right))::_::(_,(MlyValue.exp exp1,exp1left,_))::
-rest671) => let val result=MlyValue.exp_SEMICOLON_list2(fn _ => let 
+rest671) => let val result=MlyValue.exp_SEMICOLON_list2(fn _ => let
 val exp as exp1=exp1 ()
-val exp_SEMICOLON_list2 as exp_SEMICOLON_list21=exp_SEMICOLON_list21 
+val exp_SEMICOLON_list2 as exp_SEMICOLON_list21=exp_SEMICOLON_list21
 ()
  in ( exp::exp_SEMICOLON_list2 ) end
 )
@@ -16300,20 +16300,20 @@ val exp2=exp2 ()
 )
  in (LrTable.NT 20,(result,exp1left,exp2right),rest671) end
 | (60,(_,(MlyValue.COMMA_exprow_opt COMMA_exprow_opt1,_,
-COMMA_exprow_optright as COMMA_exprow_opt1right))::(_,(MlyValue.exp 
+COMMA_exprow_optright as COMMA_exprow_opt1right))::(_,(MlyValue.exp
 exp1,_,_))::_::(_,(MlyValue.lab lab1,lableft as lab1left,_))::rest671)
  => let val result=MlyValue.exprow(fn _ => let val lab as lab1=lab1 ()
 val exp as exp1=exp1 ()
 val COMMA_exprow_opt as COMMA_exprow_opt1=COMMA_exprow_opt1 ()
  in (
  ExpRow(I(lableft,COMMA_exprow_optright),
-                                         lab, exp, COMMA_exprow_opt) 
+                                         lab, exp, COMMA_exprow_opt)
 ) end
 )
  in (LrTable.NT 21,(result,lab1left,COMMA_exprow_opt1right),rest671)
  end
 | (61,(_,(MlyValue.exprow exprow1,_,exprow1right))::(_,(_,COMMA1left,_
-))::rest671) => let val result=MlyValue.COMMA_exprow_opt(fn _ => let 
+))::rest671) => let val result=MlyValue.COMMA_exprow_opt(fn _ => let
 val exprow as exprow1=exprow1 ()
  in ( SOME exprow ) end
 )
@@ -16322,20 +16322,20 @@ val exprow as exprow1=exprow1 ()
  NONE ))
  in (LrTable.NT 23,(result,defaultPos,defaultPos),rest671) end
 | (63,(_,(MlyValue.exprow exprow1,exprow1left,exprow1right))::rest671)
- => let val result=MlyValue.exprow_opt(fn _ => let val exprow as 
+ => let val result=MlyValue.exprow_opt(fn _ => let val exprow as
 exprow1=exprow1 ()
  in ( SOME exprow ) end
 )
  in (LrTable.NT 22,(result,exprow1left,exprow1right),rest671) end
 | (64,rest671) => let val result=MlyValue.exprow_opt(fn _ => ( NONE ))
  in (LrTable.NT 22,(result,defaultPos,defaultPos),rest671) end
-| (65,(_,(MlyValue.atexp atexp1,atexp1left,atexp1right))::rest671) => 
-let val result=MlyValue.appexp(fn _ => let val atexp as atexp1=atexp1 
+| (65,(_,(MlyValue.atexp atexp1,atexp1left,atexp1right))::rest671) =>
+let val result=MlyValue.appexp(fn _ => let val atexp as atexp1=atexp1
 ()
  in ( atexp::[] ) end
 )
  in (LrTable.NT 24,(result,atexp1left,atexp1right),rest671) end
-| (66,(_,(MlyValue.atexp atexp1,_,atexp1right))::(_,(MlyValue.appexp 
+| (66,(_,(MlyValue.atexp atexp1,_,atexp1right))::(_,(MlyValue.appexp
 appexp1,appexp1left,_))::rest671) => let val result=MlyValue.appexp(
 fn _ => let val appexp as appexp1=appexp1 ()
 val atexp as atexp1=atexp1 ()
@@ -16362,14 +16362,14 @@ val ty as ty1=ty1 ()
 )
  in (LrTable.NT 26,(result,exp1left,ty1right),rest671) end
 | (70,(_,(MlyValue.exp exp2,_,exp2right))::_::(_,(MlyValue.exp exp1,
-exp1left,_))::rest671) => let val result=MlyValue.exp(fn _ => let val 
+exp1left,_))::rest671) => let val result=MlyValue.exp(fn _ => let val
 exp1=exp1 ()
 val exp2=exp2 ()
  in ( ANDALSOExp(I(exp1left,exp2right), exp1, exp2)) end
 )
  in (LrTable.NT 26,(result,exp1left,exp2right),rest671) end
 | (71,(_,(MlyValue.exp exp2,_,exp2right))::_::(_,(MlyValue.exp exp1,
-exp1left,_))::rest671) => let val result=MlyValue.exp(fn _ => let val 
+exp1left,_))::rest671) => let val result=MlyValue.exp(fn _ => let val
 exp1=exp1 ()
 val exp2=exp2 ()
  in ( ORELSEExp(I(exp1left,exp2right), exp1, exp2) ) end
@@ -16383,7 +16383,7 @@ val match as match1=match1 ()
 )
  in (LrTable.NT 26,(result,exp1left,match1right),rest671) end
 | (73,(_,(MlyValue.exp exp1,_,expright as exp1right))::(_,(_,RAISEleft
- as RAISE1left,_))::rest671) => let val result=MlyValue.exp(fn _ => 
+ as RAISE1left,_))::rest671) => let val result=MlyValue.exp(fn _ =>
 let val exp as exp1=exp1 ()
  in ( RAISEExp(I(RAISEleft,expright), exp) ) end
 )
@@ -16404,7 +16404,7 @@ val exp2=exp2 ()
 )
  in (LrTable.NT 26,(result,WHILE1left,exp2right),rest671) end
 | (76,(_,(MlyValue.match match1,_,matchright as match1right))::_::(_,(
-MlyValue.exp exp1,_,_))::(_,(_,CASEleft as CASE1left,_))::rest671) => 
+MlyValue.exp exp1,_,_))::(_,(_,CASEleft as CASE1left,_))::rest671) =>
 let val result=MlyValue.exp(fn _ => let val exp as exp1=exp1 ()
 val match as match1=match1 ()
  in ( CASEExp(I(CASEleft,matchright), exp, match) ) end
@@ -16417,8 +16417,8 @@ FNleft as FN1left,_))::rest671) => let val result=MlyValue.exp(fn _
 )
  in (LrTable.NT 26,(result,FN1left,match1right),rest671) end
 | (78,(_,(MlyValue.BAR_match_opt BAR_match_opt1,_,BAR_match_optright
- as BAR_match_opt1right))::(_,(MlyValue.mrule mrule1,mruleleft as 
-mrule1left,_))::rest671) => let val result=MlyValue.match(fn _ => let 
+ as BAR_match_opt1right))::(_,(MlyValue.mrule mrule1,mruleleft as
+mrule1left,_))::rest671) => let val result=MlyValue.match(fn _ => let
 val mrule as mrule1=mrule1 ()
 val BAR_match_opt as BAR_match_opt1=BAR_match_opt1 ()
  in (
@@ -16429,7 +16429,7 @@ val BAR_match_opt as BAR_match_opt1=BAR_match_opt1 ()
  in (LrTable.NT 27,(result,mrule1left,BAR_match_opt1right),rest671)
  end
 | (79,(_,(MlyValue.match match1,_,match1right))::(_,(_,BAR1left,_))::
-rest671) => let val result=MlyValue.BAR_match_opt(fn _ => let val 
+rest671) => let val result=MlyValue.BAR_match_opt(fn _ => let val
 match as match1=match1 ()
  in ( SOME match ) end
 )
@@ -16444,7 +16444,7 @@ val exp as exp1=exp1 ()
  in ( Mrule(I(patleft,expright), pat, exp) ) end
 )
  in (LrTable.NT 29,(result,pat1left,exp1right),rest671) end
-| (82,(_,(MlyValue.dec1 dec11,dec11left,dec11right))::rest671) => let 
+| (82,(_,(MlyValue.dec1 dec11,dec11left,dec11right))::rest671) => let
 val result=MlyValue.dec(fn _ => let val dec1 as dec11=dec11 ()
  in ( dec1 ) end
 )
@@ -16452,16 +16452,16 @@ val result=MlyValue.dec(fn _ => let val dec1 as dec11=dec11 ()
 | (83,rest671) => let val result=MlyValue.dec(fn _ => (
  EMPTYDec(I(defaultPos,defaultPos)) ))
  in (LrTable.NT 30,(result,defaultPos,defaultPos),rest671) end
-| (84,(_,(MlyValue.dec1' dec1'1,dec1'1left,dec1'1right))::rest671) => 
+| (84,(_,(MlyValue.dec1' dec1'1,dec1'1left,dec1'1right))::rest671) =>
 let val result=MlyValue.dec1(fn _ => let val dec1' as dec1'1=dec1'1 ()
  in ( dec1' ) end
 )
  in (LrTable.NT 31,(result,dec1'1left,dec1'1right),rest671) end
-| (85,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popLocalInfix 
+| (85,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popLocalInfix
 popLocalInfix1,_,_))::(_,(MlyValue.dec dec2,_,_))::(_,(
-MlyValue.pushLocalInfix pushLocalInfix1,_,_))::_::(_,(MlyValue.dec 
+MlyValue.pushLocalInfix pushLocalInfix1,_,_))::_::(_,(MlyValue.dec
 dec1,_,_))::(_,(MlyValue.pushInfix pushInfix1,_,_))::(_,(_,LOCALleft
- as LOCAL1left,_))::rest671) => let val result=MlyValue.dec1(fn _ => 
+ as LOCAL1left,_))::rest671) => let val result=MlyValue.dec1(fn _ =>
 let val pushInfix1=pushInfix1 ()
 val dec1=dec1 ()
 val pushLocalInfix1=pushLocalInfix1 ()
@@ -16471,13 +16471,13 @@ val popLocalInfix1=popLocalInfix1 ()
 )
  in (LrTable.NT 31,(result,LOCAL1left,END1right),rest671) end
 | (86,(_,(MlyValue.dec1 dec12,_,dec12right))::(_,(MlyValue.dec1 dec11,
-dec11left,_))::rest671) => let val result=MlyValue.dec1(fn _ => let 
+dec11left,_))::rest671) => let val result=MlyValue.dec1(fn _ => let
 val dec11=dec11 ()
 val dec12=dec12 ()
  in ( SEQDec(I(dec11left,dec12right), dec11, dec12) ) end
 )
  in (LrTable.NT 31,(result,dec11left,dec12right),rest671) end
-| (87,(_,(_,SEMICOLON1left,SEMICOLON1right))::rest671) => let val 
+| (87,(_,(_,SEMICOLON1left,SEMICOLON1right))::rest671) => let val
 result=MlyValue.dec1(fn _ => ( EMPTYDec(I(defaultPos,defaultPos)) ))
  in (LrTable.NT 31,(result,SEMICOLON1left,SEMICOLON1right),rest671)
  end
@@ -16486,31 +16486,31 @@ result=MlyValue.dec1(fn _ => ( EMPTYDec(I(defaultPos,defaultPos)) ))
 MlyValue.dec1'(fn _ => let val valbind as valbind1=valbind1 ()
  in (
  VALDec(I(VALleft,valbindright),
-                             TyVarseq(I(defaultPos,defaultPos), []), valbind) 
+                             TyVarseq(I(defaultPos,defaultPos), []), valbind)
 ) end
 )
  in (LrTable.NT 32,(result,VAL1left,valbind1right),rest671) end
 | (89,(_,(MlyValue.valbind valbind1,_,valbindright as valbind1right))
 ::(_,(MlyValue.tyvarseq1 tyvarseq11,_,_))::(_,(_,VALleft as VAL1left,_
-))::rest671) => let val result=MlyValue.dec1'(fn _ => let val 
+))::rest671) => let val result=MlyValue.dec1'(fn _ => let val
 tyvarseq1 as tyvarseq11=tyvarseq11 ()
 val valbind as valbind1=valbind1 ()
  in ( VALDec(I(VALleft,valbindright), tyvarseq1, valbind) ) end
 )
  in (LrTable.NT 32,(result,VAL1left,valbind1right),rest671) end
-| (90,(_,(MlyValue.fvalbind fvalbind1,_,fvalbindright as 
-fvalbind1right))::(_,(_,FUNleft as FUN1left,_))::rest671) => let val 
-result=MlyValue.dec1'(fn _ => let val fvalbind as fvalbind1=fvalbind1 
+| (90,(_,(MlyValue.fvalbind fvalbind1,_,fvalbindright as
+fvalbind1right))::(_,(_,FUNleft as FUN1left,_))::rest671) => let val
+result=MlyValue.dec1'(fn _ => let val fvalbind as fvalbind1=fvalbind1
 ()
  in (
  FUNDec(I(FUNleft,fvalbindright),
-                            TyVarseq(I(defaultPos,defaultPos), []), fvalbind) 
+                            TyVarseq(I(defaultPos,defaultPos), []), fvalbind)
 ) end
 )
  in (LrTable.NT 32,(result,FUN1left,fvalbind1right),rest671) end
-| (91,(_,(MlyValue.fvalbind fvalbind1,_,fvalbindright as 
+| (91,(_,(MlyValue.fvalbind fvalbind1,_,fvalbindright as
 fvalbind1right))::(_,(MlyValue.tyvarseq1 tyvarseq11,_,_))::(_,(_,
-FUNleft as FUN1left,_))::rest671) => let val result=MlyValue.dec1'(fn 
+FUNleft as FUN1left,_))::rest671) => let val result=MlyValue.dec1'(fn
 _ => let val tyvarseq1 as tyvarseq11=tyvarseq11 ()
 val fvalbind as fvalbind1=fvalbind1 ()
  in ( FUNDec(I(FUNleft,fvalbindright), tyvarseq1, fvalbind)) end
@@ -16525,13 +16525,13 @@ MlyValue.dec1'(fn _ => let val typbind as typbind1=typbind1 ()
 | (93,(_,(MlyValue.WITHTYPE_typbind_opt WITHTYPE_typbind_opt1,_,
 WITHTYPE_typbind_optright as WITHTYPE_typbind_opt1right))::(_,(
 MlyValue.datbind0 datbind01,_,_))::(_,(_,DATATYPEleft as DATATYPE1left
-,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let val 
+,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let val
 datbind0 as datbind01=datbind01 ()
 val WITHTYPE_typbind_opt as WITHTYPE_typbind_opt1=
 WITHTYPE_typbind_opt1 ()
  in (
  DATATYPEDec(I(DATATYPEleft,WITHTYPE_typbind_optright),
-                                     datbind0, WITHTYPE_typbind_opt) 
+                                     datbind0, WITHTYPE_typbind_opt)
 ) end
 )
  in (LrTable.NT 32,(result,DATATYPE1left,WITHTYPE_typbind_opt1right),
@@ -16539,25 +16539,25 @@ rest671) end
 | (94,(_,(MlyValue.WITHTYPE_typbind_opt WITHTYPE_typbind_opt1,_,
 WITHTYPE_typbind_optright as WITHTYPE_typbind_opt1right))::(_,(
 MlyValue.datbind1 datbind11,_,_))::(_,(_,DATATYPEleft as DATATYPE1left
-,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let val 
+,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let val
 datbind1 as datbind11=datbind11 ()
 val WITHTYPE_typbind_opt as WITHTYPE_typbind_opt1=
 WITHTYPE_typbind_opt1 ()
  in (
  DATATYPEDec(I(DATATYPEleft,WITHTYPE_typbind_optright),
-                                      datbind1, WITHTYPE_typbind_opt) 
+                                      datbind1, WITHTYPE_typbind_opt)
 ) end
 )
  in (LrTable.NT 32,(result,DATATYPE1left,WITHTYPE_typbind_opt1right),
 rest671) end
-| (95,(_,(MlyValue.longtycon longtycon1,_,longtyconright as 
+| (95,(_,(MlyValue.longtycon longtycon1,_,longtyconright as
 longtycon1right))::_::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(_,
 DATATYPEleft as DATATYPE1left,_))::rest671) => let val result=
 MlyValue.dec1'(fn _ => let val tycon as tycon1=tycon1 ()
 val longtycon as longtycon1=longtycon1 ()
  in (
  REPLICATIONDec(I(DATATYPEleft,longtyconright),
-                                         tycon, longtycon) 
+                                         tycon, longtycon)
 ) end
 )
  in (LrTable.NT 32,(result,DATATYPE1left,longtycon1right),rest671) end
@@ -16571,7 +16571,7 @@ WITHTYPE_typbind_opt1 ()
 val dec as dec1=dec1 ()
  in (
  ABSTYPEDec(I(ABSTYPEleft,ENDright), datbind,
-                                     WITHTYPE_typbind_opt, dec) 
+                                     WITHTYPE_typbind_opt, dec)
 ) end
 )
  in (LrTable.NT 32,(result,ABSTYPE1left,END1right),rest671) end
@@ -16582,8 +16582,8 @@ MlyValue.dec1'(fn _ => let val exbind as exbind1=exbind1 ()
 )
  in (LrTable.NT 32,(result,EXCEPTION1left,exbind1right),rest671) end
 | (98,(_,(MlyValue.longstrid_list1 longstrid_list11,_,
-longstrid_list1right as longstrid_list11right))::(_,(_,OPENleft as 
-OPEN1left,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let 
+longstrid_list1right as longstrid_list11right))::(_,(_,OPENleft as
+OPEN1left,_))::rest671) => let val result=MlyValue.dec1'(fn _ => let
 val longstrid_list1 as longstrid_list11=longstrid_list11 ()
  in (
  OPENDec(I(OPENleft,longstrid_list1right),
@@ -16592,30 +16592,30 @@ val longstrid_list1 as longstrid_list11=longstrid_list11 ()
 )
  in (LrTable.NT 32,(result,OPEN1left,longstrid_list11right),rest671)
  end
-| (99,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as 
+| (99,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as
 vid_list11right))::(_,(MlyValue.d_opt d_opt1,_,_))::(_,(_,INFIXleft
- as INFIX1left,_))::rest671) => let val result=MlyValue.dec1'(fn _ => 
+ as INFIX1left,_))::rest671) => let val result=MlyValue.dec1'(fn _ =>
 let val d_opt as d_opt1=d_opt1 ()
 val vid_list1 as vid_list11=vid_list11 ()
  in (
  assignInfix((Infix.LEFT, d_opt), vid_list1);
-                          EMPTYDec(I(INFIXleft,vid_list1right)) 
+                          EMPTYDec(I(INFIXleft,vid_list1right))
 ) end
 )
  in (LrTable.NT 32,(result,INFIX1left,vid_list11right),rest671) end
-| (100,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as 
+| (100,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as
 vid_list11right))::(_,(MlyValue.d_opt d_opt1,_,_))::(_,(_,INFIXRleft
  as INFIXR1left,_))::rest671) => let val result=MlyValue.dec1'(fn _
  => let val d_opt as d_opt1=d_opt1 ()
 val vid_list1 as vid_list11=vid_list11 ()
  in (
  assignInfix((Infix.RIGHT, d_opt), vid_list1);
-                          EMPTYDec(I(INFIXRleft,vid_list1right)) 
+                          EMPTYDec(I(INFIXRleft,vid_list1right))
 ) end
 )
  in (LrTable.NT 32,(result,INFIXR1left,vid_list11right),rest671) end
-| (101,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as 
-vid_list11right))::(_,(_,NONFIXleft as NONFIX1left,_))::rest671) => 
+| (101,(_,(MlyValue.vid_list1 vid_list11,_,vid_list1right as
+vid_list11right))::(_,(_,NONFIXleft as NONFIX1left,_))::rest671) =>
 let val result=MlyValue.dec1'(fn _ => let val vid_list1 as vid_list11=
 vid_list11 ()
  in (
@@ -16641,7 +16641,7 @@ val vid_list1 as vid_list11=vid_list11 ()
  in ( vid::vid_list1 ) end
 )
  in (LrTable.NT 34,(result,vid1left,vid_list11right),rest671) end
-| (105,(_,(MlyValue.vid vid1,vid1left,vid1right))::rest671) => let 
+| (105,(_,(MlyValue.vid vid1,vid1left,vid1right))::rest671) => let
 val result=MlyValue.vid_list1(fn _ => let val vid as vid1=vid1 ()
  in ( vid::[] ) end
 )
@@ -16672,13 +16672,13 @@ MlyValue.d_opt(fn _ => let val d as d1=d1 ()
  in (LrTable.NT 36,(result,defaultPos,defaultPos),rest671) end
 | (110,(_,(MlyValue.AND_valbind_opt AND_valbind_opt1,_,
 AND_valbind_optright as AND_valbind_opt1right))::(_,(MlyValue.exp exp1
-,_,_))::_::(_,(MlyValue.pat pat1,patleft as pat1left,_))::rest671) => 
+,_,_))::_::(_,(MlyValue.pat pat1,patleft as pat1left,_))::rest671) =>
 let val result=MlyValue.valbind(fn _ => let val pat as pat1=pat1 ()
 val exp as exp1=exp1 ()
 val AND_valbind_opt as AND_valbind_opt1=AND_valbind_opt1 ()
  in (
  PLAINValBind(I(patleft,AND_valbind_optright),
-                                       pat, exp, AND_valbind_opt) 
+                                       pat, exp, AND_valbind_opt)
 ) end
 )
  in (LrTable.NT 37,(result,pat1left,AND_valbind_opt1right),rest671)
@@ -16690,7 +16690,7 @@ MlyValue.valbind(fn _ => let val valbind as valbind1=valbind1 ()
 )
  in (LrTable.NT 37,(result,REC1left,valbind1right),rest671) end
 | (112,(_,(MlyValue.valbind valbind1,_,valbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_valbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_valbind_opt(fn _ => let
 val valbind as valbind1=valbind1 ()
  in ( SOME valbind ) end
 )
@@ -16705,13 +16705,13 @@ MlyValue.fvalbind(fn _ => let val fmatch as fmatch1=fmatch1 ()
 val AND_fvalbind_opt as AND_fvalbind_opt1=AND_fvalbind_opt1 ()
  in (
  FvalBind(I(fmatchleft,AND_fvalbind_optright),
-                                     fmatch, AND_fvalbind_opt) 
+                                     fmatch, AND_fvalbind_opt)
 ) end
 )
  in (LrTable.NT 39,(result,fmatch1left,AND_fvalbind_opt1right),rest671
 ) end
 | (115,(_,(MlyValue.fvalbind fvalbind1,_,fvalbind1right))::(_,(_,
-AND1left,_))::rest671) => let val result=MlyValue.AND_fvalbind_opt(fn 
+AND1left,_))::rest671) => let val result=MlyValue.AND_fvalbind_opt(fn
 _ => let val fvalbind as fvalbind1=fvalbind1 ()
  in ( SOME fvalbind ) end
 )
@@ -16720,19 +16720,19 @@ _ => let val fvalbind as fvalbind1=fvalbind1 ()
  NONE ))
  in (LrTable.NT 40,(result,defaultPos,defaultPos),rest671) end
 | (117,(_,(MlyValue.BAR_fmatch_opt BAR_fmatch_opt1,_,
-BAR_fmatch_optright as BAR_fmatch_opt1right))::(_,(MlyValue.fmrule 
+BAR_fmatch_optright as BAR_fmatch_opt1right))::(_,(MlyValue.fmrule
 fmrule1,fmruleleft as fmrule1left,_))::rest671) => let val result=
 MlyValue.fmatch(fn _ => let val fmrule as fmrule1=fmrule1 ()
 val BAR_fmatch_opt as BAR_fmatch_opt1=BAR_fmatch_opt1 ()
  in (
  Fmatch(I(fmruleleft,BAR_fmatch_optright),
-                                 fmrule, BAR_fmatch_opt) 
+                                 fmrule, BAR_fmatch_opt)
 ) end
 )
  in (LrTable.NT 41,(result,fmrule1left,BAR_fmatch_opt1right),rest671)
  end
 | (118,(_,(MlyValue.fmatch fmatch1,_,fmatch1right))::(_,(_,BAR1left,_)
-)::rest671) => let val result=MlyValue.BAR_fmatch_opt(fn _ => let val 
+)::rest671) => let val result=MlyValue.BAR_fmatch_opt(fn _ => let val
 fmatch as fmatch1=fmatch1 ()
  in ( SOME fmatch ) end
 )
@@ -16741,8 +16741,8 @@ fmatch as fmatch1=fmatch1 ()
  NONE ))
  in (LrTable.NT 42,(result,defaultPos,defaultPos),rest671) end
 | (120,(_,(MlyValue.exp exp1,_,expright as exp1right))::_::(_,(
-MlyValue.COLON_ty_opt COLON_ty_opt1,_,_))::(_,(MlyValue.atpat_list1 
-atpat_list11,atpat_list1left as atpat_list11left,_))::rest671) => let 
+MlyValue.COLON_ty_opt COLON_ty_opt1,_,_))::(_,(MlyValue.atpat_list1
+atpat_list11,atpat_list1left as atpat_list11left,_))::rest671) => let
 val result=MlyValue.fmrule(fn _ => let val atpat_list1 as atpat_list11
 =atpat_list11 ()
 val COLON_ty_opt as COLON_ty_opt1=COLON_ty_opt1 ()
@@ -16754,14 +16754,14 @@ val exp as exp1=exp1 ()
                           in
                             Fmrule(I(atpat_list1left,expright),
                                    op_opt, vid, atpats, COLON_ty_opt, exp)
-                          end 
+                          end
 ) end
 )
  in (LrTable.NT 43,(result,atpat_list11left,exp1right),rest671) end
 | (121,(_,(MlyValue.AND_typbind_opt AND_typbind_opt1,_,
 AND_typbind_optright as AND_typbind_opt1right))::(_,(MlyValue.ty ty1,_
-,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671) => let val 
+,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671) => let val
 result=MlyValue.typbind(fn _ => let val tyvarseq as tyvarseq1=
 tyvarseq1 ()
 val tycon as tycon1=tycon1 ()
@@ -16769,13 +16769,13 @@ val ty as ty1=ty1 ()
 val AND_typbind_opt as AND_typbind_opt1=AND_typbind_opt1 ()
  in (
  TypBind(I(tyvarseqleft,AND_typbind_optright),
-                                  tyvarseq, tycon, ty, AND_typbind_opt) 
+                                  tyvarseq, tycon, ty, AND_typbind_opt)
 ) end
 )
  in (LrTable.NT 44,(result,tyvarseq1left,AND_typbind_opt1right),
 rest671) end
 | (122,(_,(MlyValue.typbind typbind1,_,typbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_typbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_typbind_opt(fn _ => let
 val typbind as typbind1=typbind1 ()
  in ( SOME typbind ) end
 )
@@ -16784,23 +16784,23 @@ val typbind as typbind1=typbind1 ()
  NONE ))
  in (LrTable.NT 45,(result,defaultPos,defaultPos),rest671) end
 | (124,(_,(MlyValue.AND_datbind_opt AND_datbind_opt1,_,
-AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind 
+AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind
 conbind1,_,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(
 MlyValue.tyvarseq tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671
-) => let val result=MlyValue.datbind(fn _ => let val tyvarseq as 
+) => let val result=MlyValue.datbind(fn _ => let val tyvarseq as
 tyvarseq1=tyvarseq1 ()
 val tycon as tycon1=tycon1 ()
 val conbind as conbind1=conbind1 ()
 val AND_datbind_opt as AND_datbind_opt1=AND_datbind_opt1 ()
  in (
  DatBind(I(tyvarseqleft,AND_datbind_optright),
-                                  tyvarseq, tycon, conbind, AND_datbind_opt) 
+                                  tyvarseq, tycon, conbind, AND_datbind_opt)
 ) end
 )
  in (LrTable.NT 46,(result,tyvarseq1left,AND_datbind_opt1right),
 rest671) end
 | (125,(_,(MlyValue.AND_datbind_opt AND_datbind_opt1,_,
-AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind 
+AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind
 conbind1,_,_))::_::(_,(MlyValue.tycon tycon1,tyconleft as tycon1left,_
 ))::rest671) => let val result=MlyValue.datbind0(fn _ => let val tycon
  as tycon1=tycon1 ()
@@ -16809,13 +16809,13 @@ val AND_datbind_opt as AND_datbind_opt1=AND_datbind_opt1 ()
  in (
  DatBind(I(tyconleft,AND_datbind_optright),
                                   TyVarseq(I(defaultPos,defaultPos), []),
-                                  tycon, conbind, AND_datbind_opt) 
+                                  tycon, conbind, AND_datbind_opt)
 ) end
 )
  in (LrTable.NT 47,(result,tycon1left,AND_datbind_opt1right),rest671)
  end
 | (126,(_,(MlyValue.AND_datbind_opt AND_datbind_opt1,_,
-AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind 
+AND_datbind_optright as AND_datbind_opt1right))::(_,(MlyValue.conbind
 conbind1,_,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(
 MlyValue.tyvarseq1 tyvarseq11,tyvarseq1left as tyvarseq11left,_))::
 rest671) => let val result=MlyValue.datbind1(fn _ => let val tyvarseq1
@@ -16825,13 +16825,13 @@ val conbind as conbind1=conbind1 ()
 val AND_datbind_opt as AND_datbind_opt1=AND_datbind_opt1 ()
  in (
  DatBind(I(tyvarseq1left,AND_datbind_optright),
-                                  tyvarseq1, tycon, conbind, AND_datbind_opt) 
+                                  tyvarseq1, tycon, conbind, AND_datbind_opt)
 ) end
 )
  in (LrTable.NT 48,(result,tyvarseq11left,AND_datbind_opt1right),
 rest671) end
 | (127,(_,(MlyValue.datbind datbind1,_,datbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_datbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_datbind_opt(fn _ => let
 val datbind as datbind1=datbind1 ()
  in ( SOME datbind ) end
 )
@@ -16842,7 +16842,7 @@ val datbind as datbind1=datbind1 ()
 | (129,(_,(MlyValue.BAR_conbind_opt BAR_conbind_opt1,_,
 BAR_conbind_optright as BAR_conbind_opt1right))::(_,(
 MlyValue.OF_ty_opt OF_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,_,_))::(_
-,(MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) => 
+,(MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) =>
 let val result=MlyValue.conbind(fn _ => let val OP_opt as OP_opt1=
 OP_opt1 ()
 val vid' as vid'1=vid'1 ()
@@ -16850,13 +16850,13 @@ val OF_ty_opt as OF_ty_opt1=OF_ty_opt1 ()
 val BAR_conbind_opt as BAR_conbind_opt1=BAR_conbind_opt1 ()
  in (
  ConBind(I(OP_optleft,BAR_conbind_optright),
-                                  OP_opt, vid', OF_ty_opt, BAR_conbind_opt) 
+                                  OP_opt, vid', OF_ty_opt, BAR_conbind_opt)
 ) end
 )
  in (LrTable.NT 50,(result,OP_opt1left,BAR_conbind_opt1right),rest671)
  end
 | (130,(_,(MlyValue.conbind conbind1,_,conbind1right))::(_,(_,BAR1left
-,_))::rest671) => let val result=MlyValue.BAR_conbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.BAR_conbind_opt(fn _ => let
 val conbind as conbind1=conbind1 ()
  in ( SOME conbind ) end
 )
@@ -16872,8 +16872,8 @@ val conbind as conbind1=conbind1 ()
 | (133,rest671) => let val result=MlyValue.OF_ty_opt(fn _ => ( NONE ))
  in (LrTable.NT 52,(result,defaultPos,defaultPos),rest671) end
 | (134,(_,(MlyValue.AND_exbind_opt AND_exbind_opt1,_,
-AND_exbind_optright as AND_exbind_opt1right))::(_,(MlyValue.OF_ty_opt 
-OF_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,_,_))::(_,(MlyValue.OP_opt 
+AND_exbind_optright as AND_exbind_opt1right))::(_,(MlyValue.OF_ty_opt
+OF_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,_,_))::(_,(MlyValue.OP_opt
 OP_opt1,OP_optleft as OP_opt1left,_))::rest671) => let val result=
 MlyValue.exbind(fn _ => let val OP_opt as OP_opt1=OP_opt1 ()
 val vid' as vid'1=vid'1 ()
@@ -16881,13 +16881,13 @@ val OF_ty_opt as OF_ty_opt1=OF_ty_opt1 ()
 val AND_exbind_opt as AND_exbind_opt1=AND_exbind_opt1 ()
  in (
  NEWExBind(I(OP_optleft,AND_exbind_optright),
-                                    OP_opt, vid', OF_ty_opt, AND_exbind_opt) 
+                                    OP_opt, vid', OF_ty_opt, AND_exbind_opt)
 ) end
 )
  in (LrTable.NT 53,(result,OP_opt1left,AND_exbind_opt1right),rest671)
  end
 | (135,(_,(MlyValue.AND_exbind_opt AND_exbind_opt1,_,
-AND_exbind_optright as AND_exbind_opt1right))::(_,(MlyValue.longvid 
+AND_exbind_optright as AND_exbind_opt1right))::(_,(MlyValue.longvid
 longvid1,_,_))::(_,(MlyValue.OP_opt OP_opt2,_,_))::_::(_,(
 MlyValue.vid' vid'1,_,_))::(_,(MlyValue.OP_opt OP_opt1,OP_opt1left,_))
 ::rest671) => let val result=MlyValue.exbind(fn _ => let val OP_opt1=
@@ -16899,13 +16899,13 @@ val AND_exbind_opt as AND_exbind_opt1=AND_exbind_opt1 ()
  in (
  EQUALExBind(I(OP_opt1left,AND_exbind_optright),
                                       OP_opt1, vid', OP_opt2, longvid,
-                                      AND_exbind_opt) 
+                                      AND_exbind_opt)
 ) end
 )
  in (LrTable.NT 53,(result,OP_opt1left,AND_exbind_opt1right),rest671)
  end
 | (136,(_,(MlyValue.exbind exbind1,_,exbind1right))::(_,(_,AND1left,_)
-)::rest671) => let val result=MlyValue.AND_exbind_opt(fn _ => let val 
+)::rest671) => let val result=MlyValue.AND_exbind_opt(fn _ => let val
 exbind as exbind1=exbind1 ()
  in ( SOME exbind ) end
 )
@@ -16919,30 +16919,30 @@ atpat'1 ()
  in ( atpat' ) end
 )
  in (LrTable.NT 55,(result,atpat'1left,atpat'1right),rest671) end
-| (139,(_,(MlyValue.longvid' longvid'1,_,longvid'right as 
-longvid'1right))::(_,(MlyValue.OP_opt OP_opt1,OP_optleft as 
-OP_opt1left,_))::rest671) => let val result=MlyValue.atpat(fn _ => 
+| (139,(_,(MlyValue.longvid' longvid'1,_,longvid'right as
+longvid'1right))::(_,(MlyValue.OP_opt OP_opt1,OP_optleft as
+OP_opt1left,_))::rest671) => let val result=MlyValue.atpat(fn _ =>
 let val OP_opt as OP_opt1=OP_opt1 ()
 val longvid' as longvid'1=longvid'1 ()
  in (
  LONGVIDAtPat(I(OP_optleft,longvid'right),
-                                       OP_opt, longvid') 
+                                       OP_opt, longvid')
 ) end
 )
  in (LrTable.NT 55,(result,OP_opt1left,longvid'1right),rest671) end
-| (140,(_,(_,UNDERBARleft as UNDERBAR1left,UNDERBARright as 
+| (140,(_,(_,UNDERBARleft as UNDERBAR1left,UNDERBARright as
 UNDERBAR1right))::rest671) => let val result=MlyValue.atpat'(fn _ => (
  WILDCARDAtPat(I(UNDERBARleft,UNDERBARright)) ))
  in (LrTable.NT 56,(result,UNDERBAR1left,UNDERBAR1right),rest671) end
-| (141,(_,(MlyValue.scon scon1,sconleft as scon1left,sconright as 
-scon1right))::rest671) => let val result=MlyValue.atpat'(fn _ => let 
+| (141,(_,(MlyValue.scon scon1,sconleft as scon1left,sconright as
+scon1right))::rest671) => let val result=MlyValue.atpat'(fn _ => let
 val scon as scon1=scon1 ()
  in ( SCONAtPat(I(sconleft,sconright), scon) ) end
 )
  in (LrTable.NT 56,(result,scon1left,scon1right),rest671) end
-| (142,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.patrow_opt 
-patrow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) => 
-let val result=MlyValue.atpat'(fn _ => let val patrow_opt as 
+| (142,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.patrow_opt
+patrow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) =>
+let val result=MlyValue.atpat'(fn _ => let val patrow_opt as
 patrow_opt1=patrow_opt1 ()
  in ( RECORDAtPat(I(LBRACEleft,RBRACEright), patrow_opt) ) end
 )
@@ -16952,15 +16952,15 @@ _))::rest671) => let val result=MlyValue.atpat'(fn _ => (
  UNITAtPat(I(LPARleft,RPARright)) ))
  in (LrTable.NT 56,(result,LPAR1left,RPAR1right),rest671) end
 | (144,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.pat_COMMA_list2
- pat_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) => 
-let val result=MlyValue.atpat'(fn _ => let val pat_COMMA_list2 as 
+ pat_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) =>
+let val result=MlyValue.atpat'(fn _ => let val pat_COMMA_list2 as
 pat_COMMA_list21=pat_COMMA_list21 ()
  in ( TUPLEAtPat(I(LPARleft,RPARright), pat_COMMA_list2) ) end
 )
  in (LrTable.NT 56,(result,LPAR1left,RPAR1right),rest671) end
 | (145,(_,(_,_,RBRACKright as RBRACK1right))::(_,(
-MlyValue.pat_COMMA_list0 pat_COMMA_list01,_,_))::(_,(_,LBRACKleft as 
-LBRACK1left,_))::rest671) => let val result=MlyValue.atpat'(fn _ => 
+MlyValue.pat_COMMA_list0 pat_COMMA_list01,_,_))::(_,(_,LBRACKleft as
+LBRACK1left,_))::rest671) => let val result=MlyValue.atpat'(fn _ =>
 let val pat_COMMA_list0 as pat_COMMA_list01=pat_COMMA_list01 ()
  in ( LISTAtPat(I(LBRACKleft,RBRACKright),
                                     pat_COMMA_list0) )
@@ -16974,8 +16974,8 @@ MlyValue.atpat'(fn _ => let val pat as pat1=pat1 ()
 )
  in (LrTable.NT 56,(result,LPAR1left,RPAR1right),rest671) end
 | (147,(_,(MlyValue.pat_COMMA_list1 pat_COMMA_list11,
-pat_COMMA_list11left,pat_COMMA_list11right))::rest671) => let val 
-result=MlyValue.pat_COMMA_list0(fn _ => let val pat_COMMA_list1 as 
+pat_COMMA_list11left,pat_COMMA_list11right))::rest671) => let val
+result=MlyValue.pat_COMMA_list0(fn _ => let val pat_COMMA_list1 as
 pat_COMMA_list11=pat_COMMA_list11 ()
  in ( pat_COMMA_list1 ) end
 )
@@ -16986,22 +16986,22 @@ pat_COMMA_list11=pat_COMMA_list11 ()
  in (LrTable.NT 57,(result,defaultPos,defaultPos),rest671) end
 | (149,(_,(MlyValue.pat_COMMA_list1 pat_COMMA_list11,_,
 pat_COMMA_list11right))::_::(_,(MlyValue.pat pat1,pat1left,_))::
-rest671) => let val result=MlyValue.pat_COMMA_list1(fn _ => let val 
+rest671) => let val result=MlyValue.pat_COMMA_list1(fn _ => let val
 pat as pat1=pat1 ()
 val pat_COMMA_list1 as pat_COMMA_list11=pat_COMMA_list11 ()
  in ( pat::pat_COMMA_list1 ) end
 )
  in (LrTable.NT 58,(result,pat1left,pat_COMMA_list11right),rest671)
  end
-| (150,(_,(MlyValue.pat pat1,pat1left,pat1right))::rest671) => let 
-val result=MlyValue.pat_COMMA_list1(fn _ => let val pat as pat1=pat1 
+| (150,(_,(MlyValue.pat pat1,pat1left,pat1right))::rest671) => let
+val result=MlyValue.pat_COMMA_list1(fn _ => let val pat as pat1=pat1
 ()
  in ( pat::[] ) end
 )
  in (LrTable.NT 58,(result,pat1left,pat1right),rest671) end
 | (151,(_,(MlyValue.pat_COMMA_list1 pat_COMMA_list11,_,
 pat_COMMA_list11right))::_::(_,(MlyValue.pat pat1,pat1left,_))::
-rest671) => let val result=MlyValue.pat_COMMA_list2(fn _ => let val 
+rest671) => let val result=MlyValue.pat_COMMA_list2(fn _ => let val
 pat as pat1=pat1 ()
 val pat_COMMA_list1 as pat_COMMA_list11=pat_COMMA_list11 ()
  in ( pat::pat_COMMA_list1 ) end
@@ -17013,23 +17013,23 @@ val pat_COMMA_list1 as pat_COMMA_list11=pat_COMMA_list11 ()
  WILDCARDPatRow(I(DOTSleft,DOTSright)) ))
  in (LrTable.NT 60,(result,DOTS1left,DOTS1right),rest671) end
 | (153,(_,(MlyValue.COMMA_patrow_opt COMMA_patrow_opt1,_,
-COMMA_patrow_optright as COMMA_patrow_opt1right))::(_,(MlyValue.pat 
+COMMA_patrow_optright as COMMA_patrow_opt1right))::(_,(MlyValue.pat
 pat1,_,_))::_::(_,(MlyValue.lab lab1,lableft as lab1left,_))::rest671)
  => let val result=MlyValue.patrow(fn _ => let val lab as lab1=lab1 ()
 val pat as pat1=pat1 ()
 val COMMA_patrow_opt as COMMA_patrow_opt1=COMMA_patrow_opt1 ()
  in (
  ROWPatRow(I(lableft,COMMA_patrow_optright),
-                                      lab, pat, COMMA_patrow_opt) 
+                                      lab, pat, COMMA_patrow_opt)
 ) end
 )
  in (LrTable.NT 60,(result,lab1left,COMMA_patrow_opt1right),rest671)
  end
 | (154,(_,(MlyValue.COMMA_patrow_opt COMMA_patrow_opt1,_,
 COMMA_patrow_optright as COMMA_patrow_opt1right))::(_,(
-MlyValue.AS_pat_opt AS_pat_opt1,_,_))::(_,(MlyValue.COLON_ty_opt 
+MlyValue.AS_pat_opt AS_pat_opt1,_,_))::(_,(MlyValue.COLON_ty_opt
 COLON_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,vid'left as vid'1left,_))
-::rest671) => let val result=MlyValue.patrow(fn _ => let val vid' as 
+::rest671) => let val result=MlyValue.patrow(fn _ => let val vid' as
 vid'1=vid'1 ()
 val COLON_ty_opt as COLON_ty_opt1=COLON_ty_opt1 ()
 val AS_pat_opt as AS_pat_opt1=AS_pat_opt1 ()
@@ -17037,13 +17037,13 @@ val COMMA_patrow_opt as COMMA_patrow_opt1=COMMA_patrow_opt1 ()
  in (
  VIDPatRow(I(vid'left,COMMA_patrow_optright),
                                     vid', COLON_ty_opt, AS_pat_opt,
-                                    COMMA_patrow_opt) 
+                                    COMMA_patrow_opt)
 ) end
 )
  in (LrTable.NT 60,(result,vid'1left,COMMA_patrow_opt1right),rest671)
  end
 | (155,(_,(MlyValue.patrow patrow1,_,patrow1right))::(_,(_,COMMA1left,
-_))::rest671) => let val result=MlyValue.COMMA_patrow_opt(fn _ => let 
+_))::rest671) => let val result=MlyValue.COMMA_patrow_opt(fn _ => let
 val patrow as patrow1=patrow1 ()
  in ( SOME patrow ) end
 )
@@ -17070,7 +17070,7 @@ pat1 ()
 )
  in (LrTable.NT 64,(result,defaultPos,defaultPos),rest671) end
 | (161,(_,(MlyValue.patrow patrow1,patrow1left,patrow1right))::rest671
-) => let val result=MlyValue.patrow_opt(fn _ => let val patrow as 
+) => let val result=MlyValue.patrow_opt(fn _ => let val patrow as
 patrow1=patrow1 ()
  in ( SOME patrow ) end
 )
@@ -17085,7 +17085,7 @@ patrow1=patrow1 ()
 )
  in (LrTable.NT 65,(result,atpat1left,atpat1right),rest671) end
 | (164,(_,(MlyValue.atpat_list2 atpat_list21,atpat_list21left,
-atpat_list21right))::rest671) => let val result=MlyValue.pat(fn _ => 
+atpat_list21right))::rest671) => let val result=MlyValue.pat(fn _ =>
 let val atpat_list2 as atpat_list21=atpat_list21 ()
  in ( Infix.parsePat(!J, atpat_list2) ) end
 )
@@ -17093,32 +17093,32 @@ let val atpat_list2 as atpat_list21=atpat_list21 ()
 ) end
 | (165,(_,(MlyValue.COLON_ty_list1 COLON_ty_list11,_,
 COLON_ty_list11right))::(_,(MlyValue.atpat' atpat'1,atpat'1left,_))::
-rest671) => let val result=MlyValue.pat(fn _ => let val atpat' as 
+rest671) => let val result=MlyValue.pat(fn _ => let val atpat' as
 atpat'1=atpat'1 ()
 val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
  in (
  let val pat = Infix.parsePat(!J, [atpat'])
-                          in typedPat(pat, COLON_ty_list1) end 
+                          in typedPat(pat, COLON_ty_list1) end
 ) end
 )
  in (LrTable.NT 65,(result,atpat'1left,COLON_ty_list11right),rest671)
  end
 | (166,(_,(MlyValue.COLON_ty_list1 COLON_ty_list11,_,
 COLON_ty_list11right))::(_,(MlyValue.atpat_list2 atpat_list21,
-atpat_list21left,_))::rest671) => let val result=MlyValue.pat(fn _ => 
+atpat_list21left,_))::rest671) => let val result=MlyValue.pat(fn _ =>
 let val atpat_list2 as atpat_list21=atpat_list21 ()
 val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
  in (
  let val pat = Infix.parsePat(!J, atpat_list2)
-                          in typedPat(pat, COLON_ty_list1) end 
+                          in typedPat(pat, COLON_ty_list1) end
 ) end
 )
  in (LrTable.NT 65,(result,atpat_list21left,COLON_ty_list11right),
 rest671) end
 | (167,(_,(MlyValue.COLON_ty_list1 COLON_ty_list11,_,
 COLON_ty_list11right))::(_,(MlyValue.vid' vid'1,_,vid'right))::(_,(
-MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) => 
-let val result=MlyValue.pat(fn _ => let val OP_opt as OP_opt1=OP_opt1 
+MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) =>
+let val result=MlyValue.pat(fn _ => let val OP_opt as OP_opt1=OP_opt1
 ()
 val vid' as vid'1=vid'1 ()
 val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
@@ -17127,15 +17127,15 @@ val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
                                                        OP_opt,
                                                        LongVId.fromId vid')
                               val pat   = Infix.parsePat(!J, [atpat])
-                          in typedPat(pat, COLON_ty_list1) end 
+                          in typedPat(pat, COLON_ty_list1) end
 ) end
 )
  in (LrTable.NT 65,(result,OP_opt1left,COLON_ty_list11right),rest671)
  end
 | (168,(_,(MlyValue.COLON_ty_list1 COLON_ty_list11,_,
 COLON_ty_list11right))::(_,(MlyValue.LONGID LONGID1,_,LONGIDright))::(
-_,(MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) => 
-let val result=MlyValue.pat(fn _ => let val OP_opt as OP_opt1=OP_opt1 
+_,(MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))::rest671) =>
+let val result=MlyValue.pat(fn _ => let val OP_opt as OP_opt1=OP_opt1
 ()
 val LONGID as LONGID1=LONGID1 ()
 val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
@@ -17145,7 +17145,7 @@ val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
                               val atpat = LONGVIDAtPat(I(OP_optleft,LONGIDright),
                                                        OP_opt, longvid)
                               val pat   = Infix.parsePat(!J, [atpat])
-                          in typedPat(pat, COLON_ty_list1) end 
+                          in typedPat(pat, COLON_ty_list1) end
 ) end
 )
  in (LrTable.NT 65,(result,OP_opt1left,COLON_ty_list11right),rest671)
@@ -17153,7 +17153,7 @@ val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
 | (169,(_,(MlyValue.pat pat1,_,patright as pat1right))::_::(_,(
 MlyValue.COLON_ty_opt COLON_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,_,
 vid'right))::(_,(MlyValue.OP_opt OP_opt1,OP_optleft as OP_opt1left,_))
-::rest671) => let val result=MlyValue.pat(fn _ => let val OP_opt as 
+::rest671) => let val result=MlyValue.pat(fn _ => let val OP_opt as
 OP_opt1=OP_opt1 ()
 val vid' as vid'1=vid'1 ()
 val COLON_ty_opt as COLON_ty_opt1=COLON_ty_opt1 ()
@@ -17164,7 +17164,7 @@ val pat as pat1=pat1 ()
                                                 OP_opt,
                                                 LongVId.implode([],vid')) ] ) ;
                           ASPat(I(OP_optleft,patright),
-                                OP_opt, vid', COLON_ty_opt, pat) 
+                                OP_opt, vid', COLON_ty_opt, pat)
 ) end
 )
  in (LrTable.NT 65,(result,OP_opt1left,pat1right),rest671) end
@@ -17176,7 +17176,7 @@ val atpat_list1 as atpat_list11=atpat_list11 ()
 )
  in (LrTable.NT 66,(result,atpat1left,atpat_list11right),rest671) end
 | (171,(_,(MlyValue.atpat atpat1,atpat1left,atpat1right))::rest671)
- => let val result=MlyValue.atpat_list1(fn _ => let val atpat as 
+ => let val result=MlyValue.atpat_list1(fn _ => let val atpat as
 atpat1=atpat1 ()
  in ( atpat::[] ) end
 )
@@ -17190,7 +17190,7 @@ val atpat_list1 as atpat_list11=atpat_list11 ()
  in (LrTable.NT 67,(result,atpat1left,atpat_list11right),rest671) end
 | (173,(_,(MlyValue.COLON_ty_list1 COLON_ty_list11,_,
 COLON_ty_list11right))::(_,(MlyValue.ty ty1,_,_))::(_,(_,COLON1left,_)
-)::rest671) => let val result=MlyValue.COLON_ty_list1(fn _ => let val 
+)::rest671) => let val result=MlyValue.COLON_ty_list1(fn _ => let val
 ty as ty1=ty1 ()
 val COLON_ty_list1 as COLON_ty_list11=COLON_ty_list11 ()
  in ( ty::COLON_ty_list1 ) end
@@ -17204,21 +17204,21 @@ ty1 ()
 )
  in (LrTable.NT 68,(result,COLON1left,ty1right),rest671) end
 | (175,(_,(MlyValue.tupty tupty1,tupty1left,tupty1right))::rest671)
- => let val result=MlyValue.ty(fn _ => let val tupty as tupty1=tupty1 
+ => let val result=MlyValue.ty(fn _ => let val tupty as tupty1=tupty1
 ()
  in ( tupty ) end
 )
  in (LrTable.NT 69,(result,tupty1left,tupty1right),rest671) end
 | (176,(_,(MlyValue.ty ty1,_,tyright as ty1right))::_::(_,(
-MlyValue.tupty tupty1,tuptyleft as tupty1left,_))::rest671) => let 
+MlyValue.tupty tupty1,tuptyleft as tupty1left,_))::rest671) => let
 val result=MlyValue.ty(fn _ => let val tupty as tupty1=tupty1 ()
 val ty as ty1=ty1 ()
  in ( ARROWTy(I(tuptyleft,tyright), tupty, ty) ) end
 )
  in (LrTable.NT 69,(result,tupty1left,ty1right),rest671) end
-| (177,(_,(MlyValue.ty_STAR_list ty_STAR_list1,ty_STAR_listleft as 
+| (177,(_,(MlyValue.ty_STAR_list ty_STAR_list1,ty_STAR_listleft as
 ty_STAR_list1left,ty_STAR_listright as ty_STAR_list1right))::rest671)
- => let val result=MlyValue.tupty(fn _ => let val ty_STAR_list as 
+ => let val result=MlyValue.tupty(fn _ => let val ty_STAR_list as
 ty_STAR_list1=ty_STAR_list1 ()
  in (
  TUPLETy(I(ty_STAR_listleft,ty_STAR_listright),
@@ -17228,7 +17228,7 @@ ty_STAR_list1=ty_STAR_list1 ()
  in (LrTable.NT 70,(result,ty_STAR_list1left,ty_STAR_list1right),
 rest671) end
 | (178,(_,(MlyValue.ty_STAR_list ty_STAR_list1,_,ty_STAR_list1right))
-::_::(_,(MlyValue.consty consty1,consty1left,_))::rest671) => let val 
+::_::(_,(MlyValue.consty consty1,consty1left,_))::rest671) => let val
 result=MlyValue.ty_STAR_list(fn _ => let val consty as consty1=consty1
  ()
 val ty_STAR_list as ty_STAR_list1=ty_STAR_list1 ()
@@ -17237,17 +17237,17 @@ val ty_STAR_list as ty_STAR_list1=ty_STAR_list1 ()
  in (LrTable.NT 71,(result,consty1left,ty_STAR_list1right),rest671)
  end
 | (179,(_,(MlyValue.consty consty1,consty1left,consty1right))::rest671
-) => let val result=MlyValue.ty_STAR_list(fn _ => let val consty as 
+) => let val result=MlyValue.ty_STAR_list(fn _ => let val consty as
 consty1=consty1 ()
  in ( consty::[] ) end
 )
  in (LrTable.NT 71,(result,consty1left,consty1right),rest671) end
-| (180,(_,(MlyValue.atty atty1,atty1left,atty1right))::rest671) => 
+| (180,(_,(MlyValue.atty atty1,atty1left,atty1right))::rest671) =>
 let val result=MlyValue.consty(fn _ => let val atty as atty1=atty1 ()
  in ( atty ) end
 )
  in (LrTable.NT 72,(result,atty1left,atty1right),rest671) end
-| (181,(_,(MlyValue.longtycon longtycon1,_,longtyconright as 
+| (181,(_,(MlyValue.longtycon longtycon1,_,longtyconright as
 longtycon1right))::(_,(MlyValue.tyseq tyseq1,tyseqleft as tyseq1left,_
 ))::rest671) => let val result=MlyValue.consty(fn _ => let val tyseq
  as tyseq1=tyseq1 ()
@@ -17258,13 +17258,13 @@ val longtycon as longtycon1=longtycon1 ()
 )
  in (LrTable.NT 72,(result,tyseq1left,longtycon1right),rest671) end
 | (182,(_,(MlyValue.tyvar tyvar1,tyvarleft as tyvar1left,tyvarright
- as tyvar1right))::rest671) => let val result=MlyValue.atty(fn _ => 
+ as tyvar1right))::rest671) => let val result=MlyValue.atty(fn _ =>
 let val tyvar as tyvar1=tyvar1 ()
  in ( TYVARTy(I(tyvarleft,tyvarright), tyvar) ) end
 )
  in (LrTable.NT 73,(result,tyvar1left,tyvar1right),rest671) end
-| (183,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.tyrow_opt 
-tyrow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) => 
+| (183,(_,(_,_,RBRACEright as RBRACE1right))::(_,(MlyValue.tyrow_opt
+tyrow_opt1,_,_))::(_,(_,LBRACEleft as LBRACE1left,_))::rest671) =>
 let val result=MlyValue.atty(fn _ => let val tyrow_opt as tyrow_opt1=
 tyrow_opt1 ()
  in ( RECORDTy(I(LBRACEleft,RBRACEright), tyrow_opt) ) end
@@ -17278,19 +17278,19 @@ MlyValue.atty(fn _ => let val ty as ty1=ty1 ()
  in (LrTable.NT 73,(result,LPAR1left,RPAR1right),rest671) end
 | (185,(_,(MlyValue.COMMA_tyrow_opt COMMA_tyrow_opt1,_,
 COMMA_tyrow_optright as COMMA_tyrow_opt1right))::(_,(MlyValue.ty ty1,_
-,_))::_::(_,(MlyValue.lab lab1,lableft as lab1left,_))::rest671) => 
+,_))::_::(_,(MlyValue.lab lab1,lableft as lab1left,_))::rest671) =>
 let val result=MlyValue.tyrow(fn _ => let val lab as lab1=lab1 ()
 val ty as ty1=ty1 ()
 val COMMA_tyrow_opt as COMMA_tyrow_opt1=COMMA_tyrow_opt1 ()
  in (
  TyRow(I(lableft,COMMA_tyrow_optright),
-                                lab, ty, COMMA_tyrow_opt) 
+                                lab, ty, COMMA_tyrow_opt)
 ) end
 )
  in (LrTable.NT 74,(result,lab1left,COMMA_tyrow_opt1right),rest671)
  end
 | (186,(_,(MlyValue.tyrow tyrow1,_,tyrow1right))::(_,(_,COMMA1left,_))
-::rest671) => let val result=MlyValue.COMMA_tyrow_opt(fn _ => let val 
+::rest671) => let val result=MlyValue.COMMA_tyrow_opt(fn _ => let val
 tyrow as tyrow1=tyrow1 ()
  in ( SOME tyrow ) end
 )
@@ -17316,9 +17316,9 @@ MlyValue.tyseq(fn _ => let val consty as consty1=consty1 ()
 | (191,rest671) => let val result=MlyValue.tyseq(fn _ => (
  Tyseq(I(defaultPos,defaultPos), []) ))
  in (LrTable.NT 77,(result,defaultPos,defaultPos),rest671) end
-| (192,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.ty_COMMA_list2 
-ty_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) => 
-let val result=MlyValue.tyseq(fn _ => let val ty_COMMA_list2 as 
+| (192,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.ty_COMMA_list2
+ty_COMMA_list21,_,_))::(_,(_,LPARleft as LPAR1left,_))::rest671) =>
+let val result=MlyValue.tyseq(fn _ => let val ty_COMMA_list2 as
 ty_COMMA_list21=ty_COMMA_list21 ()
  in ( Tyseq(I(LPARleft,RPARright),
                                                 ty_COMMA_list2) ) end
@@ -17369,7 +17369,7 @@ MlyValue.tyvar_COMMA_list1 tyvar_COMMA_list11,_,_))::(_,(_,LPARleft
  in (LrTable.NT 80,(result,LPAR1left,RPAR1right),rest671) end
 | (199,(_,(MlyValue.tyvar_COMMA_list1 tyvar_COMMA_list11,_,
 tyvar_COMMA_list11right))::_::(_,(MlyValue.tyvar tyvar1,tyvar1left,_))
-::rest671) => let val result=MlyValue.tyvar_COMMA_list1(fn _ => let 
+::rest671) => let val result=MlyValue.tyvar_COMMA_list1(fn _ => let
 val tyvar as tyvar1=tyvar1 ()
 val tyvar_COMMA_list1 as tyvar_COMMA_list11=tyvar_COMMA_list11 ()
  in ( tyvar::tyvar_COMMA_list1 ) end
@@ -17383,7 +17383,7 @@ val tyvar_COMMA_list1 as tyvar_COMMA_list11=tyvar_COMMA_list11 ()
 )
  in (LrTable.NT 81,(result,tyvar1left,tyvar1right),rest671) end
 | (201,(_,(MlyValue.strexp' strexp'1,strexp'1left,strexp'1right))::
-rest671) => let val result=MlyValue.strexp(fn _ => let val strexp' as 
+rest671) => let val result=MlyValue.strexp(fn _ => let val strexp' as
 strexp'1=strexp'1 ()
  in ( strexp' ) end
 )
@@ -17407,18 +17407,18 @@ val sigexp as sigexp1=sigexp1 ()
  in ( OPAQStrExp(I(strexpleft,sigexpright), strexp, sigexp)) end
 )
  in (LrTable.NT 82,(result,strexp1left,sigexp1right),rest671) end
-| (204,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popInfix 
+| (204,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popInfix
 popInfix1,_,_))::(_,(MlyValue.strdec strdec1,_,_))::(_,(
 MlyValue.pushInfix pushInfix1,_,_))::(_,(_,STRUCTleft as STRUCT1left,_
-))::rest671) => let val result=MlyValue.strexp'(fn _ => let val 
+))::rest671) => let val result=MlyValue.strexp'(fn _ => let val
 pushInfix1=pushInfix1 ()
 val strdec as strdec1=strdec1 ()
 val popInfix1=popInfix1 ()
  in ( STRUCTStrExp(I(STRUCTleft,ENDright), strdec) ) end
 )
  in (LrTable.NT 83,(result,STRUCT1left,END1right),rest671) end
-| (205,(_,(MlyValue.longstrid longstrid1,longstridleft as 
-longstrid1left,longstridright as longstrid1right))::rest671) => let 
+| (205,(_,(MlyValue.longstrid longstrid1,longstridleft as
+longstrid1left,longstridright as longstrid1right))::rest671) => let
 val result=MlyValue.strexp'(fn _ => let val longstrid as longstrid1=
 longstrid1 ()
  in (
@@ -17430,7 +17430,7 @@ longstrid1 ()
  end
 | (206,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.strexp strexp1,
 _,_))::_::(_,(MlyValue.funid funid1,funidleft as funid1left,_))::
-rest671) => let val result=MlyValue.strexp'(fn _ => let val funid as 
+rest671) => let val result=MlyValue.strexp'(fn _ => let val funid as
 funid1=funid1 ()
 val strexp as strexp1=strexp1 ()
  in ( APPStrExp(I(funidleft,RPARright), funid, strexp) ) end
@@ -17438,13 +17438,13 @@ val strexp as strexp1=strexp1 ()
  in (LrTable.NT 83,(result,funid1left,RPAR1right),rest671) end
 | (207,(_,(_,_,RPARright as RPAR1right))::(_,(MlyValue.strdec strdec1,
 _,_))::_::(_,(MlyValue.funid funid1,funidleft as funid1left,_))::
-rest671) => let val result=MlyValue.strexp'(fn _ => let val funid as 
+rest671) => let val result=MlyValue.strexp'(fn _ => let val funid as
 funid1=funid1 ()
 val strdec as strdec1=strdec1 ()
  in ( APPDECStrExp(I(funidleft,RPARright), funid, strdec) ) end
 )
  in (LrTable.NT 83,(result,funid1left,RPAR1right),rest671) end
-| (208,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popInfix 
+| (208,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popInfix
 popInfix1,_,_))::(_,(MlyValue.strexp strexp1,_,_))::_::(_,(
 MlyValue.strdec strdec1,_,_))::(_,(MlyValue.pushInfix pushInfix1,_,_))
 ::(_,(_,LETleft as LET1left,_))::rest671) => let val result=
@@ -17456,7 +17456,7 @@ val popInfix1=popInfix1 ()
 )
  in (LrTable.NT 83,(result,LET1left,END1right),rest671) end
 | (209,(_,(MlyValue.strdec1 strdec11,strdec11left,strdec11right))::
-rest671) => let val result=MlyValue.strdec(fn _ => let val strdec1 as 
+rest671) => let val result=MlyValue.strdec(fn _ => let val strdec1 as
 strdec11=strdec11 ()
  in ( strdec1 ) end
 )
@@ -17476,11 +17476,11 @@ MlyValue.strdec1 strdec11,strdec11left,_))::rest671) => let val result
 val strdec12=strdec12 ()
  in (
  SEQStrDec(I(strdec11left,strdec12right),
-                                    strdec11, strdec12) 
+                                    strdec11, strdec12)
 ) end
 )
  in (LrTable.NT 85,(result,strdec11left,strdec12right),rest671) end
-| (213,(_,(_,SEMICOLONleft as SEMICOLON1left,SEMICOLONright as 
+| (213,(_,(_,SEMICOLONleft as SEMICOLON1left,SEMICOLONright as
 SEMICOLON1right))::rest671) => let val result=MlyValue.strdec1(fn _
  => ( EMPTYStrDec(I(SEMICOLONleft,SEMICOLONright)) ))
  in (LrTable.NT 85,(result,SEMICOLON1left,SEMICOLON1right),rest671)
@@ -17492,17 +17492,17 @@ SEMICOLON1right))::rest671) => let val result=MlyValue.strdec1(fn _
 )
  in (LrTable.NT 86,(result,dec1'1left,dec1'1right),rest671) end
 | (215,(_,(MlyValue.strbind strbind1,_,strbindright as strbind1right))
-::(_,(_,STRUCTUREleft as STRUCTURE1left,_))::rest671) => let val 
-result=MlyValue.strdec1'(fn _ => let val strbind as strbind1=strbind1 
+::(_,(_,STRUCTUREleft as STRUCTURE1left,_))::rest671) => let val
+result=MlyValue.strdec1'(fn _ => let val strbind as strbind1=strbind1
 ()
  in ( STRUCTUREStrDec(I(STRUCTUREleft,strbindright),
                                           strbind) )
  end
 )
  in (LrTable.NT 86,(result,STRUCTURE1left,strbind1right),rest671) end
-| (216,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popLocalInfix 
+| (216,(_,(_,_,ENDright as END1right))::(_,(MlyValue.popLocalInfix
 popLocalInfix1,_,_))::(_,(MlyValue.strdec strdec2,_,_))::(_,(
-MlyValue.pushLocalInfix pushLocalInfix1,_,_))::_::(_,(MlyValue.strdec 
+MlyValue.pushLocalInfix pushLocalInfix1,_,_))::_::(_,(MlyValue.strdec
 strdec1,_,_))::(_,(MlyValue.pushInfix pushInfix1,_,_))::(_,(_,
 LOCALleft as LOCAL1left,_))::rest671) => let val result=
 MlyValue.strdec1'(fn _ => let val pushInfix1=pushInfix1 ()
@@ -17516,7 +17516,7 @@ val popLocalInfix1=popLocalInfix1 ()
 | (217,(_,(MlyValue.strexp__AND_strbind_opt strexp__AND_strbind_opt1,_
 ,strexp__AND_strbind_optright as strexp__AND_strbind_opt1right))::_::(
 _,(MlyValue.COLON_sigexp_opt COLON_sigexp_opt1,_,_))::(_,(
-MlyValue.strid strid1,stridleft as strid1left,_))::rest671) => let 
+MlyValue.strid strid1,stridleft as strid1left,_))::rest671) => let
 val result=MlyValue.strbind(fn _ => let val strid as strid1=strid1 ()
 val COLON_sigexp_opt as COLON_sigexp_opt1=COLON_sigexp_opt1 ()
 val strexp__AND_strbind_opt as strexp__AND_strbind_opt1=
@@ -17526,7 +17526,7 @@ strexp__AND_strbind_opt1 ()
                                          strexp__AND_strbind_optright),
                                        strid, COLON_sigexp_opt,
                                        #1 strexp__AND_strbind_opt,
-                                       #2 strexp__AND_strbind_opt) 
+                                       #2 strexp__AND_strbind_opt)
 ) end
 )
  in (LrTable.NT 87,(result,strid1left,strexp__AND_strbind_opt1right),
@@ -17542,13 +17542,13 @@ strexp__AND_strbind_opt1 ()
  in (
  OPAQStrBind(I(stridleft,strexp__AND_strbind_optright),
                                       strid, sigexp, #1 strexp__AND_strbind_opt,
-                                      #2 strexp__AND_strbind_opt) 
+                                      #2 strexp__AND_strbind_opt)
 ) end
 )
  in (LrTable.NT 87,(result,strid1left,strexp__AND_strbind_opt1right),
 rest671) end
 | (219,(_,(MlyValue.strbind strbind1,_,strbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_strbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_strbind_opt(fn _ => let
 val strbind as strbind1=strbind1 ()
  in ( SOME strbind ) end
 )
@@ -17567,7 +17567,7 @@ val AND_strbind_opt as AND_strbind_opt1=AND_strbind_opt1 ()
 ) end
 | (222,(_,(MlyValue.sigexp__AND_strbind_opt sigexp__AND_strbind_opt1,_
 ,sigexp__AND_strbind_optright as sigexp__AND_strbind_opt1right))::_::(
-_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) => 
+_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) =>
 let val result=MlyValue.strexp__AND_strbind_opt(fn _ => let val strexp
  as strexp1=strexp1 ()
 val sigexp__AND_strbind_opt as sigexp__AND_strbind_opt1=
@@ -17576,14 +17576,14 @@ sigexp__AND_strbind_opt1 ()
  ( TRANSStrExp(I(strexpleft,
                                           sigexp__AND_strbind_optright),
                                         strexp, #1 sigexp__AND_strbind_opt),
-                            #2 sigexp__AND_strbind_opt ) 
+                            #2 sigexp__AND_strbind_opt )
 ) end
 )
  in (LrTable.NT 89,(result,strexp1left,sigexp__AND_strbind_opt1right),
 rest671) end
 | (223,(_,(MlyValue.sigexp__AND_strbind_opt sigexp__AND_strbind_opt1,_
 ,sigexp__AND_strbind_optright as sigexp__AND_strbind_opt1right))::_::(
-_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) => 
+_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) =>
 let val result=MlyValue.strexp__AND_strbind_opt(fn _ => let val strexp
  as strexp1=strexp1 ()
 val sigexp__AND_strbind_opt as sigexp__AND_strbind_opt1=
@@ -17592,7 +17592,7 @@ sigexp__AND_strbind_opt1 ()
  ( OPAQStrExp(I(strexpleft,
                                          sigexp__AND_strbind_optright),
                                        strexp, #1 sigexp__AND_strbind_opt),
-                            #2 sigexp__AND_strbind_opt ) 
+                            #2 sigexp__AND_strbind_opt )
 ) end
 )
  in (LrTable.NT 89,(result,strexp1left,sigexp__AND_strbind_opt1right),
@@ -17606,8 +17606,8 @@ val AND_strbind_opt as AND_strbind_opt1=AND_strbind_opt1 ()
 )
  in (LrTable.NT 90,(result,sigexp'1left,AND_strbind_opt1right),rest671
 ) end
-| (225,(_,(MlyValue.tyreadesc__AND_strbind_opt 
-tyreadesc__AND_strbind_opt1,_,tyreadesc__AND_strbind_optright as 
+| (225,(_,(MlyValue.tyreadesc__AND_strbind_opt
+tyreadesc__AND_strbind_opt1,_,tyreadesc__AND_strbind_optright as
 tyreadesc__AND_strbind_opt1right))::_::(_,(MlyValue.sigexp sigexp1,
 sigexpleft as sigexp1left,_))::rest671) => let val result=
 MlyValue.sigexp__AND_strbind_opt(fn _ => let val sigexp as sigexp1=
@@ -17619,22 +17619,22 @@ tyreadesc__AND_strbind_opt1 ()
                                               tyreadesc__AND_strbind_optright),
                                            sigexp,
                                            #1 tyreadesc__AND_strbind_opt),
-                            #2 tyreadesc__AND_strbind_opt ) 
+                            #2 tyreadesc__AND_strbind_opt )
 ) end
 )
  in (LrTable.NT 90,(result,sigexp1left,
 tyreadesc__AND_strbind_opt1right),rest671) end
-| (226,(_,(MlyValue.AND_tyreadesc_opt__AND_strbind_opt 
+| (226,(_,(MlyValue.AND_tyreadesc_opt__AND_strbind_opt
 AND_tyreadesc_opt__AND_strbind_opt1,_,
-AND_tyreadesc_opt__AND_strbind_optright as 
+AND_tyreadesc_opt__AND_strbind_optright as
 AND_tyreadesc_opt__AND_strbind_opt1right))::(_,(MlyValue.ty ty1,_,_))
-::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val 
+::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val
 result=MlyValue.tyreadesc__AND_strbind_opt(fn _ => let val tyvarseq
  as tyvarseq1=tyvarseq1 ()
 val longtycon as longtycon1=longtycon1 ()
 val ty as ty1=ty1 ()
-val AND_tyreadesc_opt__AND_strbind_opt as 
+val AND_tyreadesc_opt__AND_strbind_opt as
 AND_tyreadesc_opt__AND_strbind_opt1=
 AND_tyreadesc_opt__AND_strbind_opt1 ()
  in (
@@ -17642,34 +17642,34 @@ AND_tyreadesc_opt__AND_strbind_opt1 ()
                                        AND_tyreadesc_opt__AND_strbind_optright),
                                       tyvarseq, longtycon, ty,
                                       #1 AND_tyreadesc_opt__AND_strbind_opt),
-                            #2 AND_tyreadesc_opt__AND_strbind_opt ) 
+                            #2 AND_tyreadesc_opt__AND_strbind_opt )
 ) end
 )
  in (LrTable.NT 91,(result,TYPE1left,
 AND_tyreadesc_opt__AND_strbind_opt1right),rest671) end
 | (227,(_,(MlyValue.AND_strbind_opt AND_strbind_opt1,
-AND_strbind_opt1left,AND_strbind_opt1right))::rest671) => let val 
-result=MlyValue.AND_tyreadesc_opt__AND_strbind_opt(fn _ => let val 
+AND_strbind_opt1left,AND_strbind_opt1right))::rest671) => let val
+result=MlyValue.AND_tyreadesc_opt__AND_strbind_opt(fn _ => let val
 AND_strbind_opt as AND_strbind_opt1=AND_strbind_opt1 ()
  in ( ( NONE, AND_strbind_opt ) ) end
 )
  in (LrTable.NT 92,(result,AND_strbind_opt1left,AND_strbind_opt1right)
 ,rest671) end
-| (228,(_,(MlyValue.tyreadesc__AND_strbind_opt 
+| (228,(_,(MlyValue.tyreadesc__AND_strbind_opt
 tyreadesc__AND_strbind_opt1,_,tyreadesc__AND_strbind_opt1right))::(_,(
 _,AND1left,_))::rest671) => let val result=
-MlyValue.AND_tyreadesc_opt__AND_strbind_opt(fn _ => let val 
+MlyValue.AND_tyreadesc_opt__AND_strbind_opt(fn _ => let val
 tyreadesc__AND_strbind_opt as tyreadesc__AND_strbind_opt1=
 tyreadesc__AND_strbind_opt1 ()
  in (
  ( SOME(#1 tyreadesc__AND_strbind_opt),
-                                    #2 tyreadesc__AND_strbind_opt ) 
+                                    #2 tyreadesc__AND_strbind_opt )
 ) end
 )
  in (LrTable.NT 92,(result,AND1left,tyreadesc__AND_strbind_opt1right),
 rest671) end
 | (229,(_,(MlyValue.sigexp sigexp1,_,sigexp1right))::(_,(_,COLON1left,
-_))::rest671) => let val result=MlyValue.COLON_sigexp_opt(fn _ => let 
+_))::rest671) => let val result=MlyValue.COLON_sigexp_opt(fn _ => let
 val sigexp as sigexp1=sigexp1 ()
  in ( SOME sigexp ) end
 )
@@ -17678,19 +17678,19 @@ val sigexp as sigexp1=sigexp1 ()
  NONE ))
  in (LrTable.NT 93,(result,defaultPos,defaultPos),rest671) end
 | (231,(_,(MlyValue.sigexp' sigexp'1,sigexp'1left,sigexp'1right))::
-rest671) => let val result=MlyValue.sigexp(fn _ => let val sigexp' as 
+rest671) => let val result=MlyValue.sigexp(fn _ => let val sigexp' as
 sigexp'1=sigexp'1 ()
  in ( sigexp' ) end
 )
  in (LrTable.NT 94,(result,sigexp'1left,sigexp'1right),rest671) end
-| (232,(_,(MlyValue.tyreadesc tyreadesc1,_,tyreadescright as 
-tyreadesc1right))::_::(_,(MlyValue.sigexp sigexp1,sigexpleft as 
-sigexp1left,_))::rest671) => let val result=MlyValue.sigexp(fn _ => 
+| (232,(_,(MlyValue.tyreadesc tyreadesc1,_,tyreadescright as
+tyreadesc1right))::_::(_,(MlyValue.sigexp sigexp1,sigexpleft as
+sigexp1left,_))::rest671) => let val result=MlyValue.sigexp(fn _ =>
 let val sigexp as sigexp1=sigexp1 ()
 val tyreadesc as tyreadesc1=tyreadesc1 ()
  in (
  WHERETYPESigExp(I(sigexpleft,tyreadescright),
-                                          sigexp, tyreadesc) 
+                                          sigexp, tyreadesc)
 ) end
 )
  in (LrTable.NT 94,(result,sigexp1left,tyreadesc1right),rest671) end
@@ -17707,27 +17707,27 @@ MlyValue.sigexp'(fn _ => let val spec as spec1=spec1 ()
 )
  in (LrTable.NT 95,(result,sigid1left,sigid1right),rest671) end
 | (235,(_,(MlyValue.sigbind sigbind1,_,sigbindright as sigbind1right))
-::(_,(_,SIGNATUREleft as SIGNATURE1left,_))::rest671) => let val 
+::(_,(_,SIGNATUREleft as SIGNATURE1left,_))::rest671) => let val
 result=MlyValue.sigdec(fn _ => let val sigbind as sigbind1=sigbind1 ()
  in ( SigDec(I(SIGNATUREleft,sigbindright), sigbind) ) end
 )
  in (LrTable.NT 96,(result,SIGNATURE1left,sigbind1right),rest671) end
 | (236,(_,(MlyValue.sigexp__AND_sigbind_opt sigexp__AND_sigbind_opt1,_
 ,sigexp__AND_sigbind_optright as sigexp__AND_sigbind_opt1right))::_::(
-_,(MlyValue.sigid sigid1,sigidleft as sigid1left,_))::rest671) => let 
+_,(MlyValue.sigid sigid1,sigidleft as sigid1left,_))::rest671) => let
 val result=MlyValue.sigbind(fn _ => let val sigid as sigid1=sigid1 ()
 val sigexp__AND_sigbind_opt as sigexp__AND_sigbind_opt1=
 sigexp__AND_sigbind_opt1 ()
  in (
  SigBind(I(sigidleft,sigexp__AND_sigbind_optright),
                                   sigid, #1 sigexp__AND_sigbind_opt,
-                                  #2 sigexp__AND_sigbind_opt) 
+                                  #2 sigexp__AND_sigbind_opt)
 ) end
 )
  in (LrTable.NT 97,(result,sigid1left,sigexp__AND_sigbind_opt1right),
 rest671) end
 | (237,(_,(MlyValue.sigbind sigbind1,_,sigbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_sigbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_sigbind_opt(fn _ => let
 val sigbind as sigbind1=sigbind1 ()
  in ( SOME sigbind ) end
 )
@@ -17744,8 +17744,8 @@ val AND_sigbind_opt as AND_sigbind_opt1=AND_sigbind_opt1 ()
 )
  in (LrTable.NT 99,(result,sigexp'1left,AND_sigbind_opt1right),rest671
 ) end
-| (240,(_,(MlyValue.tyreadesc__AND_sigbind_opt 
-tyreadesc__AND_sigbind_opt1,_,tyreadesc__AND_sigbind_optright as 
+| (240,(_,(MlyValue.tyreadesc__AND_sigbind_opt
+tyreadesc__AND_sigbind_opt1,_,tyreadesc__AND_sigbind_optright as
 tyreadesc__AND_sigbind_opt1right))::_::(_,(MlyValue.sigexp sigexp1,
 sigexpleft as sigexp1left,_))::rest671) => let val result=
 MlyValue.sigexp__AND_sigbind_opt(fn _ => let val sigexp as sigexp1=
@@ -17757,22 +17757,22 @@ tyreadesc__AND_sigbind_opt1 ()
                                               tyreadesc__AND_sigbind_optright),
                                            sigexp,
                                            #1 tyreadesc__AND_sigbind_opt),
-                            #2 tyreadesc__AND_sigbind_opt ) 
+                            #2 tyreadesc__AND_sigbind_opt )
 ) end
 )
  in (LrTable.NT 99,(result,sigexp1left,
 tyreadesc__AND_sigbind_opt1right),rest671) end
-| (241,(_,(MlyValue.AND_tyreadesc_opt__AND_sigbind_opt 
+| (241,(_,(MlyValue.AND_tyreadesc_opt__AND_sigbind_opt
 AND_tyreadesc_opt__AND_sigbind_opt1,_,
-AND_tyreadesc_opt__AND_sigbind_optright as 
+AND_tyreadesc_opt__AND_sigbind_optright as
 AND_tyreadesc_opt__AND_sigbind_opt1right))::(_,(MlyValue.ty ty1,_,_))
-::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val 
+::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val
 result=MlyValue.tyreadesc__AND_sigbind_opt(fn _ => let val tyvarseq
  as tyvarseq1=tyvarseq1 ()
 val longtycon as longtycon1=longtycon1 ()
 val ty as ty1=ty1 ()
-val AND_tyreadesc_opt__AND_sigbind_opt as 
+val AND_tyreadesc_opt__AND_sigbind_opt as
 AND_tyreadesc_opt__AND_sigbind_opt1=
 AND_tyreadesc_opt__AND_sigbind_opt1 ()
  in (
@@ -17780,34 +17780,34 @@ AND_tyreadesc_opt__AND_sigbind_opt1 ()
                                        AND_tyreadesc_opt__AND_sigbind_optright),
                                       tyvarseq, longtycon, ty,
                                       #1 AND_tyreadesc_opt__AND_sigbind_opt),
-                            #2 AND_tyreadesc_opt__AND_sigbind_opt ) 
+                            #2 AND_tyreadesc_opt__AND_sigbind_opt )
 ) end
 )
  in (LrTable.NT 100,(result,TYPE1left,
 AND_tyreadesc_opt__AND_sigbind_opt1right),rest671) end
 | (242,(_,(MlyValue.AND_sigbind_opt AND_sigbind_opt1,
-AND_sigbind_opt1left,AND_sigbind_opt1right))::rest671) => let val 
-result=MlyValue.AND_tyreadesc_opt__AND_sigbind_opt(fn _ => let val 
+AND_sigbind_opt1left,AND_sigbind_opt1right))::rest671) => let val
+result=MlyValue.AND_tyreadesc_opt__AND_sigbind_opt(fn _ => let val
 AND_sigbind_opt as AND_sigbind_opt1=AND_sigbind_opt1 ()
  in ( ( NONE, AND_sigbind_opt) ) end
 )
  in (LrTable.NT 101,(result,AND_sigbind_opt1left,AND_sigbind_opt1right
 ),rest671) end
-| (243,(_,(MlyValue.tyreadesc__AND_sigbind_opt 
+| (243,(_,(MlyValue.tyreadesc__AND_sigbind_opt
 tyreadesc__AND_sigbind_opt1,_,tyreadesc__AND_sigbind_opt1right))::(_,(
 _,AND1left,_))::rest671) => let val result=
-MlyValue.AND_tyreadesc_opt__AND_sigbind_opt(fn _ => let val 
+MlyValue.AND_tyreadesc_opt__AND_sigbind_opt(fn _ => let val
 tyreadesc__AND_sigbind_opt as tyreadesc__AND_sigbind_opt1=
 tyreadesc__AND_sigbind_opt1 ()
  in (
  ( SOME(#1 tyreadesc__AND_sigbind_opt),
-                                    #2 tyreadesc__AND_sigbind_opt ) 
+                                    #2 tyreadesc__AND_sigbind_opt )
 ) end
 )
  in (LrTable.NT 101,(result,AND1left,tyreadesc__AND_sigbind_opt1right)
 ,rest671) end
 | (244,(_,(MlyValue.AND_tyreadesc_opt AND_tyreadesc_opt1,_,
-AND_tyreadesc_optright as AND_tyreadesc_opt1right))::(_,(MlyValue.ty 
+AND_tyreadesc_optright as AND_tyreadesc_opt1right))::(_,(MlyValue.ty
 ty1,_,_))::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(
 MlyValue.tyvarseq tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::
 rest671) => let val result=MlyValue.tyreadesc(fn _ => let val tyvarseq
@@ -17818,7 +17818,7 @@ val AND_tyreadesc_opt as AND_tyreadesc_opt1=AND_tyreadesc_opt1 ()
  in (
  TyReaDesc(I(TYPEleft,AND_tyreadesc_optright),
                                     tyvarseq, longtycon, ty,
-                                    AND_tyreadesc_opt) 
+                                    AND_tyreadesc_opt)
 ) end
 )
  in (LrTable.NT 102,(result,TYPE1left,AND_tyreadesc_opt1right),rest671
@@ -17848,40 +17848,40 @@ spec1'1 ()
 )
  in (LrTable.NT 105,(result,spec1'1left,spec1'1right),rest671) end
 | (250,(_,(MlyValue.spec1' spec1'1,_,spec1'right as spec1'1right))::(_
-,(MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let 
+,(MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let
 val result=MlyValue.spec1(fn _ => let val spec1 as spec11=spec11 ()
 val spec1' as spec1'1=spec1'1 ()
  in ( SEQSpec(I(spec1left,spec1'right), spec1, spec1') ) end
 )
  in (LrTable.NT 105,(result,spec11left,spec1'1right),rest671) end
-| (251,(_,(_,SEMICOLON1left,SEMICOLON1right))::rest671) => let val 
+| (251,(_,(_,SEMICOLON1left,SEMICOLON1right))::rest671) => let val
 result=MlyValue.spec1(fn _ => ( EMPTYSpec(I(defaultPos,defaultPos)) ))
  in (LrTable.NT 105,(result,SEMICOLON1left,SEMICOLON1right),rest671)
  end
 | (252,(_,(MlyValue.longtycon_EQUALS_list2 longtycon_EQUALS_list21,_,
 longtycon_EQUALS_list2right as longtycon_EQUALS_list21right))::_::(_,(
 _,SHARINGleft as SHARING1left,_))::rest671) => let val result=
-MlyValue.spec1(fn _ => let val longtycon_EQUALS_list2 as 
+MlyValue.spec1(fn _ => let val longtycon_EQUALS_list2 as
 longtycon_EQUALS_list21=longtycon_EQUALS_list21 ()
  in (
  SHARINGTYPESpec(I(SHARINGleft,
                                             longtycon_EQUALS_list2right),
                                           EMPTYSpec(I(SHARINGleft,SHARINGleft)),
-                                          longtycon_EQUALS_list2) 
+                                          longtycon_EQUALS_list2)
 ) end
 )
  in (LrTable.NT 105,(result,SHARING1left,longtycon_EQUALS_list21right)
 ,rest671) end
 | (253,(_,(MlyValue.longtycon_EQUALS_list2 longtycon_EQUALS_list21,_,
 longtycon_EQUALS_list2right as longtycon_EQUALS_list21right))::_::_::(
-_,(MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let 
+_,(MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let
 val result=MlyValue.spec1(fn _ => let val spec1 as spec11=spec11 ()
 val longtycon_EQUALS_list2 as longtycon_EQUALS_list21=
 longtycon_EQUALS_list21 ()
  in (
  SHARINGTYPESpec(I(spec1left,
                                             longtycon_EQUALS_list2right),
-                                          spec1, longtycon_EQUALS_list2) 
+                                          spec1, longtycon_EQUALS_list2)
 ) end
 )
  in (LrTable.NT 105,(result,spec11left,longtycon_EQUALS_list21right),
@@ -17889,26 +17889,26 @@ rest671) end
 | (254,(_,(MlyValue.longstrid_EQUALS_list2 longstrid_EQUALS_list21,_,
 longstrid_EQUALS_list2right as longstrid_EQUALS_list21right))::(_,(_,
 SHARINGleft as SHARING1left,_))::rest671) => let val result=
-MlyValue.spec1(fn _ => let val longstrid_EQUALS_list2 as 
+MlyValue.spec1(fn _ => let val longstrid_EQUALS_list2 as
 longstrid_EQUALS_list21=longstrid_EQUALS_list21 ()
  in (
  SHARINGSpec(I(SHARINGleft,
                                         longstrid_EQUALS_list2right),
                                       EMPTYSpec(I(SHARINGleft,SHARINGleft)),
-                                      longstrid_EQUALS_list2) 
+                                      longstrid_EQUALS_list2)
 ) end
 )
  in (LrTable.NT 105,(result,SHARING1left,longstrid_EQUALS_list21right)
 ,rest671) end
 | (255,(_,(MlyValue.longstrid_EQUALS_list2 longstrid_EQUALS_list21,_,
 longstrid_EQUALS_list2right as longstrid_EQUALS_list21right))::_::(_,(
-MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let 
+MlyValue.spec1 spec11,spec1left as spec11left,_))::rest671) => let
 val result=MlyValue.spec1(fn _ => let val spec1 as spec11=spec11 ()
 val longstrid_EQUALS_list2 as longstrid_EQUALS_list21=
 longstrid_EQUALS_list21 ()
  in (
  SHARINGSpec(I(spec1left,longstrid_EQUALS_list2right),
-                                      spec1, longstrid_EQUALS_list2) 
+                                      spec1, longstrid_EQUALS_list2)
 ) end
 )
  in (LrTable.NT 105,(result,spec11left,longstrid_EQUALS_list21right),
@@ -17937,28 +17937,28 @@ MlyValue.spec1'(fn _ => let val syndesc as syndesc1=syndesc1 ()
  in ( SYNSpec(I(TYPEleft,syndescright), syndesc) ) end
 )
  in (LrTable.NT 106,(result,TYPE1left,syndesc1right),rest671) end
-| (260,(_,(MlyValue.datdesc0 datdesc01,_,datdesc0right as 
+| (260,(_,(MlyValue.datdesc0 datdesc01,_,datdesc0right as
 datdesc01right))::(_,(_,DATATYPEleft as DATATYPE1left,_))::rest671)
- => let val result=MlyValue.spec1'(fn _ => let val datdesc0 as 
+ => let val result=MlyValue.spec1'(fn _ => let val datdesc0 as
 datdesc01=datdesc01 ()
  in ( DATATYPESpec(I(DATATYPEleft,datdesc0right), datdesc0)) end
 )
  in (LrTable.NT 106,(result,DATATYPE1left,datdesc01right),rest671) end
-| (261,(_,(MlyValue.datdesc1 datdesc11,_,datdesc1right as 
+| (261,(_,(MlyValue.datdesc1 datdesc11,_,datdesc1right as
 datdesc11right))::(_,(_,DATATYPEleft as DATATYPE1left,_))::rest671)
- => let val result=MlyValue.spec1'(fn _ => let val datdesc1 as 
+ => let val result=MlyValue.spec1'(fn _ => let val datdesc1 as
 datdesc11=datdesc11 ()
  in ( DATATYPESpec(I(DATATYPEleft,datdesc1right), datdesc1)) end
 )
  in (LrTable.NT 106,(result,DATATYPE1left,datdesc11right),rest671) end
-| (262,(_,(MlyValue.longtycon longtycon1,_,longtyconright as 
+| (262,(_,(MlyValue.longtycon longtycon1,_,longtyconright as
 longtycon1right))::_::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(_,
 DATATYPEleft as DATATYPE1left,_))::rest671) => let val result=
 MlyValue.spec1'(fn _ => let val tycon as tycon1=tycon1 ()
 val longtycon as longtycon1=longtycon1 ()
  in (
  REPLICATIONSpec(I(DATATYPEleft,longtyconright),
-                                          tycon, longtycon) 
+                                          tycon, longtycon)
 ) end
 )
  in (LrTable.NT 106,(result,DATATYPE1left,longtycon1right),rest671)
@@ -17970,7 +17970,7 @@ MlyValue.spec1'(fn _ => let val exdesc as exdesc1=exdesc1 ()
 )
  in (LrTable.NT 106,(result,EXCEPTION1left,exdesc1right),rest671) end
 | (264,(_,(MlyValue.strdesc strdesc1,_,strdescright as strdesc1right))
-::(_,(_,STRUCTUREleft as STRUCTURE1left,_))::rest671) => let val 
+::(_,(_,STRUCTUREleft as STRUCTURE1left,_))::rest671) => let val
 result=MlyValue.spec1'(fn _ => let val strdesc as strdesc1=strdesc1 ()
  in ( STRUCTURESpec(I(STRUCTUREleft,strdescright), strdesc)) end
 )
@@ -17981,13 +17981,13 @@ MlyValue.spec1'(fn _ => let val sigexp as sigexp1=sigexp1 ()
  in ( INCLUDESpec(I(INCLUDEleft,sigexpright), sigexp) ) end
 )
  in (LrTable.NT 106,(result,INCLUDE1left,sigexp1right),rest671) end
-| (266,(_,(MlyValue.sigid_list2 sigid_list21,_,sigid_list2right as 
+| (266,(_,(MlyValue.sigid_list2 sigid_list21,_,sigid_list2right as
 sigid_list21right))::(_,(_,INCLUDEleft as INCLUDE1left,_))::rest671)
- => let val result=MlyValue.spec1'(fn _ => let val sigid_list2 as 
+ => let val result=MlyValue.spec1'(fn _ => let val sigid_list2 as
 sigid_list21=sigid_list21 ()
  in (
  INCLUDEMULTISpec(I(INCLUDEleft,sigid_list2right),
-                                           sigid_list2) 
+                                           sigid_list2)
 ) end
 )
  in (LrTable.NT 106,(result,INCLUDE1left,sigid_list21right),rest671)
@@ -17999,7 +17999,7 @@ val sigid_list2 as sigid_list21=sigid_list21 ()
  in ( sigid::sigid_list2 ) end
 )
  in (LrTable.NT 107,(result,sigid1left,sigid_list21right),rest671) end
-| (268,(_,(MlyValue.sigid sigid2,_,sigid2right))::(_,(MlyValue.sigid 
+| (268,(_,(MlyValue.sigid sigid2,_,sigid2right))::(_,(MlyValue.sigid
 sigid1,sigid1left,_))::rest671) => let val result=MlyValue.sigid_list2
 (fn _ => let val sigid1=sigid1 ()
 val sigid2=sigid2 ()
@@ -18009,7 +18009,7 @@ val sigid2=sigid2 ()
 | (269,(_,(MlyValue.longtycon_EQUALS_list1 longtycon_EQUALS_list11,_,
 longtycon_EQUALS_list11right))::_::(_,(MlyValue.longtycon longtycon1,
 longtycon1left,_))::rest671) => let val result=
-MlyValue.longtycon_EQUALS_list1(fn _ => let val longtycon as 
+MlyValue.longtycon_EQUALS_list1(fn _ => let val longtycon as
 longtycon1=longtycon1 ()
 val longtycon_EQUALS_list1 as longtycon_EQUALS_list11=
 longtycon_EQUALS_list11 ()
@@ -18019,7 +18019,7 @@ longtycon_EQUALS_list11 ()
 longtycon_EQUALS_list11right),rest671) end
 | (270,(_,(MlyValue.longtycon longtycon1,longtycon1left,
 longtycon1right))::rest671) => let val result=
-MlyValue.longtycon_EQUALS_list1(fn _ => let val longtycon as 
+MlyValue.longtycon_EQUALS_list1(fn _ => let val longtycon as
 longtycon1=longtycon1 ()
  in ( longtycon::[] ) end
 )
@@ -18028,7 +18028,7 @@ longtycon1=longtycon1 ()
 | (271,(_,(MlyValue.longtycon_EQUALS_list1 longtycon_EQUALS_list11,_,
 longtycon_EQUALS_list11right))::_::(_,(MlyValue.longtycon longtycon1,
 longtycon1left,_))::rest671) => let val result=
-MlyValue.longtycon_EQUALS_list2(fn _ => let val longtycon as 
+MlyValue.longtycon_EQUALS_list2(fn _ => let val longtycon as
 longtycon1=longtycon1 ()
 val longtycon_EQUALS_list1 as longtycon_EQUALS_list11=
 longtycon_EQUALS_list11 ()
@@ -18039,7 +18039,7 @@ longtycon_EQUALS_list11right),rest671) end
 | (272,(_,(MlyValue.longstrid_EQUALS_list1 longstrid_EQUALS_list11,_,
 longstrid_EQUALS_list11right))::_::(_,(MlyValue.longstrid longstrid1,
 longstrid1left,_))::rest671) => let val result=
-MlyValue.longstrid_EQUALS_list1(fn _ => let val longstrid as 
+MlyValue.longstrid_EQUALS_list1(fn _ => let val longstrid as
 longstrid1=longstrid1 ()
 val longstrid_EQUALS_list1 as longstrid_EQUALS_list11=
 longstrid_EQUALS_list11 ()
@@ -18049,7 +18049,7 @@ longstrid_EQUALS_list11 ()
 longstrid_EQUALS_list11right),rest671) end
 | (273,(_,(MlyValue.longstrid longstrid1,longstrid1left,
 longstrid1right))::rest671) => let val result=
-MlyValue.longstrid_EQUALS_list1(fn _ => let val longstrid as 
+MlyValue.longstrid_EQUALS_list1(fn _ => let val longstrid as
 longstrid1=longstrid1 ()
  in ( longstrid::[] ) end
 )
@@ -18058,7 +18058,7 @@ longstrid1=longstrid1 ()
 | (274,(_,(MlyValue.longstrid_EQUALS_list1 longstrid_EQUALS_list11,_,
 longstrid_EQUALS_list11right))::_::(_,(MlyValue.longstrid longstrid1,
 longstrid1left,_))::rest671) => let val result=
-MlyValue.longstrid_EQUALS_list2(fn _ => let val longstrid as 
+MlyValue.longstrid_EQUALS_list2(fn _ => let val longstrid as
 longstrid1=longstrid1 ()
 val longstrid_EQUALS_list1 as longstrid_EQUALS_list11=
 longstrid_EQUALS_list11 ()
@@ -18075,13 +18075,13 @@ val ty as ty1=ty1 ()
 val AND_valdesc_opt as AND_valdesc_opt1=AND_valdesc_opt1 ()
  in (
  ValDesc(I(vid'left,AND_valdesc_optright),
-                                  vid', ty, AND_valdesc_opt) 
+                                  vid', ty, AND_valdesc_opt)
 ) end
 )
  in (LrTable.NT 112,(result,vid'1left,AND_valdesc_opt1right),rest671)
  end
 | (276,(_,(MlyValue.valdesc valdesc1,_,valdesc1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_valdesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_valdesc_opt(fn _ => let
 val valdesc as valdesc1=valdesc1 ()
  in ( SOME valdesc ) end
 )
@@ -18090,21 +18090,21 @@ val valdesc as valdesc1=valdesc1 ()
  NONE ))
  in (LrTable.NT 113,(result,defaultPos,defaultPos),rest671) end
 | (278,(_,(MlyValue.AND_typdesc_opt AND_typdesc_opt1,_,
-AND_typdesc_optright as AND_typdesc_opt1right))::(_,(MlyValue.tycon 
-tycon1,_,_))::(_,(MlyValue.tyvarseq tyvarseq1,tyvarseqleft as 
+AND_typdesc_optright as AND_typdesc_opt1right))::(_,(MlyValue.tycon
+tycon1,_,_))::(_,(MlyValue.tyvarseq tyvarseq1,tyvarseqleft as
 tyvarseq1left,_))::rest671) => let val result=MlyValue.typdesc(fn _
  => let val tyvarseq as tyvarseq1=tyvarseq1 ()
 val tycon as tycon1=tycon1 ()
 val AND_typdesc_opt as AND_typdesc_opt1=AND_typdesc_opt1 ()
  in (
  TypDesc(I(tyvarseqleft,AND_typdesc_optright),
-                                  tyvarseq, tycon, AND_typdesc_opt) 
+                                  tyvarseq, tycon, AND_typdesc_opt)
 ) end
 )
  in (LrTable.NT 114,(result,tyvarseq1left,AND_typdesc_opt1right),
 rest671) end
 | (279,(_,(MlyValue.typdesc typdesc1,_,typdesc1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_typdesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_typdesc_opt(fn _ => let
 val typdesc as typdesc1=typdesc1 ()
  in ( SOME typdesc ) end
 )
@@ -18114,8 +18114,8 @@ val typdesc as typdesc1=typdesc1 ()
  in (LrTable.NT 115,(result,defaultPos,defaultPos),rest671) end
 | (281,(_,(MlyValue.AND_syndesc_opt AND_syndesc_opt1,_,
 AND_syndesc_optright as AND_syndesc_opt1right))::(_,(MlyValue.ty ty1,_
-,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671) => let val 
+,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671) => let val
 result=MlyValue.syndesc(fn _ => let val tyvarseq as tyvarseq1=
 tyvarseq1 ()
 val tycon as tycon1=tycon1 ()
@@ -18123,13 +18123,13 @@ val ty as ty1=ty1 ()
 val AND_syndesc_opt as AND_syndesc_opt1=AND_syndesc_opt1 ()
  in (
  SynDesc(I(tyvarseqleft,AND_syndesc_optright),
-                                  tyvarseq, tycon, ty, AND_syndesc_opt) 
+                                  tyvarseq, tycon, ty, AND_syndesc_opt)
 ) end
 )
  in (LrTable.NT 116,(result,tyvarseq1left,AND_syndesc_opt1right),
 rest671) end
 | (282,(_,(MlyValue.syndesc syndesc1,_,syndesc1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_syndesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_syndesc_opt(fn _ => let
 val syndesc as syndesc1=syndesc1 ()
  in ( SOME syndesc ) end
 )
@@ -18138,23 +18138,23 @@ val syndesc as syndesc1=syndesc1 ()
  NONE ))
  in (LrTable.NT 117,(result,defaultPos,defaultPos),rest671) end
 | (284,(_,(MlyValue.AND_datdesc_opt AND_datdesc_opt1,_,
-AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc 
+AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc
 condesc1,_,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(
 MlyValue.tyvarseq tyvarseq1,tyvarseqleft as tyvarseq1left,_))::rest671
-) => let val result=MlyValue.datdesc(fn _ => let val tyvarseq as 
+) => let val result=MlyValue.datdesc(fn _ => let val tyvarseq as
 tyvarseq1=tyvarseq1 ()
 val tycon as tycon1=tycon1 ()
 val condesc as condesc1=condesc1 ()
 val AND_datdesc_opt as AND_datdesc_opt1=AND_datdesc_opt1 ()
  in (
  DatDesc(I(tyvarseqleft,AND_datdesc_optright),
-                                  tyvarseq, tycon, condesc, AND_datdesc_opt) 
+                                  tyvarseq, tycon, condesc, AND_datdesc_opt)
 ) end
 )
  in (LrTable.NT 118,(result,tyvarseq1left,AND_datdesc_opt1right),
 rest671) end
 | (285,(_,(MlyValue.AND_datdesc_opt AND_datdesc_opt1,_,
-AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc 
+AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc
 condesc1,_,_))::_::(_,(MlyValue.tycon tycon1,tyconleft as tycon1left,_
 ))::rest671) => let val result=MlyValue.datdesc0(fn _ => let val tycon
  as tycon1=tycon1 ()
@@ -18163,13 +18163,13 @@ val AND_datdesc_opt as AND_datdesc_opt1=AND_datdesc_opt1 ()
  in (
  DatDesc(I(tyconleft,AND_datdesc_optright),
                                   TyVarseq(I(defaultPos,defaultPos), []),
-                                  tycon, condesc, AND_datdesc_opt) 
+                                  tycon, condesc, AND_datdesc_opt)
 ) end
 )
  in (LrTable.NT 119,(result,tycon1left,AND_datdesc_opt1right),rest671)
  end
 | (286,(_,(MlyValue.AND_datdesc_opt AND_datdesc_opt1,_,
-AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc 
+AND_datdesc_optright as AND_datdesc_opt1right))::(_,(MlyValue.condesc
 condesc1,_,_))::_::(_,(MlyValue.tycon tycon1,_,_))::(_,(
 MlyValue.tyvarseq1 tyvarseq11,tyvarseq1left as tyvarseq11left,_))::
 rest671) => let val result=MlyValue.datdesc1(fn _ => let val tyvarseq1
@@ -18179,13 +18179,13 @@ val condesc as condesc1=condesc1 ()
 val AND_datdesc_opt as AND_datdesc_opt1=AND_datdesc_opt1 ()
  in (
  DatDesc(I(tyvarseq1left,AND_datdesc_optright),
-                                  tyvarseq1, tycon, condesc, AND_datdesc_opt) 
+                                  tyvarseq1, tycon, condesc, AND_datdesc_opt)
 ) end
 )
  in (LrTable.NT 120,(result,tyvarseq11left,AND_datdesc_opt1right),
 rest671) end
 | (287,(_,(MlyValue.datdesc datdesc1,_,datdesc1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_datdesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_datdesc_opt(fn _ => let
 val datdesc as datdesc1=datdesc1 ()
  in ( SOME datdesc ) end
 )
@@ -18202,13 +18202,13 @@ val OF_ty_opt as OF_ty_opt1=OF_ty_opt1 ()
 val BAR_condesc_opt as BAR_condesc_opt1=BAR_condesc_opt1 ()
  in (
  ConDesc(I(vid'left,BAR_condesc_optright),
-                                  vid', OF_ty_opt, BAR_condesc_opt) 
+                                  vid', OF_ty_opt, BAR_condesc_opt)
 ) end
 )
  in (LrTable.NT 122,(result,vid'1left,BAR_condesc_opt1right),rest671)
  end
 | (290,(_,(MlyValue.condesc condesc1,_,condesc1right))::(_,(_,BAR1left
-,_))::rest671) => let val result=MlyValue.BAR_condesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.BAR_condesc_opt(fn _ => let
 val condesc as condesc1=condesc1 ()
  in ( SOME condesc ) end
 )
@@ -18217,21 +18217,21 @@ val condesc as condesc1=condesc1 ()
  NONE ))
  in (LrTable.NT 123,(result,defaultPos,defaultPos),rest671) end
 | (292,(_,(MlyValue.AND_exdesc_opt AND_exdesc_opt1,_,
-AND_exdesc_optright as AND_exdesc_opt1right))::(_,(MlyValue.OF_ty_opt 
+AND_exdesc_optright as AND_exdesc_opt1right))::(_,(MlyValue.OF_ty_opt
 OF_ty_opt1,_,_))::(_,(MlyValue.vid' vid'1,vid'left as vid'1left,_))::
-rest671) => let val result=MlyValue.exdesc(fn _ => let val vid' as 
+rest671) => let val result=MlyValue.exdesc(fn _ => let val vid' as
 vid'1=vid'1 ()
 val OF_ty_opt as OF_ty_opt1=OF_ty_opt1 ()
 val AND_exdesc_opt as AND_exdesc_opt1=AND_exdesc_opt1 ()
  in (
  ExDesc(I(vid'left,AND_exdesc_optright),
-                                 vid', OF_ty_opt, AND_exdesc_opt) 
+                                 vid', OF_ty_opt, AND_exdesc_opt)
 ) end
 )
  in (LrTable.NT 124,(result,vid'1left,AND_exdesc_opt1right),rest671)
  end
 | (293,(_,(MlyValue.exdesc exdesc1,_,exdesc1right))::(_,(_,AND1left,_)
-)::rest671) => let val result=MlyValue.AND_exdesc_opt(fn _ => let val 
+)::rest671) => let val result=MlyValue.AND_exdesc_opt(fn _ => let val
 exdesc as exdesc1=exdesc1 ()
  in ( SOME exdesc ) end
 )
@@ -18241,20 +18241,20 @@ exdesc as exdesc1=exdesc1 ()
  in (LrTable.NT 125,(result,defaultPos,defaultPos),rest671) end
 | (295,(_,(MlyValue.sigexp__AND_strdesc_opt sigexp__AND_strdesc_opt1,_
 ,sigexp__AND_strdesc_optright as sigexp__AND_strdesc_opt1right))::_::(
-_,(MlyValue.strid strid1,stridleft as strid1left,_))::rest671) => let 
+_,(MlyValue.strid strid1,stridleft as strid1left,_))::rest671) => let
 val result=MlyValue.strdesc(fn _ => let val strid as strid1=strid1 ()
 val sigexp__AND_strdesc_opt as sigexp__AND_strdesc_opt1=
 sigexp__AND_strdesc_opt1 ()
  in (
  StrDesc(I(stridleft,sigexp__AND_strdesc_optright),
                                   strid, #1 sigexp__AND_strdesc_opt,
-                                  #2 sigexp__AND_strdesc_opt) 
+                                  #2 sigexp__AND_strdesc_opt)
 ) end
 )
  in (LrTable.NT 126,(result,strid1left,sigexp__AND_strdesc_opt1right),
 rest671) end
 | (296,(_,(MlyValue.strdesc strdesc1,_,strdesc1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_strdesc_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_strdesc_opt(fn _ => let
 val strdesc as strdesc1=strdesc1 ()
  in ( SOME strdesc ) end
 )
@@ -18271,8 +18271,8 @@ val AND_strdesc_opt as AND_strdesc_opt1=AND_strdesc_opt1 ()
 )
  in (LrTable.NT 128,(result,sigexp'1left,AND_strdesc_opt1right),
 rest671) end
-| (299,(_,(MlyValue.tyreadesc__AND_strdesc_opt 
-tyreadesc__AND_strdesc_opt1,_,tyreadesc__AND_strdesc_optright as 
+| (299,(_,(MlyValue.tyreadesc__AND_strdesc_opt
+tyreadesc__AND_strdesc_opt1,_,tyreadesc__AND_strdesc_optright as
 tyreadesc__AND_strdesc_opt1right))::_::(_,(MlyValue.sigexp sigexp1,
 sigexpleft as sigexp1left,_))::rest671) => let val result=
 MlyValue.sigexp__AND_strdesc_opt(fn _ => let val sigexp as sigexp1=
@@ -18284,22 +18284,22 @@ tyreadesc__AND_strdesc_opt1 ()
                                               tyreadesc__AND_strdesc_optright),
                                            sigexp,
                                            #1 tyreadesc__AND_strdesc_opt),
-                            #2 tyreadesc__AND_strdesc_opt ) 
+                            #2 tyreadesc__AND_strdesc_opt )
 ) end
 )
  in (LrTable.NT 128,(result,sigexp1left,
 tyreadesc__AND_strdesc_opt1right),rest671) end
-| (300,(_,(MlyValue.AND_tyreadesc_opt__AND_strdesc_opt 
+| (300,(_,(MlyValue.AND_tyreadesc_opt__AND_strdesc_opt
 AND_tyreadesc_opt__AND_strdesc_opt1,_,
-AND_tyreadesc_opt__AND_strdesc_optright as 
+AND_tyreadesc_opt__AND_strdesc_optright as
 AND_tyreadesc_opt__AND_strdesc_opt1right))::(_,(MlyValue.ty ty1,_,_))
-::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val 
+::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val
 result=MlyValue.tyreadesc__AND_strdesc_opt(fn _ => let val tyvarseq
  as tyvarseq1=tyvarseq1 ()
 val longtycon as longtycon1=longtycon1 ()
 val ty as ty1=ty1 ()
-val AND_tyreadesc_opt__AND_strdesc_opt as 
+val AND_tyreadesc_opt__AND_strdesc_opt as
 AND_tyreadesc_opt__AND_strdesc_opt1=
 AND_tyreadesc_opt__AND_strdesc_opt1 ()
  in (
@@ -18307,28 +18307,28 @@ AND_tyreadesc_opt__AND_strdesc_opt1 ()
                                        AND_tyreadesc_opt__AND_strdesc_optright),
                                       tyvarseq, longtycon, ty,
                                       #1 AND_tyreadesc_opt__AND_strdesc_opt),
-                            #2 AND_tyreadesc_opt__AND_strdesc_opt ) 
+                            #2 AND_tyreadesc_opt__AND_strdesc_opt )
 ) end
 )
  in (LrTable.NT 129,(result,TYPE1left,
 AND_tyreadesc_opt__AND_strdesc_opt1right),rest671) end
 | (301,(_,(MlyValue.AND_strdesc_opt AND_strdesc_opt1,
-AND_strdesc_opt1left,AND_strdesc_opt1right))::rest671) => let val 
-result=MlyValue.AND_tyreadesc_opt__AND_strdesc_opt(fn _ => let val 
+AND_strdesc_opt1left,AND_strdesc_opt1right))::rest671) => let val
+result=MlyValue.AND_tyreadesc_opt__AND_strdesc_opt(fn _ => let val
 AND_strdesc_opt as AND_strdesc_opt1=AND_strdesc_opt1 ()
  in ( ( NONE, AND_strdesc_opt ) ) end
 )
  in (LrTable.NT 130,(result,AND_strdesc_opt1left,AND_strdesc_opt1right
 ),rest671) end
-| (302,(_,(MlyValue.tyreadesc__AND_strdesc_opt 
+| (302,(_,(MlyValue.tyreadesc__AND_strdesc_opt
 tyreadesc__AND_strdesc_opt1,_,tyreadesc__AND_strdesc_opt1right))::(_,(
 _,AND1left,_))::rest671) => let val result=
-MlyValue.AND_tyreadesc_opt__AND_strdesc_opt(fn _ => let val 
+MlyValue.AND_tyreadesc_opt__AND_strdesc_opt(fn _ => let val
 tyreadesc__AND_strdesc_opt as tyreadesc__AND_strdesc_opt1=
 tyreadesc__AND_strdesc_opt1 ()
  in (
  ( SOME(#1 tyreadesc__AND_strdesc_opt),
-                                    #2 tyreadesc__AND_strdesc_opt ) 
+                                    #2 tyreadesc__AND_strdesc_opt )
 ) end
 )
  in (LrTable.NT 130,(result,AND1left,tyreadesc__AND_strdesc_opt1right)
@@ -18343,7 +18343,7 @@ MlyValue.fundec(fn _ => let val funbind as funbind1=funbind1 ()
 ,strexp__AND_funbind_optright as strexp__AND_funbind_opt1right))::_::(
 _,(MlyValue.COLON_sigexp_opt COLON_sigexp_opt1,_,_))::_::(_,(
 MlyValue.sigexp sigexp1,_,_))::_::(_,(MlyValue.strid strid1,_,_))::_::
-(_,(MlyValue.funid funid1,funidleft as funid1left,_))::rest671) => 
+(_,(MlyValue.funid funid1,funidleft as funid1left,_))::rest671) =>
 let val result=MlyValue.funbind(fn _ => let val funid as funid1=funid1
  ()
 val strid as strid1=strid1 ()
@@ -18356,7 +18356,7 @@ strexp__AND_funbind_opt1 ()
                                          strexp__AND_funbind_optright),
                                        funid, strid, sigexp, COLON_sigexp_opt,
                                        #1 strexp__AND_funbind_opt,
-                                       #2 strexp__AND_funbind_opt) 
+                                       #2 strexp__AND_funbind_opt)
 ) end
 )
  in (LrTable.NT 132,(result,funid1left,strexp__AND_funbind_opt1right),
@@ -18376,7 +18376,7 @@ strexp__AND_funbind_opt1 ()
  OPAQFunBind(I(funidleft,strexp__AND_funbind_optright),
                                       funid, strid, sigexp1, sigexp2,
                                       #1 strexp__AND_funbind_opt,
-                                      #2 strexp__AND_funbind_opt) 
+                                      #2 strexp__AND_funbind_opt)
 ) end
 )
  in (LrTable.NT 132,(result,funid1left,strexp__AND_funbind_opt1right),
@@ -18384,8 +18384,8 @@ rest671) end
 | (306,(_,(MlyValue.strexp__AND_funbind_opt strexp__AND_funbind_opt1,_
 ,strexp__AND_funbind_optright as strexp__AND_funbind_opt1right))::_::(
 _,(MlyValue.COLON_sigexp_opt COLON_sigexp_opt1,_,_))::_::(_,(
-MlyValue.spec spec1,_,_))::_::(_,(MlyValue.funid funid1,funidleft as 
-funid1left,_))::rest671) => let val result=MlyValue.funbind(fn _ => 
+MlyValue.spec spec1,_,_))::_::(_,(MlyValue.funid funid1,funidleft as
+funid1left,_))::rest671) => let val result=MlyValue.funbind(fn _ =>
 let val funid as funid1=funid1 ()
 val spec as spec1=spec1 ()
 val COLON_sigexp_opt as COLON_sigexp_opt1=COLON_sigexp_opt1 ()
@@ -18396,7 +18396,7 @@ strexp__AND_funbind_opt1 ()
                                              strexp__AND_funbind_optright),
                                            funid, spec, COLON_sigexp_opt,
                                            #1 strexp__AND_funbind_opt,
-                                           #2 strexp__AND_funbind_opt) 
+                                           #2 strexp__AND_funbind_opt)
 ) end
 )
  in (LrTable.NT 132,(result,funid1left,strexp__AND_funbind_opt1right),
@@ -18416,13 +18416,13 @@ strexp__AND_funbind_opt1 ()
                                             strexp__AND_funbind_optright),
                                           funid, spec, sigexp,
                                           #1 strexp__AND_funbind_opt,
-                                          #2 strexp__AND_funbind_opt) 
+                                          #2 strexp__AND_funbind_opt)
 ) end
 )
  in (LrTable.NT 132,(result,funid1left,strexp__AND_funbind_opt1right),
 rest671) end
 | (308,(_,(MlyValue.funbind funbind1,_,funbind1right))::(_,(_,AND1left
-,_))::rest671) => let val result=MlyValue.AND_funbind_opt(fn _ => let 
+,_))::rest671) => let val result=MlyValue.AND_funbind_opt(fn _ => let
 val funbind as funbind1=funbind1 ()
  in ( SOME funbind ) end
 )
@@ -18441,7 +18441,7 @@ val AND_funbind_opt as AND_funbind_opt1=AND_funbind_opt1 ()
 rest671) end
 | (311,(_,(MlyValue.sigexp__AND_funbind_opt sigexp__AND_funbind_opt1,_
 ,sigexp__AND_funbind_optright as sigexp__AND_funbind_opt1right))::_::(
-_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) => 
+_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) =>
 let val result=MlyValue.strexp__AND_funbind_opt(fn _ => let val strexp
  as strexp1=strexp1 ()
 val sigexp__AND_funbind_opt as sigexp__AND_funbind_opt1=
@@ -18450,14 +18450,14 @@ sigexp__AND_funbind_opt1 ()
  ( TRANSStrExp(I(strexpleft,
                                           sigexp__AND_funbind_optright),
                                         strexp, #1 sigexp__AND_funbind_opt),
-                            #2 sigexp__AND_funbind_opt ) 
+                            #2 sigexp__AND_funbind_opt )
 ) end
 )
  in (LrTable.NT 134,(result,strexp1left,sigexp__AND_funbind_opt1right)
 ,rest671) end
 | (312,(_,(MlyValue.sigexp__AND_funbind_opt sigexp__AND_funbind_opt1,_
 ,sigexp__AND_funbind_optright as sigexp__AND_funbind_opt1right))::_::(
-_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) => 
+_,(MlyValue.strexp strexp1,strexpleft as strexp1left,_))::rest671) =>
 let val result=MlyValue.strexp__AND_funbind_opt(fn _ => let val strexp
  as strexp1=strexp1 ()
 val sigexp__AND_funbind_opt as sigexp__AND_funbind_opt1=
@@ -18466,7 +18466,7 @@ sigexp__AND_funbind_opt1 ()
  ( OPAQStrExp(I(strexpleft,
                                          sigexp__AND_funbind_optright),
                                        strexp, #1 sigexp__AND_funbind_opt),
-                            #2 sigexp__AND_funbind_opt ) 
+                            #2 sigexp__AND_funbind_opt )
 ) end
 )
  in (LrTable.NT 134,(result,strexp1left,sigexp__AND_funbind_opt1right)
@@ -18480,8 +18480,8 @@ val AND_funbind_opt as AND_funbind_opt1=AND_funbind_opt1 ()
 )
  in (LrTable.NT 135,(result,sigexp'1left,AND_funbind_opt1right),
 rest671) end
-| (314,(_,(MlyValue.tyreadesc__AND_funbind_opt 
-tyreadesc__AND_funbind_opt1,_,tyreadesc__AND_funbind_optright as 
+| (314,(_,(MlyValue.tyreadesc__AND_funbind_opt
+tyreadesc__AND_funbind_opt1,_,tyreadesc__AND_funbind_optright as
 tyreadesc__AND_funbind_opt1right))::_::(_,(MlyValue.sigexp sigexp1,
 sigexpleft as sigexp1left,_))::rest671) => let val result=
 MlyValue.sigexp__AND_funbind_opt(fn _ => let val sigexp as sigexp1=
@@ -18493,22 +18493,22 @@ tyreadesc__AND_funbind_opt1 ()
                                               tyreadesc__AND_funbind_optright),
                                            sigexp,
                                            #1 tyreadesc__AND_funbind_opt),
-                            #2 tyreadesc__AND_funbind_opt ) 
+                            #2 tyreadesc__AND_funbind_opt )
 ) end
 )
  in (LrTable.NT 135,(result,sigexp1left,
 tyreadesc__AND_funbind_opt1right),rest671) end
-| (315,(_,(MlyValue.AND_tyreadesc_opt__AND_funbind_opt 
+| (315,(_,(MlyValue.AND_tyreadesc_opt__AND_funbind_opt
 AND_tyreadesc_opt__AND_funbind_opt1,_,
-AND_tyreadesc_opt__AND_funbind_optright as 
+AND_tyreadesc_opt__AND_funbind_optright as
 AND_tyreadesc_opt__AND_funbind_opt1right))::(_,(MlyValue.ty ty1,_,_))
-::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq 
-tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val 
+::_::(_,(MlyValue.longtycon longtycon1,_,_))::(_,(MlyValue.tyvarseq
+tyvarseq1,_,_))::(_,(_,TYPEleft as TYPE1left,_))::rest671) => let val
 result=MlyValue.tyreadesc__AND_funbind_opt(fn _ => let val tyvarseq
  as tyvarseq1=tyvarseq1 ()
 val longtycon as longtycon1=longtycon1 ()
 val ty as ty1=ty1 ()
-val AND_tyreadesc_opt__AND_funbind_opt as 
+val AND_tyreadesc_opt__AND_funbind_opt as
 AND_tyreadesc_opt__AND_funbind_opt1=
 AND_tyreadesc_opt__AND_funbind_opt1 ()
  in (
@@ -18516,34 +18516,34 @@ AND_tyreadesc_opt__AND_funbind_opt1 ()
                                        AND_tyreadesc_opt__AND_funbind_optright),
                                       tyvarseq, longtycon, ty,
                                       #1 AND_tyreadesc_opt__AND_funbind_opt),
-                            #2 AND_tyreadesc_opt__AND_funbind_opt ) 
+                            #2 AND_tyreadesc_opt__AND_funbind_opt )
 ) end
 )
  in (LrTable.NT 136,(result,TYPE1left,
 AND_tyreadesc_opt__AND_funbind_opt1right),rest671) end
 | (316,(_,(MlyValue.AND_funbind_opt AND_funbind_opt1,
-AND_funbind_opt1left,AND_funbind_opt1right))::rest671) => let val 
-result=MlyValue.AND_tyreadesc_opt__AND_funbind_opt(fn _ => let val 
+AND_funbind_opt1left,AND_funbind_opt1right))::rest671) => let val
+result=MlyValue.AND_tyreadesc_opt__AND_funbind_opt(fn _ => let val
 AND_funbind_opt as AND_funbind_opt1=AND_funbind_opt1 ()
  in ( ( NONE, AND_funbind_opt ) ) end
 )
  in (LrTable.NT 137,(result,AND_funbind_opt1left,AND_funbind_opt1right
 ),rest671) end
-| (317,(_,(MlyValue.tyreadesc__AND_funbind_opt 
+| (317,(_,(MlyValue.tyreadesc__AND_funbind_opt
 tyreadesc__AND_funbind_opt1,_,tyreadesc__AND_funbind_opt1right))::(_,(
 _,AND1left,_))::rest671) => let val result=
-MlyValue.AND_tyreadesc_opt__AND_funbind_opt(fn _ => let val 
+MlyValue.AND_tyreadesc_opt__AND_funbind_opt(fn _ => let val
 tyreadesc__AND_funbind_opt as tyreadesc__AND_funbind_opt1=
 tyreadesc__AND_funbind_opt1 ()
  in (
  ( SOME(#1 tyreadesc__AND_funbind_opt),
-                            #2 tyreadesc__AND_funbind_opt ) 
+                            #2 tyreadesc__AND_funbind_opt )
 ) end
 )
  in (LrTable.NT 137,(result,AND1left,tyreadesc__AND_funbind_opt1right)
 ,rest671) end
 | (318,(_,(MlyValue.topdec1 topdec11,topdec11left,topdec11right))::
-rest671) => let val result=MlyValue.topdec(fn _ => let val topdec1 as 
+rest671) => let val result=MlyValue.topdec(fn _ => let val topdec1 as
 topdec11=topdec11 ()
  in ( topdec1 ) end
 )
@@ -18551,40 +18551,40 @@ topdec11=topdec11 ()
 | (319,rest671) => let val result=MlyValue.topdec(fn _ => (
  STRDECTopDec(I(defaultPos,defaultPos),
                                        EMPTYStrDec(I(defaultPos,defaultPos)),
-                                       NONE) 
+                                       NONE)
 ))
  in (LrTable.NT 138,(result,defaultPos,defaultPos),rest671) end
-| (320,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as 
-topdec_opt1right))::(_,(MlyValue.strdec1' strdec1'1,strdec1'left as 
+| (320,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as
+topdec_opt1right))::(_,(MlyValue.strdec1' strdec1'1,strdec1'left as
 strdec1'1left,_))::rest671) => let val result=MlyValue.topdec1(fn _
  => let val strdec1' as strdec1'1=strdec1'1 ()
 val topdec_opt as topdec_opt1=topdec_opt1 ()
  in (
  STRDECTopDec(I(strdec1'left,topdec_optright),
-                                       strdec1', topdec_opt) 
+                                       strdec1', topdec_opt)
 ) end
 )
  in (LrTable.NT 139,(result,strdec1'1left,topdec_opt1right),rest671)
  end
-| (321,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as 
-topdec_opt1right))::(_,(MlyValue.sigdec sigdec1,sigdecleft as 
-sigdec1left,_))::rest671) => let val result=MlyValue.topdec1(fn _ => 
+| (321,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as
+topdec_opt1right))::(_,(MlyValue.sigdec sigdec1,sigdecleft as
+sigdec1left,_))::rest671) => let val result=MlyValue.topdec1(fn _ =>
 let val sigdec as sigdec1=sigdec1 ()
 val topdec_opt as topdec_opt1=topdec_opt1 ()
  in (
  SIGDECTopDec(I(sigdecleft,topdec_optright),
-                                       sigdec, topdec_opt) 
+                                       sigdec, topdec_opt)
 ) end
 )
  in (LrTable.NT 139,(result,sigdec1left,topdec_opt1right),rest671) end
-| (322,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as 
-topdec_opt1right))::(_,(MlyValue.fundec fundec1,fundecleft as 
-fundec1left,_))::rest671) => let val result=MlyValue.topdec1(fn _ => 
+| (322,(_,(MlyValue.topdec_opt topdec_opt1,_,topdec_optright as
+topdec_opt1right))::(_,(MlyValue.fundec fundec1,fundecleft as
+fundec1left,_))::rest671) => let val result=MlyValue.topdec1(fn _ =>
 let val fundec as fundec1=fundec1 ()
 val topdec_opt as topdec_opt1=topdec_opt1 ()
  in (
  FUNDECTopDec(I(fundecleft,topdec_optright),
-                                       fundec, topdec_opt) 
+                                       fundec, topdec_opt)
 ) end
 )
  in (LrTable.NT 139,(result,fundec1left,topdec_opt1right),rest671) end
@@ -18598,7 +18598,7 @@ rest671) => let val result=MlyValue.topdec_opt(fn _ => let val topdec1
 )
  in (LrTable.NT 140,(result,defaultPos,defaultPos),rest671) end
 | (325,(_,(MlyValue.program' program'1,_,program'1right))::(_,(
-MlyValue.initInfix initInfix1,initInfix1left,_))::rest671) => let val 
+MlyValue.initInfix initInfix1,initInfix1left,_))::rest671) => let val
 result=MlyValue.program(fn _ => let val initInfix1=initInfix1 ()
 val program' as program'1=program'1 ()
  in ( (program', !J) ) end
@@ -18606,20 +18606,20 @@ val program' as program'1=program'1 ()
  in (LrTable.NT 141,(result,initInfix1left,program'1right),rest671)
  end
 | (326,(_,(MlyValue.program_opt program_opt1,_,program_opt1right))::(_
-,(_,_,SEMICOLONright))::(_,(MlyValue.topdec topdec1,topdecleft as 
-topdec1left,_))::rest671) => let val result=MlyValue.program'(fn _ => 
+,(_,_,SEMICOLONright))::(_,(MlyValue.topdec topdec1,topdecleft as
+topdec1left,_))::rest671) => let val result=MlyValue.program'(fn _ =>
 let val topdec as topdec1=topdec1 ()
 val program_opt as program_opt1=program_opt1 ()
  in (
  TOPDECProgram(I(topdecleft,SEMICOLONright),
-                                        topdec, program_opt) 
+                                        topdec, program_opt)
 ) end
 )
  in (LrTable.NT 142,(result,topdec1left,program_opt1right),rest671)
  end
 | (327,(_,(MlyValue.program_opt program_opt1,_,program_opt1right))::(_
 ,(_,_,SEMICOLONright))::(_,(MlyValue.exp exp1,expleft as exp1left,_))
-::rest671) => let val result=MlyValue.program'(fn _ => let val exp as 
+::rest671) => let val result=MlyValue.program'(fn _ => let val exp as
 exp1=exp1 ()
 val program_opt as program_opt1=program_opt1 ()
  in (
@@ -18629,12 +18629,12 @@ val program_opt as program_opt1=program_opt1 ()
 )
  in (LrTable.NT 142,(result,exp1left,program_opt1right),rest671) end
 | (328,(_,(MlyValue.program' program'1,program'1left,program'1right))
-::rest671) => let val result=MlyValue.program_opt(fn _ => let val 
+::rest671) => let val result=MlyValue.program_opt(fn _ => let val
 program' as program'1=program'1 ()
  in ( SOME program' ) end
 )
  in (LrTable.NT 143,(result,program'1left,program'1right),rest671) end
-| (329,rest671) => let val result=MlyValue.program_opt(fn _ => ( NONE 
+| (329,rest671) => let val result=MlyValue.program_opt(fn _ => ( NONE
 ))
  in (LrTable.NT 143,(result,defaultPos,defaultPos),rest671) end
 | _ => raise (mlyAction i392)
@@ -19016,8 +19016,8 @@ datatype yyfinstate = N of int
 type statedata = {fin : yyfinstate list, trans: string}
 (* transition & final state table *)
 val tab = let
-val s = [ 
- (0, 
+val s = [
+ (0,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19035,7 +19035,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (1, 
+ (1,
 "\005\005\005\005\005\005\005\005\005\235\236\235\235\235\005\005\
 \\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\
 \\235\180\223\211\180\180\180\209\207\206\205\180\204\202\199\180\
@@ -19053,7 +19053,7 @@ val s = [
 \\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\
 \\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"
 ),
- (3, 
+ (3,
 "\237\237\237\237\237\237\237\237\237\237\242\237\237\237\237\237\
 \\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237\
 \\237\237\237\237\237\237\237\237\240\237\238\237\237\237\237\237\
@@ -19071,7 +19071,7 @@ val s = [
 \\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237\
 \\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237\237"
 ),
- (6, 
+ (6,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\000\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -19089,7 +19089,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (7, 
+ (7,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\000\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -19107,7 +19107,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (8, 
+ (8,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\013\000\
@@ -19125,7 +19125,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (9, 
+ (9,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19143,7 +19143,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (10, 
+ (10,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19161,7 +19161,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (12, 
+ (12,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19179,7 +19179,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (13, 
+ (13,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19197,7 +19197,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (14, 
+ (14,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19215,7 +19215,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (15, 
+ (15,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19233,7 +19233,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (16, 
+ (16,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19251,7 +19251,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (18, 
+ (18,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19269,7 +19269,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (19, 
+ (19,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\013\000\
@@ -19287,7 +19287,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (20, 
+ (20,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -19305,7 +19305,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (25, 
+ (25,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19323,7 +19323,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (27, 
+ (27,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\028\000\028\028\028\028\000\000\000\028\028\000\028\000\028\
@@ -19341,7 +19341,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (28, 
+ (28,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\028\000\028\028\028\028\000\000\000\028\028\000\028\000\028\
@@ -19359,7 +19359,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (29, 
+ (29,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\029\000\000\000\000\000\000\027\000\
@@ -19377,7 +19377,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (30, 
+ (30,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19395,7 +19395,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (31, 
+ (31,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19413,7 +19413,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (32, 
+ (32,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19431,7 +19431,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (33, 
+ (33,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19449,7 +19449,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (34, 
+ (34,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19467,7 +19467,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (35, 
+ (35,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19485,7 +19485,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (36, 
+ (36,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19503,7 +19503,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (38, 
+ (38,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19521,7 +19521,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (39, 
+ (39,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19539,7 +19539,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (40, 
+ (40,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19557,7 +19557,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (42, 
+ (42,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19575,7 +19575,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (43, 
+ (43,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19593,7 +19593,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (45, 
+ (45,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19611,7 +19611,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (46, 
+ (46,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19629,7 +19629,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (48, 
+ (48,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19647,7 +19647,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (49, 
+ (49,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19665,7 +19665,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (50, 
+ (50,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19683,7 +19683,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (52, 
+ (52,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19701,7 +19701,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (53, 
+ (53,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19719,7 +19719,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (55, 
+ (55,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19737,7 +19737,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (56, 
+ (56,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19755,7 +19755,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (57, 
+ (57,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19773,7 +19773,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (58, 
+ (58,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19791,7 +19791,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (59, 
+ (59,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19809,7 +19809,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (60, 
+ (60,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19827,7 +19827,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (61, 
+ (61,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19845,7 +19845,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (62, 
+ (62,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19863,7 +19863,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (64, 
+ (64,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19881,7 +19881,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (65, 
+ (65,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19899,7 +19899,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (66, 
+ (66,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19917,7 +19917,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (67, 
+ (67,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19935,7 +19935,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (68, 
+ (68,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19953,7 +19953,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (69, 
+ (69,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19971,7 +19971,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (70, 
+ (70,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -19989,7 +19989,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (72, 
+ (72,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20007,7 +20007,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (73, 
+ (73,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20025,7 +20025,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (74, 
+ (74,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20043,7 +20043,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (75, 
+ (75,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20061,7 +20061,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (76, 
+ (76,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20079,7 +20079,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (78, 
+ (78,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20097,7 +20097,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (79, 
+ (79,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20115,7 +20115,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (81, 
+ (81,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20133,7 +20133,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (82, 
+ (82,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20151,7 +20151,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (83, 
+ (83,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20169,7 +20169,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (85, 
+ (85,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20187,7 +20187,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (86, 
+ (86,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20205,7 +20205,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (87, 
+ (87,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20223,7 +20223,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (88, 
+ (88,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20241,7 +20241,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (89, 
+ (89,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20259,7 +20259,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (91, 
+ (91,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20277,7 +20277,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (92, 
+ (92,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20295,7 +20295,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (95, 
+ (95,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20313,7 +20313,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (96, 
+ (96,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20331,7 +20331,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (97, 
+ (97,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20349,7 +20349,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (98, 
+ (98,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20367,7 +20367,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (99, 
+ (99,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20385,7 +20385,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (101, 
+ (101,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20403,7 +20403,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (102, 
+ (102,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20421,7 +20421,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (103, 
+ (103,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20439,7 +20439,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (104, 
+ (104,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20457,7 +20457,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (106, 
+ (106,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20475,7 +20475,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (108, 
+ (108,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20493,7 +20493,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (109, 
+ (109,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20511,7 +20511,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (110, 
+ (110,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20529,7 +20529,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (111, 
+ (111,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20547,7 +20547,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (112, 
+ (112,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20565,7 +20565,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (114, 
+ (114,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20583,7 +20583,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (115, 
+ (115,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20601,7 +20601,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (116, 
+ (116,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20619,7 +20619,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (117, 
+ (117,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20637,7 +20637,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (120, 
+ (120,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20655,7 +20655,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (121, 
+ (121,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20673,7 +20673,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (122, 
+ (122,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20691,7 +20691,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (123, 
+ (123,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20709,7 +20709,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (124, 
+ (124,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20727,7 +20727,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (126, 
+ (126,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20745,7 +20745,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (127, 
+ (127,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20763,7 +20763,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (128, 
+ (128,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20781,7 +20781,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (129, 
+ (129,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20799,7 +20799,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (130, 
+ (130,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20817,7 +20817,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (131, 
+ (131,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20835,7 +20835,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (134, 
+ (134,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20853,7 +20853,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (135, 
+ (135,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20871,7 +20871,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (136, 
+ (136,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20889,7 +20889,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (137, 
+ (137,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20907,7 +20907,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (138, 
+ (138,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20925,7 +20925,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (139, 
+ (139,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20943,7 +20943,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (140, 
+ (140,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20961,7 +20961,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (141, 
+ (141,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20979,7 +20979,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (143, 
+ (143,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -20997,7 +20997,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (144, 
+ (144,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21015,7 +21015,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (145, 
+ (145,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21033,7 +21033,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (146, 
+ (146,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21051,7 +21051,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (148, 
+ (148,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21069,7 +21069,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (150, 
+ (150,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21087,7 +21087,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (151, 
+ (151,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21105,7 +21105,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (153, 
+ (153,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21123,7 +21123,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (155, 
+ (155,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21141,7 +21141,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (156, 
+ (156,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21159,7 +21159,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (157, 
+ (157,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21177,7 +21177,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (158, 
+ (158,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21195,7 +21195,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (159, 
+ (159,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21213,7 +21213,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (160, 
+ (160,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21231,7 +21231,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (162, 
+ (162,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21249,7 +21249,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (163, 
+ (163,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21267,7 +21267,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (164, 
+ (164,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21285,7 +21285,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (166, 
+ (166,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21303,7 +21303,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (168, 
+ (168,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21321,7 +21321,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (169, 
+ (169,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21339,7 +21339,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (170, 
+ (170,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21357,7 +21357,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (171, 
+ (171,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21375,7 +21375,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (172, 
+ (172,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21393,7 +21393,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (174, 
+ (174,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21411,7 +21411,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (175, 
+ (175,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21429,7 +21429,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (176, 
+ (176,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21447,7 +21447,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (177, 
+ (177,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21465,7 +21465,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (178, 
+ (178,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\026\000\000\000\000\000\000\027\000\
@@ -21483,7 +21483,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (184, 
+ (184,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\000\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -21501,7 +21501,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (187, 
+ (187,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\000\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -21519,7 +21519,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (189, 
+ (189,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\013\000\
@@ -21537,7 +21537,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (191, 
+ (191,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\013\000\
@@ -21555,7 +21555,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (192, 
+ (192,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21573,7 +21573,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (194, 
+ (194,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21591,7 +21591,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (195, 
+ (195,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21609,7 +21609,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (197, 
+ (197,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21627,7 +21627,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (198, 
+ (198,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\013\000\
@@ -21645,7 +21645,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (199, 
+ (199,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\200\000\
@@ -21663,7 +21663,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (200, 
+ (200,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\201\000\
@@ -21681,7 +21681,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (202, 
+ (202,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\000\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -21699,7 +21699,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (207, 
+ (207,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\208\000\000\000\000\000\
@@ -21717,7 +21717,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (209, 
+ (209,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\210\000\000\000\000\000\000\000\000\
@@ -21735,7 +21735,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (211, 
+ (211,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\007\212\007\007\007\007\000\000\000\007\007\000\007\000\007\
@@ -21753,7 +21753,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (212, 
+ (212,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\212\212\222\212\212\212\212\212\212\212\212\212\212\212\212\212\
@@ -21771,7 +21771,7 @@ val s = [
 \\212\212\212\212\212\212\212\212\212\212\212\212\212\212\212\212\
 \\212\212\212\212\212\212\212\212\212\212\212\212\212\212\212\212"
 ),
- (213, 
+ (213,
 "\000\000\000\000\000\000\000\000\000\221\221\221\221\221\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\221\000\212\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21789,7 +21789,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (214, 
+ (214,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21807,7 +21807,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (215, 
+ (215,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21825,7 +21825,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (216, 
+ (216,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21843,7 +21843,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (217, 
+ (217,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21861,7 +21861,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (218, 
+ (218,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21879,7 +21879,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (219, 
+ (219,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21897,7 +21897,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (220, 
+ (220,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21915,7 +21915,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (221, 
+ (221,
 "\000\000\000\000\000\000\000\000\000\221\221\221\221\221\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\221\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21933,7 +21933,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (223, 
+ (223,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\224\224\234\224\224\224\224\224\224\224\224\224\224\224\224\224\
@@ -21951,7 +21951,7 @@ val s = [
 \\224\224\224\224\224\224\224\224\224\224\224\224\224\224\224\224\
 \\224\224\224\224\224\224\224\224\224\224\224\224\224\224\224\224"
 ),
- (225, 
+ (225,
 "\000\000\000\000\000\000\000\000\000\233\233\233\233\233\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\233\000\224\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21969,7 +21969,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (226, 
+ (226,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -21987,7 +21987,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (227, 
+ (227,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22005,7 +22005,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (228, 
+ (228,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22023,7 +22023,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (229, 
+ (229,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22041,7 +22041,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (230, 
+ (230,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22059,7 +22059,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (231, 
+ (231,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22077,7 +22077,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (232, 
+ (232,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22095,7 +22095,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (233, 
+ (233,
 "\000\000\000\000\000\000\000\000\000\233\233\233\233\233\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\233\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22113,7 +22113,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (235, 
+ (235,
 "\000\000\000\000\000\000\000\000\000\236\236\236\236\236\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\236\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -22131,7 +22131,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (238, 
+ (238,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\239\000\000\000\000\000\000\
@@ -22149,7 +22149,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
- (240, 
+ (240,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\241\000\000\000\000\000\
@@ -22168,13 +22168,13 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 ),
 (0, "")]
-fun f x = x 
-val s = map f (rev (tl (rev s))) 
-exception LexHackingError 
-fun look ((j,x)::r, i) = if i = j then x else look(r, i) 
+fun f x = x
+val s = map f (rev (tl (rev s)))
+exception LexHackingError
+fun look ((j,x)::r, i) = if i = j then x else look(r, i)
   | look ([], i) = raise LexHackingError
-fun g {fin=x, trans=i} = {fin=x, trans=look(s,i)} 
-in Vector.fromList(map g 
+fun g {fin=x, trans=i} = {fin=x, trans=look(s,i)}
+in Vector.fromList(map g
 [{fin = [], trans = 0},
 {fin = [], trans = 1},
 {fin = [], trans = 1},
@@ -22453,11 +22453,11 @@ let fun continue() = lex() in
         | action (i,nil::l) = action (i-1,l)
         | action (i,(node::acts)::l) =
                 case node of
-                    Internal.N yyk => 
+                    Internal.N yyk =>
                         (let fun yymktext() = String.substring(!yyb,i0,i-i0)
                              val yypos: int = i0+ !yygone
                         open UserDeclarations Internal.StartStates
- in (yybufpos := i; case yyk of 
+ in (yybufpos := i; case yyk of
 
                         (* Application actions *)
 
@@ -22895,7 +22895,7 @@ structure Main =
                      val _ = closeIn (!ins)
                   in loop (n - 1)
                   end
-         in 
+         in
             loop size
          end
    end

@@ -20,7 +20,7 @@ struct
     val rtos9 = Real.fmt (StringCvt.FIX (SOME 9))
 
     val chain = M.chain ()
-    fun ows s = 
+    fun ows s =
         M.observe_weighted_string { begin_symbol = chr 1,
                                     end_symbol = chr 0,
                                     weight = 1.0,
@@ -43,10 +43,10 @@ struct
     val _ = rtos (M.probability chain (state "\001\001", #"h")) = "1.00"
         orelse raise TestFail "all words start with h"
 
-    val _ = 
+    val _ =
         let val p = rtos (M.probability chain (state "\001h", #"e"))
         in
-            p = "1.00" orelse 
+            p = "1.00" orelse
             raise TestFail ("after h at the beginning of a word is always e: " ^ p)
         end
 
@@ -94,7 +94,7 @@ struct
     val rtos9 = Real.fmt (StringCvt.FIX (SOME 9))
 
     val chain = M.chain ()
-    fun ows s = 
+    fun ows s =
         M.observe_weighted_string { begin_symbol = chr 1,
                                     end_symbol = chr 0,
                                     weight = 1.0,
@@ -109,10 +109,10 @@ struct
     val _ = rtos (M.probability chain (state "\001", #"h")) = "1.00"
         orelse raise TestFail "all words start with h"
 
-    val _ = 
+    val _ =
         let val p = rtos (M.probability chain (state "\001", #"h"))
         in
-            p = "1.00" orelse 
+            p = "1.00" orelse
             raise TestFail ("all words start with h: " ^ p)
         end
 

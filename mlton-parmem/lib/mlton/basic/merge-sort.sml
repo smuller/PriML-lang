@@ -109,7 +109,7 @@ structure MergeSortVector: MERGE_SORT =
                             in res
                             end
                       else if i' = n'
-                              then 
+                              then
                                  let
                                     val res = sub (v, i)
                                     val _ = Int.inc r
@@ -144,7 +144,7 @@ structure MergeSortVector: MERGE_SORT =
                          val m' = n - m
                          fun get (m, start) =
                             loop
-                            (tabulate (m, 
+                            (tabulate (m,
                                        let val r = ref start
                                        in fn _ =>
                                           let

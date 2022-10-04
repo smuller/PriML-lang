@@ -70,4 +70,4 @@ structure Main : BMARK =
 
 (*val _ = (doit (); doit(); doit());*)
 
-val _  = (testit (); testit (); testit ());   (* this should give ``1084512 iterations'' *) 
+val _  = (testit (); testit (); testit ());   (* this should give ``1084512 iterations'' *)

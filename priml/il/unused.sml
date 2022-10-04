@@ -4,7 +4,7 @@ struct
 
   infixr 9 `
   fun a ` b = a b
-  
+
   open IL
   structure V = Variable
 
@@ -31,7 +31,7 @@ struct
   fun --- (s as F { var, uvar }, v) = (F { uvar = V.Set.delete (uvar, v), var = var }) handle _ => s
   fun ++  (s as F { var, uvar }, v) = (F { var = V.Set.add (var, v), uvar = uvar })
   fun +++ (s as F { var, uvar }, v) = (F { uvar = V.Set.add (uvar, v), var = var })
-                                       
+
   fun ??  (s as F { var, uvar }, v) = V.Set.member (var, v)
   fun ??? (s as F { var, uvar }, v) = V.Set.member (uvar, v)
 
@@ -54,12 +54,12 @@ struct
         print "\n"
       end
     else ()
-  fun -- (s, v) = 
+  fun -- (s, v) =
     let in
       dprint ("Delete " ^ Variable.tostring v ^ "\n");
       V.Set.delete (s, v) handle _ => s
     end
-  fun ++ (s, v) = 
+  fun ++ (s, v) =
     let in
       dprint ("Add " ^ Variable.tostring v ^ "\n");
       V.Set.add (s, v)
@@ -76,14 +76,14 @@ struct
           dprint ("base regvar " ^ Variable.tostring var ^ "\n");
           (empty ++ var, value)
         end
-    | Polyuvar { var, ... } => 
+    | Polyuvar { var, ... } =>
         let in
           dprint ("base var " ^ Variable.tostring var ^ "\n");
           (empty ++ var, value)
         end
     | Int _ => (empty, value)
     | String _ => (empty, value)
-    | VRecord lvl => 
+    | VRecord lvl =>
         let val (l, vl) = ListPair.unzip lvl
             val (fvl, vl) = ListPair.unzip ` map uval vl
         in
@@ -99,12 +99,12 @@ struct
                                   (fv, VInject(t, l, SOME v))
                                 end
     | Sham (w, va) => let val (fv, va) = uval va
-                      in 
+                      in
                         dprint "sham..\n";
                         (fv, Sham (w, va))
                       end
     | Fns fl =>
-            let val (fv, names, fl) = ListUtil.unzip3 ` 
+            let val (fv, names, fl) = ListUtil.unzip3 `
               map (fn {name, arg, dom, cod, body, inline, recu, total} =>
                    let
                      val (fv, body) = uexp body
@@ -145,7 +145,7 @@ struct
                        (fv1 || unionl fvs, App(e, el))
                      end
 
-    | Record lvl => 
+    | Record lvl =>
         let val (l, vl) = ListPair.unzip lvl
             val (fvl, vl) = ListPair.unzip ` map uexp vl
         in
@@ -157,7 +157,7 @@ struct
         in
             (fv, Proj (l, t, e))
         end
-    | Raise (t, e) => 
+    | Raise (t, e) =>
         let val (fv, e) = uexp e
         in
             (fv, Raise (t, e))
@@ -175,21 +175,21 @@ struct
         in (fv, Say (itl, e))
         end
 
-    | Seq (e1, e2) => 
+    | Seq (e1, e2) =>
         let val (fv1, e1) = uexp e1
             val (fv2, e2) = uexp e2
         in
             (fv1 || fv2, Seq (e1, e2))
         end
 
-    | Tag (e1, e2) => 
+    | Tag (e1, e2) =>
         let val (fv1, e1) = uexp e1
             val (fv2, e2) = uexp e2
         in
             (fv1 || fv2, Tag (e1, e2))
         end
 
-    | Throw (e1, e2) => 
+    | Throw (e1, e2) =>
         let val (fv1, e1) = uexp e1
             val (fv2, e2) = uexp e2
         in
@@ -204,11 +204,11 @@ struct
         let val (fv, e) = uexp e
         in (fv, Roll (t, e))
         end
-    | Letcc (v, t, e) => 
+    | Letcc (v, t, e) =>
         let val (fv, e) = uexp e
         in (fv -- v, Letcc(v, t, e))
         end
-    | Jointext el => 
+    | Jointext el =>
         let val (fvl, el) = ListPair.unzip ` map uexp el
         in (unionl fvl, Jointext el)
         end
@@ -251,7 +251,7 @@ struct
             val (fvn, no) = uexp no
         in
             (fvo || fvt || (fvy -- bound) || fvn,
-             Untag { typ = typ, obj = obj, target = target, 
+             Untag { typ = typ, obj = obj, target = target,
                      bound = bound, yes = yes, no = no })
         end
     | Intcase (obj, iel, def) =>
@@ -264,7 +264,7 @@ struct
           (fvd || unionl fve || fvo,
            Intcase (obj, ListPair.zip (ints, es), def))
         end
-    | Sumcase (t, obj, v, lel, def) => 
+    | Sumcase (t, obj, v, lel, def) =>
         let
             val (fvd, def) = uexp def
             val (labs, es) = ListPair.unzip lel
@@ -299,7 +299,7 @@ struct
                        then let val (fv', va) = uval va
                             in SOME ((fv -- vv) || fv', Bind(b, Poly(p, (vv, t, Value va))))
                             end
-                       else 
+                       else
                          let in
                            print ("Drop unused polybind " ^ V.tostring vv ^ "\n");
                            NONE
@@ -311,7 +311,7 @@ struct
                        then let val (fv', va) = uval va
                             in SOME ((fv -- vv) || fv', Letsham(Poly(p, (vv, t, va))))
                             end
-                       else 
+                       else
                          let in
                            print ("Drop unused polyletsham " ^ V.tostring vv ^ "\n");
                            NONE
@@ -322,7 +322,7 @@ struct
                        then let val (fv', va) = uval va
                             in SOME ((fv -- vv) || fv', Leta(Poly(p, (vv, t, va))))
                             end
-                       else 
+                       else
                          let in
                            print ("Drop unused polyleta " ^ V.tostring vv ^ "\n");
                            NONE
@@ -347,7 +347,7 @@ struct
               NONE => (fv, rest)
             | SOME (fv, d) => (fv, d :: rest)
       end
-    
+
 
   fun fvexports nil = (empty, nil)
     | fvexports (ExportType (k, l, v) :: rest) =
@@ -371,5 +371,5 @@ struct
       (* fv should be empty, aside from prims.. *)
       Unit (decs, exports)
     end
-    
+
 end

@@ -140,7 +140,7 @@ local
 
                val toWord = Word.fromIntInf
 
-               (* val align = align *) 
+               (* val align = align *)
                val alignDown = alignDown
                (* fun alignWord32 b = align (b, {alignment = inWord32}) *)
                (* fun alignWord64 b = align (b, {alignment = inWord64}) *)
@@ -168,7 +168,7 @@ local
                (* fun alignWord8 b = align (b, {alignment = inWord8}) *)
                (* fun alignWord16 b = align (b, {alignment = inWord16}) *)
                fun alignWord32 b = align (b, {alignment = inWord32})
-               fun alignWord64 b = align (b, {alignment = inWord64}) 
+               fun alignWord64 b = align (b, {alignment = inWord64})
            end
       end
 

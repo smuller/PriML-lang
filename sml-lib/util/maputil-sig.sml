@@ -4,7 +4,7 @@ sig
 
     type ord_key
     type 'a map
-        
+
     val exists : ('a -> bool) -> 'a map -> bool
     val existsi : ((ord_key * 'a) -> bool) -> 'a map -> bool
 

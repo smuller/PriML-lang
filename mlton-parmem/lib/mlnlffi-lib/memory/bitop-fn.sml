@@ -20,8 +20,8 @@ functor IntBitOps (structure I : INTEGER structure W : WORD) : sig
 
     type int = I.int
 
-    (* unsigned arithmetic. 
-     * non-overflow trapping 
+    (* unsigned arithmetic.
+     * non-overflow trapping
      *)
     val ++   : int * int -> int
     val --   : int * int -> int

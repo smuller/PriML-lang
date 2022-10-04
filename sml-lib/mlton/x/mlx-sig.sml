@@ -7,7 +7,7 @@
 
 signature MLX =
 sig
-    
+
     type display
     type window
     type gc
@@ -32,7 +32,7 @@ sig
     val defaultrootwindow : display -> window
 
     (* createsimplewindow d w xoff yoff width height borderwidth border background *)
-    val createsimplewindow : display -> window -> 
+    val createsimplewindow : display -> window ->
            int -> int -> int -> int -> int -> color -> color -> window
 
     (* sets the name of a window *)
@@ -54,7 +54,7 @@ sig
 
     (* doesn't let you specify default values. Just set them afterwards *)
     val creategc : display -> drawable -> gc
-        
+
     val freegc : display -> gc -> unit
 
     val setforeground : display -> gc -> color -> unit
@@ -74,7 +74,7 @@ sig
     val get_usechar : unit -> bool
 
     (* events *)
-    datatype event = 
+    datatype event =
         Any of unit
         (* up/down, window, root, subwindow, time, ptrx, ptry, ptrrx, ptrry, state, keycode, same_screen *)
       | Key of bool * window * window * window * time * int * int * int * int * modstate * Word32.word * bool
@@ -120,7 +120,7 @@ sig
     sig
         type item
         type mask
-            
+
         val noevent : item
         val keypress : item
         val keyrelease : item
@@ -147,7 +147,7 @@ sig
         val propertychange : item
         val colormapchange : item
         val ownergrabbutton : item
-            
+
         val make : item list -> mask
         val contains : mask -> item -> bool
         val set : mask -> item -> mask
@@ -190,13 +190,13 @@ sig
     val mixcolors : color list -> color
 
     (* drawing *)
-   
+
     (* what's this? *)
     type font
 
     (* drawtext d w g font x y text *)
     val drawtext : display -> drawable -> gc -> font option -> int -> int -> string -> unit
-    
+
     (* drawpoint d w g x y *)
     val drawpoint : display -> drawable -> gc -> int -> int -> unit
     val fillrectangle : display -> drawable -> gc -> int -> int -> int -> int -> unit

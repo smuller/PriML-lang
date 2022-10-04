@@ -24,7 +24,7 @@ struct
 
   fun app f (ref (l, a)) =
       let
-          fun ap n = 
+          fun ap n =
               if n < l
               then ((case Array.sub(a, n) of
                         NONE => ()
@@ -37,7 +37,7 @@ struct
 
   fun appi f (ref (l, a)) =
       let
-          fun ap n = 
+          fun ap n =
               if n < l
               then ((case Array.sub(a, n) of
                         NONE => ()
@@ -65,7 +65,7 @@ struct
   fun copy (ref (n, a)) =
       ref (n, Array.tabulate (n, fn x => Array.sub(a, x)))
 
-  fun has (ref (used, a)) n = 
+  fun has (ref (used, a)) n =
       if n < 0 then raise Subscript
       else n < used andalso Option.isSome(Array.sub(a, n))
 
@@ -75,9 +75,9 @@ struct
     if Array.length a >= (n + 1)
     then ()
     else
-      let 
-        fun nextpower x = 
-          if x >= (n + 1) 
+      let
+        fun nextpower x =
+          if x >= (n + 1)
           then x
           else nextpower (x * 2)
         val ns = nextpower (Array.length a)
@@ -93,7 +93,7 @@ struct
   fun update r n x =
     if n < 0 then raise Subscript
     else
-      let 
+      let
         val _ = accommodate r n
         val (l, a) = !r
       in
@@ -140,7 +140,7 @@ struct
     else r := (x, a)
 
   fun finalize (ga as (ref (n, a))) =
-      let 
+      let
           val ret =
             Array.tabulate (n, (fn x => case Array.sub(a, x) of
                                            NONE => raise Subscript
@@ -174,11 +174,11 @@ struct
 
   (* XXX should probably (?) update n if we are
      erasing the last one. *)
-  fun erase (r as ref (n, a)) i = 
+  fun erase (r as ref (n, a)) i =
       if i >= n
       then raise Subscript
       else
-        let 
+        let
             fun shrink x =
                 if x < 0
                 then clear r
@@ -194,7 +194,7 @@ struct
             else ()
         end
 
-  (* PERF, could keep low water mark as well. *)      
+  (* PERF, could keep low water mark as well. *)
   fun update_next (ga as (ref (n, a))) x =
       let
           fun findy i =

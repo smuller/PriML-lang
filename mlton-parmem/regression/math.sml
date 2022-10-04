@@ -5,8 +5,8 @@ fun e1 seq e2 = e2;
 fun check b = if b then "OK" else "WRONG";
 fun check' f = (if f () then "OK" else "WRONG") handle _ => "EXN";
 
-fun range (from, to) p = 
-    let open Int 
+fun range (from, to) p =
+    let open Int
     in
         (from > to) orelse (p from) andalso (range (from+1, to) p)
     end;
@@ -17,9 +17,9 @@ fun tst0 s s' = print (s ^ "    \t" ^ s' ^ "\n");
 fun tst  s b = tst0 s (check  b);
 fun tst' s f = tst0 s (check' f);
 
-fun tstrange s bounds = (tst s) o range bounds  
+fun tstrange s bounds = (tst s) o range bounds
 
-(* test/math.sml 
+(* test/math.sml
    PS 1995-02-25, 1996-04-01, 1997-03-07
 *)
 
@@ -34,7 +34,7 @@ local
 
     val eps = 1E~8
     infix 4 ===
-    fun x === y = 
+    fun x === y =
         abs (x - y) <= eps orelse abs(x-y) <= eps * (abs x + abs y)
 
     fun check1 (opr, a, r) = if opr a === r then "OK" else "WRONG"
@@ -116,14 +116,14 @@ val test10f = tst0 "test10f" (if Real.==(ln Real.posInf, Real.posInf) then "OK" 
 val test10g = tst0 "test10g" (if Real.==(Real.posInf, Real.posInf) then "OK" else "WRONG")
 
 val test12a = tst2 "test12a" (pow, 0.0, 0.0, 1.0); (* arbitrary, might be 0.0 *)
-val test12b = tst2 "test12b" (pow, 7.0, 0.0, 1.0); 
-val test12c = tst2 "test12c" (pow, 0.0, 7.0, 0.0); 
-val test12d = tst2 "test12d" (pow, 64.0, 0.5, 8.0); 
-val test12e = tst2 "test12e" (pow, ~9.0, 2.0, 81.0); 
-val test12f = tst2 "test12f" (pow, 10.0, ~2.0, 0.01); 
-val test12g = tst2 "test12g" (pow, ~10.0, ~2.0, 0.01); 
-val test12h = tst2 "test12h" (pow, 0.0, 0.5, 0.0); 
-val test12i = tst2 "test12i" (pow, 0.4, ~2.0, 6.25); 
+val test12b = tst2 "test12b" (pow, 7.0, 0.0, 1.0);
+val test12c = tst2 "test12c" (pow, 0.0, 7.0, 0.0);
+val test12d = tst2 "test12d" (pow, 64.0, 0.5, 8.0);
+val test12e = tst2 "test12e" (pow, ~9.0, 2.0, 81.0);
+val test12f = tst2 "test12f" (pow, 10.0, ~2.0, 0.01);
+val test12g = tst2 "test12g" (pow, ~10.0, ~2.0, 0.01);
+val test12h = tst2 "test12h" (pow, 0.0, 0.5, 0.0);
+val test12i = tst2 "test12i" (pow, 0.4, ~2.0, 6.25);
 
 (*we do not follow the Basis Library specification exactly here, but rather follow math.h
 val test12j = tst0 "test12j" (if Real.==(pow(0.0, ~1.0),Real.posInf) then "OK" else "WRONG")

@@ -58,7 +58,7 @@ struct
            else raise Rsync "FullWord is not twice the size of HalfWord in Rsync functor argument"
 
   (* single one, slowish *)
-  fun hash(v, k, len) = 
+  fun hash(v, k, len) =
     let
       fun a (acc, i) =
         if i >= len
@@ -68,7 +68,7 @@ struct
       fun b (acc, i) =
         if i >= len
         then acc
-        else b (acc ++ (word(sub(v, k + i)) ** iw (i + 1)), 
+        else b (acc ++ (word(sub(v, k + i)) ** iw (i + 1)),
                 i + 1)
 
       val aa = (a (iw 0, 0))
@@ -85,22 +85,22 @@ struct
       val b_prev = trunc (FW.>>(prev, halfbits))
 
 
-      val a_new = 
+      val a_new =
         (a_prev --
          (* subtract out the char right before this one starts *)
-         word(sub(v, k - 1))) ++ 
+         word(sub(v, k - 1))) ++
          (* and add in the new one *)
          word(sub(v, k + len - 1))
 
-      (* 
+      (*
          b(k, l) = ( b(k-1,l-1) - ( ((l-1) - (k -1)) + 1)v(k-1) ) + a(k, l)
          mod 2^16
          *)
-      val b_new = 
+      val b_new =
         (* we had 1x + 2y + 3z ... + (len)c,
            subtract x + y + z ... + c
            to get      1y + 2z ... + (len-1)c
-           and then add (len)d 
+           and then add (len)d
            *)
         (b_prev -- a_prev) ++ (word(sub(v, k + len - 1)) ** iw len)
     in

@@ -1,5 +1,5 @@
 open Posix.Signal MLton.Signal
-      
+
 fun for (start, stop, f) =
    let
       fun loop i =
@@ -9,7 +9,7 @@ fun for (start, stop, f) =
    in
       loop start
    end
-   
+
 structure Queue:
    sig
       type 'a t
@@ -34,7 +34,7 @@ structure Queue:
                               [] => raise Fail "deque"
                             | x :: l => (back := []; front := l; SOME x)
                            end)
-          | x :: l => (front := l; SOME x) 
+          | x :: l => (front := l; SOME x)
    end
 
 structure Thread:
@@ -67,17 +67,17 @@ structure Thread:
                NONE => valOf (!topLevel)
              | SOME t => t
       end
-      
+
       fun 'a exit (): 'a = switch (fn _ =>
                                    (print "exiting\n"
                                     ; next ()))
-   
+
       fun new (f: unit -> unit): Thread.Runnable.t =
          Thread.prepare
          (Thread.new (fn () => ((f () handle _ => exit ())
                                 ; exit ())),
           ())
-            
+
       fun schedule t = (ready t; next ())
 
       fun yield (): unit = switch (fn t => schedule (Thread.prepare (t, ())))
@@ -98,12 +98,12 @@ structure Thread:
           ; setItimer Time.zeroTime
           ; setHandler (alrm, Handler.ignore)
           ; topLevel := NONE)
-            
+
       structure Mutex =
          struct
             datatype t = T of {locked: bool ref,
                                waiting: unit Thread.t Queue.t}
-                  
+
             fun new () =
                T {locked = ref false,
                   waiting = Queue.new ()}
@@ -122,7 +122,7 @@ structure Thread:
                               ; Thread.atomicEnd ()))
                in loop ()
                end
-               
+
             fun safeUnlock (T {locked, waiting, ...}) =
                (locked := false
                 ; (case Queue.deque waiting of
@@ -137,12 +137,12 @@ structure Thread:
    end
 
 open Thread
-      
+
 fun main (name, args) =
    let
       val m = Mutex.new ()
       val gotIt = ref false
-      val _ = 
+      val _ =
          for (0, 10, fn _ =>
               Thread.spawn
               (fn () =>

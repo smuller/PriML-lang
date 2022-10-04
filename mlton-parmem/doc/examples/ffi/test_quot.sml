@@ -27,7 +27,7 @@ val bad_z =
       z
    end
 
-val () = 
+val () =
    print (concat [" bad_z = ", Int8.toString bad_z, "\n",
                   "     z = ", Int8.toString z, "\n",
                   "   c_z = ", Int8.toString c_z, "\n"])

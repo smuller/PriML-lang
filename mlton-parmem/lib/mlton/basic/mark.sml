@@ -60,7 +60,7 @@ local
             if lookingAtChar (m, c) then m else loop (move m)
       in loop m
       end
-in 
+in
    val searchCharForward = searchChar forwardChar
    fun searchCharBackward (m, c) =
       searchChar backwardChar (backwardChar m, c)

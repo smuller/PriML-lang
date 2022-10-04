@@ -32,7 +32,7 @@ fun bogus l = (fromList l; false) handle Size => true
 
 val _ = (bogus[[1], [2, 3]];
          bogus[[], [1]])
-   
+
 val a3 =
    let val r = ref 0
    in tabulate RowMajor (3, 3, fn _ => (r := !r + 1 ; !r))

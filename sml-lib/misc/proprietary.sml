@@ -17,7 +17,7 @@
    At some level the signing function must be manifest in the compiled
    code, which means that the adversary will be able to read that code,
    and thus conceivably reproduce the function. The best strategy is
-   therefore to make that task as difficult as possible, by making the 
+   therefore to make that task as difficult as possible, by making the
    compiled code incomprehensible.
 
    This meta-program generates a hash function based on an input
@@ -44,11 +44,11 @@ structure Proprietary =
 struct
 
   exception Proprietary of string
-  
+
   structure MT = MersenneTwister
 
   val keyfile = Params.param ""
-      (SOME ("-keyfile", 
+      (SOME ("-keyfile",
              "Specifies the keyfile, which customizes the " ^
              "proprietary hash. If not found, simply prints " ^
              "a warning and uses dummy data.")) "keyfile"
@@ -139,7 +139,7 @@ struct
             case format of
                 SML => "(Word32.andb(Word32.fromInt (" ^ a ^ ")," ^
                        "Word32.<<(0w1, 0w" ^ Int.toString bit ^ ")) <> 0w0)"
-              | APH => "(((" ^ a ^ ") andb (0x" ^ 
+              | APH => "(((" ^ a ^ ") andb (0x" ^
                        Word32.toString (Word32.<<(0w1, Word.fromInt bit)) ^
                        ")) > 0)" (* XXX? *)
 
@@ -161,16 +161,16 @@ struct
         fun rol (e, n) =
             "let val w = " ^ e ^ " in " ^
             (case format of
-                 SML => 
+                 SML =>
                      "Word32.orb(Word32.<<(w, 0w" ^ itos n ^ "), " ^
                      "Word32.>>(w, 0w32 - 0w" ^ itos n ^ "))"
-               | APH => 
+               | APH =>
                      "((w << " ^ itos n ^ ") orb (w >> " ^ itos (32 - n) ^ "))"
                      ) ^ " end"
 
         fun subscript_vector (vec, idx) =
             case format of
-                SML => 
+                SML =>
                     let val vec = CharVector.fromList (map chr vec)
                     in "(ord (String.sub(\"" ^ String.toString vec ^ "\", " ^
                         idx ^ ")))"
@@ -181,7 +181,7 @@ struct
 
         fun nontrivial_predicate [a, b] exp =
             ("((" ^ exp ^ ") = " ^ Int.toString a ^ ")", [a], [b])
-          | nontrivial_predicate [_] _ = 
+          | nontrivial_predicate [_] _ =
             raise Proprietary "no nontrivial predicates on a singleton"
           | nontrivial_predicate nil _ =
             raise Proprietary "no nontrivial predicates on nil!"
@@ -196,7 +196,7 @@ struct
                          t, f)
                     end
               | _ =>
-                    let 
+                    let
                         (* The elements in l are not all the same,
                            so they must differ in at least one bit. *)
                         val words = (map Word32.fromInt l)
@@ -212,14 +212,14 @@ struct
                                            w_ok) <> 0w0
                             then getok (n - 1) (n :: l)
                             else getok (n - 1) l
-                                
+
                         val okay = getok 31 nil
                         val okay = shuffle_list okay
                         val bit = case okay of
                             h :: _ => h
                           | nil => raise Proprietary "impossible! okbit"
 
-                        fun bitset i = 
+                        fun bitset i =
                             Word32.andb(Word32.fromInt i,
                                         Word32.<<(0w1,
                                                   Word.fromInt bit)) <> 0w0
@@ -230,7 +230,7 @@ struct
 
         fun printe s = TextIO.output (TextIO.stdErr, s)
 
-        fun bijective f dom codset = 
+        fun bijective f dom codset =
             let
                 fun bij nil s = if IntSet.isEmpty s
                                 then true
@@ -267,7 +267,7 @@ struct
                         val src = s :: src
                         (* Must be sorted for call to bijective below. *)
                         val dstset = foldl IntSet.add' IntSet.empty (d :: dst)
-                            
+
                         val start = Time.now()
                     in
                         (* Loop over possible values for a and c.
@@ -306,7 +306,7 @@ struct
                             nil => NONE
                           | (a, b, c) :: _ =>
                                 SOME ("((" ^ Int.toString a ^ " * (" ^
-                                      exp ^") + " ^ Int.toString b ^ ") mod " ^ 
+                                      exp ^") + " ^ Int.toString b ^ ") mod " ^
                                       Int.toString c ^ ")")
                     end
               | _ => NONE
@@ -325,8 +325,8 @@ struct
           | intcase z exp rules default =
             (* Same syntax in SML, Aphasia *)
             "(case " ^ exp ^ " of\n" ^
-            indent (z + 4) ^ 
-            (StringUtil.delimit ("\n" ^ indent (z + 2) ^ "| ") 
+            indent (z + 4) ^
+            (StringUtil.delimit ("\n" ^ indent (z + 2) ^ "| ")
              (map (fn (p, e) => Int.toString p ^ " => " ^ Int.toString e) rules)) ^
             "\n" ^ indent (z + 2) ^ "| _ => " ^ Int.toString default ^ ")"
 
@@ -335,7 +335,7 @@ struct
           | split_case z exp (_ :: src) (d :: dst) =
             (* First source is ignored because it's used as the default. *)
             intcase z exp (ListPair.zip (src, dst)) d
-            
+
 
         (* subst_to indentation exp src dst
            Generate an int-valued expression, which has
@@ -355,10 +355,10 @@ struct
               (* math doesn't always work, but we can always use a predicate
                  to split. *)
               case if len <= 10
-                   then split_math z exp src dst 
+                   then split_math z exp src dst
                    else NONE of
                   SOME e => e
-                | NONE => 
+                | NONE =>
                     case if len <= 20
                          then split_vec z exp src (shuffle_list dst)
                          else NONE of
@@ -366,7 +366,7 @@ struct
                       | NONE =>
                     case (len <= 12, MT.random_nat mt 4) of
                         (true, 0) => split_case z exp (shuffle_list src) (shuffle_list dst)
-                      | _ => 
+                      | _ =>
                             let
                                 val (ps, srct, srcf) = nontrivial_predicate src exp
                                 val dst = shuffle_list dst
@@ -404,7 +404,7 @@ struct
         fun easy_round () =
             case MT.random_nat mt 8 of
                 0 =>
-                    print ("val " ^ 
+                    print ("val " ^
                            tuple_abcd () ^ " = " ^
                            tuple_abcd () ^ "\n")
               | 1 =>
@@ -447,7 +447,7 @@ struct
 
         fun tointinrange (w, r) =
             case format of
-                SML => "(Word32.toInt (Word32.mod (" ^ w ^ 
+                SML => "(Word32.toInt (Word32.mod (" ^ w ^
                     ", " ^ toword r ^ ")))"
               (* XXX signedness? *)
               | APH => "((" ^ w ^ ") mod (" ^ r ^ "))"
@@ -462,7 +462,7 @@ struct
                 0 =>
                     print ("val x = ref (" ^ randwords () ^ ")\n" ^
                            "fun go n = if n >= size s then !x " ^
-                           "  else (x := " ^ mix2 (sub ("s", "n"), 
+                           "  else (x := " ^ mix2 (sub ("s", "n"),
                                                    "!x") ^ "; " ^
                            "  go (n + 1))\n" ^
                            "val d = " ^ mix2 ("go 0", "d") ^ "\n")
@@ -474,14 +474,14 @@ struct
                            "      shuffle (r, l, t, " ^
                            Int.toString (1 + MT.random_nat mt 8) ^ ")\n" ^
                            "  | shuffle (l, r, h :: t, n) =\n" ^
-                           "      if 0 = ((" ^ 
+                           "      if 0 = ((" ^
                            Int.toString (MT.random_nat mt 12) ^ " + " ^
                            char_ord "h" ^ ") mod " ^
                            Int.toString (2 + MT.random_nat mt 3) ^ ")\n" ^
                            "      then shuffle (l, h :: r, t, n - 1)\n" ^
                            "      else shuffle (h :: l, r, t, n - 1)\n" ^
                            "val s = implode (shuffle (nil, nil, s, " ^
-                           "ss div 3 + " ^ 
+                           "ss div 3 + " ^
                            Int.toString (MT.random_nat mt 5) ^ "))\n")
 
               | 2 =>
@@ -494,11 +494,11 @@ struct
                            "  end\n" ^
                            "val s = " ^ list_map "subst" "s" ^ "\n" ^
                            "val s = implode s\n")
-                                 
+
               | _ =>
                     print ("val y = ref (" ^ randwords () ^ ")\n" ^
                            "fun go n = if n >= size s then !y " ^
-                           "  else (y := " ^ 
+                           "  else (y := " ^
                            mix2 ("!y", sub ("s",
                                             tointinrange
                                             (times (toword "n", randwords ()),
@@ -517,24 +517,24 @@ struct
                w32type ^ " * " ^
                w32type ^ " =\n" ^
                "let\n" ^
-               "val " ^ tuple_abcd () ^ " = (" ^ 
-               randwords () ^ ", " ^ 
+               "val " ^ tuple_abcd () ^ " = (" ^
+               randwords () ^ ", " ^
                randwords () ^ ", " ^
                randwords () ^ ", " ^
                randwords () ^ ")\n");
-        
+
         Util.for 0 (12 + MT.random_nat mt 8)
         (fn i =>
          let val easy = MT.random_nat mt 4
-         in 
+         in
              hard_round ();
              if easy > 0
              then Util.for 0 easy (fn _ => easy_round ())
              else ()
          end);
-        
+
         print ("\nin " ^ tuple_abcd () ^ " end\n")
-    end      
+    end
 
 end
 

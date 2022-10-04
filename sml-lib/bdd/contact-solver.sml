@@ -43,9 +43,9 @@ struct
       { constraints : ('b, 'f, 'j) constraint array,
         (* Kept for 'report'; just a copy of island's contacts. *)
         contacts : ('b, 'f, 'j) BDDDynamics.contact Vector.vector }
-        
 
-  fun contact_solver 
+
+  fun contact_solver
       (contacts : ('b, 'f, 'j) BDDDynamics.contact Vector.vector,
        impulse_ratio : real) : ('b, 'f, 'j) contact_solver =
     let
@@ -71,8 +71,8 @@ struct
             val w_a : real = D.B.get_angular_velocity body_a
             val w_b : real = D.B.get_angular_velocity body_b
 
-            val () = dprint (fn () => "CS: ra " ^ rtos radius_a ^ 
-                            " rb " ^ rtos radius_b ^ 
+            val () = dprint (fn () => "CS: ra " ^ rtos radius_a ^
+                            " rb " ^ rtos radius_b ^
                             " f " ^ rtos friction ^
                             " r " ^ rtos restitution ^ "\n" ^
                             "    va " ^ vtos v_a ^
@@ -89,7 +89,7 @@ struct
                      then ()
                      else raise BDDContactSolver "pointcount assertion"
 
-            val world_manifold = 
+            val world_manifold =
                 BDDCollision.create_world_manifold (manifold,
                                                     D.B.get_xf body_a, radius_a,
                                                     D.B.get_xf body_b, radius_b)
@@ -106,7 +106,7 @@ struct
                 val rn_b = cross2vv(r_b, normal)
                 val rn_a = rn_a * rn_a
                 val rn_b = rn_b * rn_b
-                val k_normal : real = 
+                val k_normal : real =
                     D.B.get_inv_mass body_a +
                     D.B.get_inv_mass body_b +
                     D.B.get_inv_i body_a * rn_a +
@@ -123,7 +123,7 @@ struct
                 val rt_a = rt_a * rt_a
                 val rt_b = rt_b * rt_b
 
-                val k_tangent = 
+                val k_tangent =
                     D.B.get_inv_mass body_a +
                     D.B.get_inv_mass body_b +
                     D.B.get_inv_i body_a * rt_a +
@@ -135,7 +135,7 @@ struct
                          else raise BDDContactSolver "ktangent assertion"
 
                 (* Set up a velocity bias for restitution. *)
-                val v_rel : real = dot2(normal, 
+                val v_rel : real = dot2(normal,
                                         v_b :+: cross2sv(w_b, r_b) :-:
                                         v_a :-: cross2sv(w_a, r_a))
                 val velocity_bias =
@@ -160,7 +160,7 @@ struct
             val (k, normal_mass, points) =
                 (* If we have two points, then prepare the block solver. *)
                 if Array.length points = 2
-                then 
+                then
                   let
                       val ccp1 = Array.sub(points, 0)
                       val ccp2 = Array.sub(points, 1)
@@ -182,24 +182,24 @@ struct
                                       rtos rn2_b ^ " " ^
                                       "\n")
 
-                      val k11 = inv_mass_a + inv_mass_b + 
+                      val k11 = inv_mass_a + inv_mass_b +
                           inv_i_a * rn1_a * rn1_a +
                           inv_i_b * rn1_b * rn1_b
                       val k22 = inv_mass_a + inv_mass_b +
-                          inv_i_a * rn2_a * rn2_a + 
+                          inv_i_a * rn2_a * rn2_a +
                           inv_i_b * rn2_b * rn2_b
                       val k12 = inv_mass_a + inv_mass_b +
                           inv_i_a * rn1_a * rn2_a +
                           inv_i_b * rn1_b * rn2_b
 
-                      val () = dprint (fn () => "          ks: " ^ rtos k11 ^ 
+                      val () = dprint (fn () => "          ks: " ^ rtos k11 ^
                                       " " ^ rtos k22 ^
                                       " " ^ rtos k12 ^ "\n")
 
                       (* Ensure a reasonable condition number. *)
                       val MAX_CONDITION_NUMBER = 100.0
                   in
-                      if k11 * k11 < 
+                      if k11 * k11 <
                          MAX_CONDITION_NUMBER * (k11 * k22 - k12 * k12)
                       then (* K is safe to invert. *)
                           let
@@ -218,10 +218,10 @@ struct
 
                   end
                       (* PERF uninitialized *)
-                else (mat22with (0.0, 0.0, 0.0, 0.0), 
-                      mat22with (0.0, 0.0, 0.0, 0.0), 
+                else (mat22with (0.0, 0.0, 0.0, 0.0),
+                      mat22with (0.0, 0.0, 0.0, 0.0),
                       points)
-                
+
           in
               { body_a = body_a,
                 body_b = body_b,
@@ -237,11 +237,11 @@ struct
                 k = k,
                 normal_mass = normal_mass }
           end
-        val constraints = 
+        val constraints =
             Array.tabulate (Vector.length contacts,
                             fn x => onecontact (Vector.sub(contacts, x)))
 
-        fun warm_start_one ({ body_a, body_b, normal, points, ... } 
+        fun warm_start_one ({ body_a, body_b, normal, points, ... }
                             : ('b, 'f, 'j) constraint) : unit =
           let
             val tangent = cross2vs(normal, 1.0)
@@ -250,11 +250,11 @@ struct
             val inv_mass_b = D.B.get_inv_mass body_b
             val inv_i_b = D.B.get_inv_i body_b
 
-            fun warm_point ({ normal_impulse, 
-                              tangent_impulse, 
+            fun warm_point ({ normal_impulse,
+                              tangent_impulse,
                               r_a, r_b, ... } : constraint_point) : unit =
               let
-                val p : vec2 = 
+                val p : vec2 =
                     !normal_impulse *: normal :+: !tangent_impulse *: tangent
               in
                 D.B.set_angular_velocity (body_a,
@@ -285,13 +285,13 @@ struct
      for two points. The Box2D code has a for(;;) loop, but this just
      appears to be so that the code can 'break' early. Here we just
      return. *)
-  fun solve_loop (b : vec2, 
-                  c : ('b, 'f, 'j) constraint, 
-                  a : vec2, 
-                  normal : vec2, 
+  fun solve_loop (b : vec2,
+                  c : ('b, 'f, 'j) constraint,
+                  a : vec2,
+                  normal : vec2,
                   v_a, inv_mass_a, w_a, inv_i_a,
                   v_b, inv_mass_b, w_b, inv_i_b,
-                  cp1 : constraint_point, 
+                  cp1 : constraint_point,
                   cp2 : constraint_point) : unit =
   let
     (* Only used in assertions. *)
@@ -300,14 +300,14 @@ struct
     (* Case 1: vn = 0
        0 = A * x' + b'
        Solve for x':
-       x' = - inv(A) * b' 
+       x' = - inv(A) * b'
     *)
     val x : vec2 = vec2neg (#normal_mass c +*: b)
 
     (* Port note: The body of each case is the same, and
        only depends on x. *)
     fun resubstitute_and_apply x =
-      let 
+      let
         (* Resubstitute for the incremental impulse *)
         val d : vec2 = x :-: a
         (* Apply incremental update *)
@@ -380,7 +380,7 @@ struct
         else
         let
             (* Case 3: vn2 = 0 and x1 = 0
-               vn1 = a11 * 0 + a12 * x2' + b1' 
+               vn1 = a11 * 0 + a12 * x2' + b1'
                  0 = a21 * 0 + a22 * x2' + b2'
             *)
             val x : vec2 = vec2 (0.0, ~ (#normal_mass cp2) * vec2y b)
@@ -391,7 +391,7 @@ struct
             then
             let in
                 resubstitute_and_apply x;
-                
+
                 (* Postconditions *)
                 (* PERF all assertion *)
                 let
@@ -415,7 +415,7 @@ struct
             in
               if vn1 >= 0.0 andalso vn2 >= 0.0
               then resubstitute_and_apply x
-              else 
+              else
                   (* No solution; give up. This is hit sometimes,
                      but it doesn't seem to matter. *)
                   ()
@@ -425,8 +425,8 @@ struct
   end
 
   (* Port note: Body of loop in SolveVelocityConstraints. *)
-  fun solve_one_velocity_constraint 
-      (c as { body_a, body_b, normal, friction, point_count, ... } 
+  fun solve_one_velocity_constraint
+      (c as { body_a, body_b, normal, friction, point_count, ... }
        : ('b, 'f, 'j) constraint) : unit =
   let
       val w_a : real ref = ref (D.B.get_angular_velocity body_a)
@@ -467,7 +467,7 @@ struct
                                             ~max_friction,
                                             max_friction)
             val lambda = new_impulse - !(#tangent_impulse ccp)
-        
+
             (* Apply contact impulse *)
             val p : vec2 = lambda *: tangent
         in
@@ -491,7 +491,7 @@ struct
             val vn : real = dot2(dv, normal)
             val lambda : real = ~(#normal_mass ccp) * (vn - #velocity_bias ccp)
             (* Clamp the accumulated impulse *)
-            val new_impulse : real = 
+            val new_impulse : real =
                 Real.max(!(#normal_impulse ccp) + lambda, 0.0)
             val lambda = new_impulse - !(#normal_impulse ccp)
 
@@ -505,36 +505,36 @@ struct
             #normal_impulse ccp := new_impulse
           end
       | 2 =>
-          (* Block solver developed in collaboration with Dirk Gregorius 
+          (* Block solver developed in collaboration with Dirk Gregorius
              (back in 01/07 on Box2D_Lite).
-             
+
              Build the mini LCP for this contact patch
-             
-             vn = A * x + b, vn >= 0, , vn >= 0, x >= 0 
+
+             vn = A * x + b, vn >= 0, , vn >= 0, x >= 0
              and vn_i * x_i = 0 with i = 1..2
-             
+
              A = J * W * JT and J = ( -n, -r1 x n, n, r2 x n )
              b = vn_0 - velocityBias
-             
-             The system is solved using the "Total enumeration method" 
+
+             The system is solved using the "Total enumeration method"
              (s. Murty). The complementary constraint vn_i * x_i
-             implies that we must have in any solution either 
+             implies that we must have in any solution either
              vn_i = 0 or x_i = 0. So for the 2D contact problem the cases
-             vn1 = 0 and vn2 = 0, x1 = 0 and x2 = 0, x1 = 0 
-             and vn2 = 0, x2 = 0 and vn1 = 0 need to be tested. 
+             vn1 = 0 and vn2 = 0, x1 = 0 and x2 = 0, x1 = 0
+             and vn2 = 0, x2 = 0 and vn1 = 0 need to be tested.
              The first valid solution that satisfies the problem is chosen.
-             
-             In order to account of the accumulated impulse 'a' 
+
+             In order to account of the accumulated impulse 'a'
              (because of the iterative nature of the solver which only
-             requires that the accumulated impulse is clamped and not 
+             requires that the accumulated impulse is clamped and not
              the incremental impulse) we change the impulse variable (x_i).
-             
+
              Substitute:
-             
+
              x = x' - a
-             
+
              Plug into above equation:
-             
+
              vn = A * x + b
                 = A * (x' - a) + b
                 = A * x' + b - A * a
@@ -551,7 +551,7 @@ struct
             val () = if vec2x a >= 0.0 andalso vec2y a >= 0.0
                      then ()
                      else raise BDDContactSolver "assertion failure"
-                      
+
             (* Relative velocity at contact *)
             val dv1 : vec2 = !v_b :+: cross2sv(!w_b, #r_b cp1) :-:
                 !v_a :-: cross2sv(!w_a, #r_a cp1)
@@ -566,7 +566,7 @@ struct
                                 vn2 - #velocity_bias cp2)
             val b : vec2 = b :-: (#k c +*: a)
           in
-            solve_loop (b, c, a, normal, 
+            solve_loop (b, c, a, normal,
                         v_a, inv_mass_a, w_a, inv_i_a,
                         v_b, inv_mass_b, w_b, inv_i_b,
                         cp1, cp2)
@@ -584,7 +584,7 @@ struct
               " bav " ^ rtos (!w_b) ^ "\n")
   end
 
-  fun solve_velocity_constraints 
+  fun solve_velocity_constraints
       ({ constraints, ... } : ('b, 'f, 'j) contact_solver) : unit =
       Array.app solve_one_velocity_constraint constraints
 
@@ -597,7 +597,7 @@ struct
           val { local_point, id, ... } =
               Array.sub(#points manifold, j)
       in
-          dprint (fn () => "SI #" ^ itos j ^ 
+          dprint (fn () => "SI #" ^ itos j ^
                   " lp " ^ vtos local_point ^
                   " ni " ^ rtos (!(#normal_impulse (Array.sub (points, j)))) ^
                   " ti " ^ rtos (!(#tangent_impulse (Array.sub (points, j)))) ^ "\n");
@@ -620,10 +620,10 @@ struct
     case #typ cc of
         E_Circles =>
           let
-              val point_a : vec2 = 
+              val point_a : vec2 =
                   D.B.get_world_point (#body_a cc,
                                        #local_point cc)
-              val point_b : vec2 = 
+              val point_b : vec2 =
                   D.B.get_world_point (#body_b cc,
                                        #local_point
                                        (Array.sub (#points cc, 0)))
@@ -633,8 +633,8 @@ struct
                 then vec2normalized (point_b :-: point_a)
                 else vec2 (1.0, 0.0)
           in
-              dprint (fn () => "    circles: pa " ^ vtos (point_a) ^ 
-                     " pb " ^ vtos (point_b) ^ 
+              dprint (fn () => "    circles: pa " ^ vtos (point_a) ^
+                     " pb " ^ vtos (point_b) ^
                      " sep " ^ rtos(dot2(point_b :-: point_a, normal) - #radius cc) ^ "\n");
               { normal = normal,
                 point = 0.5 *: (point_a :+: point_b),
@@ -647,14 +647,14 @@ struct
               val plane_point : vec2 =
                   D.B.get_world_point(#body_a cc, #local_point cc)
               val clip_point : vec2 =
-                  D.B.get_world_point(#body_b cc, #local_point 
+                  D.B.get_world_point(#body_b cc, #local_point
                                       (Array.sub(#points cc,
                                                  index)))
               val separation : real =
                   dot2(clip_point :-: plane_point, normal) - #radius cc
           in
-              dprint (fn () => "    facea: pp " ^ vtos plane_point ^ 
-                     " cp " ^ vtos clip_point ^ 
+              dprint (fn () => "    facea: pp " ^ vtos plane_point ^
+                     " cp " ^ vtos clip_point ^
                      " sep " ^ rtos separation ^ "\n");
               { normal = normal,
                 separation = separation,
@@ -673,8 +673,8 @@ struct
               val separation : real =
                   dot2(clip_point :-: plane_point, normal) - #radius cc
           in
-              dprint (fn () => "    faceb: pp " ^ vtos plane_point ^ 
-                     " cp " ^ vtos clip_point ^ 
+              dprint (fn () => "    faceb: pp " ^ vtos plane_point ^
+                     " cp " ^ vtos clip_point ^
                      " sep " ^ rtos separation ^ "\n");
               (* Ensure normal points from A to B. *)
               { normal = vec2neg normal,
@@ -683,7 +683,7 @@ struct
           end
 
   (* Sequential solver.
-     
+
      Port note: This is nearly identical to the code in toi-solver, so
      if you change something here, it probably should be changed there
      too. The duplication comes from Box2D. Obviously it would be
@@ -692,8 +692,8 @@ struct
                                   baumgarte : real) : bool =
     let
 
-      val () = dprint 
-          (fn () => 
+      val () = dprint
+          (fn () =>
            "SolvePositionConstraints: " ^ Int.toString (Array.length (#constraints solver)) ^
            "\n")
 
@@ -710,10 +710,10 @@ struct
 
             val () = dprint (fn () => "  Solve pos: ima " ^ rtos inv_mass_a ^
                             " imb " ^ rtos inv_mass_b ^
-                            " iia " ^ rtos inv_i_a ^ 
+                            " iia " ^ rtos inv_i_a ^
                             " iib " ^ rtos inv_i_b ^
                             " pts " ^ itos (#point_count c) ^ "\n")
-                            
+
         in
             (* Solve normal constraints. *)
             for 0 (#point_count c - 1)
@@ -736,7 +736,7 @@ struct
                           else ()
 
                  (* Prevent large corrections and allow slop. *)
-                 val capital_c : real = 
+                 val capital_c : real =
                      clampr (baumgarte * (separation + linear_slop),
                              ~max_linear_correction,
                              0.0)
@@ -744,7 +744,7 @@ struct
                  (* Compute the effective mass. *)
                  val rn_a : real = cross2vv (r_a, normal)
                  val rn_b : real = cross2vv (r_b, normal)
-                 val k : real = inv_mass_a + inv_mass_b + 
+                 val k : real = inv_mass_a + inv_mass_b +
                      inv_i_a * rn_a * rn_a +
                      inv_i_b * rn_b * rn_b
 
@@ -756,7 +756,7 @@ struct
                  val sweep_b : sweep = D.B.get_sweep body_b
              in
                  sweep_set_c (sweep_a, sweepc sweep_a :-: (inv_mass_a *: p));
-                 sweep_set_a (sweep_a, sweepa sweep_a - 
+                 sweep_set_a (sweep_a, sweepa sweep_a -
                               (inv_i_a * cross2vv (r_a, p)));
                  dprint (fn () => "    ba sweep: " ^ sweeptos (sweep_a) ^ "\n");
                  D.B.synchronize_transform body_a;
@@ -781,21 +781,21 @@ struct
 
   (* Apply the function to every contact, paired with all of its
      impulses. *)
-  fun app_contacts ({ contacts, 
-                      constraints, 
-                      ... } : ('b, 'f, 'j) contact_solver, 
-                    f : ('b, 'f, 'j) BDDDynamics.contact * 
+  fun app_contacts ({ contacts,
+                      constraints,
+                      ... } : ('b, 'f, 'j) contact_solver,
+                    f : ('b, 'f, 'j) BDDDynamics.contact *
                         { normal_impulses : real array,
                           tangent_impulses : real array } -> unit) : unit =
-      Vector.appi 
+      Vector.appi
       (fn (i, c : ('b, 'f, 'j) BDDDynamics.contact) =>
        let
            val cc : ('b, 'f, 'j) constraint = Array.sub(constraints, i)
-           val normal_impulses = 
+           val normal_impulses =
                Array.tabulate (#point_count cc,
                                fn j =>
                                !(#normal_impulse (Array.sub(#points cc, j))))
-           val tangent_impulses = 
+           val tangent_impulses =
                Array.tabulate (#point_count cc,
                                fn j =>
                                !(#tangent_impulse (Array.sub(#points cc, j))))

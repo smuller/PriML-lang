@@ -5,7 +5,7 @@ functor FreeAST(structure A : ASTARG
                 structure B : AST_BASE where type var = A.var
                                          and type leaf = A.leaf
                 ) :> AST where type var  = A.var
-                           and type leaf = A.leaf 
+                           and type leaf = A.leaf
                            and type ast  = B.ast =
 struct
 
@@ -15,7 +15,7 @@ struct
   structure VM = SplayMapFn(type ord_key = var
                             val compare = var_cmp)
 
-  infixr \ / \\ // 
+  infixr \ / \\ //
 
   fun count (a : ast) (x : var) =
     case look a of
@@ -43,14 +43,14 @@ struct
 
   fun rename nil ast = ast
     | rename ((v,v') :: t) ast =
-    let 
+    let
       val ast = rename t ast
       val ast = sub (hide (V v')) v ast
     in ast
     end
 
   and sub (obj : ast) (v : var) (ast : ast) =
-      let 
+      let
       in
         case look ast of
           $l => ast
@@ -58,7 +58,7 @@ struct
                   then obj
                   else ast
         | a1 / a2 => sub obj v a1 // sub obj v a2
-        | v' \ a => let 
+        | v' \ a => let
                       val v'' = var_vary v'
                       val a = rename [(v', v'')] a
                     in
@@ -93,7 +93,7 @@ struct
     | ast_cmp' (S _, _) = LESS
     | ast_cmp' (_, S _) = GREATER
     | ast_cmp' (v1 \ a1, v2 \ a2) =
-       let 
+       let
          val v' = var_vary v1
          val a1 = rename [(v1, v')] a1
          val a2 = rename [(v2, v')] a2

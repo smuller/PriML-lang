@@ -2,7 +2,7 @@
  * On my 400MhZ system, thread-switch 10000000 takes 4.98s, which comes out to
  * 2,008,032 switches per second.
  *)
-   
+
 structure Main =
 struct
 
@@ -13,7 +13,7 @@ open Thread
 datatype t = T of (int * t) Thread.t
 
 val done: Thread.Runnable.t option ref = ref NONE
-   
+
 fun loop (n: int, T t): unit =
    if n = 0
       then switch (fn _ => valOf (!done))
@@ -23,7 +23,7 @@ fun loop (n: int, T t): unit =
       in
          loop(n, t)
       end
-   
+
 fun main () =
    let
       val numSwitches =

@@ -52,7 +52,7 @@ struct
           in
               m := SM.insert(!m, w, ())
           end
-      
+
         val () = app addone lines
         val m = !m
         fun lookup w = Option.isSome (SM.find(m, w))

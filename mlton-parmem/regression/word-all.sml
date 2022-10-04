@@ -2,12 +2,12 @@ functor Test (W: WORD) =
 struct
 
 structure LW = LargeWord
-   
+
 val zero = W.fromInt 0
 val one = W.fromInt 1
 val two = W.fromInt 2
 val max = W.~ one
-   
+
 val words =
    [max,
     W.- (max, one),
@@ -18,7 +18,7 @@ val words =
     zero]
 
 fun foreach (l, f) = List.app f l
-   
+
 fun for (f: W.word -> unit) = foreach (words, f)
 
 structure Answer =
@@ -42,7 +42,7 @@ structure Answer =
    end
 
 val m = concat ["Word", Int.toString W.wordSize]
-   
+
 val _ = print (concat ["Testing ", m, "\n"])
 
 fun err msg = print (concat [m, ": ", concat msg, "\n"])
@@ -88,7 +88,7 @@ val _ =
         if w = valOf (W.fromString (W.toString w))
            then ()
         else err ["{from,to}String"])
-   
+
 val _ =
    foreach
    ([("<<", W.<<, LW.<<),

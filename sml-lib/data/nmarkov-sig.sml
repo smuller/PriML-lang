@@ -99,7 +99,7 @@ sig
   type symbol
   val n : int
 
-  (* Number of total symbols, e.g. 256 for bytes. 
+  (* Number of total symbols, e.g. 256 for bytes.
      Note: The chain has size O(radix^(n+1)). *)
   val radix : int
 

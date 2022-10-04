@@ -3,13 +3,13 @@ signature ParseXml =
       (*----------------------------------------------------------------------
       include ParseBase
 
-      val parseName    : UniChar.Char * AppData * State 
+      val parseName    : UniChar.Char * AppData * State
 	 -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseNmtoken : UniChar.Char * AppData * State 
+      val parseNmtoken : UniChar.Char * AppData * State
          -> UniChar.Data * (UniChar.Char * AppData * State)
       val parseNameLit : UniChar.Data -> UniChar.Char * AppData * State
          -> UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
-      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State 
+      val parseEntName : UniChar.Data * UniChar.Data -> UniChar.Char * AppData * State
          -> bool * UniChar.Data * UniChar.Data * (UniChar.Char * AppData * State)
 
       val parseComment   : Errors.Position -> AppData * State -> (UniChar.Char * AppData * State)
@@ -17,20 +17,20 @@ signature ParseXml =
       val skipS    : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSopt : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
       val skipSmay : UniChar.Char * AppData * State -> bool * (UniChar.Char * AppData * State)
-      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSopt : UniChar.Data -> UniChar.Char * AppData * State
 	 -> UniChar.Data * (UniChar.Char * AppData * State)
-      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State 
+      val parseSmay : UniChar.Data -> UniChar.Char * AppData * State
 	 -> bool * (UniChar.Data * (UniChar.Char * AppData * State))
-      val parseEq : UniChar.Char * AppData * State 
+      val parseEq : UniChar.Char * AppData * State
 	 -> UniChar.Data * (UniChar.Char * AppData * State)
       ----------------------------------------------------------------------*)
       include ParseMisc
 
-      val openDocument : Uri.Uri option -> AppData 
+      val openDocument : Uri.Uri option -> AppData
 	 -> Encoding.Encoding * HookData.XmlDecl option * (UniChar.Char * AppData * State)
-      val openSubset   : Uri.Uri -> AppData 
+      val openSubset   : Uri.Uri -> AppData
 	 -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
-      val openExtern   : int * bool * Uri.Uri -> AppData * State 
+      val openExtern   : int * bool * Uri.Uri -> AppData * State
 	 -> Encoding.Encoding * HookData.TextDecl option * (UniChar.Char * AppData * State)
    end
 
@@ -42,15 +42,15 @@ signature ParseXml =
 (*   openExtern   : none                                                    *)
 (*   openSubset   : NoSuchFile                                              *)
 (*--------------------------------------------------------------------------*)
-functor ParseXml (structure ParseBase : ParseBase) 
+functor ParseXml (structure ParseBase : ParseBase)
    : ParseXml =
 struct
    structure ParseMisc  = ParseMisc  (structure ParseBase = ParseBase)
 
-   open 
+   open
       Errors UniChar UniClasses UtilString
       ParseMisc
-	 
+
    fun checkVersionNum (a,q) version =
       if not (!O_CHECK_VERSION) orelse version="1.0" orelse version ="1.1" then a  (* XML 1.1 also allowed *)
       else hookError(a,(getPos q,ERR_VERSION version))
@@ -69,11 +69,11 @@ struct
    (* return the version number as a string option, together with the    *)
    (* next character and state.                                          *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseVersionNum quote aq =
-      let 
-	 fun doit text (c,a,q) = 
+      let
+	 fun doit text (c,a,q) =
 	    if c=quote then (text,getChar (a,q))
 	    else if isVers c then doit (c::text) (getChar (a,q))
 	    else if c=0wx0
@@ -87,16 +87,16 @@ struct
 
 	 val (c1,a1,q1) = getChar aq
 
-	 val (text,(c2,a2,q2)) = 
+	 val (text,(c2,a2,q2)) =
 	    if isVers c1 then doit [c1] (getChar (a1,q1))
-	    else if c1=quote 
+	    else if c1=quote
 		    then let val a2 = hookError(a1,(getPos q1,ERR_EMPTY LOC_VERSION))
 			 in (nil,getChar (a2,q1))
 			 end
-	    else if c1=0wx00 
+	    else if c1=0wx00
 		    then let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_VERSION))
 			     val a3 = hookError(a2,(getPos q1,ERR_EMPTY LOC_VERSION))
-			 in (nil,(c1,a3,q1)) 
+			 in (nil,(c1,a3,q1))
 			 end
 		 else let val err = ERR_FORBIDDEN_HERE(IT_CHAR c1,LOC_VERSION)
 			  val a2 = hookError(a1,(getPos q1,err))
@@ -104,7 +104,7 @@ struct
 		      end
 	 val version = Latin2String (rev text)
 	 val a3 = checkVersionNum (a2,q1) version
-      in 
+      in
 	 (SOME version,(c2,a3,q2))
       end
    (*--------------------------------------------------------------------*)
@@ -117,19 +117,19 @@ struct
    (* print an error and raise SyntaxState if no quote sign is found.    *)
    (*                                                                    *)
    (* return the version number as a string option, together with the    *)
-   (* next char and the remaining state.                                 *) 
+   (* next char and the remaining state.                                 *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseVersionInfo caq =
       let val (c1,a1,q1) = skipEq caq
       in case c1
-	   of 0wx22 (* '""' *) => parseVersionNum c1 (a1,q1) 
-	    | 0wx27 (* "'" *)  => parseVersionNum c1 (a1,q1) 
+	   of 0wx22 (* '""' *) => parseVersionNum c1 (a1,q1)
+	    | 0wx27 (* "'" *)  => parseVersionNum c1 (a1,q1)
 	    | _ => let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expLitQuote,[c1])))
-		   in raise SyntaxError(c1,a2,q1)	
+		   in raise SyntaxError(c1,a2,q1)
 		   end
-      end   
+      end
 
    (*--------------------------------------------------------------------*)
    (* parse an encoding name, the quote character ("'" or '"') passed as *)
@@ -137,10 +137,10 @@ struct
    (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [81] EncName ::= [A-Za-z]                /* Encoding name        *)
-   (*                    ([A-Za-z0-9._] | '-')*     contains only Latin  *)  
-   (*                                               characters */        *) 
+   (*                    ([A-Za-z0-9._] | '-')*     contains only Latin  *)
+   (*                                               characters */        *)
    (*                                                                    *)
    (* print an error and end the literal if an entity end is found.      *)
    (* print an error if a disallowed character is found.                 *)
@@ -148,11 +148,11 @@ struct
    (* return the encoding name as a string option, together with the     *)
    (* next character and state.                                          *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun parseEncName quote aq =
-      let 
-	 fun doit text (c,a,q) = 
+      let
+	 fun doit text (c,a,q) =
 	    if c=quote then (text,getChar (a,q))
 	    else if isEnc c then doit (c::text) (getChar (a,q))
 	    else if c=0wx00
@@ -166,13 +166,13 @@ struct
 
 	 val (c1,a1,q1) = getChar aq
 
-	 val (text,caq2) = 
+	 val (text,caq2) =
 	    if isEncS c1 then doit [c1] (getChar (a1,q1))
-	    else if c1=quote 
+	    else if c1=quote
 		    then let val a2 = hookError(a1,(getPos q1,ERR_EMPTY LOC_ENCODING))
-			 in (nil,getChar (a2,q1)) 
+			 in (nil,getChar (a2,q1))
 			 end
-	    else if c1=0wx00 
+	    else if c1=0wx00
 		    then let val a2 = hookError(a1,(getPos q1,ERR_ENDED_BY_EE LOC_ENCODING))
 			     val a3 = hookError(a2,(getPos q1,ERR_EMPTY LOC_ENCODING))
 			 in (nil,(c1,a3,q1))
@@ -182,7 +182,7 @@ struct
 		      end
 
 	 val enc = toUpperString (Latin2String (rev text))
-      in 
+      in
 	 (enc,caq2)
       end
    (*--------------------------------------------------------------------*)
@@ -191,22 +191,22 @@ struct
    (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error and raise SyntaxState if no '=' is found.           *)
    (* print an error and raise SyntaxState if no quote sign is found.    *)
    (*                                                                    *)
    (* return the encoding name as a string option, together with the     *)
-   (* next char and the remaining state.                                 *) 
+   (* next char and the remaining state.                                 *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseEncodingDecl caq =
-      let val (c1,a1,q1) = skipEq caq 
+      let val (c1,a1,q1) = skipEq caq
       in case c1
-	   of 0wx22 (* '""' *) => parseEncName c1 (a1,q1) 
-	    | 0wx27 (* "'" *)  => parseEncName c1 (a1,q1) 
+	   of 0wx22 (* '""' *) => parseEncName c1 (a1,q1)
+	    | 0wx27 (* "'" *)  => parseEncName c1 (a1,q1)
 	    | _ => let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expLitQuote,[c1])))
-		   in raise SyntaxError(c1,a2,q1)	
+		   in raise SyntaxError(c1,a2,q1)
 		   end
       end
 
@@ -217,64 +217,64 @@ struct
    (*   [32] SDDecl ::= S 'standalone' Eq            [ VC: Standalone    *)
    (*                   ( ("'" ('yes' | 'no') "'")         Document      *)
    (*                   | ('"' ('yes' | 'no') '"'))        Declaration ] *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error and raise SyntaxState if no '=' is found.           *)
    (* print an error and raise SyntaxState if no literal is found.       *)
    (* print an error and end the literal if an entity end is found.      *)
    (* print an error if the literal is neither 'yes' nor 'no'.           *)
    (*                                                                    *)
    (* return the standalone status as a boolean option, together with    *)
-   (* the next character and the remaining state.                        *) 
+   (* the next character and the remaining state.                        *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseStandaloneDecl caq0 =
-      let 
+      let
 	 val (quote,a,q) = skipEq caq0
 
-	 fun doit text (c,a,q) = 
+	 fun doit text (c,a,q) =
 	    if c=quote then (text,getChar (a,q))
 	    else if c<>0wx0 then doit (c::text) (getChar (a,q))
 		 else let val a1 = hookError(a,(getPos q,ERR_ENDED_BY_EE LOC_LITERAL))
-		      in (text,(c,a1,q)) 
+		      in (text,(c,a1,q))
 		      end
 
-	 val caq1 as (_,_,q1) = 
+	 val caq1 as (_,_,q1) =
 	    case quote
 	      of 0wx22 (* '""' *) => (getChar (a,q))
 	       | 0wx27 (* "'" *)  => (getChar (a,q))
 	       | _ => let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expLitQuote,[quote])))
-		      in raise SyntaxError(quote,a1,q)	
+		      in raise SyntaxError(quote,a1,q)
 		      end
 	 val (text,caq2) = doit nil caq1
-      in 
+      in
 	 case text
 	   of [0wx73,0wx65,0wx79] (* reversed "yes" *) => (SOME true,caq2)
 	    | [0wx6f,0wx6e]       (* reversed "no"  *) => (SOME false,caq2)
-	    | revd => let val (c2,a2,q2) = caq2 
+	    | revd => let val (c2,a2,q2) = caq2
 			  val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expNoYes,revd)))
 		      in (NONE,(c2,a3,q2))
-		      end   
+		      end
       end
 
    (*--------------------------------------------------------------------*)
    (* parse an xml declaration starting after 'xml ' (i.e. the first     *)
    (* white space character is already consumed). Cf. 2.8:               *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [23] XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S?'?>'*)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [24] VersionInfo ::= S 'version' Eq (' VersionNum '              *)
    (*                                       | " VersionNum ")            *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [32] SDDecl ::= S 'standalone' Eq             [ VC: Standalone   *)
    (*                   ( ("'" ('yes' | 'no') "'")         Document      *)
    (*                   | ('"' ('yes' | 'no') '"'))        Declaration ] *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* default version, encoding and standalone status to NONE.           *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error if no leading white space is found.                 *)
    (* print an error whenever a wrong name is encountered.               *)
    (* print an Error if no VersionInfo is found.                         *)
@@ -285,147 +285,147 @@ struct
    (*                                                                    *)
    (* return the corresponding XmlDecl option and the next char & state. *)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseXmlDecl auto caq =
-      let 
+      let
 	 (*-----------------------------------------------------------------*)
 	 (* skip the '?>' at the end of the xml declaration.                *)
-	 (*                                                                 *) 
-	 (* print an error and raise SyntaxState if no '?>' is found.       *) 
-	 (*                                                                 *) 
+	 (*                                                                 *)
+	 (* print an error and raise SyntaxState if no '?>' is found.       *)
+	 (*                                                                 *)
 	 (* return the info passed as first arg, and the next char & state. *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun skipXmlDeclEnd enc res (c,a,q) = 
-	    if c=0wx3F (* "#?" *) 
+	 fun skipXmlDeclEnd enc res (c,a,q) =
+	    if c=0wx3F (* "#?" *)
 	       then let val (c1,a1,q1) = getChar (a,q)
 		    in if c1=0wx3E (* #">" *) then (enc,SOME res,getChar (a1,q1))
-		       else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1]))) 
+		       else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1])))
 			    in raise SyntaxError (c1,a2,q1)
 			    end
 		    end
-	    else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expProcEnd,[c]))) 
+	    else let val a1 = hookError(a,(getPos q,ERR_EXPECTED(expProcEnd,[c])))
 		 in raise SyntaxError (c,a1,q)
 		 end
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the keyword 'standalone', the version *)
-	 (* and encoding already parsed and given in the first arg.         *) 
-	 (*                                                                 *) 
+	 (* and encoding already parsed and given in the first arg.         *)
+	 (*                                                                 *)
 	 (* pass the version,encoding and sd status to skipXmlDeclEnd       *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseXmlDeclAfterS enc (v,e) caq = 
-	    let 
+	 fun parseXmlDeclAfterS enc (v,e) caq =
+	    let
 	       val (alone,caq1) = parseStandaloneDecl caq
 	       val caq2 = skipSopt caq1
 	    in skipXmlDeclEnd enc (v,e,alone) caq2
 	    end
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the encoding declaration, the version *)
-	 (* and encoding already parsed and given in the first arg.         *) 
-	 (*                                                                 *) 
-	 (* print an error if a name other than 'standalone' is found.      *) 
-	 (*                                                                 *) 
+	 (* and encoding already parsed and given in the first arg.         *)
+	 (*                                                                 *)
+	 (* print an error if a name other than 'standalone' is found.      *)
+	 (*                                                                 *)
 	 (* pass the version and encoding to parseXmlDeclAfterS.            *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseXmlDeclBeforeS enc (v,e) caq = 
+	 fun parseXmlDeclBeforeS enc (v,e) caq =
 	    let
 	       val (hadS,caq1 as (_,_,q1)) = skipSmay caq
 	       val (name,(c2,a2,q2)) = parseName caq1 (* NotFound handled below *)
-	       val a3 = if hadS then a2 
+	       val a3 = if hadS then a2
 			else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
-	    in case name 
-		 of [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+	    in case name
+		 of [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
 		  (* "standalone" *) parseXmlDeclAfterS enc (v,e) (c2,a3,q2)
 		  | _ => let val a4 = hookError(a3,(getPos q1,ERR_EXPECTED(expStandOpt,name)))
 			 in parseXmlDeclAfterS enc (v,e) (c2,a4,q2)
 			 end
 	    end
-	 handle NotFound caq => (* exception raised by parseName *) 
-	    skipXmlDeclEnd enc (v,e,NONE) caq 
+	 handle NotFound caq => (* exception raised by parseName *)
+	    skipXmlDeclEnd enc (v,e,NONE) caq
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the keyword 'encoding', the version   *)
-	 (* already parsed and given in the first arg.                      *) 
-	 (*                                                                 *) 
+	 (* already parsed and given in the first arg.                      *)
+	 (*                                                                 *)
 	 (* pass the version and encoding and to parseXmlDeclBeforeS        *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseXmlDeclAfterE ver caq = 
-	    let 
+	 fun parseXmlDeclAfterE ver caq =
+	    let
 	       val (enc,(c1,a1,q1)) = parseEncodingDecl caq
 	       val (a2,q2,enc1) = changeAuto(a1,q1,enc)
-	    in 
+	    in
 	       parseXmlDeclBeforeS enc1 (ver,SOME enc) (c1,a2,q2)
 	    end
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the version info, the version already *)
-	 (* parsed and given in the first arg.                              *) 
-	 (*                                                                 *) 
+	 (* parsed and given in the first arg.                              *)
+	 (*                                                                 *)
 	 (* print an error if a name other than 'encoding' or 'standalone'  *)
-	 (* is found.                                                       *) 
-	 (*                                                                 *) 
+	 (* is found.                                                       *)
+	 (*                                                                 *)
 	 (* pass obtained/default values to parseXmlDeclAfter[E|S] or to    *)
 	 (* skipXmlDeclEnd.                                                 *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseXmlDeclBeforeE ver caq = 
+	 fun parseXmlDeclBeforeE ver caq =
 	    let
 	       val (hadS,caq1 as (_,_,q1)) = skipSmay caq
 	       val (name,(c2,a2,q2)) = parseName caq1 (* NotFound handled below *)
-	       val a3 = if hadS then a2 
+	       val a3 = if hadS then a2
 			else hookError(a2,(getPos q1,ERR_MISSING_WHITE))
-	    in 
-	       case name 
-		 of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => 
+	    in
+	       case name
+		 of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] =>
 		  (* "encoding" *) parseXmlDeclAfterE ver (c2,a3,q2)
-		  | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+		  | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
 		  (* "standalone" *) parseXmlDeclAfterS auto (ver,NONE) (c2,a3,q2)
 		  | _ => let val a4 = hookError(a3,(getPos q1,ERR_EXPECTED(expEncStand,name)))
 			 in parseXmlDeclAfterE ver (c2,a4,q2)
 			 end
 	    end
-	 handle NotFound caq => (* exception raised by parseName *) 
-	    skipXmlDeclEnd auto (ver,NONE,NONE) caq 
+	 handle NotFound caq => (* exception raised by parseName *)
+	    skipXmlDeclEnd auto (ver,NONE,NONE) caq
 
 	 (*-----------------------------------------------------------------*)
 	 (* do the main work. if the first name is not 'version' then it    *)
-	 (* might be 'encoding' or 'standalone'. Then take the default      *) 
+	 (* might be 'encoding' or 'standalone'. Then take the default      *)
 	 (* NONE for version and - if needed - encoding and call the        *)
 	 (* appropriate function. otherwise assume a typo and parse the     *)
-	 (* version number, then call parseXmlDeclBeforeE. if no name is    *) 
+	 (* version number, then call parseXmlDeclBeforeE. if no name is    *)
 	 (* found at all, proceed with skipXmlDeclEnd.                      *)
 	 (*                                                                 *)
 	 (* print an error and raise SyntaxState if an entity end is found. *)
 	 (* print an error and raise SyntaxState if appropriate.            *)
 	 (* print an error if a name other than 'version' is found.         *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 val caq1 as (_,_,q1) = skipSopt caq 
-	 val (name,(caq2 as (c2,a2,q2))) = parseName caq1 
+	 val caq1 as (_,_,q1) = skipSopt caq
+	 val (name,(caq2 as (c2,a2,q2))) = parseName caq1
 	    handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expVersion,[c])
 					   val a1 = hookError(a,(getPos q,err))
 				       in raise SyntaxError (c,a1,q)
 				       end
-      in 
+      in
 	 if name=[0wx76,0wx65,0wx72,0wx73,0wx69,0wx6f,0wx6e] (* "version" *)
-	    then let val (ver,caq3) = parseVersionInfo caq2 
+	    then let val (ver,caq3) = parseVersionInfo caq2
 		 in parseXmlDeclBeforeE ver caq3
 		 end
 	 else let val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expVersion,name)))
 	      in case name
-		   of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => 
+		   of [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] =>
 		    (* "encoding" *) parseXmlDeclAfterE NONE (c2,a3,q2)
-		    | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] => 
+		    | [0wx73,0wx74,0wx61,0wx6e,0wx64,0wx61,0wx6c,0wx6f,0wx6e,0wx65] =>
 		    (* "standalone" *) parseXmlDeclAfterS auto (NONE,NONE) (c2,a3,q2)
-		    | _ => let val (ver,caq3) = parseVersionInfo (c2,a3,q2) 
+		    | _ => let val (ver,caq3) = parseVersionInfo (c2,a3,q2)
 			   in parseXmlDeclBeforeE ver caq3
 			   end
 	      end
@@ -434,7 +434,7 @@ struct
       (* catch entity end exceptions raised by subfunctions, print an   *)
       (* error and re-raise the exception.                              *)
       (*----------------------------------------------------------------*)
-   handle SyntaxError(c,a,q) => 
+   handle SyntaxError(c,a,q) =>
       let val err = if c=0wx0 then ERR_ENDED_BY_EE LOC_XML_DECL
 		    else ERR_CANT_PARSE LOC_XML_DECL
 	  val a1 = hookError(a,(getPos q,err))
@@ -444,17 +444,17 @@ struct
    (*--------------------------------------------------------------------*)
    (* parse a text declaration starting after 'xml ' (i.e. the first     *)
    (* white space character is already consumed). Cf. 2.8:               *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [77] TextDecl ::= '<?xml' VersionInfo? EncodingDecl S? '?>'      *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [24] VersionInfo ::= S 'version' Eq (' VersionNum '              *)
    (*                                       | " VersionNum ")            *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (*   [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"'           *)
    (*                                         |"'" EncName  "'")         *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* default version and encoding to NONE.                              *)
-   (*                                                                    *) 
+   (*                                                                    *)
    (* print an error if no leading white space is found.                 *)
    (* print an error whenever a wrong name is encountered.               *)
    (* print an Error if no EncodingDecl is found.                        *)
@@ -465,21 +465,21 @@ struct
    (*                                                                    *)
    (* return the corresponding TextDecl option and the next char & state.*)
    (*--------------------------------------------------------------------*)
-   (* might raise: SyntaxState                                           *) 
+   (* might raise: SyntaxState                                           *)
    (*--------------------------------------------------------------------*)
    fun parseTextDecl auto caq =
-      let 
+      let
 	 (*-----------------------------------------------------------------*)
 	 (* skip the '?>' at the end of the text declaration.               *)
-	 (*                                                                 *) 
-	 (* print an error and raise SyntaxState if no '?>' is found.       *) 
-	 (*                                                                 *) 
+	 (*                                                                 *)
+	 (* print an error and raise SyntaxState if no '?>' is found.       *)
+	 (*                                                                 *)
 	 (* return the info passed as first arg, and the next char & state. *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun skipTextDeclEnd enc res (c,a,q) = 
-	    if c=0wx3F (* "#?" *) 
+	 fun skipTextDeclEnd enc res (c,a,q) =
+	    if c=0wx3F (* "#?" *)
 	       then let val (c1,a1,q1) = getChar (a,q)
 		    in if c1=0wx3E (* #">" *) then (enc,SOME res,getChar (a1,q1))
 		       else let val a2 = hookError(a1,(getPos q1,ERR_EXPECTED(expGt,[c1])))
@@ -491,14 +491,14 @@ struct
 		 end
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the keyword 'encoding', the version   *)
-	 (* already parsed and given in the first arg.                      *) 
-	 (*                                                                 *) 
+	 (* already parsed and given in the first arg.                      *)
+	 (*                                                                 *)
 	 (* pass the version and encoding and to skipTextDeclEnd.           *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseTextDeclAfterE ver caq = 
-	    let 
+	 fun parseTextDeclAfterE ver caq =
+	    let
 	       val (enc,(c1,a1,q1)) = parseEncodingDecl caq
 	       val (a2,q2,enc1) = changeAuto(a1,q1,enc)
 	       val caq3 = skipSopt (c1,a2,q2)
@@ -506,25 +506,25 @@ struct
 	    end
 	 (*-----------------------------------------------------------------*)
 	 (* parse the remainder after the version info, the version given   *)
-	 (* as first argument.                                              *) 
-	 (*                                                                 *) 
-	 (* print an error and raise SyntaxState is no name is found.       *) 
-	 (* print an error if a name other than 'encoding' is found.        *) 
-	 (*                                                                 *) 
+	 (* as first argument.                                              *)
+	 (*                                                                 *)
+	 (* print an error and raise SyntaxState is no name is found.       *)
+	 (* print an error if a name other than 'encoding' is found.        *)
+	 (*                                                                 *)
 	 (* pass obtained/default values to parseTextDeclAfterE.            *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 fun parseTextDeclBeforeE ver caq = 
+	 fun parseTextDeclBeforeE ver caq =
 	    let
-	       val caq1 as (_,_,q1) = skipS caq 
+	       val caq1 as (_,_,q1) = skipS caq
 	       val (name,caq2) = parseName caq1
 		  handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEncoding,[c])
 						 val a1 = hookError(a,(getPos q,err))
 					     in raise SyntaxError (c,a1,q)
 					     end
-	    in 
-	       if name=[0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] (* "encoding" *) 
+	    in
+	       if name=[0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] (* "encoding" *)
 		  then parseTextDeclAfterE ver caq2
 	       else let val (c2,a2,q2) = caq2
 			val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expEncoding,name)))
@@ -534,31 +534,31 @@ struct
 	 (*-----------------------------------------------------------------*)
 	 (* do the main work. if the first name is neither 'version' nor    *)
 	 (* 'encoding' then assume typo of 'version'. Then parse the        *)
-	 (* version number, call parseTextDeclBeforeE. if no name is found  *) 
+	 (* version number, call parseTextDeclBeforeE. if no name is found  *)
 	 (* at all, proceed with skipTextDeclEnd.                           *)
 	 (*                                                                 *)
 	 (* print an error and raise SyntaxState if appropriate.            *)
 	 (* print an error if a name other than 'version' or 'encoding' is  *)
 	 (* found.                                                          *)
 	 (*-----------------------------------------------------------------*)
-	 (* might raise: SyntaxState                                        *) 
+	 (* might raise: SyntaxState                                        *)
 	 (*-----------------------------------------------------------------*)
-	 val caq1 as (_,_,q1) = skipSopt caq 
-	 val (name,caq2) = parseName caq1 
+	 val caq1 as (_,_,q1) = skipSopt caq
+	 val (name,caq2) = parseName caq1
 	    handle NotFound (c,a,q) => let val err = ERR_EXPECTED(expEncVers,[c])
 					   val a1 = hookError(a,(getPos q,err))
 				       in raise SyntaxError(c,a1,q)
 				       end
-      in case name 
+      in case name
 	   of [0wx76,0wx65,0wx72,0wx73,0wx69,0wx6f,0wx6e] => (* "version" *)
-	      let val (ver,caq3) = parseVersionInfo caq2 
+	      let val (ver,caq3) = parseVersionInfo caq2
 	      in parseTextDeclBeforeE ver caq3
 	      end
 	    | [0wx65,0wx6e,0wx63,0wx6f,0wx64,0wx69,0wx6e,0wx67] => (* "encoding" *)
 	      parseTextDeclAfterE NONE caq2
 	    | _ => let val (c2,a2,q2) = caq2
 		       val a3 = hookError(a2,(getPos q1,ERR_EXPECTED(expEncVers,name)))
-		       val (ver,caq3) = parseVersionInfo (c2,a3,q2) 
+		       val (ver,caq3) = parseVersionInfo (c2,a3,q2)
 		   in parseTextDeclBeforeE ver caq3
 		   end
       end
@@ -566,13 +566,13 @@ struct
       (* catch entity end exceptions raised by subfunctions, print an   *)
       (* error and re-raise the exception.                              *)
       (*----------------------------------------------------------------*)
-   handle SyntaxError(c,a,q) => 
+   handle SyntaxError(c,a,q) =>
       let val err = if c=0wx0 then ERR_ENDED_BY_EE LOC_TEXT_DECL
 		    else ERR_CANT_PARSE LOC_TEXT_DECL
 	  val a1 = hookError(a,(getPos q,err))
       in (auto,NONE,recoverXml(c,a1,q))
       end
-	 
+
    (*--------------------------------------------------------------------*)
    (* check for the string "<?xml" followed by a white space. The first  *)
    (* paramter seen is a prefix of that string already consued. If the   *)
@@ -582,14 +582,14 @@ struct
    (* return a boolean indicating wheher the string was found, together  *)
    (* with the remaining app data and state.                             *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
    fun checkForXml aq =
-      let 
+      let
 	 val unseen = [0wx3c,0wx3f,0wx78,0wx6d,0wx6c]
-	 fun doit (seen,unseen) (a,q) = 
+	 fun doit (seen,unseen) (a,q) =
 	    let val (c1,a1,q1) = getChar (a,q)
-	    in case unseen 
+	    in case unseen
 		 of nil => if isS c1 then (true,(a1,q1))
 			   else (false,(a1,ungetChars(q1,rev(c1::seen))))
 		  | c::cs => if c1=c then doit (c1::seen,cs) (a1,q1)
@@ -611,7 +611,7 @@ struct
    (* parse it, if no, possibly print a warning.                         *)
    (*                                                                    *)
    (* Return the encoding of the entity, the optional declaration and    *)
-   (* the next char, app data and state.                                 *) 
+   (* the next char, app data and state.                                 *)
    (*--------------------------------------------------------------------*)
    fun findTextDecl (parseDecl,warn) auto aq =
       let val (hasXml,aq1) = checkForXml aq
@@ -636,9 +636,9 @@ struct
    (* return the optional text declaration and the resulting first char  *)
    (* together with the new state.                                       *)
    (*--------------------------------------------------------------------*)
-   (* might raise: none                                                  *) 
+   (* might raise: none                                                  *)
    (*--------------------------------------------------------------------*)
-   fun openExtern (id,isParam,uri) (a,q) = 
+   fun openExtern (id,isParam,uri) (a,q) =
       let val (q1,auto) = pushExtern (q,id,isParam,uri)
       in findTextDecl (parseTextDecl,false) auto (a,q1)
       end
@@ -652,9 +652,9 @@ struct
    (*                                                                    *)
    (* return the optional text declaration and the first char and state. *)
    (*--------------------------------------------------------------------*)
-   (* might raise: NoSuchFile                                            *) 
+   (* might raise: NoSuchFile                                            *)
    (*--------------------------------------------------------------------*)
-   fun openSubset uri a = 
+   fun openSubset uri a =
       let val (q,auto) = pushSpecial (EXT_SUBSET,SOME uri)
       in findTextDecl (parseTextDecl,false) auto (a,q)
       end
@@ -669,11 +669,11 @@ struct
    (*                                                                    *)
    (* return the optional xml declaration and the first char and state.  *)
    (*--------------------------------------------------------------------*)
-   (* might raise: NoSuchFile                                            *) 
+   (* might raise: NoSuchFile                                            *)
    (*--------------------------------------------------------------------*)
-   fun openDocument uri a = 
+   fun openDocument uri a =
       let val (q,auto) = pushSpecial (DOC_ENTITY,uri)
-      in findTextDecl (parseXmlDecl,!O_WARN_XML_DECL) auto (a,q) 
+      in findTextDecl (parseXmlDecl,!O_WARN_XML_DECL) auto (a,q)
       end
    handle NoSuchFile fmsg => raise CantOpenFile(fmsg,a)
 end

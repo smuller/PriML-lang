@@ -21,8 +21,8 @@ struct
         case String.tokens (fn #" " => true | _ => false) s of
             [weekday_with_comma, day, mon, year, time, offset] =>
 
-                let 
-                    val weekday = 
+                let
+                    val weekday =
                         if size weekday_with_comma = 4
                            andalso String.sub(weekday_with_comma, 3) = #","
                         then String.substring(weekday_with_comma, 0, 3)
@@ -49,16 +49,16 @@ struct
                                 (false, SOME hours, SOME mins) =>
                                   let
                                       val offset_time =
-                                          Time.fromSeconds 
+                                          Time.fromSeconds
                                           (LargeInt.fromInt (hours * 3600 + mins * 60))
                                   in
                                       SOME
                                       (Date.date
-                                       { year = Date.year d, 
-                                         month = Date.month d, 
+                                       { year = Date.year d,
+                                         month = Date.month d,
                                          day = Date.day d,
                                          hour = Date.hour d,
-                                         minute = Date.minute d, 
+                                         minute = Date.minute d,
                                          second = Date.second d,
                                          offset = SOME offset_time })
                                   end
@@ -89,7 +89,7 @@ struct
                                in
                                    case parsedate pubdate of
                                        NONE => raise RSS ("invalid pubDate " ^ pubdate)
-                                     | SOME date => 
+                                     | SOME date =>
                                            { title = title,
                                              description = description,
                                              guid = guid,

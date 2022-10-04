@@ -10,7 +10,7 @@ struct
   open BDDOps
   infix 6 :+: :-: %-% %+% +++
   infix 7 *: *% +*: +*+ #*% @*:
-  
+
   (* Port note: Box2D contains some overall max iteration counts, which
      seem to be for diagnostics and tuning. I left them out. *)
 
@@ -30,7 +30,7 @@ struct
     | stos SSeparated = "separated"
 
   datatype separation_type = TPoints | TFaceA | TFaceB
-  type separation_function = 
+  type separation_function =
       { proxya : distance_proxy,
         proxyb : distance_proxy,
         sweepa : sweep,
@@ -43,15 +43,15 @@ struct
     | typtos TFaceA = "facea"
     | typtos TFaceB = "faceb"
 
-  (* Port note: Original separates construction and initialization. 
-     Initialization returns the magnitude of the axis, but it is unused. 
+  (* Port note: Original separates construction and initialization.
+     Initialization returns the magnitude of the axis, but it is unused.
      Removed here. *)
   fun separation_function (cache, proxya, sweepa, proxyb, sweepb) :
       separation_function =
     let
         val count = !(#count cache)
         (* PERF assertion *)
-        val () = 
+        val () =
             if count > 0 andalso !(#count cache) < 3
             then ()
             else raise BDDTimeOfImpact "assertion failure"
@@ -60,7 +60,7 @@ struct
         val xfb : transform = sweep_transform (sweepb, 0.0)
     in
         if count = 1
-        then 
+        then
             let
                 val local_point_a = #vertex proxya (Array.sub(#indexa cache, 0))
                 val local_point_b = #vertex proxyb (Array.sub(#indexb cache, 0))
@@ -75,7 +75,7 @@ struct
                   proxyb = proxyb,
                   sweepa = sweepa,
                   sweepb = sweepb,
-                  (* PERF uninitialized in original; consider datatype taking 
+                  (* PERF uninitialized in original; consider datatype taking
                      args *)
                   local_point = vec2 (0.0, 0.0),
                   axis = axis }
@@ -114,7 +114,7 @@ struct
                  (* Two points on A and one or two points on B. *)
                  val local_point_a1 : vec2 = #vertex proxya (Array.sub(#indexa cache, 0))
                  val local_point_a2 : vec2 = #vertex proxya (Array.sub(#indexa cache, 1))
-                    
+
                  val axis = cross2vs(local_point_a2 :-: local_point_a1, 1.0)
                  val _ : real = vec2normalize axis
                  val normal : vec2 = mul22v (transformr xfa, axis)
@@ -145,7 +145,7 @@ struct
                              sweepb : sweep,
                              typ : separation_type,
                              local_point : vec2,
-                             axis : vec2 } : separation_function, 
+                             axis : vec2 } : separation_function,
                            t : real) : real * int * int =
     let
         val xfa : transform = sweep_transform (sweepa, t)
@@ -171,7 +171,7 @@ struct
                   (separation, indexa, indexb)
               end
 
-         | TFaceA => 
+         | TFaceA =>
               let
                   val normal : vec2 = mul22v (transformr xfa, axis)
                   val point_a : vec2 = xfa @*: local_point
@@ -179,7 +179,7 @@ struct
 
                   val indexa = ~1
                   val indexb = #support proxyb axis_b
-                      
+
                   val local_point_b = #vertex proxyb indexb
                   val point_b = xfb @*: local_point_b
 
@@ -188,7 +188,7 @@ struct
                   (separation, indexa, indexb)
               end
 
-         | TFaceB => 
+         | TFaceB =>
               let
                   val normal = mul22v (transformr xfb, axis)
                   val point_b = xfb @*: local_point
@@ -212,13 +212,13 @@ struct
                   sweepb : sweep,
                   typ : separation_type,
                   local_point : vec2,
-                  axis : vec2 } : separation_function, 
+                  axis : vec2 } : separation_function,
                 indexa : int, indexb : int, t : real) : real =
     let
         val xfa : transform = sweep_transform (sweepa, t)
         val xfb : transform = sweep_transform (sweepb, t)
     in
-        dprint (fn () => "    ev: xfa " ^ xftos xfa ^ " xfb " ^ xftos xfb ^ 
+        dprint (fn () => "    ev: xfa " ^ xftos xfa ^ " xfb " ^ xftos xfb ^
                " t " ^ rtos t ^ " typ " ^ typtos typ ^ "\n");
         case typ of
             TPoints =>
@@ -237,7 +237,7 @@ struct
                   dot2(point_b :-: point_a, axis)
               end
 
-          | TFaceA => 
+          | TFaceA =>
               let
                   val normal : vec2 = mul22v (transformr xfa, axis)
                   val point_a : vec2 = xfa @*: local_point
@@ -252,8 +252,8 @@ struct
                   dot2 (point_b :-: point_a, normal)
               end
 
-          | TFaceB => 
-              let 
+          | TFaceB =>
+              let
                   val normal : vec2 = mul22v (transformr xfb, axis)
                   val point_b = xfb @*: local_point
 
@@ -325,7 +325,7 @@ struct
 
             (* Get the distance between shapes. We can also use the results
                to get a separating axis. *)
-            val { distance, ... } = 
+            val { distance, ... } =
                 BDDDistance.distance (distance_input (xfa, xfb), cache)
         in
             dprint (fn () => "  toi distance: " ^ rtos distance ^ " targ " ^ rtos target ^ " tol " ^
@@ -339,7 +339,7 @@ struct
             else
             let
                 (* Initialize the separating axis. *)
-                val fcn : separation_function = 
+                val fcn : separation_function =
                     separation_function (cache, proxya, sweepa, proxyb, sweepb)
 
                 (* Port note: Removed commented-out debugging code. *)
@@ -354,10 +354,10 @@ struct
                 fun inner_loop push_back_iter =
                   let
                       (* Find the deepest point at t2. Store the witness point indices. *)
-                      val (s2 : real, indexa : int, indexb : int) = 
+                      val (s2 : real, indexa : int, indexb : int) =
                           find_min_separation (fcn, !t2)
                   in
-                      dprint (fn () => "  inner_loop #" ^ itos push_back_iter ^ 
+                      dprint (fn () => "  inner_loop #" ^ itos push_back_iter ^
                               ": t2 " ^ rtos (!t2) ^ " s2 " ^ rtos s2 ^
                               " a " ^ itos indexa ^ " b " ^ itos indexb ^ "\n");
 
@@ -389,7 +389,7 @@ struct
                               (* Compute 1D root of: f(x) - target = 0 *)
                               fun root_loop (s1, s2, a1, a2, root_iters) =
                                   if root_iters < 50
-                                  then 
+                                  then
                                   let
                                       (* Use a mix of the secant rule and bisection. *)
                                       val t : real =
@@ -400,7 +400,7 @@ struct
                                             | _ => 0.5 * (a1 + a2)
                                       val () = dprint (fn () => "      rl #" ^ itos root_iters ^
                                                       " s1 " ^ rtos s1 ^ " s2 " ^
-                                                      rtos s2 ^ " a1 " ^ rtos a1 ^ 
+                                                      rtos s2 ^ " a1 " ^ rtos a1 ^
                                                       " a2 " ^ rtos a2 ^ " t " ^
                                                       rtos t ^ "\n");
                                       val s : real = evaluate (fcn, indexa, indexb, t)

@@ -13,15 +13,15 @@
 (* Exceptions raised by functions in this structure:                        *)
 (*   passTwo : ConflictFollow                                               *)
 (*--------------------------------------------------------------------------*)
-signature DfaPassTwo = 
+signature DfaPassTwo =
    sig
       val passTwo: bool -> DfaBase.CM -> (DfaBase.Follow * bool) vector
    end
 
-structure DfaPassTwo : DfaPassTwo = 
-   struct 
+structure DfaPassTwo : DfaPassTwo =
+   struct
       open DfaBase DfaUtil
-	 
+
       (*--------------------------------------------------------------------*)
       (* Given a CM annotated with leaf numbers (states), Empty and First,  *)
       (* compute Follow and Fin foreach node, and generate the transition   *)
@@ -50,24 +50,24 @@ structure DfaPassTwo : DfaPassTwo =
       (*          error,   if exist (q1,a) in F1, (q2,a) in F2              *)
       (*                   then raise ConflictFirst(a,q1,q2)                *)
       (*--------------------------------------------------------------------*)
-      fun passTwo nondet (cmi as (_,(n,mt,fst))) =                                   
-	 let 
+      fun passTwo nondet (cmi as (_,(n,mt,fst))) =
+	 let
 	    val table = Array.array(n+1,(nil,false))
-	       	    
+
 	    val _ = Array.update(table,0,(fst,mt))
 
 	    fun do_cm (ff as (flw,fin)) (cm,(q,mt,fst)) =
-	       case cm 
+	       case cm
 		 of ELEM a   => Array.update(table,q,ff)
 		  | OPT cmi  => do_cm ff cmi
 		  | REP cmi  => do_cm (mergeFollow nondet (fst,flw),fin) cmi
 		  | PLUS cmi => do_cm (mergeFollow nondet (fst,flw),fin) cmi
 		  | ALT cmis => app (do_cm ff) cmis
 		  | SEQ cmis => ignore (do_seq ff cmis)
-	    and do_seq ff cmis = foldr 
-	       (fn (cmi as (_,(_,mt,fst)),ff as (flw,fin)) 
-		=> (do_cm ff cmi; 
-		    if mt then (mergeFollow nondet (fst,flw),fin) else (fst,false))) 
+	    and do_seq ff cmis = foldr
+	       (fn (cmi as (_,(_,mt,fst)),ff as (flw,fin))
+		=> (do_cm ff cmi;
+		    if mt then (mergeFollow nondet (fst,flw),fin) else (fst,false)))
 	       ff cmis
 
 	    val _ = do_cm (nil,true) cmi

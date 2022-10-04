@@ -16,7 +16,7 @@ struct
   val rtos9 = Real.fmt (StringCvt.FIX (SOME 9))
 
   val chain = M.chain ()
-  fun ows s = 
+  fun ows s =
       M.observe_weighted_string { begin_symbol = chr 1,
                                   end_symbol = chr 0,
                                   weight = 1.0,

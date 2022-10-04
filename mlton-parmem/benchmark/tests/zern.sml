@@ -6,7 +6,7 @@
  *)
 
 fun print _ = ()
-   
+
 (* array2.sml
  *
  * COPYRIGHT (c) 1998 D.McClain/MCFA
@@ -55,7 +55,7 @@ structure FastRealArray2 :
         val binopi : array * array * array * (real * real * int -> real) -> unit
         val fill : array * real -> unit
         val fillf : array * (int -> real) -> unit
-            
+
         val transpose : array -> array
         val extract : region -> array
 
@@ -68,17 +68,17 @@ structure FastRealArray2 :
     structure A      = (*Unsafe.*)Real64Array
 
     type rawArray    = A.array
-        
+
     val unsafeUpdate = A.update
     val unsafeSub    = A.sub
     fun mkRawArray n = A.array (n, 0.0)
 
-        
+
     type array = {data  : rawArray,
                   nrows : int,
                   ncols : int,
                   nelts : int}
-        
+
     type region = {base  : array,
                    row   : int,
                    col   : int,
@@ -87,7 +87,7 @@ structure FastRealArray2 :
 
     datatype traversal = RowMajor | ColMajor
 
-        
+
     fun dotimes n f =
         let (* going forward is twice as fast as backward! *)
             fun iter k = if k >= n then ()
@@ -96,7 +96,7 @@ structure FastRealArray2 :
             iter 0
         end
 
-    
+
     fun mkArray(n,v) =
         let
             val arr = mkRawArray n
@@ -118,7 +118,7 @@ structure FastRealArray2 :
         else raise General.Subscript
 
     val max_length = 4096 * 4096; (* arbitrary - but this is 128 MB *)
-        
+
     fun chkSize (nrows, ncols) =
           if (nrows <= 0) orelse (ncols <= 0)
             then raise General.Size
@@ -159,7 +159,7 @@ structure FastRealArray2 :
               ncols = ncols,
               nelts = nelts }
           end
-      
+
     fun tabulateRM (nrows, ncols, f) =
         let
             val nelts = chkSize(nrows, ncols)
@@ -197,7 +197,7 @@ structure FastRealArray2 :
 
     fun tabulate RowMajor = tabulateRM
       | tabulate ColMajor = tabulateCM
-        
+
     fun sub (a, i, j) = unsafeSub(#data a, index(a, i, j))
     fun update (a, i, j, v) = unsafeUpdate(#data a, index(a, i, j), v)
     fun dimensions ({nrows, ncols, ...}: array) = (nrows, ncols)
@@ -231,7 +231,7 @@ structure FastRealArray2 :
                 else mkVec ((nelts - ncols) + j, [])
             end
         else raise General.Subscript
-            
+
     datatype index = DONE | INDX of {i:int, r:int, c:int}
 
     fun chkRegion {base={data, nrows, ncols, ...}: array,
@@ -326,7 +326,7 @@ structure FastRealArray2 :
         in
             appf 0
         end
-    
+
     fun appCM f {data, ncols, nrows, nelts} = let
           val delta = nelts - 1
           fun appf (i, k) = if (i < nrows)
@@ -366,7 +366,7 @@ structure FastRealArray2 :
         in
             modf 0
         end
-    
+
     fun modifyCM f {data, ncols, nrows, nelts} = let
           val delta = nelts - 1
           fun modf (i, k) = if (i < nrows)
@@ -497,11 +497,11 @@ structure FastRealArray2 :
                f) =
         dotimes nelts
         (fn ix => unsafeUpdate(dst,ix,f(unsafeSub(src,ix),ix)))
-        
+
     fun fill ({data=dst,nelts=nelts,...}: array,v) =
         dotimes nelts
         (fn ix => unsafeUpdate(dst,ix,v))
-         
+
     fun fillf ({data=dst,nelts=nelts,...}: array,f) =
         dotimes nelts
         (fn ix => unsafeUpdate(dst,ix,f(ix)))
@@ -513,10 +513,10 @@ structure FastRealArray2 :
 structure MSpeed =
     struct
         structure F = FastRealArray2
-            
+
         val sin = Math.sin
         val cos = Math.cos
-            
+
         val fromInt = LargeReal.fromInt
 
         (* setup working vectors and arrays *)
@@ -537,7 +537,7 @@ structure MSpeed =
         fun mulsv (dst, sf, a) =
             F.unop(dst,a,fn(vsrc) => sf * vsrc)
 
-            
+
         (* compute the complex exponential of an array *)
         fun cisv (a, rpart, ipart) =
             (F.unop(rpart,a,cos);
@@ -548,13 +548,13 @@ structure MSpeed =
         fun mpadd dst (sf, src) =
             F.binop(dst,dst,src,fn(vdst,vsrc) => vdst + sf * vsrc)
 
-            
+
         (* compute an E-field from a set of Zernike screens *)
         fun zern (dst, rpart, ipart, coefs, zerns) =
             (mulsv (dst, hd coefs, hd zerns);
              ListPair.app (mpadd dst) (tl coefs, tl zerns);
              cisv (dst, rpart, ipart))
-            
+
         (* timing tests and reporting *)
         fun report_times(niter, nel, (start, stop)) =
             let
@@ -582,7 +582,7 @@ structure MSpeed =
                          (fn () =>
                           let val sum   = F.array(ny,nx, 0.0)
                              val rpart = F.array(ny,nx, 0.0)
-                             val ipart = F.array(ny,nx, 0.0)                
+                             val ipart = F.array(ny,nx, 0.0)
                              val coefs = collect ncoefs (fn(x) => real(1 + x))
                              val zerns =
                                 collect ncoefs

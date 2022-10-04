@@ -1,4 +1,4 @@
-structure KeyVector : Key = 
+structure KeyVector : Key =
    struct
       type Key = UniChar.Vector
 
@@ -8,4 +8,4 @@ structure KeyVector : Key =
       val hash     = UniChar.hashVector
    end
 
-structure VectorDict = Dict (structure Key = KeyVector) 
+structure VectorDict = Dict (structure Key = KeyVector)

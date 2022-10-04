@@ -22,7 +22,7 @@ val cmd = CommandLine.name ()
 val args = CommandLine.arguments ()
 
 fun loop ([], []) = print "OK!\n"
-  | loop (x::r, y::s) = 
+  | loop (x::r, y::s) =
       (if x <> y then print ("FAIL: "^x^":"^y^"\n") else (); loop (r, s))
   | loop (_, _) = print "Wrong argument count\n"
 

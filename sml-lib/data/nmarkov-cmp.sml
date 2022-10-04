@@ -38,8 +38,8 @@ struct
 
   (* More efficient than using e.g. List.nth, but
      doesn't work if n is zero. *)
-  val advance_state = 
-      if n = 0 
+  val advance_state =
+      if n = 0
       then (fn (s : state, sy : symbol) => nil)
       else advance_state_nonzero
 
@@ -81,7 +81,7 @@ struct
     let
         val start_state = List.tabulate (n, fn _ => begin_symbol)
         fun eat state (sym :: rest) =
-            let 
+            let
             in
                 observe_weighted weight chain (state, sym);
                 eat (advance_state (state, sym)) rest
@@ -124,7 +124,7 @@ struct
      XXX decided to make lower bound an argument!
 
      *)
-  fun most_probable_paths { lower_bound : real, chain : chain, 
+  fun most_probable_paths { lower_bound : real, chain : chain,
                             state : state, end_symbol : symbol }
          : { string : symbol list, p : real } Stream.stream =
     case STM.find (!chain, state) of
@@ -172,7 +172,7 @@ struct
           val streams = SYM.foldri (fn (sym, r, l) =>
                                     onesym (sym, r) :: l) nil (!next)
           (* Comparison to sort by descending probability *)
-          fun bysecond_real_descending ({p, string = _}, 
+          fun bysecond_real_descending ({p, string = _},
                                         {p = pp, string = _}) = Real.compare (pp, p)
       in
           S.merge_sorted bysecond_real_descending streams

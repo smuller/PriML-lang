@@ -52,27 +52,27 @@ struct
 
   (* All of the following is for rendering the data structure as SVG. It
      is superfluous except for debugging purposes. *)
-  local 
+  local
       (* No exponential notation *)
-      fun ertos r = if (r > ~0.000001 andalso r < 0.000001) 
-                    then "0.0" 
+      fun ertos r = if (r > ~0.000001 andalso r < 0.000001)
+                    then "0.0"
                     else (Real.fmt (StringCvt.FIX (SOME 4)) r)
 
       (* Don't use SML's dumb ~ *)
-      fun rtos r = if r < 0.0 
+      fun rtos r = if r < 0.0
                    then "-" ^ ertos (0.0 - r)
                    else ertos r
 
       datatype 'a set = Empty | Node of 'a set * 'a * 'a set
       fun fromlist nil = Empty
         | fromlist (h :: t) =
-          let val (l, r) = List.partition (fn x => case comparepoint (x, h) of 
+          let val (l, r) = List.partition (fn x => case comparepoint (x, h) of
                                            LESS => true
                                          | _ => false) t
           in Node (fromlist l, h, fromlist r)
           end
       fun count Empty x = 0
-        | count (Node (l, y, r)) x = 
+        | count (Node (l, y, r)) x =
           case comparepoint (x, y) of
               (* PERF only one of these is necessary, I think. *)
               EQUAL => 1 + count l x + count r x
@@ -80,7 +80,7 @@ struct
             | GREATER => count r x
   in
       fun tosvg locator print =
-          let 
+          let
               val set = fromlist (Vector.foldr (fn ((_, _, poly), b) =>
                                                 Polygon.points poly @ b) nil locator)
               fun printpolygon (_, _, poly) =

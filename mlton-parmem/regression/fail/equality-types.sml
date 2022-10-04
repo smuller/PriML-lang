@@ -17,7 +17,7 @@ val _ = T 1.0 = T 2.0 (* 15 error *)
 datatype 'a t = T
 
 val _ = (T: int t) = T
-   
+
 val _ = (T: real t) = T (* 21 error *)
 
 datatype t = T of u

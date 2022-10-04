@@ -1,6 +1,6 @@
-structure S :> sig type ('a,'b) t 
+structure S :> sig type ('a,'b) t
                    val f : ('a,'b) t -> ('b,'a) t
-                   val mk : 'a * 'b -> ('a,'b) t 
+                   val mk : 'a * 'b -> ('a,'b) t
                end
              =
            struct

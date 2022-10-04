@@ -17,7 +17,7 @@ structure Array: ARRAY_EXTRA =
 
       fun wrap2 f = fn (i, x) => f (SeqIndex.toIntUnsafe i, x)
       fun wrapCopy f = fn {src, dst, di} =>
-         (f {src = src, dst = dst, di = SeqIndex.fromInt di}) 
+         (f {src = src, dst = dst, di = SeqIndex.fromInt di})
          handle Overflow => raise Subscript
 
       type 'a array = 'a array

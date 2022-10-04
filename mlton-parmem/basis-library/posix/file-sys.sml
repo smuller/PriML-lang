@@ -75,7 +75,7 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
                   let
                      val res =
                         SysCall.syscallErr
-                        ({clear = true, restart = false, 
+                        ({clear = true, restart = false,
                           errVal = CUtil.C_Pointer.null}, fn () =>
                          {return = Prim.readDir d,
                           post = fn cs => SOME cs,
@@ -87,7 +87,7 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
                   in
                      case res of
                         NONE => NONE
-                      | SOME cs => 
+                      | SOME cs =>
                            let
                               val s = CUtil.C_String.toString cs
                            in
@@ -138,7 +138,7 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
             let
                val res =
                   SysCall.syscallErr
-                  ({clear = false, restart = false, 
+                  ({clear = false, restart = false,
                     errVal = CUtil.C_Pointer.null}, fn () =>
                    {return = Prim.getcwd (!buffer, C_Size.fromInt (!size)),
                     post = fn _ => true,
@@ -234,14 +234,14 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
          end
 
       fun openf (pathname, openMode, flags) =
-         let 
+         let
             val pathname = NullString.nullTerm pathname
             val flags = O.Flags.flags [openModeToFlags openMode, flags]
             val flags = C_Int.castFromSysWord (O.Flags.toWord flags)
-            val fd = 
+            val fd =
                SysCall.simpleResult
                (fn () => Prim.open3 (pathname, flags, C_Mode.castFromSysWord 0wx0))
-         in 
+         in
             FileDesc.fromRep fd
          end
 
@@ -284,14 +284,14 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
             wrapRestart
             (fn (fd, n) =>
              Prim.ftruncate (FileDesc.toRep fd, n))
-      end           
+      end
 
       local
          val size: int = 1024
          val buf : char array = Array.array (size, #"\000")
       in
          fun readlink (path: string): string =
-            let 
+            let
                val path = NullString.nullTerm path
             in
                SysCall.syscall'
@@ -380,10 +380,10 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
           | A_EXEC => A.X_OK
 
       fun access (path: string, mode: access_mode list): bool =
-         let 
+         let
             val mode = List.foldl C_Int.orb 0 (A.F_OK :: (map conv_access_mode mode))
             val path = NullString.nullTerm path
-         in 
+         in
             SysCall.syscallErr
             ({clear = false, restart = false, errVal = C_Int.fromInt ~1}, fn () =>
              {return = Prim.access (path, mode),
@@ -411,12 +411,12 @@ structure PosixFileSys: POSIX_FILE_SYS_EXTRA =
                val a = Time.toSeconds a
                val m = Time.toSeconds m
                val f = NullString.nullTerm f
-            in 
+            in
                SysCall.syscallRestart
-               (fn () => 
+               (fn () =>
                 (U.setAcTime a
                  ; U.setModTime m
-                 ; (U.utime f, fn _ => 
+                 ; (U.utime f, fn _ =>
                     ())))
             end
       end

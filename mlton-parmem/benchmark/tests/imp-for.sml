@@ -20,8 +20,8 @@ struct
                 for (0, 10, fn _ =>
                 for (0, 10, fn _ =>
                 for (0, 10, fn _ =>
-                for (0, 10, fn _ => 
-                for (0, 10, fn _ => 
+                for (0, 10, fn _ =>
+                for (0, 10, fn _ =>
                      x := !x + 1)))))))
       in
         if (!x) <> 10000000

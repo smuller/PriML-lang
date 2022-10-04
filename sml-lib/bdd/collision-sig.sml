@@ -20,7 +20,7 @@ sig
   (* Same as above, but returns a new manifold. *)
   val create_world_manifold : BDDTypes.manifold *
                               BDDMath.transform * real *
-                              BDDMath.transform * real -> 
+                              BDDMath.transform * real ->
                               BDDTypes.world_manifold
 
 

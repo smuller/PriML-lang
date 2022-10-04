@@ -1,5 +1,5 @@
 
-(* The MD2 algorithm by Rivest. Code by Tom 7 in 2000. 
+(* The MD2 algorithm by Rivest. Code by Tom 7 in 2000.
 
    Note: this code is incomplete and will be incompatible with other
    implementations. Needed: correct checksum algorithm.
@@ -16,7 +16,7 @@ struct
     (* MD2 produces digests 16 bytes long *)
   val digestlen = 16
 
-  local 
+  local
 
     val table = CharVector.fromList (map chr
      [ 41, 46, 67, 201, 162, 216, 124, 1, 61, 54, 84, 161, 236, 240, 6,
@@ -43,20 +43,20 @@ struct
     fun S t = CV.sub (table, ord t)
 
   end
-           
+
   (* like Array.array *)
   fun stringof (i, c) = implode (List.tabulate (i, fn _ => c))
 
   (* this pads even if s is already a multiple! *)
-  fun padtomult n s = 
-           let 
+  fun padtomult n s =
+           let
              val i = n - (size s mod n)
            in
              s ^ stringof (i, chr i)
            end
 
-  (* CharVector iterator. 
-   iterl 
+  (* CharVector iterator.
+   iterl
    : (CharVector.elem * 'a -> CharVector.elem * 'a)
       -> 'a -> CharVector.vector -> CharVector.vector * 'a
    *)
@@ -94,10 +94,10 @@ struct
        fun loop_i (X, i) =
          if i = blocks then
            X
-         else 
+         else
            let
              (* do the shift operation on X *)
-             val X = 
+             val X =
                (String.substring (X, 0, 16)) ^
                (CV.mapi (fn (u, c) => CV.sub(M, i*16 + (u-16)))
                        (X, 16, SOME 32)) ^

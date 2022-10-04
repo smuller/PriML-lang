@@ -20,7 +20,7 @@ end
 
 signature AST_BASE =
 sig
-  
+
   (* from arg *)
   type leaf
   type var
@@ -72,12 +72,12 @@ sig
   (* substitute [ast/var] ast.
      this is "cheap" *)
   val sub : ast -> var -> ast -> ast
-    
+
   (* number of occurrences for each var.
      these are constant time. *)
   val freevars : ast -> int VM.map
   val isfree   : ast -> var -> bool
-  val count    : ast -> var -> int    
+  val count    : ast -> var -> int
 
   (* debugging only *)
   val layout : ast -> Layout.layout

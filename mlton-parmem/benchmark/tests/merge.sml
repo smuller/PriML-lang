@@ -7,7 +7,7 @@ fun merge (l1: int list, l2) =
          if x1 <= x2
             then x1 :: merge (l1', l2)
          else x2 :: merge (l1, l2')
-      
+
 structure Main =
    struct
       fun doit size =

@@ -5,7 +5,7 @@ fun assert (msg,b) =
 datatype 'a tree =
    Leaf of 'a
   | Node of 'a * 'a tree * 'a tree
-      
+
 val _ =
    (assert ("string equal", "foobar" = "foobar") ;
     assert ("string not equal", "foobar" <> "foobaz") ;
@@ -20,5 +20,5 @@ val _ =
            in t = t
            end))
 
-    
+
 

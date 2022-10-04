@@ -6,11 +6,11 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure String = 
+structure String =
    struct
       open CharVector
       type string = vector
-      
+
       val size = length
       val op ^ = append
       val implode = fromList
@@ -18,11 +18,11 @@ structure String =
    end
 
 (*
-structure WideString = 
+structure WideString =
    struct
       open WideCharVector
       type string = vector
-      
+
       val size = length
       val op ^ = append
       val implode = fromList

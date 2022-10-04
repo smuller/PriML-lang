@@ -33,7 +33,7 @@ structure TimeOut : TIME_OUT_EXTRA =
       (* returns an approximation of the current time of day
        * (this is at least as accurate as the time quantum).
        *)
-      fun getTime () = 
+      fun getTime () =
          case !clock of
             NONE => let val t = Time.now()
                     in clock := SOME t;  t
@@ -49,12 +49,12 @@ structure TimeOut : TIME_OUT_EXTRA =
       val timeQ : item TQ.t ref = ref (TQ.new ())
 
       fun cleaner (readied: unit -> unit) elt =
-         let 
+         let
             val now = getTime ()
             val (TXID txst, cleanUp: unit -> unit, t) = TQ.Elt.value elt
-         in 
-            case !txst of 
-               CANCEL => true 
+         in
+            case !txst of
+               CANCEL => true
              | _ => if Time.<=(TQ.Elt.key elt, now)
                        then (readied ()
                              ; S.ready t
@@ -63,7 +63,7 @@ structure TimeOut : TIME_OUT_EXTRA =
                        else false
          end
 
-      fun timeWait (time, txid, cleanUp, t) = 
+      fun timeWait (time, txid, cleanUp, t) =
          (Assert.assertAtomic' ("TimeOut.timeWait", NONE)
           ; timeQ := TQ.enqueAndClean(!timeQ, time, (txid, cleanUp, t), cleaner (fn () => ())))
 
@@ -71,9 +71,9 @@ structure TimeOut : TIME_OUT_EXTRA =
        ** events do not have to exit the atomic region or execute the clean-up
        ** operation.  This is done when they are removed from the waiting queue.
        **)
-      fun timeOutEvt time = 
+      fun timeOutEvt time =
          let
-            fun blockFn {transId, cleanUp, next} = 
+            fun blockFn {transId, cleanUp, next} =
                let
                   val () = Assert.assertAtomic' ("TimeOut.timeOutEvt.blockFn", NONE)
                   val () = debug' "timeOutEvt(3.2.1)" (* Atomic 1 *)
@@ -88,7 +88,7 @@ structure TimeOut : TIME_OUT_EXTRA =
                in
                   ()
                end
-            fun pollFn () = 
+            fun pollFn () =
                let
                   val () = Assert.assertAtomic' ("TimeOut.timeOutEvt.pollFn", NONE)
                   val () = debug' "timeOutEvt(2)" (* Atomic 1 *)
@@ -102,9 +102,9 @@ structure TimeOut : TIME_OUT_EXTRA =
             E.bevt pollFn
          end
 
-      fun atTimeEvt time = 
+      fun atTimeEvt time =
          let
-            fun blockFn {transId, cleanUp, next} = 
+            fun blockFn {transId, cleanUp, next} =
                let
                   val () = Assert.assertAtomic' ("TimeOut.atTimeEvt.blockFn", NONE)
                   val () = debug' "atTimeEvt(3.2.1)" (* Atomic 1 *)
@@ -119,7 +119,7 @@ structure TimeOut : TIME_OUT_EXTRA =
                in
                   ()
                end
-            fun pollFn () = 
+            fun pollFn () =
                let
                   val () = Assert.assertAtomic' ("TimeOut.atTimeEvt.pollFn", NONE)
                   val () = debug' "atTimeEvt(2)" (* Atomic 1 *)
@@ -137,8 +137,8 @@ structure TimeOut : TIME_OUT_EXTRA =
       fun reset () = timeQ := TQ.new ()
 
       (* what to do at a preemption *)
-      fun preempt () : Time.time option option = 
-         let 
+      fun preempt () : Time.time option option =
+         let
             val () = Assert.assertAtomic' ("TimeOut.preempt", NONE)
             val () = debug' "TimeOut.preempt" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("TimeOut.preempt", SOME 1)

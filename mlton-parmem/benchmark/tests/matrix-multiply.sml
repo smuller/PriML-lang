@@ -1,6 +1,6 @@
 (* Written by Stephen Weeks (sweeks@sweeks.com). *)
 structure Array = Array2
-   
+
 fun 'a fold (n : int, b : 'a, f : int * 'a -> 'a) =
    let
       fun loop (i : int, b : 'a) : 'a =
@@ -12,7 +12,7 @@ fun 'a fold (n : int, b : 'a, f : int * 'a -> 'a) =
 
 fun foreach (n : int, f : int -> unit) : unit =
    fold (n, (), f o #1)
-      
+
 fun mult (a1 : real Array.array, a2 : real Array.array) : real Array.array =
    let
       val r1 = Array.nRows a1
@@ -45,7 +45,7 @@ structure Main =
                then ()
             else raise Fail "bug"
          end
-      
+
       val doit =
          fn size =>
          let

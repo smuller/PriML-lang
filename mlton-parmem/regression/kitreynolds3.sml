@@ -19,7 +19,7 @@ fun foldR f b [] = b
 
 fun curry f x y = f(x,y)
 
-datatype 'a Option = None | Some of 'a 
+datatype 'a Option = None | Some of 'a
 
 
 datatype 'a tree = Lf | Br of 'a * 'a tree * 'a tree
@@ -29,9 +29,9 @@ fun member(x,[]) = false
   | member(x,x'::rest) = x=x' orelse member(x, rest)
 
 fun search p Lf = false
-  | search p (Br(x,t1,t2)) = 
+  | search p (Br(x,t1,t2)) =
       if member(x,p) then true
-      else search (x::p) t1 orelse 
+      else search (x::p) t1 orelse
            search (x::p) t2
 
 fun mk_tree 0 = Lf

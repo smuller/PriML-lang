@@ -2,12 +2,12 @@
 
 
 
-signature Resolve = 
+signature Resolve =
    sig
       val resolveExtId : Base.ExternalId -> Uri.Uri
    end
 
-structure ResolveNull : Resolve = 
+structure ResolveNull : Resolve =
    struct
       open Base Errors Uri
 

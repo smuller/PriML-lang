@@ -18,14 +18,14 @@ struct
           if x0 = x1
           then NONE
           else
-              let val (y0, frac) = if frac >= 0 
-                                   then (y0 + stepy, frac - dx) 
+              let val (y0, frac) = if frac >= 0
+                                   then (y0 + stepy, frac - dx)
                                    else (y0, frac)
                   val x0 = x0 + stepx
                   val frac = frac + dy
-              in SOME ((x0, y0, frac), post (x0, y0)) 
+              in SOME ((x0, y0, frac), post (x0, y0))
               end
-    in ({step = step, seed = (x0, y0, frac0)}, post (x0, y0)) 
+    in ({step = step, seed = (x0, y0, frac0)}, post (x0, y0))
     end
 
   fun line p0 p1 =
@@ -51,7 +51,7 @@ struct
             case step seed of
                 NONE => true
               | SOME (seed', v) => pred v andalso loop seed'
-    in pred v andalso loop seed 
+    in pred v andalso loop seed
     end
 
   fun all pred p0 p1 =
@@ -64,13 +64,13 @@ struct
     end
 
   fun app f p0 p1 =
-    let 
+    let
         val ({step, seed}, v) = line p0 p1
         fun loop seed =
             case step seed of
                 NONE => ()
               | SOME (seed', v) => (f v; loop seed')
-    in 
+    in
         f v;
         loop seed
     end

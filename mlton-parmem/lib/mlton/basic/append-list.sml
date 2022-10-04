@@ -19,7 +19,7 @@ datatype 'a t =
  | Empty
  | List of 'a list (* Nonempty. *)
  | Single of 'a
- | Snoc of 'a t (* Nonempty *) * 'a 
+ | Snoc of 'a t (* Nonempty *) * 'a
  | Vector of 'a vector (* Nonempty. *)
 
 val isEmpty = fn Empty => true | _ => false

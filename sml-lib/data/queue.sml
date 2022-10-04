@@ -33,7 +33,7 @@ struct
       (case !q of
          (nil, nil) => (NONE, q)
        | (x::front, back) => (SOME x, ref (front, back))
-       | (nil, back) => 
+       | (nil, back) =>
            let in
              (* memoizing the result... *)
              normalize q;
@@ -62,7 +62,7 @@ struct
 
     (* convert a queue to a list *)
     fun tolist (r as ref (front, back)) =
-      let 
+      let
         val l = front @ List.rev back
       in
         (* might as well memoize this, since it is the same as normalization *)

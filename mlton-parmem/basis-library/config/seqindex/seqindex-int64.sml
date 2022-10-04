@@ -8,5 +8,5 @@
 structure SeqIndex = Int64
 
 functor SeqIndex_ChooseIntN (A: CHOOSE_INTN_ARG) :
-   sig val f : SeqIndex.int A.t end = 
+   sig val f : SeqIndex.int A.t end =
    ChooseIntN_Int64 (A)

@@ -3,9 +3,9 @@ functor Test (I: INTEGER) =
       fun foreach (l, f) = List.app f l
 
       val m = concat ["Int", Int.toString (valOf I.precision)]
-         
+
       val _ = print (concat ["Testing ", m, "\n"])
-         
+
       val nums =
          [valOf I.maxInt,
           I.- (valOf I.maxInt, I.fromInt 1)]
@@ -126,7 +126,7 @@ functor Test (I: INTEGER) =
                         " = ", Answer.toString a,
                         " <> ", Answer.toString a']
            end))
-         
+
       val _ =
          foreach
          ([("+", I.+, LargeInt.+),
@@ -189,7 +189,7 @@ functor Test (I: INTEGER) =
                 | GREATER => "GREATER"
                 | LESS => "LESS"
          end
-      
+
       val _ =
          foreach
          (nums, fn i =>
@@ -207,7 +207,7 @@ functor Test (I: INTEGER) =
                         " <> ",
                         Order.toString ord']
            end))
-                 
+
    end
 
 structure S = Test (Int2)

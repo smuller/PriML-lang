@@ -92,12 +92,12 @@ struct
                              xfa : transform, radiusa : real,
                              xfb, radiusb) : world_manifold =
       let
-          val world_manifold = 
+          val world_manifold =
               { normal = vec2 (0.0, 0.0),
-                points = Array.tabulate(max_manifold_points, 
+                points = Array.tabulate(max_manifold_points,
                                         fn _ => vec2 (0.0, 0.0)) }
       in
-          initialize_manifold (world_manifold, manifold, 
+          initialize_manifold (world_manifold, manifold,
                                xfa, radiusa,
                                xfb, radiusb);
           world_manifold
@@ -555,7 +555,7 @@ struct
                           edge1 : int,
                           poly2 : BDDPolygon.polygon,
                           xf2 : transform) : clip_vertex * clip_vertex =
-      let 
+      let
           val normals1 = #normals poly1
 
           val vertices2 = #vertices poly2
@@ -637,7 +637,7 @@ struct
 
       (* Port note: Original passes around array of two. This is better
          for ML, for sure: *)
-      val (incident_edge1, incident_edge2) = 
+      val (incident_edge1, incident_edge2) =
           find_incident_edge (poly1, xf1, edge1, poly2, xf2)
       val vertices1 = #vertices poly1
       val count1 = Array.length vertices1

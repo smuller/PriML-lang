@@ -7,7 +7,7 @@ sig
 
   structure R : REGEXP
 
-  (* find regexp matchstring 
+  (* find regexp matchstring
      finds the first match in matchstring for regexp.
      The result is a function that allows access to
      the numbered subgroups.
@@ -25,7 +25,7 @@ sig
   val ismatch : string -> string -> bool
 *)
 
-  (* hasmatch regexp matchstring 
+  (* hasmatch regexp matchstring
      true if matchstring contains any match for the regexp.
      If the regexp matches the empty string, always returns true.
      *)

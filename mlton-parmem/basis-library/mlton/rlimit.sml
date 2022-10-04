@@ -16,7 +16,7 @@ structure MLtonRlimit: MLTON_RLIMIT =
          fn (r: t) =>
          PosixError.SysCall.syscall
          (fn () =>
-          (get r, fn _ => 
+          (get r, fn _ =>
            {hard = getHard (),
             soft = getSoft ()}))
 

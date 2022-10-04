@@ -21,10 +21,10 @@ open MLton.World
 
 val (w, out) = MLton.TextIO.mkstemp "/tmp/world"
 val _ = TextIO.closeOut out
-   
+
 val a = Array.array (10000, 17)
 
-val _ = 
+val _ =
     case save w of
        Original => ()
      | Clone => (Array.update (a, 0, 13)
@@ -33,5 +33,5 @@ val _ =
                  ; succeed ())
 
 val _ = run (fn () => load w)
-   
+
 val _ = OS.FileSys.remove w

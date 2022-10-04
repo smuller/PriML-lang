@@ -22,7 +22,7 @@ functor Basics(structure Tools : TOOLS) =
     structure Tools = Tools
   end
 
-functor KitCompiler() = 
+functor KitCompiler() =
   struct
     structure Tools = Tools()
     structure Basics = Basics(structure Tools = Tools)

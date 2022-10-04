@@ -26,11 +26,11 @@ struct
     | PC_V of real list
     | PC_v of real list
     (* Cubic Bezier. *)
-    | PC_C of { x1 : real, y1 : real, 
-                x2 : real, y2 : real, 
+    | PC_C of { x1 : real, y1 : real,
+                x2 : real, y2 : real,
                 x : real, y : real } list
-    | PC_c of { x1 : real, y1 : real, 
-                x2 : real, y2 : real, 
+    | PC_c of { x1 : real, y1 : real,
+                x2 : real, y2 : real,
                 x : real, y : real } list
     (* Smooth cubic Bezier shortcut *)
     | PC_S of { x2 : real, y2 : real, x : real, y : real } list
@@ -42,9 +42,9 @@ struct
     | PC_T of { x : real, y : real } list
     | PC_t of { x : real, y : real } list
     (* Elliptical arc *)
-    | PC_A of { rx : real, ry : real, rot : real, large : bool, sweep : bool, 
+    | PC_A of { rx : real, ry : real, rot : real, large : bool, sweep : bool,
                 x : real, y : real } list
-    | PC_a of { rx : real, ry : real, rot : real, large : bool, sweep : bool, 
+    | PC_a of { rx : real, ry : real, rot : real, large : bool, sweep : bool,
                 x : real, y : real } list
 
   structure Path =
@@ -120,10 +120,10 @@ struct
         alt [fractional_constant && opt exponent,
              (digit_sequence && succeed [#"0"]) && (exponent wth SOME)]
         (* iii.fffEeee *)
-        -- (fn ((i, f), e) => 
+        -- (fn ((i, f), e) =>
             let val s = implode i ^ "." ^ implode f
-                val s = case e of 
-                    NONE => s 
+                val s = case e of
+                    NONE => s
                   | SOME (sgn, pow) => s ^ "e" ^ implode [sgn] ^ implode pow
             in
                 case Real.fromString s of
@@ -144,7 +144,7 @@ struct
                                                     | (_,    i) => real i)
 
     (* nb. also permuted *)
-    val nonnegative_number = floating_point_constant || 
+    val nonnegative_number = floating_point_constant ||
         integer_constant wth real
     val coordinate = number
     val coordinate_pair = (coordinate << comma_wspq) && coordinate
@@ -159,53 +159,53 @@ struct
         wth (fn (rx, (ry, (rot, (large, (sweep, (x, y)))))) =>
              { rx = rx, ry = ry, rot = rot, large = large, sweep = sweep,
                x = x, y = y })
-    val elliptical_arc_argument_sequence = 
+    val elliptical_arc_argument_sequence =
         separate elliptical_arc_argument comma_wspq
-    val elliptical_arc = 
-        alt [ch #"A" >> repeati wsp >> elliptical_arc_argument_sequence 
+    val elliptical_arc =
+        alt [ch #"A" >> repeati wsp >> elliptical_arc_argument_sequence
              wth PC_A,
-             ch #"a" >> repeati wsp >> elliptical_arc_argument_sequence 
+             ch #"a" >> repeati wsp >> elliptical_arc_argument_sequence
              wth PC_a]
 
-    val smooth_quadratic_bezier_curveto_argument_sequence = 
-        separate (coordinate_pair wth (fn (x, y) => 
+    val smooth_quadratic_bezier_curveto_argument_sequence =
+        separate (coordinate_pair wth (fn (x, y) =>
                                        { x = x, y = y })) comma_wspq
     val smooth_quadratic_bezier_curveto =
-        alt [ch #"T" >> repeati wsp >> 
+        alt [ch #"T" >> repeati wsp >>
              smooth_quadratic_bezier_curveto_argument_sequence wth PC_T,
-             ch #"t" >> repeati wsp >> 
+             ch #"t" >> repeati wsp >>
              smooth_quadratic_bezier_curveto_argument_sequence wth PC_t]
 
     val quadratic_bezier_curveto_argument =
         (coordinate_pair << comma_wspq) && coordinate_pair
         wth (fn ((a, b), (c, d)) =>
              { x1 = a, y1 = b, x = c, y = d })
-    val quadratic_bezier_curveto_argument_sequence = 
+    val quadratic_bezier_curveto_argument_sequence =
         separate quadratic_bezier_curveto_argument comma_wspq
     val quadratic_bezier_curveto =
-        alt [ch #"Q" >> repeati wsp >> 
+        alt [ch #"Q" >> repeati wsp >>
              quadratic_bezier_curveto_argument_sequence wth PC_Q,
-             ch #"Q" >> repeati wsp >> 
+             ch #"Q" >> repeati wsp >>
              quadratic_bezier_curveto_argument_sequence wth PC_q]
 
     val smooth_curveto_argument =
         (coordinate_pair << comma_wspq) && coordinate_pair
         wth (fn ((a, b), (c, d)) =>
              { x2 = a, y2 = b, x = c, y = d })
-    val smooth_curveto_argument_sequence = 
+    val smooth_curveto_argument_sequence =
         separate smooth_curveto_argument comma_wspq
     val smooth_curveto =
-        alt [ch #"S" >> repeati wsp >> 
+        alt [ch #"S" >> repeati wsp >>
              smooth_curveto_argument_sequence wth PC_S,
-             ch #"s" >> repeati wsp >> 
+             ch #"s" >> repeati wsp >>
              smooth_curveto_argument_sequence wth PC_s]
 
     val curveto_argument =
         (coordinate_pair << comma_wspq) &&
         (coordinate_pair << comma_wspq) &&
         coordinate_pair wth (fn ((x1, y1), ((x2, y2), (x, y))) =>
-                             { x1 = x1, y1 = y1, 
-                               x2 = x2, y2 = y2, 
+                             { x1 = x1, y1 = y1,
+                               x2 = x2, y2 = y2,
                                x = x, y = y })
     val curveto_argument_sequence = separate curveto_argument comma_wspq
     val curveto =
@@ -213,17 +213,17 @@ struct
              ch #"c" >> repeati wsp >> curveto_argument_sequence wth PC_c]
 
     val vertical_lineto_argument_sequence = separate coordinate comma_wspq
-    val vertical_lineto = 
-        alt [ch #"V" >> repeati wsp >> 
+    val vertical_lineto =
+        alt [ch #"V" >> repeati wsp >>
              vertical_lineto_argument_sequence wth PC_V,
-             ch #"v" >> repeati wsp >> 
+             ch #"v" >> repeati wsp >>
              vertical_lineto_argument_sequence wth PC_v]
 
     val horizontal_lineto_argument_sequence = separate coordinate comma_wspq
-    val horizontal_lineto = 
-        alt [ch #"H" >> repeati wsp >> 
+    val horizontal_lineto =
+        alt [ch #"H" >> repeati wsp >>
              horizontal_lineto_argument_sequence wth PC_H,
-             ch #"h" >> repeati wsp >> 
+             ch #"h" >> repeati wsp >>
              horizontal_lineto_argument_sequence wth PC_h]
 
     val lineto_argument_sequence = separate coordinate_pair comma_wspq
@@ -240,25 +240,25 @@ struct
 
     val drawto_command =
         alt [closepath, lineto, horizontal_lineto, vertical_lineto, curveto,
-             smooth_curveto, quadratic_bezier_curveto, 
+             smooth_curveto, quadratic_bezier_curveto,
              smooth_quadratic_bezier_curveto, elliptical_arc]
 
     val drawto_commandsq = separate0 drawto_command (repeati wsp)
-    val moveto_drawto_command_group = (moveto << repeati wsp) && 
+    val moveto_drawto_command_group = (moveto << repeati wsp) &&
         drawto_commandsq wth op::
 
-    val svg_path_prefix = 
-        repeati wsp >> 
-        (separate0 moveto_drawto_command_group (repeati wsp)) << 
+    val svg_path_prefix =
+        repeati wsp >>
+        (separate0 moveto_drawto_command_group (repeati wsp)) <<
         repeati wsp
-    val svg_path = 
+    val svg_path =
         svg_path_prefix << done() wth List.concat
 
     (* From 9.8, points specifications in "polyline" and "polygon"
        elements *)
     val coordinate_pairsq = separate0 coordinate_pair comma_wsp
-        
-    val list_of_points = 
+
+    val list_of_points =
         repeati wsp >> coordinate_pairsq << repeati wsp
 
   end
@@ -269,7 +269,7 @@ struct
   fun stringstream s =
     let
       val ss = size s
-      fun next n () = 
+      fun next n () =
         if n >= ss
         then Stream.empty
         else Stream.lcons (CharVector.sub(s, n),
@@ -278,23 +278,23 @@ struct
       Stream.old_delay (next 0)
     end
 
-  fun parsepathstring s = 
+  fun parsepathstring s =
       Parsing.parse parsepath (Pos.markstream (stringstream s))
 
-  fun parsepointsstring s = 
+  fun parsepointsstring s =
       Parsing.parse parsepoints (Pos.markstream (stringstream s))
 
   datatype normalizedcommand =
       PC_Move of real * real
     | PC_Line of real * real
     | PC_Close
-    | PC_Cubic of { x1 : real, y1 : real, 
-                    x2 : real, y2 : real, 
+    | PC_Cubic of { x1 : real, y1 : real,
+                    x2 : real, y2 : real,
                     x : real, y : real }
     | PC_Quad of { x1 : real, y1 : real, x : real, y : real }
-    | PC_Arc of { rx : real, ry : real, rot : real, large : bool, sweep : bool, 
+    | PC_Arc of { rx : real, ry : real, rot : real, large : bool, sweep : bool,
                   x : real, y : real }
-      
+
   datatype normalizedpath =
       P_Empty
     (* Either way, the normalized commands are all relative to the first
@@ -353,10 +353,10 @@ struct
       | npath _ _ (PC_m nil :: _) = raise SVG "empty Moveto command"
 
       (* normalized commands that are already relative are easy. *)
-      | npath _ _ (PC_l (c :: r) :: rest) = PC_Line c :: 
+      | npath _ _ (PC_l (c :: r) :: rest) = PC_Line c ::
         npath c NO (PC_l r :: rest)
       (* Not a typo: Subsequent coordinates in a moveto mean lineto. *)
-      | npath _ _ (PC_m (c :: r) :: rest) = PC_Move c :: 
+      | npath _ _ (PC_m (c :: r) :: rest) = PC_Move c ::
         npath c NO (PC_l r :: rest)
 
       (* The end coordinate x,y is where the cursor is left. (spec @8.3.6) *)
@@ -397,29 +397,29 @@ struct
       | npath (x0, y0) prev (PC_M ((x, y) :: r) :: rest) =
         (* not a typo; subsequent movetos become linetos *)
         npath (x0, y0) prev (PC_m [(x - x0, y - y0)] :: PC_L r :: rest)
-      | npath (x0, y0) prev (PC_A ({ rx : real, ry : real, 
-                                     rot : real, large : bool, sweep : bool, 
+      | npath (x0, y0) prev (PC_A ({ rx : real, ry : real,
+                                     rot : real, large : bool, sweep : bool,
                                      x : real, y : real } :: r) :: rest) =
         (* rx,ry are lengths, not points. rot is an angle, and the flags
            obviously are not "relative". *)
-        npath (x0, y0) prev (PC_a [{ rx = rx, ry = ry, rot = rot, 
-                                     large = large, sweep = sweep, 
+        npath (x0, y0) prev (PC_a [{ rx = rx, ry = ry, rot = rot,
+                                     large = large, sweep = sweep,
                                      x = x - x0, y = y - y0 }] ::
                              PC_A r :: rest)
       | npath (x0, y0) prev (PC_S ({ x2, y2, x, y } :: r) :: rest)=
-        npath (x0, y0) prev (PC_s [{ x2 = x2 - x0, y2 = y2 - y0, 
+        npath (x0, y0) prev (PC_s [{ x2 = x2 - x0, y2 = y2 - y0,
                                      x = x - x0, y = y - y0 }]
                              :: PC_S r :: rest)
       | npath (x0, y0) prev (PC_T ({ x, y } :: r) :: rest) =
-        npath (x0, y0) prev (PC_t [{ x = x - x0, y = y - y0 }] :: 
+        npath (x0, y0) prev (PC_t [{ x = x - x0, y = y - y0 }] ::
                              PC_T r :: rest)
       | npath (x0, y0) prev (PC_C ({ x1, y1, x2, y2, x, y } :: r) :: rest) =
         npath (x0, y0) prev (PC_c [{ x1 = x1 - x0, y1 = y1 - y0,
                                      x2 = x2 - x0, y2 = y2 - y0,
-                                     x  = x  - x0, y  = y  - y0 }] :: 
+                                     x  = x  - x0, y  = y  - y0 }] ::
                              PC_C r :: rest)
       | npath (x0, y0) prev (PC_Q ({ x1, y1, x, y } :: r) :: rest) =
-        npath (x0, y0) prev (PC_q [{ x1 = x1 - x0, y1 = y1 - y0, 
+        npath (x0, y0) prev (PC_q [{ x1 = x1 - x0, y1 = y1 - y0,
                                      x = x - x0, y = y - y0 }] ::
                              PC_Q r :: rest)
 
@@ -430,7 +430,7 @@ struct
         P_Absolute (x, y, npath (x, y) NO (PC_L mr :: rest))
       | normalizepath (PC_m ((x, y) :: mr) :: rest) =
         P_Relative (x, y, npath (x, y) NO (PC_l mr :: rest))
-      | normalizepath _ = 
+      | normalizepath _ =
         raise SVG "Paths must be empty or start with a non-empty moveto command"
 
   end

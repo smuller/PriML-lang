@@ -127,7 +127,7 @@ structure AFile =
                    case In.inputLine ins of
                       NONE => Error.bug "unexpected end of show-sources data"
                     | SOME l => l
-                val magic = 
+                val magic =
                    case Word.fromString (line ()) of
                       NONE => Error.bug "expected magic"
                     | SOME w => w
@@ -467,7 +467,7 @@ structure NodePred =
                   fun parse (s: Sexp.t): t =
                      let
                         fun err () = Error.bug (Sexp.toString s)
-                     in                    
+                     in
                         case s of
                            Sexp.Atom s =>
                               (case s of
@@ -721,7 +721,7 @@ fun display (AFile.T {callGraph, master, name = aname, split, ...},
                         else [])
                   val pc = per current
                   val isNonZero = current > 0 orelse stack > 0 orelse stackGC > 0
-                  val tableInfo = 
+                  val tableInfo =
                      if isNonZero orelse (kind = Kind.Count
                                           andalso (case source of
                                                       Source.NamePos _ => true
@@ -834,7 +834,7 @@ fun display (AFile.T {callGraph, master, name = aname, split, ...},
           in
              case (f from, f to) of
                 (SOME from, SOME to) =>
-                   (ignore o Graph.addEdge) 
+                   (ignore o Graph.addEdge)
                    (keepGraph, {from = from, to = to})
               | _ => ()
           end)
@@ -866,7 +866,7 @@ fun display (AFile.T {callGraph, master, name = aname, split, ...},
                       in
                          case newNode n of
                             NONE => loop n
-                          | SOME keepN => 
+                          | SOME keepN =>
                                let
                                   val r = isKept keepN
                                in
@@ -922,7 +922,7 @@ fun display (AFile.T {callGraph, master, name = aname, split, ...},
       val tableRows =
          QuickSort.sortVector
          (Vector.fromList (!tableInfos), fn (z, z') => #per z >= #per z')
-      val _ = 
+      val _ =
          print
          (concat
           (case kind of
@@ -934,8 +934,8 @@ fun display (AFile.T {callGraph, master, name = aname, split, ...},
             | Kind.Empty => []
             | Kind.Time =>
                  let
-                    fun t2s i = 
-                       Real.format (Real.fromIntInf i / ticksPerSecond, 
+                    fun t2s i =
+                       Real.format (Real.fromIntInf i / ticksPerSecond,
                                     Real.Format.fix (SOME 2))
                  in
                     [t2s total, " seconds of CPU time (",
@@ -1028,7 +1028,7 @@ fun commandLine args =
           Result.No msg => usage msg
         | Result.Yes (afile :: files) =>
              let
-                val mlmonFiles = files @ !mlmonFiles 
+                val mlmonFiles = files @ !mlmonFiles
                 val aInfo = AFile.new {afile = afile}
                 val _ =
                    if debug

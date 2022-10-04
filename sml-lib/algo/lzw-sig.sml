@@ -6,7 +6,7 @@ sig
 
   (* characters to encode/decode *)
   type ch
-    
+
   type 'a stream = unit -> 'a option
 
   datatype output =

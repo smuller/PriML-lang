@@ -3,10 +3,10 @@ structure Unify :> UNIFY =
 struct
 
     open IL
-        
+
     structure V = Variable.Map
-        
-    local 
+
+    local
         val last_tag = ref 0
     in
         fun new_ebind () =
@@ -37,12 +37,12 @@ struct
         (case x of
              TVar _ => false
            | TRec stl => ListUtil.existsecond (occurs r) stl
-           | Arrow (_, t1, t2) => List.exists (occurs r) t1 
+           | Arrow (_, t1, t2) => List.exists (occurs r) t1
                                   orelse occurs r t2
            | Arrows al => List.exists (fn (_, tl, t) =>
                                        List.exists (occurs r) tl
                                        orelse occurs r t) al
-           | Sum (lcl) => 
+           | Sum (lcl) =>
                  ListUtil.existsecond (fn (Carrier {carried=t, ...}) => occurs r t | _ => false) lcl
            | Mu (_, vcl) => ListUtil.existsecond (occurs r) vcl
            | TRef c => occurs r c
@@ -86,12 +86,12 @@ struct
     fun unifyex ctx eqmap t1 t2 =
         (case (t1, t2) of
              (TVar v1, TVar v2) =>
-                 ignore (Variable.eq (mapift eqmap v1, v2) 
+                 ignore (Variable.eq (mapift eqmap v1, v2)
                             orelse raise Unify "Var")
 
-           | (TTag (t1, v1), TTag (t2, v2)) => 
+           | (TTag (t1, v1), TTag (t2, v2)) =>
                  let in
-                     Variable.eq (mapift eqmap v1, v2) 
+                     Variable.eq (mapift eqmap v1, v2)
                       orelse raise Unify "tag var";
                      unifyex ctx eqmap t1 t2
                  end
@@ -100,9 +100,9 @@ struct
            | (TCont t1, TCont t2) => unifyex ctx eqmap t1 t2
            | (TRec lcl1, TRec lcl2) =>
                  let
-                     val l = ListUtil.sort 
+                     val l = ListUtil.sort
                               (ListUtil.byfirst String.compare) lcl1
-                     val r = ListUtil.sort 
+                     val r = ListUtil.sort
                               (ListUtil.byfirst String.compare) lcl2
                  in
                      ignore
@@ -113,10 +113,10 @@ struct
                                      end) l r
                       orelse raise Unify "Record")
                  end
-           | (Arrow (_, dom1, cod1), Arrow (_, dom2, cod2)) => 
+           | (Arrow (_, dom1, cod1), Arrow (_, dom2, cod2)) =>
                  let in
-                     ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b; 
-                                                  true)) 
+                     ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b;
+                                                  true))
                                         dom1 dom2
                         orelse raise Unify "Arrow domains have different arity";
                      unifyex ctx eqmap cod1 cod2
@@ -132,16 +132,16 @@ struct
                  if same_evar r t1 then ()
                  else if occurs r t1 then
                          raise Unify "circularity"
-                      else set r t1 
+                      else set r t1
            | (TRef c1, TRef c2) => unifyex ctx eqmap c1 c2
-           | (Mu (i1, m1), Mu (i2, m2)) => 
+           | (Mu (i1, m1), Mu (i2, m2)) =>
                let val (mt, mw) = eqmap
                in
                  ignore
                  ((i1 = i2 andalso
                    ListUtil.all2 (fn ((v1, t1),
                                      (v2, t2)) =>
-                                 (unifyex ctx (mapplus mt (v1, v2), mw) t1 t2; 
+                                 (unifyex ctx (mapplus mt (v1, v2), mw) t1 t2;
                                   true)) m1 m2)
                   orelse raise Unify "mu")
                end
@@ -151,8 +151,8 @@ struct
                                       (l2, t2)) =>
                                   ((case (t1, t2) of
                                       (NonCarrier, NonCarrier) => ()
-                                    | (Carrier { definitely_allocated = aa1, carried = tt1}, 
-                                       Carrier { definitely_allocated = aa2, carried = tt2}) => 
+                                    | (Carrier { definitely_allocated = aa1, carried = tt1},
+                                       Carrier { definitely_allocated = aa2, carried = tt2}) =>
                                         let in
                                           if aa1 = aa2 then ()
                                           else raise Unify "sum:always_allocated(bug!)";
@@ -165,7 +165,7 @@ struct
                   orelse raise Unify "sum")
 (*
            | (TAddr w1, TAddr w2) => unifywex ctx eqmap w1 w2
-           | (Shamrock (w1, t1), Shamrock (w2, t2)) => 
+           | (Shamrock (w1, t1), Shamrock (w2, t2)) =>
                  (* this binds world variables, so we need to insert those in
                     another map... *)
                  let val (mt, mw) = eqmap
@@ -183,8 +183,8 @@ struct
                    else ();
                    ListPair.app (fn ((_, dom1, cod1), (_, dom2, cod2)) =>
                                  let in
-                                   ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b; 
-                                                                true)) 
+                                   ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b;
+                                                                true))
                                    dom1 dom2
                                    orelse raise Unify "(inner) Arrows have different arity";
 
@@ -255,14 +255,14 @@ struct
 
       | (PEvar (r as ref (Free _)), w2) =>
           if same_wevar r w2 then ()
-          else if woccursw r w2 
+          else if woccursw r w2
                then raise Unify "circularity"
                else wset r w2
       | (w1, PEvar (r as ref (Free _))) =>
           if same_wevar r w1 then ()
-          else if woccursw r w1 
+          else if woccursw r w1
                then raise Unify "circularity"
-               else wset r w1 
+               else wset r w1
 
     fun unify ctx t1 t2  = unifyex ctx (Variable.Map.empty, Variable.Map.empty) t1 t2
 

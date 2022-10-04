@@ -108,7 +108,7 @@ val ('a, 'b) unfold: 'a * ('a -> ('b * 'a) option) -> 'b t =
             fun loop (a: 'a, n: 'b Node.t): 'b Node.t =
                case f a of
                   NONE => n
-                | SOME (b, a) => 
+                | SOME (b, a) =>
                      let
                         val n' = Node.new b
                         val _ = Node.setNext (n, n')

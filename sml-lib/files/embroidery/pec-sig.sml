@@ -15,7 +15,7 @@ sig
         (* stitches, in absolute coordinates, measured in mm *)
         stitches : (int * int) vector }
 
-  type pecfile = 
+  type pecfile =
       (* Could parse the name too, which comes in a fixed-length field right
          after the magic. But I can't figure out what the deal is with
          that part of the format: If the name is long, it appears that

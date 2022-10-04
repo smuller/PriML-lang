@@ -40,9 +40,9 @@ structure ErrorString : ErrorString =
    struct
       open
 	 ErrorData UniChar UtilString
-	 
 
-      fun errorChar2String c = 
+
+      fun errorChar2String c =
 	 case c
 	   of 0wx9 => "\\t"
 	    | 0wxA => "\\n"
@@ -50,11 +50,11 @@ structure ErrorString : ErrorString =
 		   else "U+"^UtilString.toUpperString
 		      (StringCvt.padLeft #"0" 4 (Chars.toString c))
 
-      fun errorData2String cs = 
+      fun errorData2String cs =
 	 String.concat (map errorChar2String cs)
-      fun errorVector2String vec = 
+      fun errorVector2String vec =
 	 errorData2String (Vector.foldr (op ::) nil vec)
-      
+
       val QUOTE = "'"
       fun quoteErrorChar0 c = QUOTE^errorChar2String c^QUOTE
       fun quoteErrorChar c = if c=0wx0 then "entity end" else QUOTE^errorChar2String c^QUOTE
@@ -62,8 +62,8 @@ structure ErrorString : ErrorString =
       fun quoteErrorString s = QUOTE^s^QUOTE
       fun quoteErrorVector v = QUOTE^errorVector2String v^QUOTE
 
-      fun Position2String (fname,l,c) = 
-	 if fname="" then "" 
+      fun Position2String (fname,l,c) =
+	 if fname="" then ""
 	 else String.concat ["[",fname,":",Int2String l,".",Int2String c,"]"]
 
       fun ExpItem2String exp =
@@ -73,10 +73,10 @@ structure ErrorString : ErrorString =
 	    | EXP_STRING s => s
 
       fun Expected2String exp =
-	 case exp 
+	 case exp
 	   of nil => "nothing"
 	    | [one] => ExpItem2String one
-	    | _ => let val l=List.length exp 
+	    | _ => let val l=List.length exp
 		   in List2xString ("",", ","") ExpItem2String (List.take (exp,l-1))
 		      ^" or "^ExpItem2String (List.last exp)
 		   end
@@ -145,7 +145,7 @@ structure ErrorString : ErrorString =
 	    | ENT_EXTERNAL => "external"
 
       fun Item2String item =
-	 case item 
+	 case item
 	   of IT_ATT_NAME => "attribute name"
 	    | IT_CDATA => "CDATA section"
 	    | IT_CHAR c => "character "^quoteErrorChar c
@@ -165,15 +165,15 @@ structure ErrorString : ErrorString =
 	    | IT_NOT_NAME => "notation name"
 	    | IT_NOTATION => "notation"
 	    | IT_PAR_ENT => "parameter entity"
-	    | IT_PAR_REF => "parameter entity reference" 
+	    | IT_PAR_REF => "parameter entity reference"
 	    | IT_REF => "reference"
 	    | IT_STAG => "start-tag"
 	    | IT_TARGET => "target name"
 
       fun AnItem2String item =
-	 case item 
+	 case item
 	   of IT_CHAR c => Item2String item
 	    | IT_DATA cs => Item2String item
-	    | _ => prependAnA (Item2String item) 
+	    | _ => prependAnA (Item2String item)
    end
-   
+

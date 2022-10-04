@@ -36,9 +36,9 @@ struct
   open D.F
   datatype ? = set_filter
 
-  local 
+  local
       fun mk16 nil = 0w0
-        | mk16 (n :: rest) = 
+        | mk16 (n :: rest) =
           Word16.orb (Word16.<< (0w1, Word.fromInt n), mk16 rest)
   in
       fun filter { category_bits : Word16.word,
@@ -60,9 +60,9 @@ struct
 
   val default_filter = D.default_filter
   fun filter_group_index (_, g) = g
-  fun filter_category_bits (w, _) = 
+  fun filter_category_bits (w, _) =
       Word16.fromInt (Word32.toInt (Word32.andb(Word32.>>(w, 0w16), 0wxFFFF)))
-  fun filter_mask_bits (w, _) = 
+  fun filter_mask_bits (w, _) =
       Word16.fromInt (Word32.toInt (Word32.andb(w, 0wxFFFF)))
 
   fun fixture_transform f = D.B.get_xf (get_body f)
@@ -87,14 +87,14 @@ struct
           (case D.F.get_body_opt f of
                (* Flag associated contacts for filtering. *)
                SOME body =>
-                   (oapp D.E.get_next 
+                   (oapp D.E.get_next
                     (fn edge =>
                      let
                          val contact = !!(D.E.get_contact edge)
                          val fixture_a = D.C.get_fixture_a contact
                          val fixture_b = D.C.get_fixture_b contact
                      in
-                         if D.F.eq (fixture_a, f) orelse 
+                         if D.F.eq (fixture_a, f) orelse
                             D.F.eq (fixture_b, f)
                          then D.C.flag_for_filtering contact
                          else ()

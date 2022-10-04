@@ -26,7 +26,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
 
 
       (* the underlying representation of both ivars and mvars is the same. *)
-      datatype 'a cell = 
+      datatype 'a cell =
          CELL of {prio  : int ref,
                   readQ : (trans_id * 'a S.thread) Q.t,
                   value : 'a option ref}
@@ -47,7 +47,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
 
       (* functions to clean channel input and output queues *)
       local
-         fun cleaner (TXID txst, _) = 
+         fun cleaner (TXID txst, _) =
             case !txst of CANCEL => true | _ => false
       in
          fun cleanAndDeque q =
@@ -65,10 +65,10 @@ structure SyncVar : SYNC_VAR_EXTRA =
        * from the readQ in the unlikely event that a single thread executes a
        * choice of multiple gets on the same variable.
        *)
-      fun relayMsg (readQ, msg) = 
+      fun relayMsg (readQ, msg) =
          case (cleanAndDeque readQ) of
             NONE => S.atomicEnd()
-          | SOME (txid, t) => 
+          | SOME (txid, t) =>
                S.readyAndSwitch
                (fn () =>
                 (TransID.force txid
@@ -76,10 +76,10 @@ structure SyncVar : SYNC_VAR_EXTRA =
 
       (** G-variables **)
       (* Generalized synchronized variables,
-       * to factor out the common operations. 
+       * to factor out the common operations.
        *)
 
-      fun gPut (name, CELL {prio, readQ, value}, x) = 
+      fun gPut (name, CELL {prio, readQ, value}, x) =
          let
             val () = Assert.assertNonAtomic (fn () => concat ["SyncVar.", name])
             val () = debug (fn () => concat [name, "(1)"]) (* NonAtomic *)
@@ -87,14 +87,14 @@ structure SyncVar : SYNC_VAR_EXTRA =
             val () = S.atomicBegin()
             val () = debug (fn () => concat [name, "(2)"]) (* Atomic 1 *)
             val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(2)"], SOME 1)
-            val () = 
+            val () =
                case !value of
-                  NONE => 
+                  NONE =>
                      let
                         val () = debug (fn () => concat [name, "(3.1.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.1.1)"], SOME 1)
                         val () = value := SOME x
-                        val () = 
+                        val () =
                            case cleanAndDeque readQ of
                               NONE => S.atomicEnd ()
                             | SOME (rtxid, rt) =>
@@ -108,14 +108,14 @@ structure SyncVar : SYNC_VAR_EXTRA =
                      in
                         ()
                      end
-                | SOME _ => 
+                | SOME _ =>
                      let
                         val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)
                         val () = S.atomicEnd ()
                         val () = debug (fn () => concat [name, "(3.2.2)"]) (* NonAtomic *)
                         val () = Assert.assertNonAtomic (fn () => concat ["SyncVar.", name, "(3.2.2)"])
-                     in 
+                     in
                         raise Put
                      end
             val () = debug (fn () => concat [name, "(4)"]) (* NonAtomic *)
@@ -127,7 +127,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
       (* Swap the current contents of the cell with a new value;
        * it is guaranteed to be atomic.
        *)
-      fun gSwap (name, doSwap, CELL {prio, readQ, value}) = 
+      fun gSwap (name, doSwap, CELL {prio, readQ, value}) =
          let
             val () = Assert.assertNonAtomic (fn () => concat ["SyncVar.", name, ""])
             val () = debug (fn () => concat [name, "(1)"]) (* NonAtomic *)
@@ -137,11 +137,11 @@ structure SyncVar : SYNC_VAR_EXTRA =
             val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(2)"], SOME 1)
             val msg =
                case !value of
-                  NONE => 
+                  NONE =>
                      let
                         val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)
-                        val msg = 
+                        val msg =
                            S.atomicSwitchToNext
                            (fn rt => enqueAndClean (readQ, (TransID.mkTxId (), rt)))
                         val () = debug (fn () => concat [name, "(3.2.2)"]) (* Atomic 1 *)
@@ -153,7 +153,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
                      in
                         msg
                      end
-                | SOME x => 
+                | SOME x =>
                      let
                         val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)
@@ -171,7 +171,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
             msg
          end
 
-      fun gSwapEvt (name, doSwap, CELL{prio, readQ, value}) = 
+      fun gSwapEvt (name, doSwap, CELL{prio, readQ, value}) =
          let
             fun doitFn () =
                let
@@ -187,12 +187,12 @@ structure SyncVar : SYNC_VAR_EXTRA =
                in
                   x
                end
-            fun blockFn {transId, cleanUp, next} = 
+            fun blockFn {transId, cleanUp, next} =
                let
                   val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, ".blockFn"], NONE)
                   val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                   val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)
-                  val msg = 
+                  val msg =
                      S.atomicSwitch
                      (fn rt =>
                       (enqueAndClean (readQ, (transId, rt))
@@ -222,7 +222,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
             E.bevt pollFn
          end
 
-      fun gSwapPoll (name, doSwap, CELL{prio, value, ...}) = 
+      fun gSwapPoll (name, doSwap, CELL{prio, value, ...}) =
          let
             val () = Assert.assertNonAtomic (fn () => concat ["SyncVar.", name, ""])
             val () = debug (fn () => concat [name, "(1)"]) (* NonAtomic *)
@@ -232,7 +232,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
             val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(2)"], SOME 1)
             val msg =
                case !value of
-                  NONE => 
+                  NONE =>
                      let
                         val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)
@@ -245,7 +245,7 @@ structure SyncVar : SYNC_VAR_EXTRA =
                      in
                         msg
                      end
-                | SOME x => 
+                | SOME x =>
                      let
                         val () = debug (fn () => concat [name, "(3.2.1)"]) (* Atomic 1 *)
                         val () = Assert.assertAtomic (fn () => concat ["SyncVar.", name, "(3.2.1)"], SOME 1)

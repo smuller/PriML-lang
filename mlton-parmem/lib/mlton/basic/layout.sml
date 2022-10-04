@@ -9,7 +9,7 @@
 structure Layout: LAYOUT =
 struct
 
-structure Out = Outstream0   
+structure Out = Outstream0
 structure Int = Pervasive.Int
 val detailed = ref false
 

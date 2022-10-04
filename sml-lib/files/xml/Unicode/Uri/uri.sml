@@ -7,14 +7,14 @@ require "basis.__word";
 require "basis.__word8";
 
 require "util.unsafe";
-require "util.utilInt"; 
+require "util.utilInt";
 
-require "chars"; 
-require "naming"; 
+require "chars";
+require "naming";
 *)
 signature Uri =
    sig
-      eqtype Uri      
+      eqtype Uri
 
       val emptyUri   : Uri
 
@@ -33,7 +33,7 @@ signature Uri =
       val rawUri : string -> Uri
 
       val retrieveUri : Uri -> string * string * bool
-      (* Like above, but supports in-memory URIs with raw-data:<bytes> url scheme. 
+      (* Like above, but supports in-memory URIs with raw-data:<bytes> url scheme.
          Can raise IO.Io. *)
       val retrieveUriStream : Uri -> { uri : string,
                                        filename : string,
@@ -56,14 +56,14 @@ structure Uri :> Uri =
       val Vector2Uri = Vector2UriUtf8
       val Data2Uri = Data2UriUtf8
       val String2Uri = String2UriUtf8
-      val Uri2String = decodeUriUtf8 
+      val Uri2String = decodeUriUtf8
 
       fun rawUri s = "raw-data:" ^ s
 
       val slash = "/"
 
       fun uriSuffix s =
-         let fun search i = if i<0 then NONE else case String.sub(s,i) 
+         let fun search i = if i<0 then NONE else case String.sub(s,i)
                                                     of #"." => SOME i
                                                      | #"/" => NONE
                                                      | _ => search (i-1)
@@ -72,34 +72,34 @@ structure Uri :> Uri =
                | SOME i => String.extract(s,i+1,NONE)
          end
 
-      fun isScheme c = 
+      fun isScheme c =
          Char.isAlphaNum c orelse #"+"=c orelse #"-"=c orelse #"."=c
 
       fun uriAbsolute uri =
-         let fun search i = 
+         let fun search i =
             if i>=String.size uri then false
             else let val c=String.sub(uri,i)
                  in if #":"=c then true else if isScheme c then search (i+1)
                                              else false
                  end
-         in 
+         in
             if uri="" then false
             else if Char.isAlpha (String.sub(uri,0)) then search 1
                  else false
          end
       fun uriRelative uri = not (uriAbsolute uri)
-                 
+
       fun uriLocal uri =
-         if String.isPrefix "file:" uri 
-            then SOME(String.extract(uri,5,NONE)) 
-         else if uriRelative uri then SOME uri 
+         if String.isPrefix "file:" uri
+            then SOME(String.extract(uri,5,NONE))
+         else if uriRelative uri then SOME uri
               else NONE
 
       fun uriPath s =
-         let 
-            fun search (i,hadSlash) = 
+         let
+            fun search (i,hadSlash) =
                if i<0 then if hadSlash then SOME 0 else NONE
-               else case String.sub(s,i) 
+               else case String.sub(s,i)
                       of #"/" => if hadSlash then NONE else search(i-1,true)
                        | _ => if hadSlash then SOME(i+1) else search(i-1,false)
             val len = String.size s
@@ -111,24 +111,24 @@ structure Uri :> Uri =
          end
 
       fun uriAuth uri =
-         let 
-            fun searchScheme i = 
+         let
+            fun searchScheme i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #":"=c then SOME i else if isScheme c then searchScheme (i+1)
                                                   else NONE
                  end
-            fun searchSlash i = 
+            fun searchSlash i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #"/"=c then SOME i else searchSlash (i+1)
                     end
-         in 
+         in
             if uri="" then ""
             else if not (Char.isAlpha(String.sub(uri,0))) then ""
                  else case searchScheme 1
                         of NONE => ""
-                         | SOME i => 
+                         | SOME i =>
                            if String.size uri<=i+2 then String.extract(uri,0,SOME(i+1))
                            else if #"/"=String.sub(uri,i+1) andalso #"/"=String.sub(uri,i+2)
                                    then case searchSlash (i+3)
@@ -138,22 +138,22 @@ structure Uri :> Uri =
          end
 
       fun uriScheme uri =
-         let 
-            fun searchScheme i = 
+         let
+            fun searchScheme i =
                if i>=String.size uri then NONE
                else let val c=String.sub(uri,i)
                     in if #":"=c then SOME i else if isScheme c then searchScheme (i+1)
                                                   else NONE
                  end
-         in 
+         in
             if uri="" then ""
             else if not (Char.isAlpha(String.sub(uri,0))) then ""
                  else case searchScheme 1
                         of NONE => ""
                          | SOME i => String.extract(uri,0,SOME(i+1))
          end
-      
-      fun uriJoin(abs,rel) = 
+
+      fun uriJoin(abs,rel) =
          if rel="" then uriPath abs
          else if abs="" then rel
          else if String.isPrefix "//" rel then uriScheme abs^rel
@@ -165,9 +165,9 @@ structure Uri :> Uri =
       val hashUri = UtilHash.hashString
 
       fun convertCommand str (src,dst) =
-         let 
+         let
             val s = Substring.full str
-            fun doit ss s = 
+            fun doit ss s =
                if Substring.isEmpty s then ss
                else let val (sl,sr) = Substring.splitr (fn c => #"%"<>c) s
                     in if Substring.isEmpty sl then sr::ss
@@ -189,14 +189,14 @@ structure Uri :> Uri =
 
       fun retrieveRemote uri = raise NoSuchFile (uri, "remote access disabled")
 (*
-         let 
+         let
             val tmp = OS.FileSys.tmpName()
             val cmd = convertCommand Config.retrieveCommand (uri,tmp)
             val status = OS.Process.system cmd
             val _ = if status = OS.Process.success then ()
-                    else let val _ = (OS.FileSys.remove tmp 
+                    else let val _ = (OS.FileSys.remove tmp
                                       handle OS.SysErr _ => ())
-                             val cmd = convertCommand 
+                             val cmd = convertCommand
                                 Config.retrieveCommand ("<uri>",tmp)
                          in raise NoSuchFile (uri,"command '"^cmd^"' failed")
                          end
@@ -204,14 +204,14 @@ structure Uri :> Uri =
          end
 *)
 
-      fun retrieveUri uri = 
+      fun retrieveUri uri =
          case uriLocal uri
-           of SOME f => (Uri2String uri,Uri2String f,false) 
-            | NONE => retrieveRemote uri 
+           of SOME f => (Uri2String uri,Uri2String f,false)
+            | NONE => retrieveRemote uri
 
       fun uriData (uri : string) =
-         if String.isPrefix "raw-data:" uri 
-            then SOME(String.extract(uri,9,NONE)) 
+         if String.isPrefix "raw-data:" uri
+            then SOME(String.extract(uri,9,NONE))
          else NONE
 
       fun retrieveUriStream uri =
@@ -222,16 +222,16 @@ structure Uri :> Uri =
                      instream = TextIO.openIn fname }
                 end
             | SOME s =>
-                { uri = Uri2String uri, 
+                { uri = Uri2String uri,
                   filename = "<in-memory>",
                   tmp = false,
-                  instream = 
+                  instream =
                   (* Create a TextIO.instream from a string in
                      memory. Not sure why nullRd works (from
                      the Basis documentation it doesn't seem
                      like it should have any functions defined),
                      but it does. - tom 7   23 May 2010 *)
-                  TextIO.mkInstream 
+                  TextIO.mkInstream
                   (TextIO.StreamIO.mkInstream
                    (TextPrimIO.nullRd (),
                     s)) }

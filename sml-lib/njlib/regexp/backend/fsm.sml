@@ -2,12 +2,12 @@
  *
  * COPYRIGHT (c) 2008 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
- * 
+ *
  * Non-deterministic and deterministic finite-state machines.
  *)
 
 
-signature NFA = 
+signature NFA =
     sig
 
         exception SyntaxNotHandled
@@ -26,8 +26,8 @@ signature NFA =
         val print : nfa -> unit
     end
 
-structure Nfa : NFA = 
-    struct 
+structure Nfa : NFA =
+    struct
 
         exception SyntaxNotHandled
 
@@ -39,31 +39,31 @@ structure Nfa : NFA =
           | compareCharOption (SOME(c),SOME(c')) = Char.compare (c,c')
 
         structure S = RegExpSyntax
-        structure IntSet = 
-            ListSetFn (struct 
-                           type ord_key = int 
-                           val compare = Int.compare 
+        structure IntSet =
+            ListSetFn (struct
+                           type ord_key = int
+                           val compare = Int.compare
                        end)
-        structure Int2Set = 
+        structure Int2Set =
             ListSetFn (struct
                            type ord_key = int * int
-                           fun compare ((i1,i2),(j1,j2)) = 
+                           fun compare ((i1,i2),(j1,j2)) =
                                case (Int.compare (i1,j1))
                                  of EQUAL => Int.compare (i2,j2)
                                   | v => v
                        end)
-        structure MoveSet = 
-            ListSetFn (struct 
-                           type ord_key = move 
+        structure MoveSet =
+            ListSetFn (struct
+                           type ord_key = move
                            fun compare (Move (i,c,j),Move (i',c',j')) =
                                (case (Int.compare (i,i'))
-                                    of EQUAL => 
-                                        (case (compareCharOption (c,c')) 
+                                    of EQUAL =>
+                                        (case (compareCharOption (c,c'))
                                              of EQUAL => Int.compare (j,j')
                                               | v => v)
                                      | v => v)
                        end)
-        structure CharSet = 
+        structure CharSet =
             ListSetFn (struct
                            type ord_key = char
                            val compare = Char.compare
@@ -73,7 +73,7 @@ structure Nfa : NFA =
         structure I2 = Int2Set
         structure M = MoveSet
         structure C = CharSet
-            
+
         (* create sets from lists *)
         fun iList l = I.addList (I.empty,l)
         fun mList l = M.addList (M.empty,l)
@@ -82,7 +82,7 @@ structure Nfa : NFA =
                                moves : M.set,
                                accepting : I2.set}
 
-        fun print (Nfa {states,moves,accepting}) = 
+        fun print (Nfa {states,moves,accepting}) =
             let val pr = TextIO.print
                 val prI = TextIO.print o Int.toString
                 val prI2 = TextIO.print o (fn (i1,i2) => (Int.toString i1))
@@ -117,11 +117,11 @@ structure Nfa : NFA =
         fun renumberAcc n (st,n') = (n+st,n')
 
         fun build' n (S.Group e) = build' n e
-          | build' n (S.Alt l) = 
+          | build' n (S.Alt l) =
               foldr (fn (Nfa {states=s1,
                               moves=m1,...},
                          Nfa {states=s2,
-                              moves=m2,...}) => 
+                              moves=m2,...}) =>
                      let val k1 = I.numItems s1
                          val k2 = I.numItems s2
                          val s1' = I.map (renumber 1) s1
@@ -139,7 +139,7 @@ structure Nfa : NFA =
                               accepting=I2.singleton (k1+k2+1,n)}
                      end)
                     (nullRefuse n) (map (build' n) l)
-          | build' n (S.Concat l) = 
+          | build' n (S.Concat l) =
               foldr (fn (Nfa {states=s1,moves=m1,...},
                          Nfa {states=s2,moves=m2,accepting}) =>
                      let val k = I.numItems s1 - 1
@@ -154,7 +154,7 @@ structure Nfa : NFA =
                     (nullAccept n) (map (build' n) l)
           | build' n (S.Interval (e,n1,n2)) = raise SyntaxNotHandled
           | build' n (S.Option e) = build' n (S.Alt [S.Concat [], e])
-          | build' n (S.Plus e) = 
+          | build' n (S.Plus e) =
               let val (Nfa {states,moves,...}) = build' n e
                   val m = I.numItems states
               in
@@ -164,7 +164,7 @@ structure Nfa : NFA =
                        accepting=I2.singleton (m,n)}
               end
           | build' n (S.Star e) = build' n (S.Alt [S.Concat [], S.Plus e])
-          | build' n (S.MatchSet s) = 
+          | build' n (S.MatchSet s) =
               if (S.CharSet.isEmpty s) then nullAccept (n)
               else
                   let val moves = S.CharSet.foldl (fn (c,moveSet) => M.add (moveSet,Move (0,SOME c,1)))
@@ -174,7 +174,7 @@ structure Nfa : NFA =
                            moves=moves,
                            accepting=I2.singleton (1,n)}
                   end
-          | build' n (S.NonmatchSet s) = 
+          | build' n (S.NonmatchSet s) =
               let val moves = S.CharSet.foldl (fn (c,moveSet) => M.add (moveSet,Move (0,SOME c,1)))
                                               M.empty (S.CharSet.difference (S.allChars,s))
               in
@@ -204,11 +204,11 @@ structure Nfa : NFA =
                               Nfa {states=states, moves=moves, accepting=accepting}
                           end
 
-        fun buildPattern rs = 
+        fun buildPattern rs =
             let fun loop ([],_) = []
                   | loop (r::rs,n) = (build (r,n))::(loop (rs,n+1))
                 val rs' = loop (rs,0)
-                val renums = foldr (fn (Nfa {states,...},acc) => 1::(map (fn k=>k+I.numItems states) 
+                val renums = foldr (fn (Nfa {states,...},acc) => 1::(map (fn k=>k+I.numItems states)
                                                                      acc)) [] rs'
                 val news = ListPair.map (fn (Nfa {states,moves,accepting},renum) =>
                                               let val newStates=I.map (renumber renum) states
@@ -229,10 +229,10 @@ structure Nfa : NFA =
                                                       I2.empty) news
             in
                 Nfa {states=states,moves=moves,accepting=accepting}
-                
-            end         
-                      
-        fun accepting (Nfa {accepting,...}) state = 
+
+            end
+
+        fun accepting (Nfa {accepting,...}) state =
             let val item = I2.find (fn (i,_) => (i=state)) accepting
             in
                 case item
@@ -241,10 +241,10 @@ structure Nfa : NFA =
             end
 
         (* Compute possible next states from orig with character c *)
-        fun oneMove (Nfa {moves,...}) (orig,char) = 
+        fun oneMove (Nfa {moves,...}) (orig,char) =
               M.foldr (fn (Move (_,NONE,_),set) => set
-                        | (Move (or,SOME c,d),set) => 
-                             if (c=char) andalso (or=orig) 
+                        | (Move (or,SOME c,d),set) =>
+                             if (c=char) andalso (or=orig)
                                  then I.add (set,d)
                              else set)
                       I.empty moves
@@ -256,18 +256,18 @@ structure Nfa : NFA =
                           then (true,I.add (states,dest))
                       else (b,states)
                   | addState (_,bs) = bs
-                fun loop (states) = 
+                fun loop (states) =
                     let val (modified,new) = M.foldr addState
                                                      (false,states) moves
                     in
                         if modified
-                            then loop (new) 
-                        else new 
+                            then loop (new)
+                        else new
                     end
             in
                 loop (origSet)
             end
-        
+
         fun move nfa =
             let val closure = closure nfa
                 val oneMove = oneMove nfa
@@ -287,11 +287,11 @@ structure Nfa : NFA =
 
     end
 
-signature DFA = 
+signature DFA =
     sig
 
         exception SyntaxNotHandled
-        
+
         type dfa
 
         val build : RegExpSyntax.syntax -> dfa
@@ -302,7 +302,7 @@ signature DFA =
 
     end
 
-structure Dfa : DFA = 
+structure Dfa : DFA =
     struct
 
         exception SyntaxNotHandled
@@ -316,31 +316,31 @@ structure Dfa : DFA =
 
         structure N = Nfa
         structure IntSet = N.IntSet
-        structure IntSetSet = 
+        structure IntSetSet =
             ListSetFn (struct
                            type ord_key = IntSet.set
                            val compare = IntSet.compare
                        end)
-        structure Int2Set = 
+        structure Int2Set =
             ListSetFn (struct
                            type ord_key = int * int
-                           fun compare ((i1,i2),(j1,j2)) = 
+                           fun compare ((i1,i2),(j1,j2)) =
                                case (Int.compare (i1,j1))
                                  of EQUAL => Int.compare (i2,j2)
                                   | v => v
                        end)
-        structure MoveSet = 
-            ListSetFn (struct 
-                           type ord_key = move 
+        structure MoveSet =
+            ListSetFn (struct
+                           type ord_key = move
                            fun compare (Move (i,c,j),Move (i',c',j')) =
                                (case (Int.compare (i,i'))
-                                  of EQUAL => 
-                                      (case (compareCharOption (c,c')) 
+                                  of EQUAL =>
+                                      (case (compareCharOption (c,c'))
                                          of EQUAL => Int.compare (j,j')
                                           | v => v)
                                    | v => v)
                        end)
-        structure CharSet = 
+        structure CharSet =
             ListSetFn (struct
                            type ord_key = char
                            val compare = Char.compare
@@ -357,7 +357,7 @@ structure Dfa : DFA =
                                        type ord_key = IntSet.set
                                        val compare = IntSet.compare
                                    end)
-            
+
         (* create sets from lists *)
         fun iList l = I.addList (I.empty,l)
         fun mList l = M.addList (M.empty,l)
@@ -369,7 +369,7 @@ structure Dfa : DFA =
                                accTable : (int option) A.array,
                                startTable : bool A.array}
 
-        fun print (Dfa {states,moves,accepting,...}) = 
+        fun print (Dfa {states,moves,accepting,...}) =
             let val pr = TextIO.print
                 val prI = TextIO.print o Int.toString
                 val prI2 = TextIO.print o (fn (i1,i2) => Int.toString i1)
@@ -395,18 +395,18 @@ structure Dfa : DFA =
             end
 
 
-        fun move' moves (i,c) = 
+        fun move' moves (i,c) =
             (case (M.find (fn (Move (s1,SOME c',s2)) =>
                            (s1=i andalso c=c') | _ => raise Match (* -tom7 *))
                    moves)
                of NONE => NONE
                 | SOME (Move (s1,SOME c',s2)) => SOME s2
                 | _ => raise Match (* -tom7 *))
-                 
+
 (*      fun move (Dfa {moves,...}) (i,c) = move' moves (i,c) *)
         fun move (Dfa {table,...}) (i,c) = A2.sub (table,i,ord(c)-ord(Char.minChar))
 
-        fun accepting' accepting i = I2.foldr (fn ((s,n),NONE) => if (s=i) 
+        fun accepting' accepting i = I2.foldr (fn ((s,n),NONE) => if (s=i)
                                                                       then SOME(n)
                                                                   else NONE
                                                 | ((s,n),SOME(n')) => if (s=i)
@@ -418,24 +418,24 @@ structure Dfa : DFA =
 
         fun canStart (Dfa {startTable,...}) c = A.sub (startTable,ord(c))
 
-        fun build' nfa = 
+        fun build' nfa =
             let val move = N.move nfa
                 val accepting = N.accepting nfa
                 val start = N.start nfa
                 val chars = N.chars nfa
-                fun getAllChars (ps) = 
+                fun getAllChars (ps) =
                     I.foldl
                     (fn (s,cs) => C.addList (cs,chars s))
                     C.empty ps
                 val initChars = getAllChars (start)
-                fun getAllStates (ps,c) = 
+                fun getAllStates (ps,c) =
                     I.foldl
                     (fn (s,ss) => I.union (ss,move (s,c)))
                     I.empty ps
                 fun loop ([],set,moves) = (set,moves)
-                  | loop (x::xs,set,moves) = 
+                  | loop (x::xs,set,moves) =
                     let val cl = getAllChars (x)
-                        val (nstack,sdu,ml) = 
+                        val (nstack,sdu,ml) =
                             C.foldl
                             (fn (c,(ns,sd,ml)) =>
                              let val u = getAllStates (x,c)
@@ -472,28 +472,28 @@ structure Dfa : DFA =
                  *)
                 fun minPattern accSet = let val l = map (valOf o accepting) (I.listItems accSet)
                                             fun loop ([],min) = min
-                                              | loop (n::ns,min) = 
+                                              | loop (n::ns,min) =
                                                            if (n<min) then loop (ns,n)
                                                            else loop (ns,min)
                                         in
                                             loop (tl(l),hd(l))
                                         end
                 val accept = IS.foldl (fn (is,cis) =>
-                                       let val items = I.filter (fn k => 
+                                       let val items = I.filter (fn k =>
                                                                  case (accepting k)
                                                                      of SOME _ => true
                                                                       | NONE => false) is
                                        in
-                                           if (I.isEmpty items) 
+                                           if (I.isEmpty items)
                                                then cis
-                                           else 
+                                           else
                                                I2.add (cis,(valOf (Map.find (sMap,is)),
                                                             minPattern items))
                                        end) I2.empty sSet
-                val table = A2.tabulate A2.RowMajor (!num, 
+                val table = A2.tabulate A2.RowMajor (!num,
                                          ord(Char.maxChar)-ord(Char.minChar)+1,
                                          fn (s,c) => move' moves (s,chr(c+ord(Char.minChar))))
-                val accTable = A.tabulate (!num, 
+                val accTable = A.tabulate (!num,
                                            fn (s) => accepting' accept s)
                 val startTable = A.tabulate (ord(Char.maxChar)-
                                              ord(Char.minChar)+1,
@@ -503,9 +503,9 @@ structure Dfa : DFA =
                 Dfa {states=states,moves=moves,accepting=accept,
                      table=table,accTable=accTable,startTable=startTable}
             end
-        
+
         fun build r = build' (N.build (r,0))
-                  
+
         fun buildPattern rs = build' (N.buildPattern rs)
 
 

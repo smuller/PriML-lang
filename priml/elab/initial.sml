@@ -43,7 +43,7 @@ struct
     val event_dict_name = "lc_ref"
 
     (* XXX maybe IL.Lambda should take type and world args? *)
-    val cons = 
+    val cons =
         [("ref", IL.Lambda (IL.TRef o hd), 1, IL.Regular),
          ("cont", IL.Lambda (IL.TCont o hd), 1, IL.Regular),
          ("vector", IL.Lambda (IL.TVec o hd), 1, IL.Regular),
@@ -102,7 +102,7 @@ struct
 
     (* XXX, just do it inline *)
     fun mono x = IL.Poly({prios=nil, tys=nil}, x)
-    fun quant (t, IL.Poly({prios, tys}, x)) = IL.Poly({prios = prios, 
+    fun quant (t, IL.Poly({prios, tys}, x)) = IL.Poly({prios = prios,
                                                         tys = t :: tys}, x)
 
       (* this is all in the standard library now... *)
@@ -113,7 +113,7 @@ struct
          (* XXX should really be exn cont, but there's no way to
             spell that type here. so make it unit cont and then the
             handler just can't use its argument. *)
-         ("sethandler_", P.PSethandler, 
+         ("sethandler_", P.PSethandler,
           mono(IL.Arrow(false, [IL.TCont ilunit], ilunit))),
 
          (* coercions *)
@@ -143,10 +143,10 @@ struct
 *)
 (*
          ("array0", P.PArray0, quant (a, mono
-                                         (IL.Arrow(true, nil, 
+                                         (IL.Arrow(true, nil,
                                                    IL.TVec (IL.TVar a))))),
 
-         ("vector", P.PArray, quant(a, mono 
+         ("vector", P.PArray, quant(a, mono
                                       (IL.Arrow(false, [ilint, IL.TVar a],
                                                 IL.TVec (IL.TVar a))))),
 *)
@@ -155,12 +155,12 @@ struct
                      (IL.Arrow(true, [IL.TVec (IL.TVar a)], ilint)))),
 
          (* unsafe versions *)
-         ("sub_", P.PSub, 
+         ("sub_", P.PSub,
             quant(a, mono
                      (IL.Arrow(false, [IL.TVec (IL.TVar a), ilint],
                                IL.TVar a))))
 (*
-         ("update_", P.PUpdate, 
+         ("update_", P.PUpdate,
             quant(a, mono
                      (IL.Arrow (false, [IL.TVec (IL.TVar a),
                                         ilint,
@@ -176,16 +176,16 @@ struct
              (name, ty, IL.Primitive prim)) polyfuns @
 *)
         map (fn (name, prim, cod, dom) =>
-             (name, mono (IL.Arrow(false, cod, dom)), 
+             (name, mono (IL.Arrow(false, cod, dom)),
               IL.Primitive prim)) monofuns
 
     (* there are no initial priority variables *)
     val worlds = []
     val initialw = foldl (fn ((id, w), ctx) => Context.bindp ctx id w) Context.empty worlds
-    
+
     (* but we start with one constant, "bot" *)
     val worldlabs = [botname]
-    val initialw = foldl (fn (s, ctx) => Context.bindplab ctx s) 
+    val initialw = foldl (fn (s, ctx) => Context.bindplab ctx s)
                                 initialw worldlabs
 
     val initialc = foldl (fn ((s, c, k, t), ctx) =>
@@ -219,20 +219,20 @@ struct
 
     (* Wrap an expression with declarations of things that are
        needed by elaboration, like bool and list. *)
-    (* XXX5 
+    (* XXX5
        this should instead be a list of default declarations,
        not an expression wrapper (for new unit-oriented
        compilation).
        the declarations of bool and list are safe,
        but the exceptions should be declared in a basis unit
        and imported here. *)
-                       
+
     fun wrap (EL.Prog(ds, c)) =
         let val loc = Pos.initposex "prelude"
             fun %x = (x, loc)
             val decbool =
-                EL.Dec (%(EL.Datatype 
-                              (nil, [(boolname, 
+                EL.Dec (%(EL.Datatype
+                              (nil, [(boolname,
                                       [(truename, NONE),
                                        (falsename, NONE)])])))
 
@@ -267,7 +267,7 @@ struct
 (*            val dectypes =
               %(EL.ExternType(nil, eventname, SOME event_dict_name))
  *)
-               
+
             val impexns =
               (* match ~ exn *)
               (EL.Dec (%(EL.Exception (matchname, NONE))))

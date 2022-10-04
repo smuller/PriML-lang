@@ -68,14 +68,14 @@ struct
 	 0wx5d681b02, 0wx2a6f2b94, 0wxb40bbe37, 0wxc30c8ea1, 0wx5a05df1b,
 	 0wx2d02ef8d : Word32.word]
 
-    fun crcstringi s i = 
+    fun crcstringi s i =
 	let
 	    val l = size s
 	    fun ss x = CharVector.sub (s, x)
 	    fun loop w off =
 		if off = l then w
-		else loop 
-		    (Vector.sub(table, 
+		else loop
+		    (Vector.sub(table,
 				Word32.toInt
 				(Word32.fromInt (ord (ss off)) xorb w
 				 andb 0w255)) xorb (w >> 0w8) ) (off + 1)

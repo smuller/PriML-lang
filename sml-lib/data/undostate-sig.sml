@@ -2,7 +2,7 @@
    in editing applications. States can be the entire "drawing"
    or some kind of delta; this is up to the client. Supports
    pushing a new state on the end, removing the oldest states
-   to conserve memory, and 'undo' and 'redo' actions. 
+   to conserve memory, and 'undo' and 'redo' actions.
 
    PERF note: These can mostly be implemented in constant time, but
    the current implementation is naive. *)
@@ -22,7 +22,7 @@ sig
     val truncate : 'a undostate -> int -> unit
 
     (* Record the new most-recent state and set the cursor to it.
-       This removes any 'future' state so an immediate redo will 
+       This removes any 'future' state so an immediate redo will
        always fail. *)
     val save : 'a undostate -> 'a -> unit
 
@@ -33,7 +33,7 @@ sig
        state, just moving the cursor. *)
     val undo : 'a undostate -> 'a option
 
-    (* Replay to the next state, if any. Always works immediately after 
+    (* Replay to the next state, if any. Always works immediately after
        an 'undo'; never works immediately after a 'save'. Preserves
        the length of the undo state, just moving the cursor. *)
     val redo : 'a undostate -> 'a option

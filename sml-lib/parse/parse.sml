@@ -30,7 +30,7 @@ struct
         case Stream.force ts of
             Stream.Nil => raise Fail (Pos.rightedge pos)
           | Stream.Cons ((x, pos), ts) => (x, pos, pos, ts)
-                   
+
   fun (p -- q) (pos,ts) =
         let val (x,posx,pos,ts) = p (pos,ts)
             val (y,posy,pos,ts) = q x (pos,ts)
@@ -57,7 +57,7 @@ struct
     end
 
   fun get f (pos, ts) = f pos (pos, ts)
-      
+
   fun $ p (pos, ts) = p () (pos, ts)
 
   fun fix f (pos, ts) = f (fix f) (pos, ts)
@@ -107,7 +107,7 @@ struct
 
   fun p wth f      = p -- succeed o f
   fun p suchthat g = p -- (fn x => if g x then succeed x else fail)
-  fun p when f     = 
+  fun p when f     =
       p -- (fn x => case f x of SOME r => succeed r | NONE => fail)
 
   fun p return x   = p -- (fn _ => succeed x)
@@ -119,7 +119,7 @@ struct
 
   fun satisfy g = any suchthat g
 
-  fun maybe f = any -- 
+  fun maybe f = any --
                 (fn x => case f x of SOME r => succeed r | _ => fail)
 
   fun literal t = satisfy (fn t' => t = t')
@@ -219,9 +219,9 @@ struct
   fun resolvefixityadj cadj cassoc ys =
       let fun resolve (Atm(a)::xs,Atm(a'),ys) =
 
-            (* treat adjacent tokens as if they have an infix operator 
+            (* treat adjacent tokens as if they have an infix operator
                of high precedence between them -- Tom *)
-                 resolve (Atm(a)::xs, Opr(Infix(cassoc, 999, cadj)), 
+                 resolve (Atm(a)::xs, Opr(Infix(cassoc, 999, cadj)),
                           Atm(a')::ys)
             | resolve (xs,Atm(a),ys) =
                  next (Atm(a)::xs,ys)

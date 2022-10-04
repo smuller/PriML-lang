@@ -10,11 +10,11 @@ struct
     structure P = Primop
 
     val debugopt = Params.flag false
-        (SOME ("-debugoptil", 
+        (SOME ("-debugoptil",
                "Show lots of optimization info for IL")) "debugoptil"
 
     val showopt = Params.flag false
-        (SOME ("-showopt", 
+        (SOME ("-showopt",
                "Show each pass of optimization")) "showopt"
 
     val info = Params.flag false
@@ -61,11 +61,11 @@ struct
       | constant _ = false
 
     (* for debugging *)
-    fun printfvs m = 
+    fun printfvs m =
         let in
             print "fvs:\n";
             VM.appi (fn (v, tol) =>
-                     print ("  " ^ V.show v ^ ": " ^ 
+                     print ("  " ^ V.show v ^ ": " ^
                             Int.toString (length tol) ^ " entries\n")) m
         end
 
@@ -73,7 +73,7 @@ struct
         (oneshot, VM.insert(info, v, oneshot))
 
     val progress = ref 0
-    fun prog s n = 
+    fun prog s n =
         let in
             if !info orelse !debugopt
             then print ("progress: " ^ s ^ "\n")
@@ -83,7 +83,7 @@ struct
 
     fun valuable e = (e, VM.empty, true)
 
-    fun union' s1 s2 = 
+    fun union' s1 s2 =
         (if !debugopt
          then
              let in
@@ -103,7 +103,7 @@ struct
                      printfvs u
                  end
              else ();
-                 
+
              u
          end)
 
@@ -121,7 +121,7 @@ struct
 
     (* remove a variable from the map. because the
        variable is now bound, replace all uses of it
-       with the variable itself. 
+       with the variable itself.
 
        (I made this work for poly as well as mono
         variables, since I didn't see any need to
@@ -157,7 +157,7 @@ struct
 
        in each bundle, the function definitions may
        only make reference to functions that appear
-       AFTER them (or within the same bundle). 
+       AFTER them (or within the same bundle).
        So the first bundle of functions is the
        *last* one bound in the code. *)
     (* PERF conservative *)
@@ -222,11 +222,11 @@ struct
 
                          letcc u
                          in (fn x => someref := u)
-                         end 
+                         end
 
                          anyway letcc is tricky, don't try to be clever
                          *)
-                         
+
                       (Letcc(v, t, ee), fvh, false)
                     end
 
@@ -255,7 +255,7 @@ struct
                      (Proj(l, t, ee), fv, va)
                  end
 
-           | Raise (t, e) => 
+           | Raise (t, e) =>
                  let
                      val (ee, fv, _) = deadcode G e
                  in
@@ -269,9 +269,9 @@ struct
                      (* if the body is valuable, then it can't
                         raise an exception, so simplify *)
                      if va then (prog "handle" 100; (ee, fv, true))
-                     else 
+                     else
                          let
-                             val (eh, fvh, _) = 
+                             val (eh, fvh, _) =
                                  deadcode (G ++ (v, false)) handler
 
                              val fvh = remove v fvh
@@ -295,7 +295,7 @@ struct
                          end
                  end
 
-          | Roll (t, e) => 
+          | Roll (t, e) =>
                  let
                      val (ee, fv, va) = deadcode G e
                  in
@@ -334,12 +334,12 @@ struct
                      (* no reductions *)
                      val plain = (Primapp(po, eel, tl), fvs, false)
                      (* maintains valuability *)
-                     val vplain = (Primapp(po, eel, tl), fvs, va) 
+                     val vplain = (Primapp(po, eel, tl), fvs, va)
                  in
                    (* FIXME these operations should be 32-bit unsigned,
                       which (especially for DIV) differs from what Int
                       does by default *)
-                      
+
                      (* PERF: want to actually do reductions
                         here if possible. *)
                      (* XXX we should agree with some "semantics" about
@@ -357,27 +357,27 @@ struct
                                         valuable (Int (n + m)))
                                  | _ => plain)
 
-                        | P.PNotb => 
+                        | P.PNotb =>
                               (case eel of
                                  [Int w] => (prog "notb" 5;
                                               valuable (Int (Word32.notb w)))
                                | _ => plain)
 
-                        | P.B P.PShr => 
+                        | P.B P.PShr =>
                               (case eel of
                                  [Int w, Int f] => (prog "shr" 5;
-                                                    valuable (Int 
+                                                    valuable (Int
                                                               (Word32.>>
                                                                (w,
                                                                 Word.fromInt
                                                                 (Word32.toInt f)))))
                                | _ => plain)
 
-                        | P.B P.PMinus => 
+                        | P.B P.PMinus =>
                               (case eel of
                                    [e, Int 0w0] => (prog "minus0" 5;
                                                   (e, fvs, va))
-                                 | [Int n, Int m] => 
+                                 | [Int n, Int m] =>
                                        (prog "minus" 5;
                                         valuable (Int (n - m)))
                                  | _ => plain)
@@ -385,7 +385,7 @@ struct
                                  (*
                                  (* PERF off because semantics
                                     don't match udiv instruction *)
-                        | P.B P.PDiv => 
+                        | P.B P.PDiv =>
                               (case eel of
                                    [_, Int 0w0] => plain
                                  | [e, Int 1w0] => (prog "div1" 5;
@@ -398,7 +398,7 @@ struct
                                  | _ => plain)
                                  *)
 
-                        | P.B P.PTimes => 
+                        | P.B P.PTimes =>
                               (case eel of
                                    [Int 0w1, e] => (prog "times1" 5;
                                                     (e, fvs, va))
@@ -417,7 +417,7 @@ struct
 
                         | P.B (P.PCmp _) =>
                               (case eel of
-                                   [Int i, Int j] => 
+                                   [Int i, Int j] =>
                                        (* PERF need context to create bools *)
                                        vplain
                                  | _ => vplain)
@@ -457,8 +457,8 @@ struct
                         | _ =>
                               let in
                                   if List.all constant eel
-                                  then 
-                                      warnfew ("Stupid: Not optimizing " ^ 
+                                  then
+                                      warnfew ("Stupid: Not optimizing " ^
                                                "constant " ^
                                                P.tostring po ^ "\n")
                                   else ();
@@ -531,7 +531,7 @@ struct
                      val vars = map #1 vel
 
                      val varset =
-                       foldl (fn (v, b) => 
+                       foldl (fn (v, b) =>
                               let
                                 (* shouldn't ever set these, since
                                    we can't substitute. *)
@@ -543,8 +543,8 @@ struct
                                        Polyvar (nil, v') => V.eq (v, v')
                                      | _ => false)
                                  then x
-                                 else 
-                                   raise ILOpt 
+                                 else
+                                   raise ILOpt
                                      ("can't substitute for exn tag " ^
                                       V.tostring v)) os;
                                 VM.insert(b, v, [(nil, os)])
@@ -602,11 +602,11 @@ struct
             let
               val _ = length arg = length dom orelse
                 raise ILOpt "|function args| <> |dom typ| (mutual)"
-                  
+
               (* add arguments to context; they aren't total *)
               val G = foldl (fn (a, G) => G ++ (a, false)) G arg
               val (ebody, fvb, vabod) = deadcode G body
-                
+
               (* this is the binding position for the function and
                  its arguments. We can't inline in the body, so just
                  replace them. *)
@@ -614,7 +614,7 @@ struct
             in
               (fvb, fv, (* total if body is valuable *) vabod, ebody)
             end
-            
+
       in
           (* only try to optimize a single function *)
           (case fl of
@@ -630,7 +630,7 @@ struct
              let
                (* G already has the bindings for the functions
                   themselves. *)
-               fun translateone (f as {name, arg, dom, cod, body, inline, 
+               fun translateone (f as {name, arg, dom, cod, body, inline,
                                        recu=_, total=_}) =
                  let
                    val (_, fv, total, ebody) = onebod f
@@ -653,17 +653,17 @@ struct
 
                (* definitely want to run again if we successfully broke
                   up the mutually-recursive island. *)
-               val _ = 
+               val _ =
                  if length parts > 1
                  then prog "broke-mutual" 1000
                  else ()
 
-               val () = 
+               val () =
                  if !debugopt
                  then
                    let in
                      print "Partitions:\n";
-                     app (fn l => 
+                     app (fn l =>
                           let in
                             app (fn (name, _, _) =>
                                  print (Variable.tostring name ^ " ")) l;
@@ -678,7 +678,7 @@ struct
                   Fixes. the final argument is the partition list, which
                   must run from lastly defined to firstly defined. *)
                fun partit fv_rest e_rest nil = (e_rest, fv_rest, varest)
-                 | partit fv_rest e_rest (nil :: _) = 
+                 | partit fv_rest e_rest (nil :: _) =
                  raise ILOpt "empty island after partitioning"
                  | partit fv_rest e_rest ( (funs as ({1=_, 2=_, 3=_} :: _)) :: more ) =
                  let
@@ -701,7 +701,7 @@ struct
                    partit fv (Let(Fix fix, e_rest)) more
                  end
 
-             in       
+             in
                partit fvr eer parts
              end
              | [f as {name, arg, dom, cod, body, inline, ...}] =>
@@ -710,8 +710,8 @@ struct
 
                (* ?!?! *)
                val recu = isSome (VM.find (fvb, name))
-                                 
-               val _ = if recu andalso !debugopt 
+
+               val _ = if recu andalso !debugopt
                        then print ("Setting " ^ V.show name ^ " recu\n")
                        else ()
 
@@ -725,12 +725,12 @@ struct
                     fun fill (utvs, os) =
                         if length utvs = ntvs
                         then OS.set (os, Polyvar(utvs, name))
-                        else raise ILOpt 
+                        else raise ILOpt
                             ("type error: poly fun " ^
-                             V.show name ^ 
+                             V.show name ^
                              " used with wrong number of type args")
 
-                    val fix = 
+                    val fix =
                         (repoly tvs [{name=name,arg=arg,dom=dom,
                                       cod=cod,body=ebody,inline=inline,
                                       recu=recu, total=total}])
@@ -744,17 +744,17 @@ struct
                 in
                     (* inline functions if used once
                        a different pass beta-reduces *)
-                  
+
                        (* XXX inlining ctors always doesn't help! *)
                     if ((length info = 1) orelse (inline andalso !inline_ctors))
                        andalso not (List.exists already_inlined info)
                     then (* inline! *)
-                      let 
+                      let
                           fun inline (utvs, os) =
                               if length utvs = ntvs
                               then (prog ("inline-fn " ^ V.show name) 1000;
-                                    let 
-                                      val orig = 
+                                    let
+                                      val orig =
                                         (Let(Fix fix,
                                              Polyvar (utvs, name)))
 
@@ -763,11 +763,11 @@ struct
                                          binding sites. This is not easy here, because
                                          we have imperative oneshots around each open
                                          variable in the term. But since we only
-                                         duplicate constructor functions for the moment, 
+                                         duplicate constructor functions for the moment,
                                          we can assume they are closed. *)
-                                      val e = 
+                                      val e =
                                       if (length info > 1)
-                                      then 
+                                      then
                                         (* Oneshot must be set by this point! *)
                                         (ILAlpha.alphavary orig)
                                          handle ILAlpha.Alpha s =>
@@ -780,7 +780,7 @@ struct
                                     end)
                               else raise ILOpt
                                   ("type error: (inlining) poly fun " ^
-                                   V.show name ^ 
+                                   V.show name ^
                                    " used with wrong number of type args")
 
                       in
@@ -803,9 +803,9 @@ struct
                            varest)
                       end
                 end) handle LibBase.NotFound =>
-                    (* unused (non-recursively) functions 
+                    (* unused (non-recursively) functions
                        can always be removed *)
-                    (prog ("unused fn " ^ V.show name) 150; 
+                    (prog ("unused fn " ^ V.show name) 150;
                      (eer, fvr, varest))
              end)
       end
@@ -827,38 +827,38 @@ struct
         let
             fun unpoly acc (Mono (v, t, e)) = (rev acc, v, t, e)
               | unpoly acc (Quant (tv, p)) = unpoly (tv :: acc) p
-                
+
             val (tvs, v, t, e) = unpoly nil vtep
             val ntvs = length tvs
-                
+
             val restG = G ++ (v, false)
 
             val (eer, fvr, varest) = deadcode restG rest
-                
+
             val (ee, fv, va) = deadcode G e
         in
             (let
                  (* check how many times the var is used *)
                  val (fvr, info) = VM.remove(fvr, v)
-                     
+
                  fun fill (utvs, os) =
                      if length utvs = ntvs
                      then OS.set (os, Polyvar(utvs, v))
-                     else raise ILOpt 
+                     else raise ILOpt
                          ("type error: poly var " ^
-                          V.show v ^ 
+                          V.show v ^
                           " used with wrong number of args")
              in
                  (* if it's valuable, it might be inlined.
                     but we don't want to duplicate large
                     values. so it must be used once,
                     or it must be tiny. *)
-                 
+
                  if va andalso (length info = 1 orelse istiny ee)
                  then
                      let
                          fun inline (utvs, os) =
-                             let val s = 
+                             let val s =
                                  Subst.fromlist
                                  (ListPair.zip (tvs, utvs))
                              in
@@ -887,14 +887,14 @@ struct
                         it in the freevar set *)
                      (case ee of
                           Deferred osvar =>
-                              let 
+                              let
                                   (* actually a pain to find out what
                                      var this is (and its polymorphic
                                      arity) -- use oneshot identity *)
                                   fun finder (v, info, NONE) =
                                       (case ListUtil.example
-                                           (fn (_, os) => 
-                                            OS.eq(osvar, os)) info of 
+                                           (fn (_, os) =>
+                                            OS.eq(osvar, os)) info of
                                            SOME (uu, _) => SOME (v, length uu)
                                          | NONE => NONE)
                                     | finder (_, _, a) = a
@@ -904,7 +904,7 @@ struct
 
                                   (* it should appear somewhere in
                                      our freevar-rest *)
-                                  val (thevar, arity) = 
+                                  val (thevar, arity) =
                                       case VM.foldli finder NONE freevars of
                                           SOME x => x
                                         | NONE =>
@@ -915,7 +915,7 @@ struct
 
                                   (* same as inline above. *)
                                   fun inlinevar (utvs, os) =
-                                      let val s = 
+                                      let val s =
                                           Subst.fromlist
                                           (ListPair.zip (tvs, utvs))
                                       in
@@ -944,13 +944,13 @@ struct
                                                        thevar,
                                                        [(List.tabulate
                                                          (arity,
-                                                          fn _ => 
+                                                          fn _ =>
                                                           IL.TRec nil),
                                                          OS.oneshot ())])))
                                       VM.empty [1,2,3,4]
                               in
                                   if !debugopt
-                                  then 
+                                  then
                                       print ("found " ^ V.show v ^
                                              " = " ^ V.show thevar ^ "\n")
                                   else ();
@@ -961,10 +961,10 @@ struct
                                    union freevars bogus,
                                    varest)
                               end
-                        | _ => 
+                        | _ =>
                               (* normal used variable *)
                               let in
-                                  
+
                                   if !debugopt
                                   then print (V.show v ^ " is used.\n")
                                   else ();
@@ -976,17 +976,17 @@ struct
                  (* never used! *)
                  if va
                  then (prog ("dead val " ^ V.show v) 100;
-                       
+
                        (* print "bound to: \n";
                           Layout.print (ILPrint.etol ee, print);
                           print "\n\n";
-                          
+
                           print "so return body: \n";
                           Layout.print (ILPrint.etol eer, print);
                           print "\n\n"; *)
-                       
+
                        (eer, fvr, varest))
-                 else (prog ("unused var " ^ V.show v) 10; 
+                 else (prog ("unused var " ^ V.show v) 10;
                        (Seq(ee, eer), union fv fvr, false))
         end
 
@@ -997,7 +997,7 @@ struct
        becomes:
 
        e1; e2; ee2;
-       
+
        .. this can allow us to remove e2 if it is
        valuable but e1 and ee2 are not. *)
     and makeseq ee ee2 fvs =
@@ -1012,9 +1012,9 @@ struct
     (* if we're just going to put it back together,
        we might be able to at least flatten the let. *)
     and makeletval tvs (v, t, e) erest fv fvrest va varest =
-        let 
+        let
             exception Don't of string
-            val nothing = 
+            val nothing =
                 (Let(Val (repoly tvs (v, t, e)),
                      erest),
                  union fv fvrest,
@@ -1022,13 +1022,13 @@ struct
         in
             (case e of
                  Let(dec, e) =>
-                     let 
+                     let
                          (* don't care about anything but var names here *)
                          fun unpoly (Mono thing) = thing
                            | unpoly (Quant (_, more)) = unpoly more
 
                          (* the vars bound by this decl *)
-                         val vv = 
+                         val vv =
                              case dec of
                                  Do _ => []
                                | Fix rlp => raise Don't "don't move fns"
@@ -1042,30 +1042,30 @@ struct
                               let y = 1
                               in (y, y)
                               end
-                            
-                            val z = 
+
+                            val z =
                               let y = 2
                               in (y, y)
                               end
-                              
+
                               ==>
 
                             val y = 1
                             val x = (y, y)
-                            
+
                             val y = 2
                             val z = (y, y)
-                            
+
                             *)
                          (* if it's free in the rest, don't transform *)
                          if List.exists (fn v =>
                                          isSome (VM.find (fvrest, v))) vv
                          then raise Don't "don't if var is free"
                          else
-                             let 
+                             let
                                  (* this doesn't affect the free vars
                                     or valuability *)
-                                 val (bod, _, _) = 
+                                 val (bod, _, _) =
                                      makeletval tvs (v, t, e) erest fv fvrest va varest
                              in
                                  prog ("flatten letlet(over " ^ V.show v ^ ")") 100;
@@ -1075,7 +1075,7 @@ struct
                                   va andalso varest)
                              end
                      end
-             | _ => nothing) handle Don't s => 
+             | _ => nothing) handle Don't s =>
                  let in
                      if !debugopt then print ("Don't: " ^ s ^ "\n") else ();
                      nothing
@@ -1085,18 +1085,18 @@ struct
     (* when we see a tuple bound to a variable,
        x = (e1, e2, e3)
        consider replacing it with
-       
+
        x1 = e1
        x2 = e2
-       x3 = e3 
+       x3 = e3
 
        (Note this works even if en is effectful, but
         not if the tuple escapes.)
 
        First, put it in a table of "target" tuples, along
        with the variables x1,x2,x3.
-       
-       check the body of the let. 
+
+       check the body of the let.
        for each projection of label n from the variable found,
           make a oneshot and say tentatively that the os will
           be filled with xn. (but keep around the projection)
@@ -1107,7 +1107,7 @@ struct
 
        *)
 
-    fun untuple m exp = 
+    fun untuple m exp =
         let val self = untuple m
         in
          (case exp of
@@ -1124,7 +1124,7 @@ struct
                                let
                                    val ltl = (case ILUtil.unevar t of
                                                   TRec ltl => ltl
-                                                | ot => 
+                                                | ot =>
                                                       let in
                                                           print ("BUG: record binding did " ^
                                                                  "not have record type:\n");
@@ -1134,8 +1134,8 @@ struct
 
                                    val lvtel =
                                        map (fn (l, e) =>
-                                            (l, 
-                                             (V.namedvar 
+                                            (l,
+                                             (V.namedvar
                                               (V.show v ^ "_#" ^ l),
                                               (* XXX ty *)
                                               (case ListUtil.Alist.find op=
@@ -1147,8 +1147,8 @@ struct
                                                         "with exp")),
                                                    (* before changing map *)
                                                    self e))) lel
-                                       
-                                   (* will be set true if we encounter 
+
+                                   (* will be set true if we encounter
                                       an escaping use of v *)
                                    val escapes = ref false
 
@@ -1174,8 +1174,8 @@ struct
 
                                    if !escapes
                                    (* not doing the opt *)
-                                   then Let(Val (repoly tvs 
-                                                 (v, t, 
+                                   then Let(Val (repoly tvs
+                                                 (v, t,
                                                   Record(map (fn (l, (_, _, e)) =>
                                                               (l, e))
                                                              lvtel))),
@@ -1195,7 +1195,7 @@ struct
                                        in
                                            prog ("untuple " ^ V.show v)
                                              (100 * length lvtel);
-                                             
+
                                            makebinds lvtel
                                        end
                                end
@@ -1206,26 +1206,26 @@ struct
                        NONE => exp
                            (* could also typecheck arity *)
                      | SOME { escapes, ... } => (escapes := true; exp))
-            | Proj(l, t, Polyvar(tl, v)) => 
+            | Proj(l, t, Polyvar(tl, v)) =>
                   (case VM.find(m, v) of
-                       (* if we already know it escapes, 
+                       (* if we already know it escapes,
                           don't bother doing anything. *)
-                       SOME { arity, lvtel, escapes = ref false, uses } => 
+                       SOME { arity, lvtel, escapes = ref false, uses } =>
                            let
                                (* XXX since we have the actual exp here,
                                   if it is tiny we could substitute it in,
-                                  even if the tuple escapes. this probably 
+                                  even if the tuple escapes. this probably
                                   wins *)
                                val os = OS.oneshot ()
                                val targetvar =
                                    (case ListUtil.Alist.find op= lvtel l of
-                                        NONE => raise ILOpt 
+                                        NONE => raise ILOpt
                                             ("bad label at proj site from " ^
                                              "known tuple..!")
                                       | SOME (v, _, _) => v)
 
                                fun thisuse true = OS.set (os, exp)
-                                 | thisuse false = 
+                                 | thisuse false =
                                    OS.set (os, Polyvar (tl, targetvar))
                            in
                                uses := thisuse :: !uses;
@@ -1256,7 +1256,7 @@ struct
              in
                  (* must be a single non-recursive function *)
                 (case unpoly nil flp of
-                     (tvs, [{name, arg : Variable.var list, 
+                     (tvs, [{name, arg : Variable.var list,
                              dom, cod, body, recu=false, ...}]) =>
                      if V.eq (name, v)
                      then
@@ -1272,8 +1272,8 @@ struct
                              (* mklet  fml dom act *)
                              fun mklet nil nil nil = apply body
                                | mklet (v::tv) (t::tt) (a::ta) =
-                                 IL.Let(IL.Val (Mono(v : Variable.var, 
-                                                     t : IL.typ, 
+                                 IL.Let(IL.Val (Mono(v : Variable.var,
+                                                     t : IL.typ,
                                                      a : IL.exp)),
                                         mklet tv tt ta)
                                | mklet _ _ _ =
@@ -1281,27 +1281,27 @@ struct
                                               "mismatch")
                          in
                              length tvs = length tl
-                             orelse raise ILOpt 
+                             orelse raise ILOpt
                               ("fn exp not isntantiated with " ^
                                "correct number of tyvars");
-                              
+
                              (* inline *)
-                              
+
                              (* instantiate tyvars at tl. also in dom,
                                 since we use it to generate val bindings *)
                               prog "beta" 1000;
                               mklet arg dom args
-                         end 
+                         end
                      else ILUtil.pointwise apply exp
                | _ => ILUtil.pointwise apply exp)
              end
-                     
+
 
 
            | _ => ILUtil.pointwise apply exp)
 
     (* eta reduce functions.
-       
+
        let fun f (args) = g (args')
        in e
 
@@ -1310,7 +1310,7 @@ struct
        and the argument is a literal unit
         (this arises from the pattern compiler)
 
-       As a simplification we require these to be 
+       As a simplification we require these to be
        monomorphic.
 
        ===>
@@ -1322,7 +1322,7 @@ struct
     fun eta exp =
         (case exp of
              Let(Fix (Mono [{name = f, arg = args : Variable.var list,
-                             dom, cod, 
+                             dom, cod,
                              body = App(Polyvar(nil, g), args'),
                              recu = false, total, ...}]),
                  letbody) =>
@@ -1331,7 +1331,7 @@ struct
                  fun same_args nil nil nil = true
                    | same_args (_::_) nil _ = raise ILOpt "formal/dom mismatch in eta"
                    | same_args nil (_::_) _ = raise ILOpt "formal/dom mismatch in eta"
-                     (* these can be the same if 
+                     (* these can be the same if
                         x' is Polyvar(nil, x),
                         t is unit and x' is () *)
                    | same_args (x::rest) (t::restt) (Polyvar(nil, x')::rest') =
@@ -1357,13 +1357,13 @@ struct
 
 
     (* given a bunch of strings to be joined with jointext,
-       flatten them as much as possible. 
-       
+       flatten them as much as possible.
+
        this could be faster, but it's still much better than
        doing it at runtime!
        *)
     fun joinpass e =
-        let 
+        let
           val _ = progress := 0
           fun prog _ n = progress := !progress + n
           fun joinflatten nil = nil
@@ -1377,7 +1377,7 @@ struct
             joinflatten (prog "jt flatp" 100; eel @ rest)
             | joinflatten (e :: rest) =
             e :: joinflatten rest
-            
+
           fun join exp =
             (case exp of
                Jointext el => Jointext (joinflatten (map (ILUtil.pointwise join) el))
@@ -1397,7 +1397,7 @@ struct
 
 
     fun deadpass e =
-        let 
+        let
             val _ = progress := 0
             val (e, fv, _) = deadcode VM.empty e
 
@@ -1406,8 +1406,8 @@ struct
             fun fill (v, tol) =
                 app (fn (utvs, os) =>
                      let in
-                         if !debugopt 
-                         then print ("Toplevel free " ^ 
+                         if !debugopt
+                         then print ("Toplevel free " ^
                                      V.show v ^ "\n")
                          else ();
                          OS.set (os, Polyvar(utvs, v))
@@ -1433,7 +1433,7 @@ struct
 
     (* like the identity, forces deferred *)
     fun immediate exp =
-        let 
+        let
             fun go e = ILUtil.pointwise go e
         in
             progress := 0;
@@ -1442,11 +1442,11 @@ struct
 
     (* cut off eventually even if we're making small progress.
        be smarter -- always do a few passes, even if they have
-       low scores at first. 
+       low scores at first.
        *)
     fun optimize e =
         let
-            val passes = [("dead code", deadpass), 
+            val passes = [("dead code", deadpass),
                           (* after dead code, always run this
                              to remove 'deferred' exps *)
                           ("immediate", immediate),
@@ -1456,9 +1456,9 @@ struct
                           (* also assumes no 'deferred' exps *)
                           ("untuple", untuplepass)]
 
-            val () = 
+            val () =
               if !debugopt
-              then 
+              then
                 let in
                   print "======= BEFORE OPTIMIZATION ========\n";
                   Layout.print (ILPrint.etol e, print);
@@ -1467,15 +1467,15 @@ struct
               else ()
 
             fun opt e =
-                let 
-                    fun go nil ce sc = 
+                let
+                    fun go nil ce sc =
                       let in
                         print ("(" ^ Int.toString sc ^ ") ");
                         if sc <= Params.asint 0 iloptthresh then ce
                         else opt ce
                       end
                       | go ((pn, pf)::t) ce s =
-                        let 
+                        let
                             val _ = if !info
                                     then print (pn ^ ": ")
                                     else ()
@@ -1486,7 +1486,7 @@ struct
                             else ();
 
                             if !showopt andalso score > 0
-                            then 
+                            then
                                 let in
                                     print "after this pass:\n";
                                     Layout.print (ILPrint.etol ne, print);

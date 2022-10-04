@@ -5,7 +5,7 @@ functor Rsync32Fn(type elt
                     ) =
 struct
 
-  structure R = 
+  structure R =
   RsyncFn(type elt = elt
           type vector = vector
           val word = word

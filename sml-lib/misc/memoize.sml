@@ -19,7 +19,7 @@ struct
   fun cmp_tabler cmp () =
     let
       val t = ref Empty
-      fun lookup a = 
+      fun lookup a =
         let
           fun look Empty = NONE
             | look (Node(tl, aa, r, tr)) =
@@ -62,10 +62,10 @@ struct
       T { lookup = lookup, insert = insert }
     end
 
-  fun eq_tabler eq () = 
+  fun eq_tabler eq () =
     let
       val l = ref nil
-      fun lookup a = 
+      fun lookup a =
         case List.find (fn (x, _) => eq(a, x)) (!l) of
           SOME(_, r) => SOME r
         | NONE => NONE
@@ -76,34 +76,34 @@ struct
 
 
   fun memoize tabler f =
-    let 
+    let
       val T { lookup, insert } = tabler ()
       fun mf x =
         (case lookup x of
-           NONE => 
+           NONE =>
              let val r = f x
              in
                insert x r;
                r
              end
          | SOME ans => ans)
-    in 
+    in
       mf
     end
 
   fun memoizerec tabler f =
-    let 
+    let
       val T { lookup, insert } = tabler ()
       fun mf x =
         (case lookup x of
-           NONE => 
+           NONE =>
              let val r = f mf x
              in
                insert x r;
                r
              end
          | SOME ans => ans)
-    in 
+    in
       mf
     end
 

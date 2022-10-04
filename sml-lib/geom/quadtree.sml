@@ -18,17 +18,17 @@
    when their horizontal and vertical dispersion is not the same.
    Also, like other naive binary trees, it is not necessarily balanced
    and so certain sequences of insertions will produce trees that have
-   linear-time lookups. 
+   linear-time lookups.
 
    XXX: It would be easy to generalize this to n-dimensions, though
    keeping the specialized two-dimensional one around is probably good
    for simplicity and efficiency.
 *)
-functor QuadtreeFn(Q : QUADTREEARG) :> 
+functor QuadtreeFn(Q : QUADTREEARG) :>
 sig
-    include QUADTREE 
+    include QUADTREE
     where type pos = Q.pos
-          and type dist = Q.dist 
+          and type dist = Q.dist
 
     (* tosvg tree maxdepth proj print
        For visualization purposes. *)
@@ -79,7 +79,7 @@ struct
             fun close () =
                 let val pt = pos (x, y)
                     val ppt = pos (xx, yy)
-                    val res = vlookuppoint' ll (x, y) d @ vlookuppoint' rr (x, y) d 
+                    val res = vlookuppoint' ll (x, y) d @ vlookuppoint' rr (x, y) d
                 in
                     if dleq (dist pt ppt, d)
                     then (aa, ppt) :: res
@@ -87,12 +87,12 @@ struct
                 end
         in
             if xleq(dx, xzero)
-            then 
+            then
                 (* on the left, or colinear *)
                 (if dleq(xdist(dx, xzero), d)
                  then close ()
                  else vlookuppoint' ll (x, y) d)
-            else 
+            else
                 (* on the right *)
                 (if dleq(xdist(dx, xzero), d)
                  then close ()
@@ -105,7 +105,7 @@ struct
             fun close () =
                 let val pt = pos (x, y)
                     val ppt = pos (xx, yy)
-                    val res = lookuppoint' uu (x, y) d @ lookuppoint' dd (x, y) d 
+                    val res = lookuppoint' uu (x, y) d @ lookuppoint' dd (x, y) d
                 in
                     if dleq (dist pt ppt, d)
                     then (aa, ppt) :: res
@@ -113,12 +113,12 @@ struct
                 end
         in
             if yleq(dy, yzero)
-            then 
+            then
                (* above, or colinear *)
                 (if dleq(ydist(dy, yzero), d)
                  then close ()
                  else lookuppoint' uu (x, y) d)
-            else 
+            else
                (* below *)
                 (if dleq(ydist(dy, yzero), d)
                  then close ()
@@ -172,9 +172,9 @@ struct
             val (targx, targy) = (xpos targpt, ypos targpt)
             fun hclosest (cand, cand_dist) HEmpty = (cand, cand_dist)
               | hclosest (cand, cand_dist) (HPoint (l, a, x, y, r)) =
-                let 
+                let
                     val newdist = dist (pos (x, y)) (pos (targx, targy))
-                    val best = 
+                    val best =
                         if dleq (newdist, cand_dist)
                         then (a, newdist)
                         else (cand, cand_dist)
@@ -186,9 +186,9 @@ struct
                 end
             and vclosest (cand, cand_dist) VEmpty = (cand, cand_dist)
               | vclosest (cand, cand_dist) (VPoint (l, a, x, y, r)) =
-                let 
+                let
                     val newdist = dist (pos (x, y)) (pos (targx, targy))
-                    val best = 
+                    val best =
                         if dleq (newdist, cand_dist)
                         then (a, newdist)
                         else (cand, cand_dist)
@@ -198,7 +198,7 @@ struct
                 in
                     best
                 end
-                
+
             val best = (a, dist (pos (x, y)) (pos (targx, targy)))
 
             val best = vclosest best l
@@ -222,12 +222,12 @@ struct
                 end
 
             (* No exponential notation *)
-            fun ertos r = if (r > ~0.000001 andalso r < 0.000001) 
-                          then "0.0" 
+            fun ertos r = if (r > ~0.000001 andalso r < 0.000001)
+                          then "0.0"
                           else (Real.fmt (StringCvt.FIX (SOME 6)) r)
 
             (* Don't use SML's dumb ~ *)
-            fun rtos r = if r < 0.0 
+            fun rtos r = if r < 0.0
                          then "-" ^ ertos (0.0 - r)
                          else ertos r
 
@@ -239,7 +239,7 @@ struct
                     val minx = ref (1.0 / 0.0)
                     val maxy = ref (~1.0 / 0.0)
                     val miny = ref (1.0 / 0.0)
-              
+
                     fun bound p min max =
                         let in
                             if p < !min then min := p else ();
@@ -255,7 +255,7 @@ struct
                     { minx = !minx, maxx = !maxx, miny = !miny, maxy = !maxy }
                 end
 
-                
+
             val xoffset = ~minx
             val yoffset = ~miny
             val scale = if (maxx - minx) > (maxy - miny)
@@ -272,7 +272,7 @@ struct
             fun hrec _ _ HEmpty = ()
               | hrec 0 _ _ = ()
               | hrec depth { minx, miny, maxx, maxy } (HPoint (l, a, x, y, r)) =
-                let 
+                let
                     val (x, y) = projmap (pos (x, y))
                     val actual_len = maxy - miny
                     val margin = ((1.0 - FACTOR) / 2.0) * actual_len
@@ -291,14 +291,14 @@ struct
             and vrec _ _ VEmpty = ()
               | vrec 0 _ _ = ()
               | vrec depth { minx, miny, maxx, maxy } (VPoint (u, a, x, y, d)) =
-                let 
+                let
                     val (x, y) = projmap (pos (x, y))
                     val actual_len = maxx - minx
                     val margin = ((1.0 - FACTOR) / 2.0) * actual_len
                 in
                     (* draw horizontal axis, at 95% of its actual width. *)
                     print ("<polyline fill=\"none\" opacity = \"0.9\" " ^
-                           "stroke=\"#00AA00\" stroke-width=\"" ^ 
+                           "stroke=\"#00AA00\" stroke-width=\"" ^
                            depthwidth depth ^ "\" points=\""); (* " *)
                     print (rtos (minx + margin) ^ "," ^ rtos y ^ " " ^
                            rtos (maxx - margin) ^ "," ^ rtos y);
@@ -341,7 +341,7 @@ structure Quadtree = QuadtreeFn(
   val ysub : ypos * ypos -> ypos = op -
   val xzero = 0.0
   val yzero = 0.0
-  fun dist (x, y) (xx, yy) = 
+  fun dist (x, y) (xx, yy) =
       Math.sqrt ((x - xx) * (x - xx) + (y - yy) * (y - yy))
   fun xdist (x1, x2) = Real.abs(x1 - x2)
   fun ydist (y1, y2) = Real.abs(y1 - y2)

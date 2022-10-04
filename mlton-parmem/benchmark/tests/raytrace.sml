@@ -22,10 +22,10 @@ exception Not_found
 exception Failure of string
 
 fun failwith s = raise(Failure s)
-   
+
 structure Char =
    struct
-      open Char   
+      open Char
       val code = ord
       val chr = chr
       val unsafe_chr = chr
@@ -96,7 +96,7 @@ in
    val tan = tan
    val truncate = trunc
    val ** = Math.pow
-   infix 8 ** 
+   infix 8 **
 end
 
 (* A hack for hash tables with string domain where performance doesn't matter. *)
@@ -110,7 +110,7 @@ structure Hashtbl:
    end =
    struct
       datatype ('a, 'b) t = T of (string * 'b) list ref
-            
+
       fun create _ = T (ref [])
 
       fun add (T t) k d = t := (k, d) :: !t
@@ -134,13 +134,13 @@ structure List =
    end
 
 fun exit i = Posix.Process.exit(Word8.fromInt i)
-   
+
 end
 structure Math =
 struct
 
 open Caml
-   
+
 val epsilon = 1E~5
 
 val dtr = acos (~1.0) / 180.0
@@ -218,7 +218,7 @@ fun unscale(x, y, z) =
                   0.0, y,  0.0, 0.0,
                   0.0, 0.0, z,  0.0,
                   0.0, 0.0, 0.0, 1.0]
-  
+
 fun scale(x, y, z) = unscale (1.0 / x, 1.0 / y, 1.0 / z)
 
 fun unuscale s = unscale (s, s, s)
@@ -332,14 +332,14 @@ fun neg (x: v) : v =
     ~(#4 x))
 
 end
-signature LEX_TOKEN_STRUCTS = 
+signature LEX_TOKEN_STRUCTS =
    sig
    end
 
-signature LEX_TOKEN = 
+signature LEX_TOKEN =
    sig
       include LEX_TOKEN_STRUCTS
-      
+
       datatype t =
          Binder of string
        | Bool of bool
@@ -353,7 +353,7 @@ signature LEX_TOKEN =
        | Real of real
        | String of string
    end
-functor LexToken(S: LEX_TOKEN_STRUCTS): LEX_TOKEN = 
+functor LexToken(S: LEX_TOKEN_STRUCTS): LEX_TOKEN =
 struct
 
 open S
@@ -370,7 +370,7 @@ datatype t =
  | Rbracket
  | Real of real
  | String of string
-     
+
 end
 type int = Int.int
 functor Lex(structure Token: LEX_TOKEN)=
@@ -397,8 +397,8 @@ datatype yyfinstate = N of int
 type statedata = {fin : yyfinstate list, trans: string}
 (* transition & final state table *)
 val tab = let
-val s = [ 
- (0, 
+val s = [
+ (0,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -409,7 +409,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (1, 
+ (1,
 "\000\000\000\000\000\000\000\000\000\026\026\026\000\026\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\026\000\025\000\000\024\000\000\000\000\000\000\000\023\000\021\
@@ -420,7 +420,7 @@ val s = [
 \\009\009\009\009\009\009\009\009\009\009\009\008\000\007\000\000\
 \\000"
 ),
- (3, 
+ (3,
 "\000\000\000\000\000\000\000\000\000\027\029\029\000\028\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\027\027\027\027\027\027\027\027\027\027\027\027\027\027\027\027\
@@ -431,7 +431,7 @@ val s = [
 \\027\027\027\027\027\027\027\027\027\027\027\027\027\027\027\000\
 \\000"
 ),
- (5, 
+ (5,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\030\030\031\030\030\030\030\030\030\030\030\030\030\030\030\030\
@@ -442,7 +442,7 @@ val s = [
 \\030\030\030\030\030\030\030\030\030\030\030\030\030\030\030\000\
 \\000"
 ),
- (9, 
+ (9,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\009\000\000\
@@ -453,7 +453,7 @@ val s = [
 \\009\009\009\009\009\009\009\009\009\009\009\000\000\000\000\000\
 \\000"
 ),
- (12, 
+ (12,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\016\000\
@@ -464,7 +464,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (13, 
+ (13,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\015\000\000\
@@ -475,7 +475,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (14, 
+ (14,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -486,7 +486,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (16, 
+ (16,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -497,7 +497,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (17, 
+ (17,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -508,7 +508,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (18, 
+ (18,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\020\000\000\
@@ -519,7 +519,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (19, 
+ (19,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -530,7 +530,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (21, 
+ (21,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -541,7 +541,7 @@ val s = [
 \\022\022\022\022\022\022\022\022\022\022\022\000\000\000\000\000\
 \\000"
 ),
- (22, 
+ (22,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\022\000\000\
@@ -552,7 +552,7 @@ val s = [
 \\022\022\022\022\022\022\022\022\022\022\022\000\000\000\000\000\
 \\000"
 ),
- (23, 
+ (23,
 "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -563,7 +563,7 @@ val s = [
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000"
 ),
- (28, 
+ (28,
 "\000\000\000\000\000\000\000\000\000\000\029\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
 \\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
@@ -575,13 +575,13 @@ val s = [
 \\000"
 ),
 (0, "")]
-fun f x = x 
-val s = map f (rev (tl (rev s))) 
-exception LexHackingError 
-fun look ((j,x)::r, i) = if i = j then x else look(r, i) 
+fun f x = x
+val s = map f (rev (tl (rev s)))
+exception LexHackingError
+fun look ((j,x)::r, i) = if i = j then x else look(r, i)
   | look ([], i) = raise LexHackingError
-fun g {fin=x, trans=i} = {fin=x, trans=look(s,i)} 
-in Vector.fromList(map g 
+fun g {fin=x, trans=i} = {fin=x, trans=look(s,i)}
+in Vector.fromList(map g
 [{fin = [], trans = 0},
 {fin = [], trans = 1},
 {fin = [], trans = 1},
@@ -644,18 +644,18 @@ let     val yygone0:int=1
                  yybegin := x
 
 fun lex (yyarg as (())) =
-let fun continue() : Internal.result = 
+let fun continue() : Internal.result =
   let fun scan (s,AcceptingLeaves : Internal.yyfinstate list list,l,i0: int) =
         let fun action (i: int,nil) = raise LexError
         | action (i,nil::l) = action (i-1,l)
         | action (i,(node::acts)::l) =
                 case node of
-                    Internal.N yyk => 
+                    Internal.N yyk =>
                         (let fun yymktext() = String.substring(!yyb,i0,i-i0)
                              val yypos: int = i0+ !yygone
                         fun REJECT() = action(i,acts::l)
                         open UserDeclarations Internal.StartStates
- in (yybufpos := i; case yyk of 
+ in (yybufpos := i; case yyk of
 
                         (* Application actions *)
 
@@ -667,7 +667,7 @@ let fun continue() : Internal.result =
                                      fail(concat["bad real constant ", yytext])
                                 | SOME r => r) end
 | 39 => let val yytext=yymktext() in Token.Int(case Int.fromString yytext of
-                                NONE => 
+                                NONE =>
                                    fail(concat["bad int constant ", yytext])
                               | SOME i => i) end
 | 41 => (chars := []; YYBEGIN S; continue())
@@ -891,7 +891,7 @@ and closure =
 
 fun create_hashtables size init =
    let
-      val tbl: (string, t) Hashtbl.t = Hashtbl.create size 
+      val tbl: (string, t) Hashtbl.t = Hashtbl.create size
 (*      val tbl' = Hashtbl.create size  *)
    in
       List.iter (fn (key, data) => Hashtbl.add tbl key data) init;
@@ -965,7 +965,7 @@ fun translate i =
  *     (match token with
  *       Prim' k -> Prim k
  *     | _       -> raise Not_found)
- * 
+ *
  *)
 exception Stuck_computation of v list * v list * t' list
 exception Stuck_computation' (* for compiler *)
@@ -1036,12 +1036,12 @@ signature PPM =
    end
 structure Ppm: PPM =
 struct
-   
+
 open Caml
 
 structure Array = Word8Array
 structure Word = Word8
-   
+
 type pixmap = Array.array * int
 
 fun get ((img, width), i, j, k) =
@@ -1096,7 +1096,7 @@ end
 signature RENDER =
    sig
       include CAML
-         
+
       val apply : (Program.v * Program.v list -> Program.v list) ref
       val inline_closure : (Program.v -> Program.v) ref
 
@@ -1272,7 +1272,7 @@ fun add_bound (r0, (x, r, cost, sc)) =
   else
      (* Cost of bounds *)
      let
-        val c0 = r0 + r * float cost 
+        val c0 = r0 + r * float cost
         (* Cost ofout bounds *)
         val c1 = r0 * float cost
      in
@@ -1325,7 +1325,7 @@ fun union_bound (dsc1 as (x1, r1, cost1, sc1),
                   (x, r, cost1' + cost2', SUnion (sc1', sc2'))
                end
     end
- 
+
 fun union_radius (dsc1 as (x1, r1, cost1, sc1),
                   dsc2 as (x2, r2, cost2, sc2)) =
     let
@@ -1387,7 +1387,7 @@ fun opt_union l =
                                val j' = Array.sub(remain, j)
                             in
                                if Array2.sub(m, i', j') < !gain
-                                  then 
+                                  then
                                      (gain := Array2.sub(m, i', j')
                                       ; i0 := i
                                       ; j0 := j)
@@ -1659,7 +1659,7 @@ fun cylinder (orig, dir, scene, m): (float * scene * float * scene) list =
          end
    end
 
-fun cone (orig, dir, scene, m): (float * scene * float * scene) list = 
+fun cone (orig, dir, scene, m): (float * scene * float * scene) list =
    let
       val x = vmul (m, orig)
       val v = vmul (m, dir)
@@ -1960,7 +1960,7 @@ and trace_2 (desc, depth: int, orig, dir, t, obj) =
                             fun stuck() = f := Opt (!inline_closure g)
                          in
                             (* Then, we check whether it is a constant function *)
-                            ((ignore (apply_surface_fun(g, 
+                            ((ignore (apply_surface_fun(g,
                                       [VInt 0, VInt 0, VFloat 0.0]))
                               ; f := Cst res)
                              handle Stuck_computation _ => stuck()
@@ -2335,14 +2335,14 @@ fun eval (env, st, p) =
     VObj obj :: VArr lights :: VPoint (VFloat ax, VFloat ay, VFloat az) ::
     st', Prim' Render :: r) =>
 (*
-amb the intensity of ambient light (a point). 
-lights is an array of lights used to illuminate the scene. 
-obj is the scene to render. 
-depth is an integer limit on the recursive depth of the ray tracing. 
-fov is the horizontal field of view in degrees (a real number). 
-wid is the width of the rendered image in pixels (an integer). 
-ht is the height of the rendered image in pixels (an integer). 
-file is a string specifying output file for the rendered image. 
+amb the intensity of ambient light (a point).
+lights is an array of lights used to illuminate the scene.
+obj is the scene to render.
+depth is an integer limit on the recursive depth of the ray tracing.
+fov is the horizontal field of view in degrees (a real number).
+wid is the width of the rendered image in pixels (an integer).
+ht is the height of the rendered image in pixels (an integer).
+file is a string specifying output file for the rendered image.
 *)
     (Render.f ((ax, ay, az), lights, obj, depth, fov, wid, ht, file)
      ; eval(env, st', r))
@@ -2367,7 +2367,7 @@ fun f p =
          [] => ()
        | _ => failwith "error"
    end handle Stuck_computation (env, st, p) => failwith "stuck"
-      
+
 end
 structure Main =
    struct

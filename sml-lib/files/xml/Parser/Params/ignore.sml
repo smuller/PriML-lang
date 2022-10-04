@@ -1,11 +1,11 @@
-structure IgnoreHooks = 
+structure IgnoreHooks =
    struct
       type AppData = unit
       type AppFinal = unit
 
       fun hookXml(a,_) = a
       fun hookFinish a = a
-	 
+
       fun hookError(a,_) = a
       fun hookWarning(a,_) = a
 

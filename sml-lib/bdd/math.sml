@@ -47,7 +47,7 @@ struct
                        its square *)
   in
       fun fastsin (x : real) =
-        let 
+        let
             val y = B * x + C * x * abs x
             (* Adds precision *)
             val y = P * (y * abs y - y) + y
@@ -113,7 +113,7 @@ struct
 
   fun vec2is_valid {x = ref x, y = ref y} =
       is_valid x andalso is_valid y
-      
+
 
   type vec3 = { x : real ref, y : real ref, z : real ref }
   fun vec3 (x, y, z) = { x = ref x, y = ref y, z = ref z }
@@ -123,8 +123,8 @@ struct
   fun vec3z ({x = _, y = _, z} : vec3) = !z
   fun vec3zero {x : real ref, y : real ref, z : real ref} = (x := 0.0; y := 0.0; z := 0.0)
   fun vec3set ({x, y, z}, xx, yy, zz) = (x := xx; y := yy; z := zz)
-  fun vec3neg ({x, y, z} : vec3) = { x = ref (0.0 - !x), 
-                                     y = ref (0.0 - !y), 
+  fun vec3neg ({x, y, z} : vec3) = { x = ref (0.0 - !x),
+                                     y = ref (0.0 - !y),
                                      z = ref (0.0 - !z) }
   fun vec3idx ({x, y = _, z = _} : vec3) 0 = !x
     | vec3idx {x = _, y, z = _} 1 = !y
@@ -148,11 +148,11 @@ struct
 
   fun mat22copy { col1, col2 } = mat22cols (col1, col2)
 
-  fun mat22with (a11, a12, 
+  fun mat22with (a11, a12,
                  a21, a22) =
-      { col1 = vec2(a11, 
+      { col1 = vec2(a11,
                     a21),
-                            col2 = vec2(a12, 
+                            col2 = vec2(a12,
                                         a22) }
 
   fun mat22col1 { col1, col2 = _ } = col1
@@ -181,17 +181,17 @@ struct
       let val c = Math.cos angle
           val s = Math.sin angle
       in
-          vec2set(col1, c, 
+          vec2set(col1, c,
                         s);
-                             vec2set(col2, ~s, 
+                             vec2set(col2, ~s,
                                             c)
       end
 
 
   fun mat22setidentity ({ col1, col2 } : mat22) =
-      (vec2set(col1, 1.0, 
+      (vec2set(col1, 1.0,
                      0.0);
-                             vec2set(col2, 0.0, 
+                             vec2set(col2, 0.0,
                                            1.0))
 
   fun mat22setzero ({ col1, col2 } : mat22) =
@@ -244,7 +244,7 @@ struct
   fun dot3(a : vec3, b : vec3) : real =
       vec3x a * vec3x b + vec3y a * vec3y b + vec3z a * vec3z b
 
-  fun cross2vv(a : vec2, b : vec2) : real = 
+  fun cross2vv(a : vec2, b : vec2) : real =
       vec2x a * vec2y b - vec2y a * vec2x b
   fun cross2vs(a : vec2, s : real) : vec2 =
       vec2(s * vec2y a, ~s * vec2x a)
@@ -252,8 +252,8 @@ struct
       vec2(~s * vec2y a, s * vec2x a)
 
   fun cross3vv(a : vec3, b : vec3) : vec3 =
-      vec3 (vec3y a * vec3z b - vec3z a * vec3y b, 
-            vec3z a * vec3x b - vec3x a * vec3z b, 
+      vec3 (vec3y a * vec3z b - vec3z a * vec3y b,
+            vec3z a * vec3x b - vec3x a * vec3z b,
             vec3x a * vec3y b - vec3y a * vec3x b)
 
   fun mat33solve33 ({ col1, col2, col3 }, b : vec3) : vec3 =
@@ -273,7 +273,7 @@ struct
       let
           val a11 = vec3x col1     val a12 = vec3x col2
           val a21 = vec3y col1     val a22 = vec3y col2
-       
+
           val det = a11 * a22 - a12 * a21
           val det = if Real.!= (det, 0.0)
                     then 1.0 / det
@@ -330,7 +330,7 @@ struct
             vec3z a + vec3z b)
 
   fun mat22add (a : mat22, b : mat22) : mat22 =
-      mat22cols (vec2add (#col1 a, #col1 b), vec2add (#col2 a, #col2 b)) 
+      mat22cols (vec2add (#col1 a, #col1 b), vec2add (#col2 a, #col2 b))
 
   fun vec2stimes (s : real, v : vec2) : vec2 =
       vec2 (s * vec2x v, s * vec2y v)
@@ -425,9 +425,9 @@ struct
       w <> 0w0 andalso Word32.andb(w, w - 0w1) = 0w0
 
 
-  type sweep = { 
+  type sweep = {
                  (* local center of mass position *)
-                 local_center : vec2, 
+                 local_center : vec2,
                  (* center world positions *)
                  c0 : vec2,
                  c : vec2,
@@ -444,8 +444,8 @@ struct
       then raise BDDMath ("Angle overflow in sweep ctor: " ^ rtos a)
       else ();
 
-      { local_center = local_center, 
-        c0 = vec2copy c0, 
+      { local_center = local_center,
+        c0 = vec2copy c0,
         c = vec2copy c, a0 = ref a0, a = ref a }
       end
   fun sweepcopy { local_center, c0, c, a0, a } : sweep =
@@ -455,8 +455,8 @@ struct
         a0 = ref (!a0),
         a = ref (!a) }
   (* PERF some of the copying is superfluous *)
-  fun sweep_gettransform ({ local_center, c0, c, a0, a }, 
-                          transform : transform, 
+  fun sweep_gettransform ({ local_center, c0, c, a0, a },
+                          transform : transform,
                           alpha : real) =
       let val angle : real = (1.0 - alpha) * !a0 + alpha * !a
       in
@@ -479,7 +479,7 @@ struct
 
   val MAX_ANGLE = BDDSettings.epsilon + 2.0 * BDDSettings.pi
 
-  fun sweep_set_a ({a, ... } : sweep, aa) = 
+  fun sweep_set_a ({a, ... } : sweep, aa) =
       let in
           (* XXX This is not an error. Just trying to track down a difference
              between bdd and box2d. *)
@@ -517,22 +517,22 @@ struct
   (* Normalize the sweep's angle (in radians) to be between -pi and pi *)
   (* XXX twm: This doesn't keep it between ~pi and pi. Maybe ~2pi and 2pi? *)
   fun sweep_normalize ({ a0, a, ... } : sweep) =
-      let 
+      let
           val twopi = 2.0 * BDDSettings.pi
           val d = twopi * real (Real.floor(!a0 / twopi))
 (*
           val () = dprint (fn () => "sweep_normalize: " ^ rtos (!a0) ^
                            " a0 / 2pi " ^ rtos (!a0 / twopi) ^
                            " floor " ^ Int.toString (Real.floor(!a0 / twopi)) ^
-                           " d " ^ rtos d ^ 
-                           " res: " ^ rtos (!a0 - d) ^ 
+                           " d " ^ rtos d ^
+                           " res: " ^ rtos (!a0 - d) ^
                            " " ^ rtos (!a - d) ^ "\n")
 *)
       in
           a0 := !a0 - d;
           a := !a - d;
           (* PERF bdd-specific assert *)
-          if !a0 > BDDSettings.epsilon + (2.0 * BDDSettings.pi) orelse 
+          if !a0 > BDDSettings.epsilon + (2.0 * BDDSettings.pi) orelse
              !a0 < (BDDSettings.pi * ~2.0) - BDDSettings.epsilon
           then raise BDDMath ("Angle overflow in sweepnormalize: " ^ rtos (!a0))
           else ()

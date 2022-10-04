@@ -2,7 +2,7 @@
 (* Implementation of an MD5-compatible hash function.
    Written by Tom 7 in 2001; code in the public domain. *)
 
-(* 
+(*
 
    NOTE:
 
@@ -25,7 +25,7 @@ sig
 
   val md5 : string -> string
 
-  (* XXX add stream-oriented hash functions from SHA1 
+  (* XXX add stream-oriented hash functions from SHA1
      implementation *)
 
   (* convert a binary string to one built of hex digits *)
@@ -35,6 +35,6 @@ sig
   val md5_advanced : { iv : Word32.word * Word32.word * Word32.word * Word32.word,
                        msg : string } -> string
   (* The reference IV. *)
-  val initialization_vector : Word32.word * Word32.word * Word32.word * Word32.word                  
+  val initialization_vector : Word32.word * Word32.word * Word32.word * Word32.word
 
 end

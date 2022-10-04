@@ -1,6 +1,6 @@
 (* Simplified interface for reading non-enormous XML documents into
    a datatype.
-   Tom Murphy VII, 2009. 
+   Tom Murphy VII, 2009.
    This file only: Use and distribute freely.
 *)
 
@@ -14,7 +14,7 @@ sig
   (* tag name, attributes *)
   type tag = string * attribute list
 
-  datatype tree = 
+  datatype tree =
       Text of string
     | Elem of tag * tree list
 
@@ -36,7 +36,7 @@ sig
      <totheemptytree></totheemptytree> (then treated as the empty
      string). Attributes and interior nodes are ignored. Text outside
      of leaves is ignored. The results are collated by the tag name in
-     the order that they appear in the document. 
+     the order that they appear in the document.
 
      Expects the tree to be normalized.
      *)

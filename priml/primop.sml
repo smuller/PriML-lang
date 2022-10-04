@@ -51,7 +51,7 @@ struct
       (* string operations. strings are not arrays since
          they have more efficient native representations *)
       | PStringSub
-      | PStringSubstring        
+      | PStringSubstring
       | PStringLength
       | PStringReplace
       | PIntToString
@@ -78,7 +78,7 @@ struct
       | PNewtag
 
       (* XXX5 these are dead, we shot them with double barrel *)
-      (* store and retrieve exception handler fn 
+      (* store and retrieve exception handler fn
          (these need to be relativized to the current thread) *)
       | PSethandler
       | PGethandler
@@ -152,7 +152,7 @@ struct
                         (* | PCompileWarn s => ("Warn(" ^ s ^ ")") *)
                         | PCompileWarn _ => "CompileWarn"
                         | _ => raise Primop "po tostring?")
-          | find ((s, p') :: rest) = if p = p' 
+          | find ((s, p') :: rest) = if p = p'
                                      then s
                                      else find rest
       in

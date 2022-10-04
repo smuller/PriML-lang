@@ -11,13 +11,13 @@
 (* Exceptions raised by functions in this structure:                        *)
 (*   passOne : ConflictFirst                                                *)
 (*--------------------------------------------------------------------------*)
-signature DfaPassOne = 
+signature DfaPassOne =
    sig
       val passOne : bool -> DfaBase.ContentModel -> DfaBase.CM
    end
 
-structure DfaPassOne : DfaPassOne = 
-   struct 
+structure DfaPassOne : DfaPassOne =
+   struct
       open DfaBase DfaUtil
 
       (*--------------------------------------------------------------------*)
@@ -44,14 +44,14 @@ structure DfaPassOne : DfaPassOne =
       (*          error,   if exist (q1,a) in F1, (q2,a) in F2              *)
       (*                   then raise ConflictFirst(a,q1,q2)                *)
       (*--------------------------------------------------------------------*)
-      fun passOne nondet cm = 
-	 let 
+      fun passOne nondet cm =
+	 let
 	    fun und(a,b) = a andalso b
 	    fun oder(a,b) = a orelse b
-	       
+
 	    fun op_fst_seq (fst,fsts,mt) = if mt then mergeFirst nondet (fst,fsts) else fst
 	    fun op_fst_or  (fst,fsts,_)  = mergeFirst nondet (fst,fsts)
-	       
+
 	    fun do_cm cm q =
 	       case cm
 		 of CM_ELEM a  => (ELEM a,(q+1,false,[(q+1,a)]))
@@ -62,16 +62,16 @@ structure DfaPassOne : DfaPassOne =
 				  in (REP cmi,(q1,true,fst))
 				  end
 		  | CM_PLUS cm => let val cmi as (_,info1) = do_cm cm q
-				  in (PLUS cmi,info1) 
-				  end 
+				  in (PLUS cmi,info1)
+				  end
 		  | CM_ALT cms => do_cms (ALT,false,oder,op_fst_or) cms q
 		  | CM_SEQ cms => do_cms (SEQ,true,und,op_fst_seq) cms q
-				  
-	    and do_cms(con,null_mt,op_mt,op_fst) cms q = 
-	       let 
+
+	    and do_cms(con,null_mt,op_mt,op_fst) cms q =
+	       let
 		  fun doit [] q = ([],(q,null_mt,[]))
 		    | doit (cm::cms) q =
-		     let 
+		     let
 			val cmi as (_,(q1,mt1,fst1)) = do_cm cm q
 			val (cmis,(q2,mt2,fst2)) = doit cms q1
 		     in (cmi::cmis,(q2,op_mt(mt1,mt2),op_fst(fst1,fst2,mt1)))
@@ -79,7 +79,7 @@ structure DfaPassOne : DfaPassOne =
 		  val (cmis,info1) = doit cms q
 	       in (con cmis,info1)
 	       end
-	    
+
 	 in do_cm cm 0
 	 end
    end

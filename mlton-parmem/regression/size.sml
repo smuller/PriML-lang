@@ -30,7 +30,7 @@ val _ =
 val _ = if 10 = foldl (op +) 0 l
            then ()
         else raise Fail "bug"
-   
+
 local
    open MLton.Cont
 in

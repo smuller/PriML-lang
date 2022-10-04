@@ -12,7 +12,7 @@
 (* Exceptions raised by functions in this structure:                        *)
 (*   initDtdTables     : none                                               *)
 (*   AttIdx2String     : NoSuchSymbol		                            *)
-(*   ElemIdx2String    : NoSuchIndex                                        *)         
+(*   ElemIdx2String    : NoSuchIndex                                        *)
 (*   GenEntIdx2String  : NoSuchIndex		                            *)
 (*   IdIdx2String      : NoSuchIndex		                            *)
 (*   NotIdx2String     : NoSuchIndex 		                            *)
@@ -29,15 +29,15 @@ signature DtdManager =
 
       exception AttValue of AppData
 
-      val makeAttValue  : Dtd -> AppData * State 
-	 -> int * Base.AttType * bool * bool * UniChar.Data 
+      val makeAttValue  : Dtd -> AppData * State
+	 -> int * Base.AttType * bool * bool * UniChar.Data
 	 -> UniChar.Vector * (Base.AttValue option * AppData)
-      val checkAttValue : Dtd -> AppData * State 
+      val checkAttValue : Dtd -> AppData * State
 	 -> Base.AttDef * UniChar.Vector * UniChar.Data
 	 -> HookData.AttPresent * AppData
-      val genMissingAtts  : Dtd -> AppData * State 
+      val genMissingAtts  : Dtd -> AppData * State
 	 -> Base.AttDefList * HookData.AttSpecList -> HookData.AttSpecList * AppData
-      val handleUndeclAtt : Dtd -> AppData * State 
+      val handleUndeclAtt : Dtd -> AppData * State
 	 -> int * UniChar.Data * int * UniChar.Data -> AppData
       val handleUndeclElement : Dtd -> int -> Base.ElemInfo
 
@@ -50,8 +50,8 @@ signature DtdManager =
 
       val enterAttList : Dtd -> AppData * State -> int -> AppData
 
-      val addAttribute : Dtd -> AppData * State -> int * Base.AttDef             -> AppData 
-      val addElement   : Dtd -> AppData * State -> int * Base.ContentSpec * bool -> AppData 
+      val addAttribute : Dtd -> AppData * State -> int * Base.AttDef             -> AppData
+      val addElement   : Dtd -> AppData * State -> int * Base.ContentSpec * bool -> AppData
       val addGenEnt    : Dtd -> AppData * State -> int * Base.GenEntity * bool   -> AppData
       val addNotation  : Dtd -> AppData * State -> int * Base.ExternalId         -> AppData
       val addParEnt    : Dtd -> AppData * State -> int * Base.ParEntity * bool   -> AppData
@@ -64,8 +64,8 @@ functor DtdManager (structure Dtd           : Dtd
       structure Entities      = Entities      (structure Hooks = Hooks)
       structure DtdAttributes = DtdAttributes (structure Dtd = Dtd
 					       structure Entities = Entities
-					       structure ParserOptions = ParserOptions)	 
-      open 
+					       structure ParserOptions = ParserOptions)
+      open
 	 Dtd
 	 DtdAttributes
    end

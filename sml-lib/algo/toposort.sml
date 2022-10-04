@@ -5,7 +5,7 @@
 
 structure TopoSort :> TOPOSORT =
 struct
-    
+
     exception TopoSort of string
 
     type stamp = unit ref
@@ -25,18 +25,18 @@ struct
     fun sort nil nil = nil
       | sort nil _ = raise TopoSort "constraints on non-members"
       | sort nl cl =
-        case List.partition 
+        case List.partition
               (fn (_,x) =>
                (* must something come before it? *)
                List.exists (fn (a, b : 'a ref) => b = x) cl) nl of
               (_, nil) => raise TopoSort "sort impossible"
             | (wait, ready) =>
-                  ready @ sort wait 
+                  ready @ sort wait
                   (List.filter
                    (fn (a, b) =>
-                    not 
-                    (List.exists 
-                     (fn (_, x) => x = a) 
+                    not
+                    (List.exists
+                     (fn (_, x) => x = a)
                      ready)) cl)
 
     fun get (a, _) = a

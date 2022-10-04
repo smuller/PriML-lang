@@ -57,7 +57,7 @@ structure MLtonProcess =
              * ('a, 'b) t -> ('c, 'd) t
              *)
             fun remember x =
-               case !x of 
+               case !x of
                   FileDesc f =>
                      (x := Stream ((), fn () => ())
                       ; ref (FileDesc f))
@@ -95,7 +95,7 @@ structure MLtonProcess =
                 | Term => ()
 
             val close =
-               fn (stdin, stdout, stderr) => 
+               fn (stdin, stdout, stderr) =>
                (close stdin; close stdout; close stderr)
          end
 
@@ -110,7 +110,7 @@ structure MLtonProcess =
             (* This is _not_ the identity; by rebuilding it we get type
              * ('a, 'b) t -> ('c, 'd) t
              *)
-            val forget = fn 
+            val forget = fn
                File x => File x
              | FileDesc f => FileDesc f
              | Pipe => Pipe
@@ -128,7 +128,7 @@ structure MLtonProcess =
 
             fun child c =
                FileDesc
-               (case !c of 
+               (case !c of
                    Child.FileDesc f => (c := Child.Stream ((), fn () => ()); f)
                  | Child.Stream _ => raise DoublyRedirected
                  | Child.Term  => raise MisuseOfForget)
@@ -140,7 +140,7 @@ structure MLtonProcess =
 
             local
                fun openOut std p =
-                  case p of 
+                  case p of
                      File s => (FileSys.creat (s, readWrite), Child.Term)
                    | FileDesc f => (f, Child.Term)
                    | Pipe =>
@@ -180,10 +180,10 @@ structure MLtonProcess =
         end
 
       datatype ('stdin, 'stdout, 'stderr) t =
-         T of {pid: Process.pid, (* if useWindowsProcess, 
-                                  * then this is a Windows process handle 
+         T of {pid: Process.pid, (* if useWindowsProcess,
+                                  * then this is a Windows process handle
                                   * and can't be passed to
-                                  * Posix.Process.* functions. 
+                                  * Posix.Process.* functions.
                                   *)
                status: Posix.Process.exit_status option ref,
                stderr: ('stderr, input) Child.t,
@@ -228,7 +228,7 @@ structure MLtonProcess =
                         protect (Process.waitpid, (Process.W_CHILD pid, []))
                   in
                      st
-                  end) 
+                  end)
                   p
          fun reapForCreate p =
             reap (fn pid =>
@@ -238,7 +238,7 @@ structure MLtonProcess =
                      val () =
                         SysCall.simple
                         (fn () =>
-                         PrimitiveFFI.Windows.Process.getexitcode 
+                         PrimitiveFFI.Windows.Process.getexitcode
                          (pid', status'))
                   in
                      Process.fromStatus' (!status')
@@ -267,7 +267,7 @@ structure MLtonProcess =
             kill (fn (pid, signal) =>
                   SysCall.simple
                   (fn () =>
-                   PrimitiveFFI.Windows.Process.terminate 
+                   PrimitiveFFI.Windows.Process.terminate
                    (PId.toRep pid, Signal.toRep signal)))
                  p
       end
@@ -277,7 +277,7 @@ structure MLtonProcess =
       fun launchWithFork (path, args, env, stdin, stdout, stderr) =
          case protect (Process.fork, ()) of
             NONE => (* child *)
-               let 
+               let
                   fun dup2 (old, new) =
                      if old = new
                         then ()
@@ -308,7 +308,7 @@ structure MLtonProcess =
       fun mingwEscape (l, 0) = l
         | mingwEscape (l, i) = mingwEscape (#"\\"::l, i-1)
       fun mingwFold (#"\\", (l, escapeCount)) = (#"\\"::l, escapeCount+1)
-        | mingwFold (#"\"", (l, escapeCount)) = 
+        | mingwFold (#"\"", (l, escapeCount)) =
             (#"\"" :: mingwEscape (#"\\"::l, escapeCount), 0)
         | mingwFold (x, (l, _)) = (x :: l, 0)
       val mingwQuote = mingwEscape o CharVector.foldl mingwFold ([#"\""], 0)
@@ -316,26 +316,26 @@ structure MLtonProcess =
          if not (strContains " \t\"" y) andalso y<>"" then y else
          String.implode (List.rev (#"\"" :: mingwQuote y))
 
-      fun cygwinEscape y = 
+      fun cygwinEscape y =
          if not (strContains " \t\"\r\n\f'" y) andalso y<>"" then y else
          concat ["\"",
                  String.translate
                  (fn #"\"" => "\\\"" | #"\\" => "\\\\" | x => String.str x) y,
                  "\""]
 
-      val cmdEscapeCreate = 
+      val cmdEscapeCreate =
          if MLton.Platform.OS.host = MLton.Platform.OS.MinGW
          then mingwEscape else cygwinEscape
 
-      val cmdEscapeSpawn = 
+      val cmdEscapeSpawn =
          if MLton.Platform.OS.host = MLton.Platform.OS.MinGW
          then mingwEscape else (fn s => s)
 
       fun launchWithCreate (path, args, env, stdin, stdout, stderr) =
          let
-            val path' = 
+            val path' =
                NullString.nullTerm
-               (let 
+               (let
                    open MLton.Platform.OS
                 in
                    case host of
@@ -344,12 +344,12 @@ structure MLtonProcess =
                     | _ => raise Fail "MLton.Process.launchWithCreate: path'"
                 end)
             val args' =
-               NullString.nullTerm 
+               NullString.nullTerm
                (String.concatWith " " (List.map cmdEscapeCreate (path :: args)))
             val env' =
-               Option.map 
+               Option.map
                (fn env =>
-                NullString.nullTerm 
+                NullString.nullTerm
                 ((String.concatWith "\000" env) ^ "\000"))
                env
             val stdin' = FileDesc.toRep stdin
@@ -424,7 +424,7 @@ structure MLtonProcess =
                         ; Posix.Process.exit 0w127)
              | SOME pid => pid
 
-      fun spawn {args, path}= 
+      fun spawn {args, path}=
          spawne {args = args,
                  env = ProcEnv.environ (),
                  path = path}
@@ -441,7 +441,7 @@ structure MLtonProcess =
                   ({errVal = C_PId.castFromFixedInt ~1}, fn () =>
                    Prim.spawnp (file, args))
                end
-         else    
+         else
             case Posix.Process.fork () of
                NONE => (Posix.Process.execp (file, args) handle _ => ()
                         ; Posix.Process.exit 0w127)

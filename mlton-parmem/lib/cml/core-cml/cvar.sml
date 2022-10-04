@@ -13,8 +13,8 @@ structure CVar : CVAR =
       structure R = RepTypes
 
 
-      (* Condition variables are essentially unit valued ivars, and 
-       * are used for various internal synchronization conditions 
+      (* Condition variables are essentially unit valued ivars, and
+       * are used for various internal synchronization conditions
        * (e.g., nack events, I/O synchronization, and thread termination).
        *)
       datatype cvar = datatype R.cvar

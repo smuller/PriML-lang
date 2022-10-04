@@ -11,7 +11,7 @@
 
 structure RegExpSyntax : REGEXP_SYNTAX =
   struct
- 
+
      exception CannotParse
      exception CannotCompile
 
@@ -34,5 +34,5 @@ structure RegExpSyntax : REGEXP_SYNTAX =
      fun addRange (s,minC,maxC) = CharSet.addList (s,List.tabulate (ord(maxC)-ord(minC)+1,fn v => chr (v+ord(minC))))
 
      val allChars = addRange (CharSet.empty, Char.minChar, Char.maxChar)
-	  
+
   end;

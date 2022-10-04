@@ -3,7 +3,7 @@
 (* Implementation of contacts.
 
    Corresponding to parts of dynamics/contacts/b2contact.cpp. *)
-functor BDDContact(Arg : 
+functor BDDContact(Arg :
                    sig
                      type fixture_data
                      type body_data
@@ -37,11 +37,11 @@ struct
           val body_b = D.F.get_body fix_b
           val shape_a = D.F.get_shape fix_a
           val shape_b = D.F.get_shape fix_b
-              
+
           val manifold = D.C.get_manifold c
       in
           BDDCollision.initialize_manifold
-          (world_manifold, manifold, 
+          (world_manifold, manifold,
            D.B.get_xf body_a, BDDShape.get_radius shape_a,
            D.B.get_xf body_b, BDDShape.get_radius shape_b)
       end
@@ -93,7 +93,7 @@ struct
                                  point_count = 0 })
           end
       else
-          let 
+          let
               val manifold = evaluate (c, xf_a, xf_b)
           in
               set_manifold (c, manifold);

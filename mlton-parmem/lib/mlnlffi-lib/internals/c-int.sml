@@ -37,7 +37,7 @@ structure C :> C_INT = struct
          *     V        |<---b--->|        V
          *    |<---l---> ......... <---r--->|
          *    |<----------wordsize--------->|
-         * 
+         *
          *     0.......0 1.......1 0.......0    = m
          *     1.......1 0.......0 1.......1    = im
          *
@@ -149,10 +149,10 @@ structure C :> C_INT = struct
             | PTR x => PTR (w x)
             | FPTR f => FPTR (fn a => w (f a))
             | ARR {typ, n, esz, asz} =>
-                 ARR {typ = convert w typ, 
+                 ARR {typ = convert w typ,
                       n = n, esz = esz, asz = asz}
 
-        val trivial : ('t, 't) witness = 
+        val trivial : ('t, 't) witness =
            fn x => x
 
         val pointer : ('from, 'to) witness -> ('from ptr, 'to ptr) witness =
@@ -167,10 +167,10 @@ structure C :> C_INT = struct
            fn w => fn (a, t) => (a, convert w t)
     end
 
-    val convert : (('st, 'sc) obj, ('tt, 'tc) obj) W.witness -> 
+    val convert : (('st, 'sc) obj, ('tt, 'tc) obj) W.witness ->
                   ('st, 'sc) obj -> ('tt, 'tc) obj =
        fn w => fn x => w x
-    val convert' : (('st, 'sc) obj, ('tt, 'tc) obj) W.witness -> 
+    val convert' : (('st, 'sc) obj, ('tt, 'tc) obj) W.witness ->
                    ('st, 'sc) obj' -> ('tt, 'tc) obj' =
        fn _ => fn x => x
 
@@ -315,7 +315,7 @@ structure C :> C_INT = struct
     end
 
     structure Heavy = struct
-        val obj : 't T.typ -> ('t, 'c) obj' -> ('t, 'c) obj = 
+        val obj : 't T.typ -> ('t, 'c) obj' -> ('t, 'c) obj =
            fn t => fn a => (a, t)
         val ptr : 'o ptr T.typ -> 'o ptr' -> 'o ptr =
            fn PTR (_, t) => (fn a => (a, t))
@@ -482,15 +482,15 @@ structure C :> C_INT = struct
     val rw' = addr_id
 
     structure Ptr = struct
-        val |&| : ('t, 'c) obj -> ('t, 'c) obj ptr = 
+        val |&| : ('t, 'c) obj -> ('t, 'c) obj ptr =
            fn (a, t) => (a, PTR (null, t))
-        val |*| : ('t, 'c) obj ptr -> ('t, 'c) obj = 
+        val |*| : ('t, 'c) obj ptr -> ('t, 'c) obj =
            fn (a, PTR (_, t)) => (a, t)
             | _ => bug "Ptr.* (non-pointer)"
 
-        val |&! : ('t, 'c) obj' -> ('t, 'c) obj ptr' = 
+        val |&! : ('t, 'c) obj' -> ('t, 'c) obj ptr' =
            addr_id
-        val |*! : ('t, 'c) obj ptr' -> ('t, 'c) obj' = 
+        val |*! : ('t, 'c) obj ptr' -> ('t, 'c) obj' =
            addr_id
 
         fun compare (p, p') = CMemory.compare (p_strip_type p, p_strip_type p')
@@ -552,7 +552,7 @@ structure C :> C_INT = struct
 
         val ro' : ('t, 'c) obj ptr'  -> ('t, ro) obj ptr' =
            addr_id
-        val rw' : ('t, 'sc) obj ptr' -> ('t, 'tc) obj ptr' = 
+        val rw' : ('t, 'sc) obj ptr' -> ('t, 'tc) obj ptr' =
            addr_id
     end
 
@@ -566,7 +566,7 @@ structure C :> C_INT = struct
             val sub : (('t, 'n) arr, 'c) obj * int -> ('t, 'c) obj =
                fn ((a, ARR { typ, n, esz, ... }), i) => (asub (a, i, n, esz), typ)
                 | _ => bug "Arr.sub (non-array)"
-            val sub' : 't S.size * 'n Dim.dim -> 
+            val sub' : 't S.size * 'n Dim.dim ->
                         (('t, 'n) arr, 'c) obj' * int -> ('t, 'c) obj' =
                fn (s, d) => fn (a, i) => asub (a, i, Word.fromInt (Dim.toInt d), s)
         end

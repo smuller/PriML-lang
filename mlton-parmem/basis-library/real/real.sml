@@ -333,11 +333,11 @@ functor Real (structure W: WORD_EXTRA
       val realCeil = R.realCeil
       val realFloor = R.realFloor
       val realTrunc = R.realTrunc
-      
+
       (* Unfortunately, libc round ties to zero instead of even values. *)
       (* Fortunately, if any rounding mode is supported, it's TO_NEAREST. *)
       val realRound = fn r => IEEEReal.withRoundingMode (TO_NEAREST, fn () => R.round r)
-      
+
       fun rem (x, y) =
          (case class x of
              INF => nan
@@ -662,8 +662,8 @@ functor Real (structure W: WORD_EXTRA
       end
 
       val toString = fmt (StringCvt.GEN NONE)
-      
-      (* Not all devices support all rounding modes. 
+
+      (* Not all devices support all rounding modes.
        * However, every device has ceil/floor/round/trunc.
        *)
       fun safeConvert (m, cvt, x) =
@@ -794,7 +794,7 @@ functor Real (structure W: WORD_EXTRA
                   (* This round may turn x into an INF, so we need to check the
                    * class again.
                    *)
-                  val x = 
+                  val x =
                      case mode of
                         TO_POSINF => realCeil x
                       | TO_NEGINF => realFloor x

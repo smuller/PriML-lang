@@ -7,20 +7,20 @@ require "chars";
 require "encodeBasic";
 require "encodeError";
 *)
-signature EncodeMisc = 
+signature EncodeMisc =
    sig
-      val writeCharAscii  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharEbcdic : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharLatin1 : UniChar.Char * EncodeBasic.File -> EncodeBasic.File  
-      val writeCharUcs4B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4SB : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs4SL : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUtf8   : UniChar.Char * EncodeBasic.File -> EncodeBasic.File  
-      val writeCharUtf16B : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUtf16L : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs2B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
-      val writeCharUcs2L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File 
+      val writeCharAscii  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharEbcdic : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharLatin1 : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4SB : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs4SL : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf8   : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf16B : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUtf16L : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs2B  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
+      val writeCharUcs2L  : UniChar.Char * EncodeBasic.File -> EncodeBasic.File
 
       val validCharAscii  : UniChar.Char -> bool
       val validCharEbcdic : UniChar.Char -> bool
@@ -39,7 +39,7 @@ structure EncodeMisc : EncodeMisc =
       val op >> = Chars.>>
       val op || = Word8.orb
 
-      fun splitSurrogates (c : Char) = 
+      fun splitSurrogates (c : Char) =
          (((c-0wx10000) >> 0w10)+0wxD800,c && 0wx3FF + 0wxDC00)
 
       fun Char2Byte c = Word8.fromLargeWord(Chars.toLargeWord c)
@@ -48,14 +48,14 @@ structure EncodeMisc : EncodeMisc =
       (* Ascii                                                               *)
       (*---------------------------------------------------------------------*)
       fun validCharAscii (c : Char) = c<0wx80
-      fun writeCharAscii(c,f) = 
+      fun writeCharAscii(c,f) =
          if c<0wx80 then writeByte(f,Char2Byte c)
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"ASCII"))
 
       (*---------------------------------------------------------------------*)
       (* Ebcdic                                                              *)
       (*---------------------------------------------------------------------*)
-      val latin2ebcdicTab = Word8Vector.fromList 
+      val latin2ebcdicTab = Word8Vector.fromList
           [0wx00,0wx01,0wx02,0wx03,0wx37,0wx2D,0wx2E,0wx2F,
            0wx16,0wx05,0wx25,0wx0B,0wx0C,0wx0D,0wx0E,0wx0F,
            0wx10,0wx11,0wx12,0wx13,0wx3C,0wx3D,0wx32,0wx26,
@@ -90,7 +90,7 @@ structure EncodeMisc : EncodeMisc =
            0wxEE,0wxEF,0wxFA,0wxFB,0wxFC,0wxFD,0wxFE,0wxFF
            ]
       fun validCharEbcdic (c : Char) = c<0wx100
-      fun writeCharEbcdic(c,f) = 
+      fun writeCharEbcdic(c,f) =
          if c<0wx100 then writeByte(f,Word8Vector.sub(latin2ebcdicTab,Chars.toInt c))
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"EBCDIC"))
 
@@ -98,7 +98,7 @@ structure EncodeMisc : EncodeMisc =
       (* Latin1                                                              *)
       (*---------------------------------------------------------------------*)
       fun validCharLatin1 (c : Char) = c<0wx100
-      fun writeCharLatin1(c,f) = 
+      fun writeCharLatin1(c,f) =
          if c<0wx100 then writeByte(f,Char2Byte c)
          else raise EncodeError(f,ERR_ILLEGAL_CHAR(c,"LATIN-1"))
 
@@ -109,7 +109,7 @@ structure EncodeMisc : EncodeMisc =
                          Char2Byte(c >> 0w16),
                          Char2Byte(c >> 0w8),
                          Char2Byte c)
-      fun writeCharUcs4 perm = 
+      fun writeCharUcs4 perm =
          fn (c,f) => let val bytes = ucs4Bytes c
                          val (b1,b2,b3,b4) = perm bytes
                          val f1 = writeByte(f,b1)
@@ -133,13 +133,13 @@ structure EncodeMisc : EncodeMisc =
       (*---------------------------------------------------------------------*)
       (* UTF-16                                                              *)
       (*---------------------------------------------------------------------*)
-      fun oneUtf16 isL (c,f) = 
+      fun oneUtf16 isL (c,f) =
          let val (b1,b2) = (Char2Byte(c >> 0w8),Char2Byte c)
          in if isL then writeByte(writeByte(f,b2),b1)
             else writeByte(writeByte(f,b1),b2)
          end
-      fun writeCharUtf16 isL = 
-         fn (c,f) => 
+      fun writeCharUtf16 isL =
+         fn (c,f) =>
          if c<0wx10000 then oneUtf16 isL (c,f)
          else let val (hi,lo) = splitSurrogates c
                   val f1 = oneUtf16 isL (hi,f)
@@ -152,9 +152,9 @@ structure EncodeMisc : EncodeMisc =
       (*---------------------------------------------------------------------*)
       (* UCS-2                                                               *)
       (*---------------------------------------------------------------------*)
-      fun writeCharUcs2 isL = 
-         fn (c,f) => 
-         if c<0wx10000 
+      fun writeCharUcs2 isL =
+         fn (c,f) =>
+         if c<0wx10000
             then let val (b1,b2) = (Char2Byte(c >> 0w8),Char2Byte c)
                  in if isL then writeByte(writeByte(f,b2),b1)
                     else writeByte(writeByte(f,b1),b2)

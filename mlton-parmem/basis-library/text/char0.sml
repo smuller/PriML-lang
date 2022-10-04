@@ -12,7 +12,7 @@ local
          structure Prim8  = Primitive.Char8
          structure Prim16 = Primitive.Char16
          structure Prim32 = Primitive.Char32
-         
+
          type 'a t = {
             chrUnsafe: int -> 'a,
             ord:       'a -> int,
@@ -20,7 +20,7 @@ local
             maxChar:   'a,
             numChars:  int
             }
-         
+
          val fChar8 : Prim8.char t = {
             chrUnsafe = Prim8.idFromWord8 o Int.sextdToWord8,
             ord       = Int.zextdFromWord8 o Prim8.idToWord8,
@@ -49,28 +49,28 @@ in
          (* set by config/default/default-charX.sml *)
          open Char
          type string = String.string
-         
+
          local
             structure PCX = Char_ChooseChar(PreCharX)
          in
             val { chrUnsafe, ord, minChar, maxChar, numChars } = PCX.f
          end
-      
+
          fun fromChar x = x
       end
-   
+
    structure WideChar : PRE_CHAR =
       struct
          (* set by config/default/default-widecharX.sml *)
          open WideChar
          type string = WideString.string
-         
+
          local
             structure PCX = WideChar_ChooseChar(PreCharX)
          in
             val { chrUnsafe, ord, minChar, maxChar, numChars } = PCX.f
          end
-         
+
          (* safe b/c WideChar >= Char *)
          val fromChar = chrUnsafe o Char.ord
       end

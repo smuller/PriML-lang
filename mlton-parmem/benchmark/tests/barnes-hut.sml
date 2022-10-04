@@ -125,7 +125,7 @@ functor Space (V : VECTOR) : SPACE =
       }
 
     fun eqBody(Body{mass,pos,vel,acc,phi},
-               Body{mass=m1,pos=p1,vel=v1,acc=a1,phi=h1}) = 
+               Body{mass=m1,pos=p1,vel=v1,acc=a1,phi=h1}) =
       (Real.==(mass, m1) andalso Real.==(!phi, !h1)
        andalso V.equal(!pos, !p1) andalso V.equal(!vel, !v1)
        andalso V.equal(!acc, !a1))
@@ -322,7 +322,7 @@ functor Load (S : SPACE) : LOAD =
   (* initialize tree structure for hack force calculation. *)
     fun makeTree (bodies, rmin, rsize) = let
           fun build ([], space) = space
-            | build ((body as S.Body{mass, ...}) :: r, space) = 
+            | build ((body as S.Body{mass, ...}) :: r, space) =
                if Real.==(mass, 0.0) then build (r, space)
                else let
                    val box = expandBox (body, space)
@@ -392,7 +392,7 @@ functor Grav (S : SPACE) : GRAV =
 (*print(implode["    walksub: dsq = ", makestring dsq, ", ", S.prNode p, "\n"]);*)
                 case p
                  of S.Empty => (phi0, acc0)
-                  | (S.Node{cell = S.BodyCell body, ...}) => 
+                  | (S.Node{cell = S.BodyCell body, ...}) =>
                       if S.eqBody(body, pskip)
                         then (skipSelf := true; (phi0, acc0))
                         else gravsub (p, phi0, acc0, NONE)
@@ -813,7 +813,7 @@ signature RAND =
     val norm : real -> real
       (* r -> r / (randMax + 1.0) *)
 
-    val range : (int * int) -> real -> int 
+    val range : (int * int) -> real -> int
       (* Map v, randMin <= v <= randMax to integer range [i,j]
        * Exception -
        *   BadArg if j < i
@@ -825,7 +825,7 @@ signature RAND =
  * COPYRIGHT (c) 1991 by AT&T Bell Laboratories.  See COPYRIGHT file for details
  *
  * Random number generator taken from Paulson, pp. 170-171.
- * Recommended by Stephen K. Park and Keith W. Miller, 
+ * Recommended by Stephen K. Park and Keith W. Miller,
  * Random number generators: good ones are hard to find,
  * CACM 31 (1988), 1192-1201
  *
@@ -841,10 +841,10 @@ structure Rand : RAND =
     val randMin = 1.0
     val randMax = m - 1.0
 
-    fun random seed = let 
+    fun random seed = let
           val t = a*seed
           in
-            t - m * real(floor(t/m))  
+            t - m * real(floor(t/m))
           end
 
     fun mkRandom seed = let
@@ -855,10 +855,10 @@ structure Rand : RAND =
 
     fun norm r = r / m
 
-    fun range (i,j) = 
-          if j < i 
+    fun range (i,j) =
+          if j < i
             then raise Fail "Rand.range"
-            else let 
+            else let
               val R = real(j - i + 1)
               in
                 fn r => i + floor(R*(r/m))
@@ -911,7 +911,7 @@ functor Main (V : VECTOR) : sig
   (* some math utilities *)
 (** NOTE: these are part of the Math structure in the new basis *)
     val pi = 3.14159265358979323846
-    fun pow(x, y) = 
+    fun pow(x, y) =
       if Real.==(y, 0.0) then 1.0 else Math.exp (y * Math.ln x)
 
   (* random numbers *)

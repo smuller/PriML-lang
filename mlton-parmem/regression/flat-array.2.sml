@@ -9,4 +9,4 @@ val _ = Array.update (a', 0, i + Array.sub (a', 0))
 val _ =
    print (concat [Int.toString (#1 (Array.sub (a, 12))), " ",
                   Int.toString (Array.sub (#2 (Array.sub (a, 13)), 0)), "\n"])
-                  
+

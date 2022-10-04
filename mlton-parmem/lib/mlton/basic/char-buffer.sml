@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure CharBuffer: CHAR_BUFFER = 
+structure CharBuffer: CHAR_BUFFER =
 struct
 
 datatype t = T of {length: int ref,

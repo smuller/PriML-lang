@@ -23,7 +23,7 @@ sig
                     uid : Posix.FileSys.uid,
                     gid : Posix.FileSys.gid,
                     name : string }
-    
+
   (* applies the function to each entry in a directory *)
   val dirapp : (fileinfo -> unit) -> string -> unit
 
@@ -36,7 +36,7 @@ sig
      *s in the filename position (not the dir), so */*.txt won't work.
      (Note: if this is ever implemented, it should memoize its work
      (or lazily limit its result set) so that the classic
-     ../*/../*/../*/../*/../*/../*/.. DoS won't work.) *) 
+     ../*/../*/../*/../*/../*/../*/.. DoS won't work.) *)
   val glob : string -> fileinfo stream
 
   (* applies the dirhandler as if the argument was passed
@@ -48,7 +48,7 @@ sig
 
   (* ie "rwxr-xr-x" *)
   val modestring : Posix.FileSys.S.mode -> string
-      
+
   (* dirplus "/home" "file" or
      dirplus "/home/" "file"
      both return "/home/file" *)
@@ -74,8 +74,8 @@ sig
      s is a path to a file, either relative or absolute.
      chdirs to the directory holding s for the purpose
      of executing f, and then restores to the previous
-     directory. This works even if f raises an exception. 
-     
+     directory. This works even if f raises an exception.
+
      f is supplied with the base filename in s, which
      will now be appropriate for calls to "open" *)
   val chdir_excursion : string -> (string -> 'a) -> 'a

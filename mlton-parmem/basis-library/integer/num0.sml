@@ -119,7 +119,7 @@ functor MkNum0 (S: MKNUM0_ARG): sig
             fun log2 w = Primitive.IntWordConv.zextdFromWord32ToInt32 (log2Word w)
          end
 
-      structure Int = 
+      structure Int =
          struct
             open Int
 
@@ -161,19 +161,19 @@ functor MkNum0 (S: MKNUM0_ARG): sig
             fun abs (x: int) = if x < zero then ~ x else x
 
             fun quot (x, y) =
-               if Primitive.Controls.safe 
+               if Primitive.Controls.safe
                   andalso y = zero
                   then raise Div
                   else if (Primitive.Controls.detectOverflow
                            orelse Primitive.Controls.safe)
                           andalso x = minInt' andalso y = ~one
-                          then if Primitive.Controls.detectOverflow 
+                          then if Primitive.Controls.detectOverflow
                                   then raise Overflow
                                   else minInt'
                           else quotUnsafe (x, y)
 
             fun rem (x, y) =
-               if Primitive.Controls.safe 
+               if Primitive.Controls.safe
                   andalso y = zero
                   then raise Div
                   else if x = minInt' andalso y = ~one
@@ -193,7 +193,7 @@ functor MkNum0 (S: MKNUM0_ARG): sig
                           then if (Primitive.Controls.detectOverflow
                                    orelse Primitive.Controls.safe)
                                   andalso x = minInt' andalso y = ~one
-                                  then if Primitive.Controls.detectOverflow 
+                                  then if Primitive.Controls.detectOverflow
                                           then raise Overflow
                                           else minInt'
                                   else quotUnsafe (x, y)
@@ -219,7 +219,7 @@ functor MkNum0 (S: MKNUM0_ARG): sig
                                   else raise Div
 
             local
-               structure S = 
+               structure S =
                   UnsignedIntegralComparisons
                   (type int = int
                    type word = Word.word
@@ -230,7 +230,7 @@ functor MkNum0 (S: MKNUM0_ARG): sig
             end
 
             fun power {base, exp} =
-               if Primitive.Controls.safe 
+               if Primitive.Controls.safe
                   andalso exp < zero
                   then raise Primitive.Exn.Fail8 "Int.power"
                   else let

@@ -27,7 +27,7 @@ signature REGEXP_ENGINE =
 	 * returns SOME(match, strm'), where match is the match-tree for the match and
 	 * strm' is the stream following the match.
 	 *)
-	
+
     val prefix : regexp ->(char,'a) StringCvt.reader -> ('a match, 'a) StringCvt.reader
 	(* attempt to match the stream at the current position with the
 	 * regular expression

@@ -48,7 +48,7 @@ structure PosixProcEnv: POSIX_PROC_ENV =
                                 end
       end
 
-      fun setsid () = 
+      fun setsid () =
          (PId.fromRep o SysCall.simpleResult')
          ({errVal = C_PId.castFromFixedInt ~1}, Prim.setsid)
 
@@ -59,7 +59,7 @@ structure PosixProcEnv: POSIX_PROC_ENV =
              val n = Prim.getgroupsN ()
              val a: C_GId.t array = Array.arrayUninit (C_Int.toInt n)
           in
-             (Prim.getgroups (n, a), fn n => 
+             (Prim.getgroups (n, a), fn n =>
               (GId.listFromRep o ArraySlice.toList)
               (ArraySlice.slice (a, 0, SOME (C_Int.toInt n))))
           end)
@@ -67,7 +67,7 @@ structure PosixProcEnv: POSIX_PROC_ENV =
       fun getlogin () =
          SysCall.syscall'
          ({errVal = CUtil.C_Pointer.null}, fn () =>
-          (Prim.getlogin (), fn cs => 
+          (Prim.getlogin (), fn cs =>
            CS.toString cs))
 
       fun setpgid {pid, pgid} =
@@ -241,9 +241,9 @@ structure PosixProcEnv: POSIX_PROC_ENV =
       local
          structure Times = Prim.Times
 
-         val clocksPerSec = 
-            (* syconf is not implemented on MinGW; 
-             * we don't want a SysErr during Basis Library initialization. 
+         val clocksPerSec =
+            (* syconf is not implemented on MinGW;
+             * we don't want a SysErr during Basis Library initialization.
              *)
             if (let open Primitive.MLton.Platform.OS in host = MinGW end)
                then LargeInt.zero
@@ -260,9 +260,9 @@ structure PosixProcEnv: POSIX_PROC_ENV =
             ({errVal = C_Clock.castFromFixedInt ~1}, fn () =>
              (Prim.times (), fn elapsed =>
               {elapsed = cvt elapsed,
-               utime = cvt (Times.getUTime ()), 
-               stime = cvt (Times.getSTime ()), 
-               cutime = cvt (Times.getCUTime ()), 
+               utime = cvt (Times.getUTime ()),
+               stime = cvt (Times.getSTime ()),
+               cutime = cvt (Times.getCUTime ()),
                cstime = cvt (Times.getCSTime ())}))
       end
 

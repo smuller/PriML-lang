@@ -10,7 +10,7 @@ struct
 
 (* Based on page 38 of Programming Pearls, by Jon Bentley. *)
 fun 'a search (a: 'a array, f: 'a -> order): int option =
-   let 
+   let
       fun loop (min: int, max: int): int option =
          if min > max
             then NONE
@@ -25,7 +25,7 @@ fun 'a search (a: 'a array, f: 'a -> order): int option =
    end
 
 fun 'a largest (a: 'a array, f: 'a -> bool): int option =
-   let 
+   let
       fun loop(min, max, res: int option): int option =
          if min > max
             then res
@@ -39,7 +39,7 @@ fun 'a largest (a: 'a array, f: 'a -> bool): int option =
    end
 
 fun 'a smallest(a: 'a array, f: 'a -> bool): int option =
-   let 
+   let
       fun loop(min, max, res: int option): int option =
          if min > max
             then res

@@ -13,4 +13,4 @@ val rec bigTrue =
     | n => Fun (fn _ => bigTrue (n - 1))
 
 val _ = taut (bigTrue 12)
-   
+

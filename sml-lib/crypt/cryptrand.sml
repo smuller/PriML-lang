@@ -1,5 +1,5 @@
 
-(* FIXME -- get real random numbers here ! 
+(* FIXME -- get real random numbers here !
    This is absolute rubbish for testing only!!! *)
 
 structure CryptRand =
@@ -8,7 +8,7 @@ struct
     infix 6 ++ --
     infix 7 divv modd **
     infix 4 << >> <<= >>=
-        
+
     structure N = IntInf
 
     val op ++ = N.+
@@ -116,8 +116,8 @@ struct
           fun gb acc 0 = acc
             | gb acc n =
             if n >= 32
-            then 
-              let 
+            then
+              let
                 val accs = acc ** n2_32
                 (* okay, since if IntInf is available,
                    LargeInt = IntInf = N *)

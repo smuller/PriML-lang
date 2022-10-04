@@ -27,7 +27,7 @@ fun withh (file, p, openn, close) =
       val stream = openn file
    in
       Exn.finally (fn () => p stream, fn () => close stream)
-   end 
+   end
 
 fun withOut (f, p) = withh (f, p, Out.openOut, Out.close)
 fun withAppend (f, p) = withh (f, p, Out.openAppend, Out.close)
@@ -134,7 +134,7 @@ fun create f = withOut (f, fn _ => ())
 val suffix = #ext o OS.Path.splitBaseExt
 
 local open OS.Path
-in 
+in
    val base = base
    val dirOf = dir
    val extension = ext

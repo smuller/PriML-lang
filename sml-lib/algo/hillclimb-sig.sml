@@ -1,7 +1,7 @@
 (* structure Climbing :> *)
 signature CLIMBING =
 sig
-    
+
     (* Conditions under which we stop optimizing. *)
     datatype 'a condition =
         (* Ran this many iterations *)
@@ -20,7 +20,7 @@ end
 signature CLIMBARG =
 sig
 
-    type param 
+    type param
     type score = real
     val ++ : param * param -> param
     val -- : param * param -> param
@@ -32,7 +32,7 @@ sig
     val shrink : param -> param
     val grow : param -> param
     val goodenough : score -> bool
-    val debug : param * score -> unit 
+    val debug : param * score -> unit
 
 end
 

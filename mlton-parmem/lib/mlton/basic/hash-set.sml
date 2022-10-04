@@ -65,7 +65,7 @@ fun stats' (T {buckets, numItems, ...}) =
          = Array.fold
            (!buckets,
             (NONE, NONE, 0.0),
-            fn (l,(min,max,total)) 
+            fn (l,(min,max,total))
              => let
                   val n = List.length l
                   val d = (Real.fromInt n) - avg
@@ -155,7 +155,7 @@ fun peek (t, w, p) = peekGen (t, w, p, fn _ => NONE, SOME)
  *    end
  *)
 
-fun insertIfNew (table as T {buckets, numItems, ...}, w, p, f, 
+fun insertIfNew (table as T {buckets, numItems, ...}, w, p, f,
                  g: 'a -> unit) =
    let
       fun no (j, b) =

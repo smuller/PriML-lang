@@ -17,13 +17,13 @@ struct
 
     fun arena (a, i) = a
 
-    fun add (a, s) = 
+    fun add (a, s) =
 
     (* Perform the "find" operation for the index, compressing as we go. *)
     fun find (a, s) i =
         case GrowArray.sub a i of
             ~1 => i
-          | n => 
+          | n =>
             let val r = find (a, s) n
             in GA.update a i r; r
             end

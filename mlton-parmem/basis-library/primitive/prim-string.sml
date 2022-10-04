@@ -16,9 +16,9 @@ structure String8 =
    struct
       open String8
 
-      val idFromWord8Vector = 
+      val idFromWord8Vector =
          _prim "Word8Vector_toString": Word8.word vector -> string;
-      val idToWord8Vector = 
+      val idToWord8Vector =
          _prim "String_toWord8Vector": string -> Word8.word vector;
    end
 

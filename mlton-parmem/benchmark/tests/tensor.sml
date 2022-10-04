@@ -18,7 +18,7 @@ signature MONO_VECTOR =
     val foldli : ((int * elem * 'a) -> 'a) -> 'a -> (vector * int * int option) -> 'a
     val foldri : ((int * elem * 'a) -> 'a) -> 'a -> (vector * int * int option) -> 'a
     val foldl : ((elem * 'a) -> 'a) -> 'a -> vector -> 'a
-    val foldr : ((elem * 'a) -> 'a) -> 'a -> vector -> 'a 
+    val foldr : ((elem * 'a) -> 'a) -> 'a -> vector -> 'a
   end
 
 (*
@@ -29,7 +29,7 @@ signature MONO_VECTOR =
 *)
 
 (* COPYRIGHT
- 
+
 Redistribution and use in source and binary forms, with or
 without modification, are permitted provided that the following
 conditions are met:
@@ -460,7 +460,7 @@ structure Index : INDEX =
 (*
  Copyright (c) Juan Jose Garcia Ripoll.
  All rights reserved.
- 
+
  Refer to the COPYRIGHT file for license conditions
 *)
 
@@ -549,7 +549,7 @@ signature TENSOR =
 (*
  Copyright (c) Juan Jose Garcia Ripoll.
  All rights reserved.
- 
+
  Refer to the COPYRIGHT file for license conditions
 *)
 
@@ -557,7 +557,7 @@ structure Tensor : TENSOR =
     struct
         structure Array = Array
         structure Index = Index
-            
+
         type index = Index.t
         type 'a tensor = {shape : index, indexer : Index.indexer, data : 'a array}
 
@@ -581,7 +581,7 @@ structure Tensor : TENSOR =
         fun splitList (l as (a::rest), place) =
             let fun loop (left,here,right) 0 =  (List.rev left,here,right)
                   | loop (_,_,[]) place = raise Index
-                  | loop (left,here,a::right) place = 
+                  | loop (left,here,a::right) place =
                 loop (here::left,a,right) (place-1)
             in
                 if place <= 0 then
@@ -620,7 +620,7 @@ structure Tensor : TENSOR =
                 raise Shape
 
         fun fromArray (s, a) =
-            case Index.validShape s andalso 
+            case Index.validShape s andalso
                  ((Index.length s) = (Array.length a)) of
                  true => make'(s, a)
                | false => raise Shape
@@ -708,7 +708,7 @@ structure Tensor : TENSOR =
 (*
  Copyright (c) Juan Jose Garcia Ripoll.
  All rights reserved.
- 
+
  Refer to the COPYRIGHT file for license conditions
 *)
 
@@ -1086,7 +1086,7 @@ struct
                else loop n
             end
 
-        fun recip (r1, i1) = 
+        fun recip (r1, i1) =
             let val modulus = abs2(r1, i1)
             in (Real./(r1, modulus), Real./(Real.~ i1, modulus))
             end
@@ -1152,7 +1152,7 @@ struct
             in (y', Real.~ x')
             end
 
-        fun acos (z as (x,y)) = 
+        fun acos (z as (x,y)) =
             let val (x', y') = sqrt (one + z * z)
                 val (x'', y'') = ln (z + (Real.~ y', x'))
             in (y'', Real.~ x'')
@@ -1172,7 +1172,7 @@ struct
 
         fun scan getc =
             let val scanner = Real.scan getc
-            in fn stream => 
+            in fn stream =>
                   case scanner stream of
                       NONE => NONE
                     | SOME (a, rest) =>
@@ -1186,7 +1186,7 @@ end (* ComplexNumber *)
 (*
  Copyright (c) Juan Jose Garcia Ripoll.
  All rights reserved.
- 
+
  Refer to the COPYRIGHT file for license conditions
 *)
 
@@ -1548,7 +1548,7 @@ struct
                    then raise Domain
                else loop n
             end
-        fun recip (r1, i1) = 
+        fun recip (r1, i1) =
             let val modulus = abs2(r1, i1)
             in (Real./(r1, modulus), Real./(Real.~ i1, modulus))
             end
@@ -1607,7 +1607,7 @@ struct
                 val (x',y') = ln ((Real.~ y, x) + w)
             in (y', Real.~ x')
             end
-        fun acos (z as (x,y)) = 
+        fun acos (z as (x,y)) =
             let val (x', y') = sqrt (one + z * z)
                 val (x'', y'') = ln (z + (Real.~ y', x'))
             in (y'', Real.~ x'')
@@ -1623,7 +1623,7 @@ struct
         fun atanh x = ln ((one + x) / sqrt(one - x * x))
         fun scan getc =
             let val scanner = Real.scan getc
-            in fn stream => 
+            in fn stream =>
                   case scanner stream of
                       NONE => NONE
                     | SOME (a, rest) =>
@@ -1661,7 +1661,7 @@ struct
              Int of int |
              Real of real |
              Complex of CNumber.t |
-             String of string     
+             String of string
     fun list _ [] = print "[]"
       | list cvt (a::resta) =
         let fun loop a [] = (print(cvt a); print "]")
@@ -1936,7 +1936,7 @@ structure MonoTensor  =
         fun splitList (l as (a::rest), place) =
             let fun loop (left,here,right) 0 =  (List.rev left,here,right)
                   | loop (_,_,[]) place = raise Index
-                  | loop (left,here,a::right) place = 
+                  | loop (left,here,a::right) place =
                 loop (here::left,a,right) (place-1)
             in
                 if place <= 0 then
@@ -1967,7 +1967,7 @@ structure MonoTensor  =
             else
                 raise Shape
         fun fromArray (s, a) =
-            case Index.validShape s andalso 
+            case Index.validShape s andalso
                  ((Index.length s) = (Array.length a)) of
                  true => make'(s, a)
                | false => raise Shape
@@ -2221,7 +2221,7 @@ structure MonoTensor  =
         fun splitList (l as (a::rest), place) =
             let fun loop (left,here,right) 0 =  (List.rev left,here,right)
                   | loop (_,_,[]) place = raise Index
-                  | loop (left,here,a::right) place = 
+                  | loop (left,here,a::right) place =
                 loop (here::left,a,right) (place-1)
             in
                 if place <= 0 then
@@ -2252,7 +2252,7 @@ structure MonoTensor  =
             else
                 raise Shape
         fun fromArray (s, a) =
-            case Index.validShape s andalso 
+            case Index.validShape s andalso
                  ((Index.length s) = (Array.length a)) of
                  true => make'(s, a)
                | false => raise Shape
@@ -2533,7 +2533,7 @@ structure MonoTensor  =
         fun splitList (l as (a::rest), place) =
             let fun loop (left,here,right) 0 =  (List.rev left,here,right)
                   | loop (_,_,[]) place = raise Index
-                  | loop (left,here,a::right) place = 
+                  | loop (left,here,a::right) place =
                 loop (here::left,a,right) (place-1)
             in
                 if place <= 0 then
@@ -2564,7 +2564,7 @@ structure MonoTensor  =
             else
                 raise Shape
         fun fromArray (s, a) =
-            case Index.validShape s andalso 
+            case Index.validShape s andalso
                  ((Index.length s) = (Array.length a)) of
                  true => make'(s, a)
                | false => raise Shape
@@ -2949,7 +2949,7 @@ structure Main =
                   test_operator constructor operators [100,200,300,400,500];
                   print "\n\n"
                end
-            
+
       val _ =
          let val operators = [(20, CTensor.+), (20, CTensor.* ), (20, CTensor./),
                               (4, fn (a,b) => CTensor.+* a b),

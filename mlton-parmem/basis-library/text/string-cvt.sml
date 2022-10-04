@@ -22,9 +22,9 @@ structure StringCvt: STRING_CVT_EXTRA =
       val radixToWord: radix -> word = wordFromInt o radixToInt
 
       datatype realfmt =
-         SCI of int option 
-       | FIX of int option 
-       | GEN of int option 
+         SCI of int option
+       | FIX of int option
+       | GEN of int option
        | EXACT
 
       type ('a, 'b) reader = 'b -> ('a * 'b) option
@@ -78,7 +78,7 @@ structure StringCvt: STRING_CVT_EXTRA =
             let val a = Array.tabulate (Char.numChars, f o Char.chrUnsafe)
             in fn c => Array.sub (a, Char.ord c)
             end
-         
+
          fun range (add: int, cmin: char, cmax: char): char -> int option =
             let val min = Char.ord cmin
             in fn c => if Char.<= (cmin, c) andalso Char.<= (c, cmax)
@@ -105,7 +105,7 @@ structure StringCvt: STRING_CVT_EXTRA =
          val hex = combine [range (0, #"0", #"9"),
                             range (10, #"a", #"f"),
                             range (10, #"A", #"F")]
-         
+
          fun isSpace c = (c = #" "  orelse c = #"\t" orelse c = #"\r" orelse
                           c = #"\n" orelse c = #"\v" orelse c = #"\f")
       in
@@ -164,7 +164,7 @@ structure StringCvt: STRING_CVT_EXTRA =
          end
 
       fun digits radix reader state =
-         let 
+         let
             val r = radixToInt radix
             fun loop (accum, state) =
                case reader state of
@@ -182,7 +182,7 @@ structure StringCvt: STRING_CVT_EXTRA =
          end
 
       fun wdigits radix reader state =
-         let 
+         let
             val op + = Word.+
             val op * = Word.*
             val r = radixToWord radix

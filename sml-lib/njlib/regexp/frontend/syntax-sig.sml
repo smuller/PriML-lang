@@ -32,5 +32,5 @@ signature REGEXP_SYNTAX =
 
       val addRange : CharSet.set * char * char -> CharSet.set
       val allChars : CharSet.set
-	  
+
   end;

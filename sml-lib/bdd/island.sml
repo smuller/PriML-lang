@@ -24,7 +24,7 @@ struct
       end
 
   fun partition_contacts_to_vector l =
-      let 
+      let
           fun is_nonstatic c =
               let val ba = D.F.get_body (D.C.get_fixture_a c)
                   val bb = D.F.get_body (D.C.get_fixture_b c)
@@ -74,7 +74,7 @@ struct
           val bodies = Vector.fromList bodies
           val joints = Vector.fromList joints
 
-          val () = dprint (fn () => "Solve island with " ^ 
+          val () = dprint (fn () => "Solve island with " ^
                            Int.toString (Vector.length bodies) ^ " bodies and " ^
                            Int.toString (length contacts) ^ " contacts\n")
           (* Contacts are partitioned so that constraints with
@@ -82,13 +82,13 @@ struct
           val contacts = partition_contacts_to_vector contacts
 
           (* Integrate velocities and apply damping. *)
-          val () = Vector.app 
+          val () = Vector.app
               (fn body =>
                case D.B.get_typ body of
                    T.Dynamic =>
                      let
                      in
-                         D.B.set_linear_velocity 
+                         D.B.set_linear_velocity
                          (body,
                           D.B.get_linear_velocity body :+:
                           #dt step *: (gravity :+:
@@ -98,23 +98,23 @@ struct
                          (body,
                           D.B.get_angular_velocity body +
                           #dt step *
-                          D.B.get_inv_i body * 
+                          D.B.get_inv_i body *
                           D.B.get_torque body);
 
                          (* Apply damping.
-                            
+
                             ODE: dv/dt + c * v = 0
                             Solution: v(t) = v0 * exp(-c * t)
-                            Time step: v(t + dt) = 
-                              v0 * exp(-c * (t + dt)) = 
-                              v0 * exp(-c * t) * exp(-c * dt) = 
+                            Time step: v(t + dt) =
+                              v0 * exp(-c * (t + dt)) =
+                              v0 * exp(-c * t) * exp(-c * dt) =
                               v * exp(-c * dt)
                             v2 = exp(-c * dt) * v1
                             Taylor expansion:
                             v2 = (1.0f - c * dt) * v1 *)
                          D.B.set_linear_velocity
                          (body,
-                          clampr (1.0 - 
+                          clampr (1.0 -
                                   #dt step * D.B.get_linear_damping body,
                                   0.0, 1.0) *:
                           D.B.get_linear_velocity body);
@@ -122,11 +122,11 @@ struct
                          D.B.set_angular_velocity
                          (body,
                           D.B.get_angular_velocity body *
-                          clampr (1.0 - 
+                          clampr (1.0 -
                                   #dt step * D.B.get_angular_damping body,
                                   0.0, 1.0));
 
-                         dprint (fn () => "  vel: " ^ vtos (D.B.get_linear_velocity body) ^ 
+                         dprint (fn () => "  vel: " ^ vtos (D.B.get_linear_velocity body) ^
                                  " " ^ rtos (D.B.get_angular_velocity body) ^ "\n" ^
                                  "  xf: " ^ xftos (D.B.get_xf body) ^ "\n" ^
                                  "  sweep: " ^ sweeptos (D.B.get_sweep body) ^ "\n")
@@ -135,7 +135,7 @@ struct
 
           val solver = CS.contact_solver (contacts, #dt_ratio step)
           (* Port note: this also does the warm start. *)
-          
+
           (* Initialize velocity constraints. *)
           val () = Vector.app (fn j =>
                                D.J.init_velocity_constraints (j, step))
@@ -145,7 +145,7 @@ struct
           val () = for 0 (#velocity_iterations step - 1)
               (fn i =>
                let in
-                   Vector.app (fn j => 
+                   Vector.app (fn j =>
                                D.J.solve_velocity_constraints (j, step))
                               joints;
                    dprint (fn () => "* Vel iter " ^ Int.toString i ^ "\n");
@@ -160,19 +160,19 @@ struct
             case D.B.get_typ b of
                T.Static => ()
              | _ =>
-               let 
+               let
                  (* Check for large velocities. *)
-                 val translation : vec2 = 
+                 val translation : vec2 =
                      #dt step *: D.B.get_linear_velocity b
-                 val () = if dot2 (translation, translation) > 
+                 val () = if dot2 (translation, translation) >
                              max_translation_squared
                           then
-                              D.B.set_linear_velocity 
+                              D.B.set_linear_velocity
                               (b,
                                (max_translation / vec2length translation) *:
                                D.B.get_linear_velocity b)
                           else ()
-                 val rotation : real = 
+                 val rotation : real =
                      #dt step * D.B.get_angular_velocity b
                  val () = if rotation * rotation > max_rotation_squared
                           then
@@ -183,7 +183,7 @@ struct
                           else ()
 
                  val () =
-                     dprint (fn () => "  new vel: " ^ vtos (D.B.get_linear_velocity b) ^ 
+                     dprint (fn () => "  new vel: " ^ vtos (D.B.get_linear_velocity b) ^
                              " " ^ rtos (D.B.get_angular_velocity b) ^ "\n")
 
 
@@ -218,17 +218,17 @@ struct
           val () = Vector.app integrate_onebody bodies
 
           (* Iterate over constraints. *)
-          fun iterate n = 
+          fun iterate n =
             if n = #position_iterations step
             then ()
             else
-            let val contacts_okay = 
+            let val contacts_okay =
                   CS.solve_position_constraints (solver, contact_baumgarte)
                 val joints_okay = ref true
-                val () = Vector.app 
+                val () = Vector.app
                     (fn j =>
                      let val joint_okay =
-                           D.J.solve_position_constraints 
+                           D.J.solve_position_constraints
                            (j, contact_baumgarte)
                      in
                          joints_okay := (!joints_okay andalso joint_okay)
@@ -240,7 +240,7 @@ struct
               else iterate (n + 1)
             end
           val () = iterate 0
-        
+
           val () = report (world, solver)
 
       in
@@ -249,7 +249,7 @@ struct
           let val min_sleep_time = ref BDDSettings.max_float
               val lin_tol_sqr = BDDSettings.linear_sleep_tolerance *
                   BDDSettings.linear_sleep_tolerance
-              val ang_tol_sqr = BDDSettings.angular_sleep_tolerance * 
+              val ang_tol_sqr = BDDSettings.angular_sleep_tolerance *
                   BDDSettings.angular_sleep_tolerance
 
               fun sleep_one_body (b : ('b, 'f, 'j) D.body) : unit =
@@ -263,12 +263,12 @@ struct
                           D.B.get_angular_velocity b > ang_tol_sqr) orelse
                          dot2(D.B.get_linear_velocity b,
                               D.B.get_linear_velocity b) > lin_tol_sqr
-                      then 
+                      then
                           let in
                               D.B.set_sleep_time (b, 0.0);
                               min_sleep_time := 0.0
                           end
-                      else 
+                      else
                           let in
                               D.B.set_sleep_time (b,
                                                   D.B.get_sleep_time b +

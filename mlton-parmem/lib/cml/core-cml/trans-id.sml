@@ -10,7 +10,7 @@
  *)
 
 structure TransID : TRANS_ID =
-   struct 
+   struct
       structure Assert = LocalAssert(val assert = false)
 
       structure R = RepTypes
@@ -27,12 +27,12 @@ structure TransID : TRANS_ID =
 
       (* create a transaction flag (ID and cleanUp). *)
       fun mkFlg () =
-         let 
+         let
             val txid as TXID txst = mkTxId ()
             val cleanUp = fn () =>
                (Assert.assertAtomic' ("TransID.mkFlg.cleanUp", NONE)
                 ; txst := CANCEL)
-         in 
+         in
             (txid, cleanUp)
          end
 

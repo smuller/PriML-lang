@@ -5,7 +5,7 @@ struct
     exception Variable of string
 
     val varhistory = Params.flag false
-        (SOME ("-varhistory", 
+        (SOME ("-varhistory",
                "Show the full lineage for each variable (SLOW!)")) "varhistory"
 
     datatype var =
@@ -20,7 +20,7 @@ struct
         in Regular(i, s, f)
         end
 
-    fun special so s = 
+    fun special so s =
         let in
             (* if unqualified,
                prevent others from printing with this
@@ -40,7 +40,7 @@ struct
     fun basename (Regular(_, s, _)) = s
       | basename (Special(_, s)) = s
 
-    fun alphavary (v as Regular (_, _, f)) = 
+    fun alphavary (v as Regular (_, _, f)) =
       if !varhistory
       (* watch out! it grows indefinitely... *)
       then namedvar (f ())
@@ -51,20 +51,20 @@ struct
       | eq (Special _, Regular _) = false
       | eq (Regular _, Special _) = false
       | eq (Special (so, s), Special (sso, ss)) = so = sso andalso s = ss
-        
+
     fun compare (Regular(n1, _, _), Regular(n2, _, _)) = Int.compare (n1, n2)
       | compare (Regular _, Special _) = LESS
       | compare (Special _, Regular _) = GREATER
       | compare (Special (so, s), Special (sso, ss)) =
         ML5pghUtil.pathcompare ((so, s), (sso, ss))
-        
+
     fun tostring (Regular(_, _, f)) = f ()
       | tostring (Special _) = raise Variable "can't tostring special"
 
     fun show (Regular(_, _, f)) = f()
       | show (Special (NONE, s)) = "." ^ s
       | show (Special (SOME modu, s)) = modu ^ "." ^ s
-        
+
     structure Map = SplayMapFn (struct
                                     type ord_key = var
                                     val compare = compare
@@ -74,5 +74,5 @@ struct
                                     val compare = compare
                                 end)
     structure SetUtil = SetUtil (structure S = Set)
-    
+
 end

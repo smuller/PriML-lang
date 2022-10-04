@@ -9,7 +9,7 @@ end
 
 local
    val x = "Hello, world!\n"
-      
+
    val x = "BUG\n"
    and rec f = fn () => print x
 in

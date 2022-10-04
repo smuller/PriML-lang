@@ -18,7 +18,7 @@ fun pl l = List.app pi l
 
 fun 'a ds(a: 'a): 'a = deserialize(serialize a)
 val pb = pr o Bool.toString
-   
+
 val _ =
    (pb(serialize l = serialize l)
     ; pl(ds l) ; print "\n"

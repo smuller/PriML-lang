@@ -24,11 +24,11 @@ open S
 
 val bytesPerElem = Int.div (wordSize, 8)
 
-fun offset (i, n) = 
+fun offset (i, n) =
    let
       val () =
          if Primitive.Controls.safe
-            andalso (Int.geu (Int.+ (Int.* (bytesPerElem, i), 
+            andalso (Int.geu (Int.+ (Int.* (bytesPerElem, i),
                                      Int.- (bytesPerElem, 1)), n))
             then raise Subscript
             else ()

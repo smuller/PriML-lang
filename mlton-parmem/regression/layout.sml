@@ -1,6 +1,6 @@
 
 fun layout (cbs : (string * real) list list) : string =
-  let 
+  let
     val layoutcb =
       map (fn (con,_) => con)
 

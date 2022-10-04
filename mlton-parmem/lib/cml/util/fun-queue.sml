@@ -57,24 +57,24 @@ structure FunQueue : FUN_QUEUE =
              [] => (case back of
                        [] => NONE
                      | l => let val l = List.rev l
-                            in 
+                            in
                                case l of
                                   [] => raise Fail "FunQueue.deque:impossible"
-                                | x::front' => 
+                                | x::front' =>
                                      SOME (x,
                                            T {front = front',
                                               back = []})
                             end)
            | x::front' => SOME (x, T {front = front', back = back}))
-                          
+
       fun empty (T {front, back}) =
          (case front of
              [] => (case back of
                        [] => true
                      | _ => false)
            | _ => false)
-             
-      fun enque (T {front, back, ...}, x) = 
+
+      fun enque (T {front, back, ...}, x) =
          T {front = front, back = x::back}
 
       fun enqueAndClean (q, y, p) =
@@ -87,7 +87,7 @@ structure FunQueue : FUN_QUEUE =
              [] => (case back of
                        [] => NONE
                      | l => let val l = List.rev l
-                            in 
+                            in
                                case l of
                                   [] => raise Fail "FunQueue.peek:impossible"
                                 | x::_ => SOME x

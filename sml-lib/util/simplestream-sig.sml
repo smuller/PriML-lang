@@ -1,9 +1,9 @@
 
-(* This alternate imperative stream type is 
+(* This alternate imperative stream type is
    designed, using only types available at
    the top-level, so that imperative libraries
    can avoid a dependency on the Stream.stream
-   source code. 
+   source code.
 
    This collection of utilities is therefore
    intended for use by clients, but not by
@@ -12,7 +12,7 @@ signature SIMPLESTREAM =
 sig
 
   type 'a stream = unit -> 'a option
-    
+
   val map : ('a -> 'b) -> 'a stream -> 'b stream
 
   val fromstring : string -> char stream

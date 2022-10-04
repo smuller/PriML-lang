@@ -64,7 +64,7 @@ struct
                if idx = nvert
                then odd
                else loop (if ((ycoord idx > y) <> (ycoord jdx > y)) andalso
-                              (x < ((xcoord jdx - xcoord idx) * (y - ycoord idx) / 
+                              (x < ((xcoord jdx - xcoord idx) * (y - ycoord idx) /
                                     (ycoord jdx - ycoord idx) + xcoord idx))
                           then not odd
                           else odd) (idx + 1) idx
@@ -73,7 +73,7 @@ struct
        end
 
    fun boundingbox p =
-       Vector.foldl (fn ((x, y), { topx, topy, botx, boty }) => 
+       Vector.foldl (fn ((x, y), { topx, topy, botx, boty }) =>
                      { topx = Real.min (topx, x),
                        topy = Real.min (topy, y),
                        botx = Real.max (botx, x),

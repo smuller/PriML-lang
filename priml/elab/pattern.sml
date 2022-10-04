@@ -3,9 +3,9 @@ structure Pattern :> PATTERN =
 struct
 
   val debugpat = Params.flag false
-      (SOME ("-debugpat", 
+      (SOME ("-debugpat",
              "Debug the pattern compiler")) "debugpat"
-      
+
   fun debugdo f = if !debugpat then f () else ()
   fun dprint s = if !debugpat then print ("[PATCMP] " ^ s ^ "\n") else ()
 
@@ -23,7 +23,7 @@ struct
   (* This loosely follows the scheme used in the TILT compiler, with
      many simplifications. *)
 
-  (* we have a matrix of patterns like this 
+  (* we have a matrix of patterns like this
 
      obj1    obj2    obj3  ...
      pat11   pat12   pat13 ...   => e1
@@ -83,12 +83,12 @@ struct
      about that.
 
      *)
-  datatype shape = 
-      Crec 
-    | Cconst 
-    | Csum 
-    | Cwild 
-    | Csw of int 
+  datatype shape =
+      Crec
+    | Cconst
+    | Csum
+    | Cwild
+    | Csw of int
     | Ccw of int
     | Cwhen
     (* a pattern that has wildcards and then
@@ -104,7 +104,7 @@ struct
     | shtos Cwhen = "when"
     | shtos Cavoid = "avoid"
 
-  fun elabmatrix 
+  fun elabmatrix
          (user : bool)
          (elab : Context.context (* -> IL.world *) -> EL.exp -> IL.exp * IL.typ)
          (elabt : Context.context -> Pos.pos -> EL.typ -> IL.typ)
@@ -126,7 +126,7 @@ struct
             and allsum nil _ = Csum
               | allsum (E.PWild :: _) n = Csw n
               | allsum (E.PApp _ :: rest) n = allsum rest (n + 1)
-              | allsum _ _ = 
+              | allsum _ _ =
                 raise Pattern "pattern column does not agree (sum)"
             and allconst nil _ = Cconst
               | allconst (E.PWild :: _) n = Ccw n
@@ -172,10 +172,10 @@ struct
            the one with the latest wildcard before
            comparing the constructors. *)
       | preference (a, b) =
-        let 
+        let
             fun geti (Csw x) = x
               | geti (Ccw x) = x
-              | geti _ = 
+              | geti _ =
                 raise Pattern "bug: unhandled pattern kind in preference"
             val aw = geti a
             val bw = geti b
@@ -194,7 +194,7 @@ struct
 
     (* elm  marked-columns-and-objects  exps  default *)
     fun elm ctx (_ : ((shape * E.pat list) * string) list)
-                (nil : E.exp list) def = 
+                (nil : E.exp list) def =
         elab ctx ` def ()
       | elm ctx nil (h::t) _ =
         if List.null t orelse not user
@@ -205,8 +205,8 @@ struct
         let
 
             (* when code is going to be duplicated,
-               hoist it out into a function and 
-               generate calls to that, instead 
+               hoist it out into a function and
+               generate calls to that, instead
 
                calls the continuation k with
                a new context and the name of the
@@ -221,10 +221,10 @@ struct
                     val nonrec = V.namedvar "nonrec"
 
                     val nctx =
-                        C.bindv ctx nfs (mono (I.Arrow(false, 
-                                                       [I.TRec nil], 
+                        C.bindv ctx nfs (mono (I.Arrow(false,
+                                                       [I.TRec nil],
                                                        ilt))) nfv
-                        
+
                     val (ke, kt) = k nctx nfs
                 in
                     (* would like to use nil arg list here rather
@@ -235,12 +235,12 @@ struct
                                    mono (nfv,
                                    I.Arrow(false, [I.TRec nil], ilt),
                                    I.Value `
-                                   I.FSel (0, 
+                                   I.FSel (0,
                                            I.Fns[{ name = nonrec,
                                                    arg = [ignored],
                                                    dom = [I.TRec nil],
                                                    cod = ilt,
-                                                   body = ile, 
+                                                   body = ile,
                                                    inline = false,
                                                    recu = false,
                                                    total = false }]))),
@@ -249,11 +249,11 @@ struct
 
             (* handles splitting of constant patterns.
                this is simpler than sum patterns, but
-               we're still trying to be a little clever. 
+               we're still trying to be a little clever.
 
                Here's what we're compiling:
 
-               obj       .             
+               obj       .
                           .
                .           .        =>  .
                .            r       =>  .
@@ -267,9 +267,9 @@ struct
                ... where pats are all assumed to be
                    compatible constants.
                *)
-            fun doconst ctx (pats : E.pat list) 
-                            (obj : string) 
-                            (rest : (E.pat list * string) list) 
+            fun doconst ctx (pats : E.pat list)
+                            (obj : string)
+                            (rest : (E.pat list * string) list)
                             (def : I.exp * I.typ)
                             (exps : E.exp list) =
               let
@@ -279,16 +279,16 @@ struct
                 fun k ctx hoisted =
                   let
                       (* new default executes hoisted code *)
-                      fun doconst_default () = 
+                      fun doconst_default () =
                           % ` E.App (% ` E.Var hoisted, % ` E.Record nil, false)
-                      
+
                       val (defe, deft) = elab ctx ` doconst_default ()
 
                       (* must be status Normal *)
                       val (objt, objv) =
                           case C.var ctx obj of
 (*
-                              (IL.Poly({worlds=nil, tys=nil}, tt), vv, Normal, C.Modal w) => 
+                              (IL.Poly({worlds=nil, tys=nil}, tt), vv, Normal, C.Modal w) =>
                                 let in
                                   unifyw ctx loc "case object" here w;
                                   (tt, I.Var vv)
@@ -297,24 +297,24 @@ struct
                               (IL.Poly({prios=nil, tys=nil}, tt), vv, Normal) =>
                               (tt, I.Polyuvar {tys = nil, prios = nil, var = vv})
 (*                                (wsubst1 here v tt, I.Polyuvar { tys = nil, worlds = nil, var = vv }) *)
-                            | _ => raise Pattern 
+                            | _ => raise Pattern
                                   "case object is poly or constructor (?)"
 
                       (* strip "Constant" constructor *)
-                      val consts = map 
+                      val consts = map
                           (fn E.PConstant c => c
-                            | _ => raise Pattern 
+                            | _ => raise Pattern
                            "bug: expected constant in doconst") pats
 
 
                       (* used later to reattach objects *)
                       val robjs = map (fn (_, ob) => ob) rest
-                                                    
+
                       (* transpose the remaining columns, so that we can
                          collect up rows in the next pass. If there are
                          no more columns, make a list of the correct
-                         length, but with each row being nil. 
-                         
+                         length, but with each row being nil.
+
                          when splitting, we'll probably change the shapes
                          of the other columns, so lose that info. *)
 
@@ -329,7 +329,7 @@ struct
                           orelse raise Pattern "length invt violated"
 
                       (* now working with rows. *)
-                      val rows = 
+                      val rows =
                           ListPair.zip (consts, ListPair.zip(exps, rest))
 
                       (* this expects to find mono-shape patterns,
@@ -349,7 +349,7 @@ struct
                                   Char.compare(c, d)
 
                       val sorted =
-                          ListUtil.stablesort 
+                          ListUtil.stablesort
                           (ListUtil.byfirst compare) rows
 
                       fun part ((const, dat)::t) =
@@ -374,12 +374,12 @@ struct
                          shared with dosum code *)
                       val clustered = part sorted
                           : (E.constant * (E.exp * E.pat list) list) list
-                          
-                      (* clustered has this form: 
-                     
+
+                      (* clustered has this form:
+
                          [(Const n,
                           [(exp, row), ...] (for each beginning with n))]
-                         
+
                          ... where the exp/row list is never nil.
 
                          This would be the place to implement better
@@ -389,7 +389,7 @@ struct
                          a primitive intswitch. It might make sense to
                          use it for strings or other primitives with
                          an equality test but no switching.
-                         
+
                          Generalized over ints and chars.
                          pass the expression to check against,
                          the primop that performs such equality,
@@ -401,12 +401,12 @@ struct
                           val () = unify ctx loc "const int pattern"
                                          ilt objt
 
-                          fun kk ctx failure = 
-                           let 
-                            val (failc, failt) = 
-                                elab ctx (% ` E.App (% ` E.Var failure, 
+                          fun kk ctx failure =
+                           let
+                            val (failc, failt) =
+                                elab ctx (% ` E.App (% ` E.Var failure,
                                                           % ` E.Record nil, false))
-                                
+
                            in
                            (I.Sumcase
                             (ElabUtil.unroll loc `
@@ -417,7 +417,7 @@ struct
                              I.Unroll `
                              I.Primapp
                               (peq,
-                               [I.Value objv, eq_exp], 
+                               [I.Value objv, eq_exp],
                                nil),
 
                              V.namedvar "unused",
@@ -433,7 +433,7 @@ struct
                                         ListUtil.transpose rows,
                                         robjs)
                                       : ((shape * E.pat list) * string) list
-                                   
+
                                    (* in here, we know the object can't
                                       match anything from "rest" (the
                                       failure continuation); though
@@ -471,7 +471,7 @@ struct
                           (I.Intcase
                            (I.Value objv,
                             (* the arms.. *)
-                            ListUtil.mapsecond 
+                            ListUtil.mapsecond
                             (fn matches =>
                              let
                                val (exps, rows) = ListPair.unzip matches
@@ -481,10 +481,10 @@ struct
                                   ListUtil.transpose rows,
                                   robjs)
                                  : ((shape * E.pat list) * string) list
-                                 
+
                                (* in here, we know the object can't
                                   match anything from "rest", which
-                                  are different int constants. 
+                                  are different int constants.
                                   So proceed to the original default. *)
                                val (ee, tt) =
                                  elm ctx cols exps doconst_default
@@ -499,12 +499,12 @@ struct
 
 (*
                       and gen ((E.CInt n, matches)::rest) =
-                          smallconst (I.Value ` I.Int n) 
-                                     (Primop.B ` Primop.PCmp Primop.PEq) 
+                          smallconst (I.Value ` I.Int n)
+                                     (Primop.B ` Primop.PCmp Primop.PEq)
                                      Initial.ilint matches rest
-                          
+
                         (* in the IL, chars are compiled as ints. *)
-                        | gen ((E.CChar c, matches)::rest) = 
+                        | gen ((E.CChar c, matches)::rest) =
                           smallconst (I.Value ` I.Int ` IntConst.fromInt ` ord c)
                                      (Primop.B ` Primop.PCmp Primop.PEq)
                                      Initial.ilchar matches rest
@@ -518,7 +518,7 @@ struct
 
                         | gen (_ :: _) =
                  (* XXX Shouldn't be hard to implement since we have a string equality primitive? *)
-                        raise Pattern 
+                        raise Pattern
                             "string constant patterns unimplemented"
 
                       (* no clauses? use real default *)
@@ -545,11 +545,11 @@ struct
                 let
                   val () = dprint ("split on sum col " ^ obj)
                     (* new default executes hoisted code *)
-                    fun ndef () = (% ` E.App (% ` E.Var hoisted, 
+                    fun ndef () = (% ` E.App (% ` E.Var hoisted,
                                               % ` E.Record nil, false))
 
                     val _ = length pats = length exps
-                        orelse raise Pattern 
+                        orelse raise Pattern
                                  "different number of exps/pats in dosum"
 
                     (* used later to reattach objects *)
@@ -576,15 +576,15 @@ struct
                         part crest rrest
                         (case ListUtil.Alist.find op= acc lab of
                              NONE => (lab, [(p, e, row)]) :: acc
-                           | SOME b => 
-                                 ListUtil.Alist.update op= acc lab 
+                           | SOME b =>
+                                 ListUtil.Alist.update op= acc lab
                                  ((p,e,row)::b))
                       | part nil (_::_) _ =
                              raise Pattern "bug: col is shorter than rest"
                       | part (_::_) nil _ =
                              raise Pattern "bug: rest is shorter than col"
-                      | part _ _ _ = 
-                             raise Pattern 
+                      | part _ _ _ =
+                             raise Pattern
                           ("impossible: non-app in sum col " ^
                            "or mismatched col/rest")
 
@@ -592,7 +592,7 @@ struct
 
                     (* parted:
                        list of
-                          label * list of 
+                          label * list of
                                  inner pattern (option), expression, rest of row *)
 
 (*
@@ -600,7 +600,7 @@ struct
                         (print "Parted:\n";
                          app (fn (l, perl) =>
                               print (l ^ ": " ^
-                                     StringUtil.delimit "," 
+                                     StringUtil.delimit ","
                                          (map (ELPrint.ptos o #1) perl)
                                       ^ "\n")) parted)
 *)
@@ -609,7 +609,7 @@ struct
                     val (l, _) = hd parted
 
                 in
-                    (* look at the first to decide if we're looking 
+                    (* look at the first to decide if we're looking
                        at datatype constructors or exn (tagtype)
                        constructors. Sadly, there is a lot of
                        duplicated code in these two arms, but it makes
@@ -617,7 +617,7 @@ struct
 
                     case C.var nctx l of
                       (IL.Poly({prios=nil, tys=nil},
-                               (I.Arrow (_, _, cod as I.TVar _))), _, 
+                               (I.Arrow (_, _, cod as I.TVar _))), _,
                        I.Tagger _) =>
                        (* ****** Exception Constructor **** *)
                        let
@@ -630,35 +630,35 @@ struct
                            val insidee = newstr "intag"
                            val insidev = V.namedvar insidee
 
-                           (* XXX this could be factored out with 
+                           (* XXX this could be factored out with
                               onelab below *)
                            fun onelab (l, perl) =
                              case C.var nctx l of
-                               (I.Poly ({prios=nil, tys=nil}, 
-                                        (I.Arrow (_, [ruledom], rulecod))), 
+                               (I.Poly ({prios=nil, tys=nil},
+                                        (I.Arrow (_, [ruledom], rulecod))),
                                 _, I.Tagger vtag) =>
                                  let
                                      (* objty = rulecod *)
 
-                                     (* every arm will have access to 
+                                     (* every arm will have access to
                                         the tagged innards *)
-                                     val nctx = C.bindv nctx insidee 
+                                     val nctx = C.bindv nctx insidee
                                                   (mono ruledom) insidev
 
 (*
                                      (* have to be at the same location as the tagger,
                                         if it is not valid *)
-                                     val () = 
+                                     val () =
                                        (case varsort of
                                           C.Modal w => unifyw nctx loc "tagcase" here w
                                         (* world var is never used *)
                                         | C.Valid _ => ())
 *)
 
-                                     val () = unify nctx loc "tagcase codomain" 
+                                     val () = unify nctx loc "tagcase codomain"
                                                       cod rulecod
 
-                                     val (ocol, oe, rest) = 
+                                     val (ocol, oe, rest) =
                                          ListUtil.unzip3 perl
 
                                      (* clean new column. *)
@@ -670,7 +670,7 @@ struct
                                      val _ = length rest = length robjs
                                              orelse null rest
                                              orelse
-                                             raise Pattern 
+                                             raise Pattern
                                                  "rest/robjs mismatch"
 
                                      val rest = ListPair.zip (rest, robjs)
@@ -685,21 +685,21 @@ struct
 
                                      val (re, rt) = elm nctx cols ne ndef
                                    in
-                                       unify ctx loc 
+                                       unify ctx loc
                                           "tag pattern return" rt rett;
                                        (vtag, re)
                                    end
-                             | _ => raise Pattern 
+                             | _ => raise Pattern
                                      ("expected tagtype constructor: " ^ l)
 
-                         val (thearms : (I.value * I.exp) list) = 
+                         val (thearms : (I.value * I.exp) list) =
                              map onelab parted
 
                          val (de, dt) = elab nctx ` ndef ()
 
 (*                         fun pwsubst1 w v (I.Poly (x, t)) = I.Poly (x, wsubst1 w v t) *)
 
-                         val (opt, objv) = 
+                         val (opt, objv) =
                            case C.var nctx obj of
                                (t, v, _) => (t, I.Polyuvar ({prios = nil, tys = nil, var = v}))
                                                 (* (pwsubst1 here vv t, I.Polyuvar ({worlds = nil, tys = nil, var = v}))
@@ -712,9 +712,9 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "tagcase arg" (#1 (evarize opt)) cod;
-                           unify nctx loc "tagcase default" rett dt; 
+                           unify nctx loc "tagcase default" rett dt;
 
-                           (I.Tagcase (cod, 
+                           (I.Tagcase (cod,
                                        I.Value objv,
                                        insidev,
                                        thearms,
@@ -738,7 +738,7 @@ struct
 
                          val rett = new_evar ()
 
-                         (* Sumcase binds one variable for all 
+                         (* Sumcase binds one variable for all
                             arms, but not default *)
                          val insides = newstr "insum"
                          val insidev = V.namedvar insides
@@ -759,7 +759,7 @@ struct
                                           val () =
                                             (case ListUtil.Alist.find op= ltl l of
                                                NONE => raise Pattern "non-carrier label not in sum??"
-                                             | SOME (IL.Carrier _) => 
+                                             | SOME (IL.Carrier _) =>
                                                  raise Pattern "non-carrier label has carried type?"
                                              | SOME IL.NonCarrier => ())
 
@@ -775,19 +775,19 @@ struct
                                           val _ = length rest = length robjs
                                             orelse null rest
                                             orelse
-                                            raise Pattern 
+                                            raise Pattern
                                               "(nullary) rest/robjs mismatch"
 
                                           val rest = ListPair.zip (rest, robjs)
-                                            
+
                                           val cols = ListUtil.mapfirst markcolumn rest
-                                            
+
                                           val () = dprint ("sumcol: " ^ l ^ ":")
-                                            
+
                                           (* elaborate the inside *)
                                           val (re, rt) = elm nctx cols oe ndef
                                         in
-                                          unify ctx loc 
+                                          unify ctx loc
                                              "(nullary) sum pattern return" rt rett;
                                           (l, re)
                                         end
@@ -798,28 +798,28 @@ struct
                                       (I.Sum ltl) =>
                                         (case ListUtil.Alist.find op= ltl l of
                                            NONE => raise Pattern "label not in sum??"
-                                         | SOME IL.NonCarrier => 
+                                         | SOME IL.NonCarrier =>
                                              raise Pattern "bug:non-carriers shouldn't have arrow type"
                                          | SOME (IL.Carrier { carried = objty, ...}) =>
                                            let
 
-                                               val ruledom = 
+                                               val ruledom =
                                                  case ruledom of
                                                    [rd] => rd
                                                  | _ => raise Pattern "carrier not unary arrow"
 
-                                               val nctx = C.bindv nctx insides 
+                                               val nctx = C.bindv nctx insides
                                                              (mono objty) insidev
 
 
-                                             (* XXX this is pretty suspect, 
+                                             (* XXX this is pretty suspect,
                                                 since domvar is fresh and I
                                                 never use it again ... *)
 
-                                               val _ = unify nctx loc "sum domain" 
+                                               val _ = unify nctx loc "sum domain"
                                                               domvar ruledom
 
-                                               val _ = unify nctx loc "sum codomain" 
+                                               val _ = unify nctx loc "sum codomain"
                                                               cod rulecod
 
                                                val (ocol, oe, rest) =
@@ -827,8 +827,8 @@ struct
 
                                                val ocol =
                                                  map (fn (SOME p) => p
-                                                           | NONE => 
-                                                      raise Pattern 
+                                                           | NONE =>
+                                                      raise Pattern
                                                         "nullary papp in carrier case")
                                                  ocol
 
@@ -841,7 +841,7 @@ struct
                                                val _ = length rest = length robjs
                                                        orelse null rest
                                                        orelse
-                                                       raise Pattern 
+                                                       raise Pattern
                                                            "rest/robjs mismatch"
 
                                                val rest = ListPair.zip (rest, robjs)
@@ -855,7 +855,7 @@ struct
                                                (* elaborate the inside *)
                                                val (re, rt) = elm nctx cols ne ndef
                                            in
-                                               unify ctx loc 
+                                               unify ctx loc
                                                   "sum pattern return" rt rett;
                                                (l, re)
                                            end)
@@ -866,10 +866,10 @@ struct
                            | _ => raise Pattern
                                ("non-constructor in app pattern " ^ l))
 
-                         val (thearms : (I.label * I.exp) list) = 
+                         val (thearms : (I.label * I.exp) list) =
                              map onelab parted
 
-                         val (st, insum) = 
+                         val (st, insum) =
                            case ElabUtil.unroll loc cod of
                              (sum as I.Sum insum) => (sum, insum)
                            | _ => raise Pattern "mu body not sum??"
@@ -890,22 +890,22 @@ struct
                                  (t, I.Var v)
                                end
 *)
-                             
+
                          val nsum = length insum
 
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "sum arg" (#1 (evarize opt)) cod;
-                           unify nctx loc "sum default" rett dt; 
+                           unify nctx loc "sum default" rett dt;
 
                            (* a nice optimization is, if the
-                              case is exhaustive, then lose the 
+                              case is exhaustive, then lose the
                               default and replace with final branch.
                               But we can't do that because the insum
                               var is not bound in the default in the
                               typed backend.
                               *)
-                           
+
                            (if length thearms = nsum
                             then I.Sumcase (st,
                                             I.Unroll ` I.Value objv,
@@ -922,8 +922,8 @@ struct
                               #2 ` List.last thearms
                               *)
 
-                            else 
-                              I.Sumcase (st, 
+                            else
+                              I.Sumcase (st,
                                          I.Unroll ` I.Value objv,
                                          insidev,
                                          thearms,
@@ -931,7 +931,7 @@ struct
                               rett)
 
                        end
-                    | _ => raise Pattern 
+                    | _ => raise Pattern
                                ("Non-constructor in app pattern " ^ l)
                 end
              in
@@ -947,15 +947,15 @@ struct
         in
 
             (* debugging -- show progress *)
-            debugdo 
+            debugdo
             (fn () =>
-             let 
+             let
                  val ty = map (fn ((t, _), _) => shtos t) columns
                  val obs = map (fn (_, ob) => ob) columns
-                 val cols = ListUtil.transpose (map (fn ((_, c), _) => 
-                                                     map ELPrint.ptos c) 
+                 val cols = ListUtil.transpose (map (fn ((_, c), _) =>
+                                                     map ELPrint.ptos c)
                                                 columns
-                                                
+
                                                 @ [map (fn _ => "=") exps]
                                                 @ [map (ELPrint.etosi 0) exps])
              in
@@ -967,17 +967,17 @@ struct
             (* each column is ((kind, arms), objvar) *)
             (case columns of
                  nil => raise Pattern "impossible"
-               | ((Cwild, _), obj) :: rest => 
+               | ((Cwild, _), obj) :: rest =>
                      let in
                          dprint ("Split on wild col: " ^ obj);
                          elm ctx rest exps def
                      end
                | ((Csum, apps), obj) :: rest =>
-                     dosum ctx apps obj (map (fn ((_, pats), ob) => 
-                                              (pats, ob)) rest) 
+                     dosum ctx apps obj (map (fn ((_, pats), ob) =>
+                                              (pats, ob)) rest)
                            (elab ctx ` def ()) exps
                | ((Cwhen, E.PWhen(exp, punder) :: col), obj) :: rest =>
-                     (* do these just one at a time. 
+                     (* do these just one at a time.
 
                         we have:
 
@@ -994,7 +994,7 @@ struct
                         let val v1' = YES (e v1) handle Match => NO
                         in (case v1'      ...   vn   of
                                 YES p     ...   p1n  => e1
-                                                  _  => 
+                                                  _  =>
 
                            (case v1       ...   vn   of
                                  p21      ...   p2n  => e2
@@ -1008,7 +1008,7 @@ struct
                    let
 
                      val () = dprint ("Split on when col: " ^ obj)
-                       
+
                      (* throw away shapes, then break up rest into cols and
                         objects *)
                      val rest = map (fn ((shape, col), ob) => (col, ob)) rest
@@ -1030,7 +1030,7 @@ struct
 
                      val objects_a = % nobj :: map (% o E.Var) robs
                      val objects_b = map (% o E.Var) (obj :: robs)
-                     val cols_a = [E.PApp(yes, SOME punder)] :: 
+                     val cols_a = [E.PApp(yes, SOME punder)] ::
                                     map (fn x => [hd x]) rcols
                      val cols_b = col :: map tl rcols
 
@@ -1047,7 +1047,7 @@ struct
 
                      val rows_a = ListPair.zip (prows_a, exps_a)
                      val rows_b = ListPair.zip (prows_b, exps_b)
-                       
+
                      val () = dprint "prows_a:"
                      val () = app (fn r => dprint ("  " ^ StringUtil.delimit "   "
                                                    (map ELPrint.ptos r))) prows_a
@@ -1061,15 +1061,15 @@ struct
                      val () = app (fn e => dprint ("  " ^ ELPrint.etosi 2 e)) exps_b
 
 
-                     (* let datatype ('a, 'b) whentag = 
+                     (* let datatype ('a, 'b) whentag =
                             Yes of 'a | No of 'b *)
                      val we = E.Let(% ` E.Datatype (["a"],
                                     [(ML5pghUtil.newstr "whentag",
                                       [(yes, SOME (E.TVar "a")),
                                        (no,  SOME (E.TRec nil))])]),
                                     % `
-                                    E.Case (objects_a, rows_a, 
-                                            SOME 
+                                    E.Case (objects_a, rows_a,
+                                            SOME
                                             (fn () =>
                                              % ` E.Case (objects_b,
                                                          rows_b,
@@ -1086,11 +1086,11 @@ struct
 
                | ((Csw 0, _), _) :: _ =>
                      raise Pattern "bug: best column was sumwild 0 !"
-               | (all as ((Csw n, someapps), obj) :: rest) => 
+               | (all as ((Csw n, someapps), obj) :: rest) =>
                      (* dosum on the first n rows, but send along
                         a default that does the remaining matrix. *)
                      let
-                         val (mtx, objs) = 
+                         val (mtx, objs) =
                              ListPair.unzip `
                              map (fn ((_, col), obj) => (col, obj)) all
 
@@ -1111,23 +1111,23 @@ struct
 
                          val tcs = ListUtil.transpose top
                      in
-                         dosum ctx (hd tcs) obj (ListPair.zip 
+                         dosum ctx (hd tcs) obj (ListPair.zip
                                                  (tl tcs, tl objs))
                                ndef tope
                      end
 
                (* constant case is much like sum case *)
                | ((Cconst, consts), obj) :: rest =>
-                     doconst ctx consts obj (map (fn ((_, pats), ob) => 
-                                                  (pats, ob)) rest) 
+                     doconst ctx consts obj (map (fn ((_, pats), ob) =>
+                                                  (pats, ob)) rest)
                              (elab ctx ` def ()) exps
                | ((Ccw 0, _), _) :: _ =>
                      raise Pattern "bug: best column was constwild 0 !"
-               | (all as ((Ccw n, consts : E.pat list), obj) :: rest) => 
+               | (all as ((Ccw n, consts : E.pat list), obj) :: rest) =>
                      (* case analyze first n rows, but send along
                         a default that does the remaining matrix. *)
                      let
-                         val (mtx, objs) = 
+                         val (mtx, objs) =
                              ListPair.unzip `
                              map (fn ((_, col), obj) => (col, obj)) all
 
@@ -1140,7 +1140,7 @@ struct
                          val (top, bot) = ListUtil.cleave n mtx
                          val (tope, bote) = ListUtil.cleave n exps
 
-                         (* match the bottom. this becomes our 
+                         (* match the bottom. this becomes our
                             new default. *)
                          local
                              val cols = map markcolumn `
@@ -1152,7 +1152,7 @@ struct
 
                          val tcs = ListUtil.transpose top
                      in
-                         doconst ctx (hd tcs) obj (ListPair.zip 
+                         doconst ctx (hd tcs) obj (ListPair.zip
                                                    (tl tcs, tl objs))
                                  newdef tope
                      end
@@ -1162,7 +1162,7 @@ struct
                      val _ = dprint ("Split on rec col: " ^ obj);
 
                      (* split record. we should only see wild
-                        and rec patterns of the appropriate type. 
+                        and rec patterns of the appropriate type.
                         return label -> new column alist
 
                         *)
@@ -1171,7 +1171,7 @@ struct
                           (E.PWild, Util.B l) => Util.B (E.PWild :: l)
                         | (E.PWild, Util.A lcl) =>
                             (* cons pwild onto all new columns *)
-                            Util.A ` map (fn (l, pl) => 
+                            Util.A ` map (fn (l, pl) =>
                                           (l, E.PWild :: pl))
                                          lcl
                         | (E.PRecord spl, Util.A lcl) =>
@@ -1179,9 +1179,9 @@ struct
                                 ListUtil.sort (ListUtil.byfirst
                                                ML5pghUtil.labelcompare) spl
                             in
-                                ListUtil.all2 
+                                ListUtil.all2
                                    (ListUtil.byfirst op=) spl lcl
-                                   orelse raise 
+                                   orelse raise
                                    Pattern "patterns don't have same labels";
 
                                 Util.A `
@@ -1201,7 +1201,7 @@ struct
                         | _ => raise Pattern "patterns don't agree (record)")
 
                      (* can't fail -- must have at least one PRecord *)
-                     val newcols = 
+                     val newcols =
                          case foldr split (Util.B nil) recs of
                              Util.A x => x
                            | _ => raise Pattern "impossible"
@@ -1220,11 +1220,11 @@ struct
                              val nc = C.bindv c ss (mono t) v
 
                              (* clean column *)
-                             val (col, nes) = 
+                             val (col, nes) =
                                  clean nc loc elabt ss t col oes
 
-                             val (ee, tt) = 
-                                 recurse rest 
+                             val (ee, tt) =
+                                 recurse rest
                                     (nc, (markcolumn col, ss) :: cols, nes)
                          in
                              (I.Let(I.Val(
@@ -1234,14 +1234,14 @@ struct
                          end
 
 
-                 in 
+                 in
                      (* unify object with record type *)
-                     unify ctx loc "record pattern" objt 
+                     unify ctx loc "record pattern" objt
                          ` I.TRec ` map (fn (l, _, t) => (l, t)) newcols;
 
                      recurse newcols (ctx, rest, exps)
                  end)
-        (*        | ((sh,_),_)::_ => raise Pattern 
+        (*        | ((sh,_),_)::_ => raise Pattern
                  ("unimplemented pattern shape " ^ shtos sh)) *)
         end
    in
@@ -1251,7 +1251,7 @@ struct
 
 
   (* user : bool  --  whether to disallow redundant patterns (because the
-                      pattern was supplied by a user rather than the 
+                      pattern was supplied by a user rather than the
                       compiler)
 
      elab         --  Elaborate.elab
@@ -1279,7 +1279,7 @@ struct
 
 
   and elaborate user elab elabt (* elabw *) (ctx : C.context) (* (here : IL.world) *) loc
-                  (obs : string list, 
+                  (obs : string list,
                    m   : (E.pat list * E.exp) list,
                    def : unit -> E.exp) =
       let
@@ -1290,14 +1290,14 @@ struct
                print "Pattern compiler!\n";
                print ("obs: [" ^ StringUtil.delimit ", " obs ^ "]\n");
                print ("m: [" ^ StringUtil.delimit ", "
-                      (map (fn (pl, e) => 
+                      (map (fn (pl, e) =>
                             "([" ^ StringUtil.delimit ", "
                             (map ELPrint.ptos pl) ^ "], " ^
                             ELPrint.etosi 5 e ^ ")") m)  ^ "]\n")
            end);
-          
+
           val columns = ListUtil.transpose (map #1 m)
-              handle ListUtil.ListUtil => 
+              handle ListUtil.ListUtil =>
                   raise Pattern "bug: ragged matrix??"
 
           val columns =
@@ -1309,18 +1309,18 @@ struct
 
           val es = map #2 m
 
-          val tvs = map (fn ob => 
+          val tvs = map (fn ob =>
                          let val (_, tt) = elab ctx (E.Var ob, loc)
                          in tt
                          end) obs
 
-          val (columns, es) = 
+          val (columns, es) =
               (ListUtil.foldl3
-               (fn ((pl, tv, ob), (cols, es)) => 
+               (fn ((pl, tv, ob), (cols, es)) =>
                 let val  (ccs, ees) = clean ctx loc elabt ob tv pl es
                 in (ccs :: cols, ees)
                 end) (nil, es) columns tvs obs)
-              handle ListUtil.ListUtil => 
+              handle ListUtil.ListUtil =>
                   raise Pattern "bug: exps/tvs/pl mismatch"
 
           (* because foldl above reversed it *)
@@ -1341,7 +1341,7 @@ struct
 
      Return the new column and the new list of expressions.
      *)
-  and clean ctx loc elabt a tv pl (es : EL.exp list) 
+  and clean ctx loc elabt a tv pl (es : EL.exp list)
         : (EL.pat list * EL.exp list) =
       let
           fun one (p, e) =
@@ -1349,13 +1349,13 @@ struct
                    E.PAs (s, pp) =>
                        let in
                            dprint ("cleaning " ^ s ^ "...\n");
-                           one (pp, (E.Let((E.Val (nil, E.PVar s, 
-                                                   (E.Var a, loc)), 
+                           one (pp, (E.Let((E.Val (nil, E.PVar s,
+                                                   (E.Var a, loc)),
                                             loc), e), loc))
                        end
                  | E.PVar s => one (E.PAs (s, E.PWild), e)
                  | E.PConstrain (pp, tt) =>
-                       let 
+                       let
                          val t = elabt ctx loc tt
                        in unify ctx loc "pattern constraint" tv t;
                           one (pp, e)

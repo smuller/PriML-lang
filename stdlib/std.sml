@@ -68,7 +68,7 @@ fun stoi s =
     let
         val n = size s
         fun re(acc, i) =
-            if i >= n 
+            if i >= n
             then SOME acc
             else let val c = ord (ssub(s, i))
                  in
@@ -136,7 +136,7 @@ val () =
         putc ?h; putc ?t; putc ? ;
         putc ?e; putc ?x; putc ?n;
         putc ?!; putc ?\n;
-        
+
         halt ()
     end
 

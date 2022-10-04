@@ -20,7 +20,7 @@ struct
      array. Node data is a list of connected nodes, with weights.
      These are symmetric by invariant. *)
   type 'a graph = ('a * (int * weight) list) GA.growarray
-  fun samegraph (a, b) = if GA.eq(a, b) then () 
+  fun samegraph (a, b) = if GA.eq(a, b) then ()
                          else raise UndirectedGraph "Not from the same graph!"
   fun gph (a, _) = a
   fun idx (_, i) = i
@@ -67,7 +67,7 @@ struct
               let
                   val g = gph a
                   fun add (ix, iy) =
-                      let 
+                      let
                           val (a, l) = GA.sub g ix
                       in
                           GA.update g ix (a, (iy, w) :: l)
@@ -85,12 +85,12 @@ struct
   fun app f g =
       let fun loop ~1 = ()
             | loop n = (f (g, n); loop (n - 1))
-      in  
+      in
           loop (GA.length g - 1)
       end
 
   fun edges (g, i) =
-      let 
+      let
           val (_, l) = GA.sub g i
       in  map (fn (i', w) => ((g, i'), w)) l
       end
@@ -101,19 +101,19 @@ struct
   fun shortestpaths ((g, src) : 'a node) =
       let
           (* Algorithm is Dijkstra's:
-             
+
              - Heap contains frontier: index of points that we know a
                distance to, but haven't yet determined the final
                distance.
-               
+
              - The minimum element in the heap is finalized. Put it
                in the final set (new graph). Add its edges to the
                frontier, repeat.
-             
+
              *)
           (* New graph starts with same structure, but NONE in
              distance field. *)
-          val newg = GA.tabulate 
+          val newg = GA.tabulate
               (GA.length g)
               (fn i =>
                let val (a, l) = GA.sub g i
@@ -138,8 +138,8 @@ struct
                     (* Distance is known. Finalize it. *)
                 in
                   (case GA.sub newg i of
-                    ((a, NONE), l) => 
-                        let 
+                    ((a, NONE), l) =>
+                        let
                             fun neighbor (j, dist) =
                               let val newdist = A.+(dist, w)
                               in
@@ -156,7 +156,7 @@ struct
                                              computed. Maybe a good idea since
                                              if the weight argument is garbage,
                                              it would be good to detect that. *)
-                                    | IN hand => 
+                                    | IN hand =>
                                       let val (olddist, _) = H.get h hand
                                       in  case A.compare (newdist, olddist) of
                                             LESS => H.adjust h hand newdist
@@ -170,25 +170,25 @@ struct
                             List.app neighbor l
                         end
 
-                    | ((_, SOME _), _) => raise UndirectedGraph 
+                    | ((_, SOME _), _) => raise UndirectedGraph
                           "Bug: Already had finalized distance.");
                     loop ()
                 end
       in
           loop ();
           Array.app (fn (IN h) =>
-                     raise UndirectedGraph 
+                     raise UndirectedGraph
                          "Bug: didn't process all nodes in frontier?"
                       | _ => ()) handles;
           { graph = newg,
-            promote = (fn (g', i) => 
+            promote = (fn (g', i) =>
                        let in
                            samegraph (g, g');
-                           (newg, i) 
+                           (newg, i)
                        end) }
       end
 
-    datatype 'a span = S of { a : 'a, 
+    datatype 'a span = S of { a : 'a,
                               dist : weight option,
                               parent : 'a span node option }
 
@@ -217,7 +217,7 @@ struct
                              pick it *)
                           fun m h best ((x, xw) :: t) =
                               (case #2 (#1 (GA.sub g x)) of
-                                  SOME d => 
+                                  SOME d =>
                                       let val d = A.+(d, xw)
                                       in
                                           if LESS = A.compare (d, best)
@@ -228,9 +228,9 @@ struct
                                       raise UndirectedGraph "Distances are incomplete")
                             | m h _ nil = h
                       in
-                          (S { a = a, 
-                               dist = SOME d, 
-                               parent = SOME (newg, m h best t) }, 
+                          (S { a = a,
+                               dist = SOME d,
+                               parent = SOME (newg, m h best t) },
                            l)
                       end
                 (* only possible if the source node is a singleton,

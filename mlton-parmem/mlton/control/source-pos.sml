@@ -38,9 +38,9 @@ fun make {column, file, line} =
       line = line}
 
 fun getLib (T {file, ...}) =
-   let 
+   let
       val libDir = concat [!ControlFlags.libDir, "/sml"]
-   in 
+   in
       if String.hasPrefix (file, {prefix = libDir})
          then SOME (String.size libDir)
          else NONE

@@ -20,7 +20,7 @@ structure Scheduler : SCHEDULER =
 
       open Critical
 
-      structure Q = ImpQueue 
+      structure Q = ImpQueue
       structure T = MLton.Thread
       structure TID = ThreadID
       structure SH = SchedulerHooks
@@ -44,7 +44,7 @@ structure Scheduler : SCHEDULER =
       val errorTid = TID.bogus "error"
       fun errorThrd () : unit thread =
          THRD (errorTid, T.new (fn () =>
-               (GlobalDebug.sayDebug 
+               (GlobalDebug.sayDebug
                 ([fn () => "CML"], fn () => "**** Use RunCML.doit to run CML ****")
                 ; raise Fail "CML not initialized")))
 
@@ -52,16 +52,16 @@ structure Scheduler : SCHEDULER =
          val curTid : thread_id ref = ref dummyTid
       in
          fun getThreadId (THRD (tid, _)) = tid
-         fun getCurThreadId () = 
+         fun getCurThreadId () =
             let
                val tid = !curTid
             in
                tid
             end
-         fun setCurThreadId tid = 
+         fun setCurThreadId tid =
             let
                val () = Assert.assertAtomic' ("Scheduler.setCurThreadId", NONE)
-            in 
+            in
                curTid := tid
             end
       end
@@ -112,7 +112,7 @@ structure Scheduler : SCHEDULER =
          in
             thrd
          end
-      fun ready thrd = 
+      fun ready thrd =
          let
             val () = Assert.assertAtomic' ("Scheduler.ready", NONE)
             val () = enque1 thrd
@@ -120,15 +120,15 @@ structure Scheduler : SCHEDULER =
             ()
          end
       local
-         fun atomicSwitchAux msg f = 
+         fun atomicSwitchAux msg f =
             (Assert.assertAtomic (fn () => "Scheduler." ^ msg, NONE)
-             ; T.atomicSwitch (fn t => 
+             ; T.atomicSwitch (fn t =>
                                let
                                   val tid = getCurThreadId ()
                                   val () = TID.mark tid
                                   val RTHRD (tid',t') = f (THRD (tid, t))
                                   val () = setCurThreadId tid'
-                               in 
+                               in
                                   t'
                                end))
       in
@@ -180,7 +180,7 @@ structure Scheduler : SCHEDULER =
 
 
       (* reset various pieces of state *)
-      fun reset running = 
+      fun reset running =
          (atomicBegin ()
           ; setCurThreadId dummyTid
           ; Q.reset rdyQ1; Q.reset rdyQ2

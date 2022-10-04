@@ -1,5 +1,5 @@
 
-signature Encode = 
+signature Encode =
    sig
       include EncodeError
 
@@ -16,12 +16,12 @@ signature Encode =
       val encValidChar : EncFile * UniChar.Char -> bool
    end
 
-structure Encode : Encode = 
+structure Encode : Encode =
    struct
-      open 
+      open
          Encoding UtilError
          EncodeBasic EncodeError EncodeMisc
-         
+
       type EncFile = Encoding * File
 
       val encNoFile = (NOENC,stdOutFile)
@@ -29,15 +29,15 @@ structure Encode : Encode =
 
       fun encAdapt((enc,_),f) = (enc,f)
 
-      fun encValidChar((enc,_),c) = 
+      fun encValidChar((enc,_),c) =
          case enc
            of ASCII  => validCharAscii c
             | EBCDIC => validCharEbcdic c
             | LATIN1 => validCharLatin1 c
             | _ => true
 
-      fun encPutChar((enc,f),c) = 
-         let val f1 = 
+      fun encPutChar((enc,f),c) =
+         let val f1 =
             case enc
               of NOENC  => f
                | ASCII  => (writeCharAscii(c,f))
@@ -57,20 +57,20 @@ structure Encode : Encode =
 
       fun encCloseFile(_,f) = closeFile f
 
-      fun encOpenFile (fname,enc,name) = 
-         let 
-            val outEnc = 
-               case enc 
-                 of NOENC => 
+      fun encOpenFile (fname,enc,name) =
+         let
+            val outEnc =
+               case enc
+                 of NOENC =>
                     (case isEncoding name
                        of NOENC => raise NoSuchFile(fname,"Unsupported encoding \""^name^"\"")
                         | enc => enc)
                   | enc => enc
             val f   = openFile fname
-            val f1  = case outEnc 
+            val f1  = case outEnc
                         of UTF16B => writeByte(writeByte(f,0wxFE),0wxFF)
                          | UTF16L => writeByte(writeByte(f,0wxFF),0wxFE)
-                         | _      => f 
+                         | _      => f
          in (outEnc,f1)
          end
    end

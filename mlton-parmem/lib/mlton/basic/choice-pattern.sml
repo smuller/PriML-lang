@@ -125,4 +125,4 @@ fun expandTree (t: t): string list =
 fun expand (s: string): string list Result.t =
    Result.map (fromString s, expandTree)
 
-end      
+end

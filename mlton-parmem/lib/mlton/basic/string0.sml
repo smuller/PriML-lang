@@ -10,7 +10,7 @@ struct
 
 structure PInt = Pervasive.Int
 type int = PInt.int
-structure PS = Pervasive.String   
+structure PS = Pervasive.String
 local
    open PS
 in

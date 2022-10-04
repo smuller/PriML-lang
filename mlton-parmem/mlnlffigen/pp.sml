@@ -32,7 +32,7 @@ structure PrettyPrint = struct
 
     fun simplify (CON ("unit", [])) = Unit
       | simplify (TUPLE [t]) = simplify t
-      | simplify (CON (k, tl)) = 
+      | simplify (CON (k, tl)) =
         let
            fun doDefault () = CON (k, map simplify tl)
            fun doObj obj =
@@ -45,7 +45,7 @@ structure PrettyPrint = struct
                          "voidptr"]
                         then CON (concat [k, "_", obj], [simplify c])
                      else if k = "fptr"
-                        then case tl of 
+                        then case tl of
                                 [f] => CON ("fptr_" ^ obj, [simplify f, simplify c])
                               | _ => doDefault ()
                      else if k = "su"
@@ -57,13 +57,13 @@ structure PrettyPrint = struct
            fun doDim d =
                if d = "dim"
                   then case tl of
-                          [n, CON (k', [])] => 
+                          [n, CON (k', [])] =>
                              if k' = "Dim.nonzero" orelse k' = "nonzero"
                                 then CON ("dim", [simplify n])
                                 else doDefault ()
                         | _ => doDefault ()
                else if d = "dec"
-                  then case tl of 
+                  then case tl of
                           [] => CON ("dec", [])
                         | _ => doDefault ()
                else if List.exists (fn d' => d = d')

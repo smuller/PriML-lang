@@ -10,14 +10,14 @@
  * and string the same as the toplevel types.
  *)
 functor SubstringFn(Arg : STRING_ARG)
-        :> SUBSTRING_EXTRA 
+        :> SUBSTRING_EXTRA
               where type char      = Arg.CharVector.MonoVectorSlice.elem
               where type string    = Arg.CharVector.MonoVectorSlice.vector
               where type substring = Arg.CharVector.MonoVectorSlice.slice =
    struct
       open Arg
       open CharVector.MonoVectorSlice
-      
+
       type char = elem
       type string = vector
       type substring = slice

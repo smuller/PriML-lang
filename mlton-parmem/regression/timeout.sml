@@ -24,7 +24,7 @@ fun timeLimit (t: Time.time, f: unit -> 'a): 'a option =
    in
       res
    end
-                 
+
 val _ =
    case timeLimit (Time.fromSeconds 10,
                    let fun loop () = loop ()

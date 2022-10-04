@@ -1,5 +1,5 @@
 functor SnapPoints(structure A : SNAPPOINTSARG
-                   structure Q : QUADTREE where type pos = A.pos and type dist = real) : 
+                   structure Q : QUADTREE where type pos = A.pos and type dist = real) :
         SNAPPOINTS where type poly = A.poly =
 struct
 
@@ -16,7 +16,7 @@ struct
      In particular, we want "within-epsilon" to be an equivalence
      relation on vertices. If we are not careful, we have a situation
      like
-     
+
         * -e- * -e- * -e- *
         A     B     C     D
 
@@ -170,7 +170,7 @@ struct
                          (getloc (point ii), getloc (point jj)))
 
         (* Modifies equivalence class refs until we're done. *)
-        (* XXX It's not clear that this always preserves the well-formedness 
+        (* XXX It's not clear that this always preserves the well-formedness
            of the polygons (like keeps them from being non-self-intersecting).
            Should at least check that the output is reasonable and raise an
            error if not. *)
@@ -188,7 +188,7 @@ struct
                   let
                       val close = Q.lookup kdtree pt epsilon
                   in
-                      (* Eliminate any that are not native. Also eliminate 
+                      (* Eliminate any that are not native. Also eliminate
                          any that are in the same polygon. This will include
                          the point itself. *)
                       List.mapPartial (fn i =>
@@ -205,12 +205,12 @@ struct
               (* Might be done? *)
               case foldr itspairs nil seeds of
                   nil => ()
-                | pairs => 
-                      let 
+                | pairs =>
+                      let
                           (*
                           val () = print "All pairs:\n";
                           fun printidx i =
-                              let 
+                              let
                                   val p as { poly, winding, ... } = point i
                                   val (x, y) = getloc p
                               in
@@ -221,7 +221,7 @@ struct
                                          Int.toString winding)
                               end
                           val () = List.app (fn (i, ii) =>
-                                             let in                                          
+                                             let in
                                                  print "  ";
                                                  printidx i;
                                                  printidx ii;
@@ -231,7 +231,7 @@ struct
 
                           val (p1, p2) = ListUtil.min comparepairidx pairs
                           (* Always merge to the left. *)
-                          val (pl, pr) = 
+                          val (pl, pr) =
                               case A.compare (getloc (point p1), getloc (point p2)) of
                                   LESS => (p1, p2)
                                 | _ => (p2, p1)
@@ -257,7 +257,7 @@ struct
             (ListUtil.stratify Int.compare points)
 
         (* Now sort by winding number *)
-        val polys : ('a * (int * A.pos) list) list = 
+        val polys : ('a * (int * A.pos) list) list =
             ListUtil.mapsecond (ListUtil.sort (ListUtil.byfirst Int.compare)) polys
         (* Discard that too *)
         val polys : ('a * A.poly) list =

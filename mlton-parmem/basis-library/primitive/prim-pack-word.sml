@@ -16,11 +16,11 @@ structure PackWord8 =
    struct
       type word = Word8.word
 
-      val subArr = 
+      val subArr =
          _prim "Word8Array_subWord8": Word8.word array * SeqIndex.int -> word;
-      val subVec = 
+      val subVec =
          _prim "Word8Vector_subWord8": Word8.word vector * SeqIndex.int -> word;
-      val update = 
+      val update =
          _prim "Word8Array_updateWord8": Word8.word array * SeqIndex.int * word -> unit;
    end
 
@@ -28,11 +28,11 @@ structure PackWord16 =
    struct
       type word = Word16.word
 
-      val subArr = 
+      val subArr =
          _prim "Word8Array_subWord16": Word8.word array * SeqIndex.int -> word;
-      val subVec = 
+      val subVec =
          _prim "Word8Vector_subWord16": Word8.word vector * SeqIndex.int -> word;
-      val update = 
+      val update =
          _prim "Word8Array_updateWord16": Word8.word array * SeqIndex.int * word -> unit;
    end
 
@@ -40,11 +40,11 @@ structure PackWord32 =
    struct
       type word = Word32.word
 
-      val subArr = 
+      val subArr =
          _prim "Word8Array_subWord32": Word8.word array * SeqIndex.int -> word;
-      val subVec = 
+      val subVec =
          _prim "Word8Vector_subWord32": Word8.word vector * SeqIndex.int -> word;
-      val update = 
+      val update =
          _prim "Word8Array_updateWord32": Word8.word array * SeqIndex.int * word -> unit;
    end
 
@@ -52,11 +52,11 @@ structure PackWord64 =
    struct
       type word = Word64.word
 
-      val subArr = 
+      val subArr =
          _prim "Word8Array_subWord64": Word8.word array * SeqIndex.int -> word;
-      val subVec = 
+      val subVec =
          _prim "Word8Vector_subWord64": Word8.word vector * SeqIndex.int -> word;
-      val update = 
+      val update =
          _prim "Word8Array_updateWord64": Word8.word array * SeqIndex.int * word -> unit;
    end
 

@@ -6,12 +6,12 @@
 (* ------------------------------------------------------------------- *)
 
 (*
-  MEMO : 'sin', 'cos', 'arctan', 'ln' and 'exp' are not checked yet. 
+  MEMO : 'sin', 'cos', 'arctan', 'ln' and 'exp' are not checked yet.
 
 *)
 
   infix ==
-  val epsilon = 0.000666 
+  val epsilon = 0.000666
   fun r1 == r2 = abs (r1 - r2) < epsilon (*no perfect world*)
 
   fun digit n = chr(ord #"0" + n)
@@ -35,7 +35,7 @@
       error ([34,56] @ [12,67] = [34,56,12,67]) "@"
     end
 
-  val _  = 
+  val _  =
     let
       val _ = print "Testing string operations:\n\
        \  [implode, explode, chr, ord, size]...\n"
@@ -66,7 +66,7 @@
       error (!g = 46) "!3"
     end
 
-  val _ = 
+  val _ =
     let
       val _ = print "Testing polymorphic equality...\n"
       val a = [(34,"hejsa"), (4, "bw")]
@@ -97,10 +97,10 @@
           val (r, q) = (i mod d, i div d)
           val gt_zero = fn a => a > 0
         in
-          error (gt_zero r = gt_zero d andalso d * q + r = i) 
-          ("intdivmod - " ^ int_to_string i ^ " mod " ^ int_to_string d ^ 
-           " = " ^ int_to_string r ^ ", " ^  int_to_string i ^ " div " 
-           ^ int_to_string d ^ " = " ^ int_to_string q)  
+          error (gt_zero r = gt_zero d andalso d * q + r = i)
+          ("intdivmod - " ^ int_to_string i ^ " mod " ^ int_to_string d ^
+           " = " ^ int_to_string r ^ ", " ^  int_to_string i ^ " div "
+           ^ int_to_string d ^ " = " ^ int_to_string q)
         end
     in
       error (~ 5 = ~5) "~1";
@@ -181,7 +181,7 @@
             let
               exception E
             in
-              if x < 1 then raise E 
+              if x < 1 then raise E
               else ((f (x-1)) handle E => 7) (* should not handle this.. *)
             end
         in

@@ -19,20 +19,20 @@ structure Multicast : MULTICAST =
 
       type 'a event = 'a CML.event
 
-      datatype 'a request = 
-         Message of 'a 
-       | NewPort 
+      datatype 'a request =
+         Message of 'a
+       | NewPort
       datatype 'a mc_state = MCState of ('a * 'a mc_state SV.ivar)
       datatype 'a port =
          Port of (('a * 'a mc_state SV.ivar) CML.chan * 'a mc_state SV.ivar SV.mvar)
-      datatype 'a mchan = 
+      datatype 'a mchan =
          MChan of ('a request CML.chan * 'a port CML.chan)
 
-    fun mkPort cv = 
+    fun mkPort cv =
        let
           val outCh = CML.channel()
           val stateVar = SV.mVarInit cv
-          fun tee cv = 
+          fun tee cv =
              let
                 val (MCState(v, nextCV)) = SV.iGet cv
              in
@@ -44,16 +44,16 @@ structure Multicast : MULTICAST =
           Port(outCh, stateVar)
        end
 
-    fun mChannel () = 
+    fun mChannel () =
        let
-          val reqCh = CML.channel() 
+          val reqCh = CML.channel()
           and replyCh = CML.channel()
-          fun server cv = 
-             case (CML.recv reqCh) of 
-                NewPort => 
+          fun server cv =
+             case (CML.recv reqCh) of
+                NewPort =>
                    (CML.send (replyCh, mkPort cv)
                     ; server cv)
-              | (Message m) => 
+              | (Message m) =>
                    let
                       val nextCV = SV.iVar()
                    in
@@ -67,13 +67,13 @@ structure Multicast : MULTICAST =
 
     fun multicast (MChan(ch, _), m) = CML.send (ch, Message m)
 
-    fun port (MChan(reqCh, replyCh)) = 
+    fun port (MChan(reqCh, replyCh)) =
        (CML.send (reqCh, NewPort)
         ; CML.recv replyCh)
 
     fun copy (Port(_, stateV)) = mkPort(SV.mGet stateV)
 
-    fun recvMsg stateV (v, nextCV) = 
+    fun recvMsg stateV (v, nextCV) =
        let val _ = SV.mSwap (stateV, nextCV)
        in v
        end

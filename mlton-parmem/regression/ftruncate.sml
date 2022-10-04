@@ -1,5 +1,5 @@
 val tmp = "tmp"
-   
+
 val () =
    let
       open TextIO
@@ -9,7 +9,7 @@ val () =
    in
       ()
    end
-      
+
 val () =
    let
       open Posix

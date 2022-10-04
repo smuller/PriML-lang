@@ -35,5 +35,5 @@ sig
     val app : ('a -> unit) -> 'a buffer -> unit
 
     val tolist : 'a buffer -> 'a list
-  
+
 end

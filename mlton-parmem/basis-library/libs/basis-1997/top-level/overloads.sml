@@ -45,7 +45,7 @@ and Real.*
  * _overload / : ('a * 'a -> 'a)
  * as Real./
  *)
-val op / = Real./ 
+val op / = Real./
 
 _overload div: ('a * 'a -> 'a)
 as  Int.div

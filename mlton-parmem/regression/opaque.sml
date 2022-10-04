@@ -3,11 +3,11 @@
 
 (* Decrease in generativity *)
 
-functor f() = struct type a = int 
+functor f() = struct type a = int
                      val a = 232
-                     val pr = Int.toString 
+                     val pr = Int.toString
               end :> sig type a
-                         val a : a                         
+                         val a : a
                          val pr : a -> string
                      end
 
@@ -19,7 +19,7 @@ functor g() = struct datatype a = A | B
                        | pr_a B = "B"
                      val pr_b = pr_a
                      type b = a
-              end :> sig type a type b 
+              end :> sig type a type b
                          val A : a
                          val B : b
                          val pr_a : a -> string
@@ -31,14 +31,14 @@ val _ = print ("g.A = " ^ g.pr_a g.A ^ "\n")
 val _ = print ("g.B = " ^ g.pr_b g.B ^ "\n")
 
 
-functor h(s : sig type a val pr : a -> string val a : a end) = 
-  struct 
-    val pr = s.pr 
+functor h(s : sig type a val pr : a -> string val a : a end) =
+  struct
+    val pr = s.pr
     val b = s.a
-    type b = s.a 
-  end :> sig type b 
-             val pr : b -> string 
-             val b : b 
+    type b = s.a
+  end :> sig type b
+             val pr : b -> string
+             val b : b
          end
 
 structure h = h(struct type a = int val pr = Int.toString val a = 343 end)
@@ -65,5 +65,5 @@ val _ = print ("i.c = " ^ i.pr i.c ^ "\n")
 structure S = struct type s = int * int
               end :> sig eqtype s end
 
-signature S = sig datatype u = A 
+signature S = sig datatype u = A
               end where type u = S.s

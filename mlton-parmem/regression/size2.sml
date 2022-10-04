@@ -27,10 +27,10 @@ val _ =
     ; printSize ("a word64 array of length 10",
                  Array.tabulate (10, fn i => Word64.fromInt i))
     ; printSize ("a (word32 * word64) array of length 10",
-                 Array.tabulate (10, fn i => (Word32.fromInt i, 
+                 Array.tabulate (10, fn i => (Word32.fromInt i,
                                               Word64.fromInt i)))
     ; printSize ("a (word32 * word32 * word64) array of length 10",
-                 Array.tabulate (10, fn i => (Word32.fromInt i, 
+                 Array.tabulate (10, fn i => (Word32.fromInt i,
                                               Word32.fromInt (i + 1),
                                               Word64.fromInt i)))
     ; printSize ("a (word64 * word64) array of length 10",

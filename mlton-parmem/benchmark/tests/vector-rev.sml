@@ -3,7 +3,7 @@
 structure Main =
    struct
       open Vector
-         
+
       fun rev v =
          let
             val n = length v

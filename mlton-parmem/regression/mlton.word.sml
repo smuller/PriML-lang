@@ -20,7 +20,7 @@ functor F (S: sig
 
       (* Test ~ *)
       val _ = List.app (p o ~) trials
-         
+
       (* Test Algebraic simplifications. *)
       val _ = List.app (fn w => p (rol (w, 0w0))) trials
       val _ = List.app (fn w => p (ror (w, 0w0))) trials
@@ -57,7 +57,7 @@ structure Z = F (open Word8 MLton.Word8
  *    (MLton.Word.addCheck (0wxFFFFFFFF, 0wx1)
  *     ; print "BUG\n")
  *    handle Overflow => print "OK\n"
- *       
+ *
  * fun doit (name, f, all) =
  *    List.app
  *    (fn (w, w') =>
@@ -70,13 +70,13 @@ structure Z = F (open Word8 MLton.Word8
  *        ()
  *     end handle Overflow => print " --> Overflow\n")
  *    all
- * 
+ *
  * val _ = doit ("+", MLton.Word.addCheck,
  *            [(0wx7FFFFFFF, 0wx1),
  *             (0wxFFFFFFFE, 0wx1),
  *             (0wxFFFFFFFD, 0wx2),
  *             (0wxFFFFFFFF, 0wx1)])
- * 
+ *
  * val _ = doit ("*", MLton.Word.mulCheck,
  *            [(0wxFFFFFFFF, 0wx1),
  *             (0wx7FFFFFFF, 0wx2),

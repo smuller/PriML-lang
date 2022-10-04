@@ -28,6 +28,6 @@ val _ =
     | Original => print "I am the original\n"
 
 val _ = run (fn () => load w)
-   
+
 val _ = OS.FileSys.remove w
 

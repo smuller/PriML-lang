@@ -111,7 +111,7 @@ fun fft px py np =
            print "Use "; printi n; print " point fft\n"
         end
      else ();
-        
+
      let
         fun loop_k k n2 =
            if k >= m then ()
@@ -173,7 +173,7 @@ fun fft px py np =
      in
         loop_k 1 n
      end;
-     
+
 (************************************)
 (*  Last stage, length=2 butterfly  *)
 (************************************)
@@ -227,7 +227,7 @@ let fun loop_is is id = if is >= n then () else
   end;
 
   n
-  
+
   end
 
 fun abs x = if x >= 0.0 then x else ~x

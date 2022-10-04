@@ -5,7 +5,7 @@ open EditDistanceString
 fun playback s nil = s
   | playback s (Modify (i, c) :: r) = playback (if i >= size s then raise EditDistance "OUT"
                                                 else ();
-                                                CharVector.tabulate (size s, 
+                                                CharVector.tabulate (size s,
                                                                      fn x =>
                                                                      if x = i
                                                                      then c
@@ -55,20 +55,20 @@ fun mrand () =
      #1 (!seed))
 
 fun randomtest 0 = ()
-  | randomtest n = 
-    let 
+  | randomtest n =
+    let
         fun randomstring () =
             let val r = mrand ()
             in
                 (* print (Word32.toString r ^ "\n"); *)
                 if 0w0 = Word32.andb(r, 0wx3F)
                 then ""
-                else (* if 0w0 = Word32.andb (r, 0w1) then "X" else "O" *) 
+                else (* if 0w0 = Word32.andb (r, 0w1) then "X" else "O" *)
                     Word32.toString r ^ randomstring ()
             end
         val s1 = randomstring ()
         val s2 = randomstring ()
-            
+
         val () = if n mod 1 = 0 then TextIO.output (TextIO.stdErr, "[" ^ Int.toString n ^ "]    Test: " ^ s1 ^ " -> " ^ s2 ^ "\n") else ()
         val (d, _) = test (s1, s2)
     in
@@ -85,13 +85,13 @@ fun randomtest 0 = ()
         if n = size s then
            (if start = n then nil
             else [String.substring(s, start, n - start)])
-        else 
+        else
           if start <> n andalso class (String.sub(s, n - 1)) <>
                                        class (String.sub(s, n))
           then (* new chunk *)
             String.substring(s, start, n - start) :: chunk n n
           else chunk start ( n + 1 )
-             
+
     in
       Vector.fromList (chunk 0 0)
     end
@@ -110,7 +110,7 @@ fun randomtest 0 = ()
   type plan = SED.edit list
   (* XXX PERF *)
   fun vplay s nil = s
-    | vplay s (Modify (i, c) :: r) = vplay (Vector.tabulate (Vector.length s, 
+    | vplay s (Modify (i, c) :: r) = vplay (Vector.tabulate (Vector.length s,
                                                                    fn x =>
                                                                    if x = i
                                                                    then c

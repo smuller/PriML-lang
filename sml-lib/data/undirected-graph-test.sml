@@ -33,7 +33,7 @@ struct
                (BB, EE, 6)]
 
   val () = print "Original:\n"
-  val () = G.app (fn n => 
+  val () = G.app (fn n =>
                   let val name = G.get n
                   in  print ("  " ^ name ^ ".\n")
                   end) g
@@ -61,7 +61,7 @@ struct
   fun otos f NONE = "NONE"
     | otos f (SOME z) = f z
   val () = print "Shortest distances:\n"
-  val () = G.app (fn n => 
+  val () = G.app (fn n =>
                   let val (name, dist) = G.get n
                   in  print ("  " ^ name ^ " : " ^ otos Int.toString dist ^ "\n")
                   end) sp
@@ -87,14 +87,14 @@ struct
 
   (*
 
-      A<-- 3 --- C 
-                 ^  
-                 2   
-                 |   
-      B--- 1 --> D   
-                 ^   
-                 1  
-                 | 
+      A<-- 3 --- C
+                 ^
+                 2
+                 |
+      B--- 1 --> D
+                 ^
+                 1
+                 |
           E-- 3->F   G
   *)
 

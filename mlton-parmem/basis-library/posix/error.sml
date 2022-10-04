@@ -215,7 +215,7 @@ structure PosixError: POSIX_ERROR_EXTRA =
          let
             val cs = strError (SysError.toRep n)
          in
-            if Primitive.MLton.Pointer.isNull 
+            if Primitive.MLton.Pointer.isNull
                (Primitive.MLton.Pointer.fromWord cs)
                then "Unknown error"
                else CUtil.C_String.toString cs
@@ -233,7 +233,7 @@ structure PosixError: POSIX_ERROR_EXTRA =
                (* ref (fn () => raise Fail "blocker not installed") *)
             val restartFlag = ref true
 
-            val syscallErr: {clear: bool, restart: bool, errVal: ''a} * 
+            val syscallErr: {clear: bool, restart: bool, errVal: ''a} *
                             (unit -> {return: ''a C_Errno.t,
                                       post: ''a -> 'b,
                                       handlers: (syserror * (unit -> 'b)) list}) -> 'b =
@@ -244,7 +244,7 @@ structure PosixError: POSIX_ERROR_EXTRA =
                      let
                         val () = Thread.atomicBegin ()
                         val () = if clear then clearErrno () else ()
-                        val {return, post, handlers} = 
+                        val {return, post, handlers} =
                            f () handle exn => (Thread.atomicEnd (); raise exn)
                         val return = C_Errno.check return
                      in
@@ -259,8 +259,8 @@ structure PosixError: POSIX_ERROR_EXTRA =
                               end
                            else DynamicWind.wind (fn () => post return , Thread.atomicEnd)
                      end
-                  fun err {default: unit -> 'b, 
-                           errno: syserror, 
+                  fun err {default: unit -> 'b,
+                           errno: syserror,
                            handlers: (syserror * (unit -> 'b)) list}: 'b =
                      case List.find (fn (e',_) => errno = e') handlers of
                         NONE => default ()
@@ -277,7 +277,7 @@ structure PosixError: POSIX_ERROR_EXTRA =
                              then if Thread.atomicState () = 0w0
                                      then call errUnblocked
                                      else let val finish = !blocker ()
-                                          in 
+                                          in
                                              DynamicWind.wind
                                              (fn () => call errBlocked, finish)
                                           end
@@ -289,11 +289,11 @@ structure PosixError: POSIX_ERROR_EXTRA =
 
             local
                val simpleResultAux = fn ({restart, errVal}, f) =>
-                  syscallErr 
-                  ({clear = false, restart = restart, errVal = errVal}, fn () => 
-                   let val return = f () 
-                   in {return = return, 
-                       post = fn ret => ret, 
+                  syscallErr
+                  ({clear = false, restart = restart, errVal = errVal}, fn () =>
+                   let val return = f ()
+                   in {return = return,
+                       post = fn ret => ret,
                        handlers = []}
                    end)
             in
@@ -311,26 +311,26 @@ structure PosixError: POSIX_ERROR_EXTRA =
             val simpleRestart = ignore o simpleResultRestart
             val simple = ignore o simpleResult
 
-            val simpleRestart' = fn ({errVal}, f) => 
+            val simpleRestart' = fn ({errVal}, f) =>
                ignore (simpleResultRestart' ({errVal = errVal}, f))
-            val simple' = fn ({errVal}, f) => 
+            val simple' = fn ({errVal}, f) =>
                ignore (simpleResult' ({errVal = errVal}, f))
 
-            val syscallRestart' = fn ({errVal}, f) => 
-               syscallErr 
-               ({clear = false, restart = true, errVal = errVal}, fn () => 
-                let val (return, post) = f () 
+            val syscallRestart' = fn ({errVal}, f) =>
+               syscallErr
+               ({clear = false, restart = true, errVal = errVal}, fn () =>
+                let val (return, post) = f ()
                 in {return = return, post = post, handlers = []}
                 end)
             val syscall' = fn ({errVal}, f) =>
-               syscallErr 
-               ({clear = false, restart = false, errVal = errVal}, fn () => 
-                let val (return, post) = f () 
+               syscallErr
+               ({clear = false, restart = false, errVal = errVal}, fn () =>
+                let val (return, post) = f ()
                 in {return = return, post = post, handlers = []}
                 end)
-            val syscallRestart = fn f => 
+            val syscallRestart = fn f =>
                syscallRestart' ({errVal = C_Int.fromInt ~1}, f)
-            val syscall = fn f => 
+            val syscall = fn f =>
                syscall' ({errVal = C_Int.fromInt ~1}, f)
          end
    end

@@ -24,10 +24,10 @@ infix 9 sub
 val op sub = String.sub
 val substring = String.extract
 
-val isWindows = 
-   let 
-      open Primitive.MLton.Platform.OS 
-   in 
+val isWindows =
+   let
+      open Primitive.MLton.Platform.OS
+   in
       host = MinGW
    end
 
@@ -36,7 +36,7 @@ val slash = if isWindows then "\\" else "/"
 
 (* MinGW and newer Windows commands treat both / and \ as path
  * separators.
- * 
+ *
  * Sadly this means that toString o fromString is not the identity
  * b/c foo/bar -> foo\bar. However, there's nothing else one can do!
  * This diverges from the standard.
@@ -45,7 +45,7 @@ fun isslash c = c = #"/" orelse (isWindows andalso c = #"\\")
 fun iscolon c = c = #":"
 
 fun isVolumeName v =
-   (isWindows andalso size v = 2 andalso 
+   (isWindows andalso size v = 2 andalso
     Char.isAlpha (v sub 0) andalso iscolon (v sub 1))
 
 fun volumeMatch (root, relative) =
@@ -55,7 +55,7 @@ fun volumeMatch (root, relative) =
            andalso (Char.toUpper (root sub 0)
                     = Char.toUpper (relative sub 0)))
 
-fun canonName a = 
+fun canonName a =
    if isWindows
       then String.translate (str o Char.toLower) a
    else a
@@ -63,13 +63,13 @@ fun canonName a =
 val parentArc  = ".."
 val currentArc = "."
 
-(* Ahh joy. The SML basis library standard and Windows paths. 
- * 
+(* Ahh joy. The SML basis library standard and Windows paths.
+ *
  * The big problem with windows paths is "\foo""
  * - It's not absolute, since chdir("A:\") may switch from "C:", thus
    *   changing the meaning of "\foo".
    *)
-fun validVolume {isAbs, vol} = 
+fun validVolume {isAbs, vol} =
    if isWindows
       then isVolumeName vol orelse (not isAbs andalso vol = "")
    else vol = ""
@@ -106,7 +106,7 @@ fun toString {arcs, isAbs, vol} =
       then raise Path
    else if List.exists (not o isArc) arcs
       then raise InvalidArc
-   else 
+   else
       concat [vol,
               if isAbs
                  then slash
@@ -218,7 +218,7 @@ fun isCanonical p = mkCanonical p = p
 fun joinDirFile {dir, file} =
    let
       val {arcs, isAbs, vol} = fromString dir
-      val arcs = 
+      val arcs =
          case (arcs, file) of
             ([], "") => []
           | _ => concatArcs (arcs, [file])
@@ -275,19 +275,19 @@ fun isRoot path =
       {isAbs = true,  arcs=[""],  ...} => true
     | _ => false
 
-fun fromUnixPath s = 
+fun fromUnixPath s =
    if not isWindows then s
    else if Char.contains s (slash sub 0) then raise InvalidArc
    else String.translate (fn c => if c = #"/" then slash else str c) s
 
-fun toUnixPath s = 
+fun toUnixPath s =
    if not isWindows then s
    else
       let
          val {arcs, isAbs, vol} = fromString s
       in
-         if vol <> "" 
-            then raise Path 
+         if vol <> ""
+            then raise Path
          else (if isAbs then "/" else "") ^ String.concatWith "/" arcs
       end
 

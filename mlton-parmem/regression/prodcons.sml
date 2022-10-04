@@ -37,7 +37,7 @@ structure Queue:
                               [] => raise Fail "deque"
                             | x :: l => (back := []; front := l; SOME x)
                            end)
-          | x :: l => (front := l; SOME x) 
+          | x :: l => (front := l; SOME x)
    end
 
 structure Thread:
@@ -57,7 +57,7 @@ structure Thread:
       structure Condition:
          sig
             type t
-               
+
             val new: unit -> t
             val signal: t -> unit
             val wait: t * Mutex.t -> unit
@@ -79,15 +79,15 @@ structure Thread:
                         ; valOf (!topLevel))
              | SOME t => t
       end
-   
+
       fun 'a exit (): 'a = switch (fn _ => next ())
-      
+
       fun new (f: unit -> unit): Thread.Runnable.t =
          Thread.prepare
          (Thread.new (fn () => ((f () handle _ => exit ())
                                 ; exit ())),
           ())
-         
+
       fun schedule t =
          (print "scheduling\n"
           ; ready t
@@ -110,12 +110,12 @@ structure Thread:
           ; setItimer Time.zeroTime
           ; ignore alrm
           ; topLevel := NONE)
-         
+
       structure Mutex =
          struct
             datatype t = T of {locked: bool ref,
                                waiting: unit Thread.t Queue.t}
-               
+
             fun new () =
                T {locked = ref false,
                   waiting = Queue.new ()}
@@ -137,7 +137,7 @@ structure Thread:
                               ; Thread.atomicEnd ()))
                in loop ()
                end
-            
+
             fun safeUnlock (T {locked, waiting, ...}) =
                (locked := false
                 ; (case Queue.deque waiting of
@@ -227,7 +227,7 @@ fun main (name, args) =
       val _ = Thread.run ()
       val _ = Posix.Process.sleep (Time.fromSeconds 1)
       val _ = printl [Int.toString (!produced),
-                      " ",  
+                      " ",
                       Int.toString (!consumed)]
    in
       ()

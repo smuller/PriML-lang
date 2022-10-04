@@ -18,7 +18,7 @@ val toString =
     | GREATER => "Greater"
     | LESS => "Less"
 
-fun lessEqual {<, equals} = 
+fun lessEqual {<, equals} =
    let
       fun a > b = b < a
       fun a <= b = a < b orelse equals (a, b)

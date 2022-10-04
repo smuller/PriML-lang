@@ -3,7 +3,7 @@ functor Test (structure PackReal: PACK_REAL
               val tests: Real.real list
               sharing type PackReal.real = Real.real) =
 struct
-   
+
 val _ =
    if List.all (fn r =>
                 let
@@ -22,13 +22,13 @@ val _ =
                        end)
                       v
                    val _ = print "\n"
-                in 
+                in
                    Real.== (r, PackReal.fromBytes v)
                 end)
       tests
       then ()
    else raise Fail "failure"
-      
+
 end
 
 val real32Tests =
@@ -46,7 +46,7 @@ val real32Tests =
        1.0,
        2.0,
        123E6,
-       maxFinite, 
+       maxFinite,
        posInf]
    end
 
@@ -65,7 +65,7 @@ val real64Tests =
        1.0,
        2.0,
        123E6,
-       maxFinite, 
+       maxFinite,
        posInf]
    end
 

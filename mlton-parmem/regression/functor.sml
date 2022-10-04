@@ -1,7 +1,7 @@
 signature A = sig type t val a : t end
 
-functor F(A : sig type t val pr : t -> string end) = 
-  struct datatype k = A of A.t 
+functor F(A : sig type t val pr : t -> string end) =
+  struct datatype k = A of A.t
          fun pr (A t) = "A(" ^ A.pr t ^ ")"
   end
 
@@ -9,8 +9,8 @@ functor G(A : A) =
   struct type t = A.t val b = A.a end
 
 functor H(A : sig type t type s val a : s
-                  sharing type t = s 
-                  val pr : t -> string 
+                  sharing type t = s
+                  val pr : t -> string
               end) =
   struct
     structure A1 : sig type t val pr : t -> string end = A
@@ -20,9 +20,9 @@ functor H(A : sig type t type s val a : s
     val _ = print ("value is " ^ A2.pr a ^ "\n")
   end
 
-structure B1 = 
-  struct 
-    datatype t = J | K 
+structure B1 =
+  struct
+    datatype t = J | K
     type s = t
     val a = K
     fun pr K = "K"

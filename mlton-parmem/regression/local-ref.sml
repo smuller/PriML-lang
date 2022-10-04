@@ -17,6 +17,6 @@ in
        end
 end
 
-val n = fib 5 
+val n = fib 5
 
 val _ = print (concat ["fib(5) = ", Int.toString n, "\n"])

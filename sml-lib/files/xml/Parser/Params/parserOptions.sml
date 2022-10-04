@@ -42,7 +42,7 @@ functor ParserOptions () : ParserOptions =
    struct
       structure DfaOptions = DfaOptions ()
 
-      open DfaOptions Options UtilInt UtilList 
+      open DfaOptions Options UtilInt UtilList
 
       val O_CHECK_VERSION = ref true (* check for conforming xml version?   *)
       val O_CHECK_ISO639 = ref true (* check whether a two-letter LangCode  *)
@@ -65,7 +65,7 @@ functor ParserOptions () : ParserOptions =
 	                                   (* are not declared in the dtd   *)
 
       val O_WARN_MULT_ATT_DEF  = ref true (* warn if an attributes is defd  *)
-	                                  (* twice for the same element?    *) 
+	                                  (* twice for the same element?    *)
       val O_WARN_MULT_ATT_DECL = ref true (* warn if there are multiple att *)
 	                                  (* def lists for one element?     *)
       val O_WARN_NON_ASCII_URI = ref true (* warn about non-ascii chars in  *)
@@ -73,15 +73,15 @@ functor ParserOptions () : ParserOptions =
 
       val O_ERROR_MINIMIZE  = ref true (* try to avoid repeating errors?    *)
 
-      val O_VALIDATE         = ref true 
+      val O_VALIDATE         = ref true
       val O_COMPATIBILITY    = ref true
       val O_INTEROPERABILITY = ref false
 
       val O_INCLUDE_EXT_PARSED = ref false
       val O_INCLUDE_PARAM_ENTS = ref false
 
-      fun setParserDefaults() = 
-	 let 
+      fun setParserDefaults() =
+	 let
 	    val _ = setDfaDefaults()
 
 	    val _ = O_CHECK_ISO639        := false
@@ -89,7 +89,7 @@ functor ParserOptions () : ParserOptions =
 	    val _ = O_CHECK_PREDEFINED    := true
 	    val _ = O_CHECK_RESERVED      := false
 	    val _ = O_CHECK_VERSION       := true
-	    
+
 	    val _ = O_WARN_MULT_ENUM      := true
 	    val _ = O_WARN_XML_DECL       := false
 	    val _ = O_WARN_ATT_NO_ELEM    := false
@@ -103,7 +103,7 @@ functor ParserOptions () : ParserOptions =
 	    val _ = O_VALIDATE            := true
 	    val _ = O_COMPATIBILITY       := true
 	    val _ = O_INTEROPERABILITY    := false
-	    
+
 	    val _ = O_ERROR_MINIMIZE      := true
 
 	    val _ = O_INCLUDE_EXT_PARSED  := false
@@ -111,7 +111,7 @@ functor ParserOptions () : ParserOptions =
 	 in ()
 	 end
 
-      val parserUsage = 
+      val parserUsage =
 	 [U_ITEM(["-[n]v","--validate[=(yes|no)]"],"Turn on or off validation (yes)"),
 	  U_ITEM(["-[n]c","--compat[=(yes|no)]","--compatibility[=(yes|no)]"],
                  "Turn on or off compatibility checking (yes)"),
@@ -145,13 +145,13 @@ functor ParserOptions () : ParserOptions =
 	  U_SEP]
 	 @dfaUsage
 
-      fun setParserOptions(opts,doError) = 
-	 let 
-	    datatype What = ATT | ATTLIST | ENT | NOT 
-	       
+      fun setParserOptions(opts,doError) =
+	 let
+	    datatype What = ATT | ATTLIST | ENT | NOT
+
 	    exception Failed of string option
 
-	    fun getNat str = 
+	    fun getNat str =
 	       if str="" then raise Failed NONE
 	       else let val cs = String.explode str
 		    in foldl (fn (c,n) => if #"0">c orelse #"9"<c then raise Failed NONE
@@ -159,7 +159,7 @@ functor ParserOptions () : ParserOptions =
 		       handle Overflow => raise Failed
 			  (SOME("number "^str^" is too large for this system"))
 		    end
-		 
+
 	    val allNone = "'all' or 'none'"
 	    val yesNo = "'yes' or 'no'"
 	    val yesNoWhat = "'yes', 'no' or a list of 'att', 'attlist', 'ent' and 'not'"
@@ -167,19 +167,19 @@ functor ParserOptions () : ParserOptions =
 	       (String.concat ["the argument to option --",key," must be ",what])
 	    fun errorNoArg key = doError
 	       (String.concat ["option --",key," has no argument"])
-	       
+
 	    fun do_mult_decl(key,valOpt) =
-	       let 
+	       let
 		  val all = [ATT,ATTLIST,ENT,NOT]
 		  fun setFlags whats = app (fn (what,flag) => flag := member what whats)
 		     [(ATT,O_WARN_MULT_ATT_DEF),(ATTLIST,O_WARN_MULT_ATT_DECL),
 		      (ENT,O_WARN_MULT_ENT_DECL),(NOT,O_WARN_MULT_NOT_DECL)]
-	       in case valOpt 
+	       in case valOpt
 		    of NONE => setFlags all
 		     | SOME "yes" => setFlags all
 		     | SOME "no" => setFlags nil
 		     | SOME s => let val fields = String.fields (fn c => #","=c) s
-				     val whats = map 
+				     val whats = map
 					(fn s => case s
 						   of "att" => ATT
 						    | "attlist" => ATTLIST
@@ -191,27 +191,27 @@ functor ParserOptions () : ParserOptions =
 			      handle Failed _ => errorMustBe(key,yesNoWhat)
 	       end
 
-	    fun do_noarg(key,valOpt,flag) = 
-	       case valOpt 
+	    fun do_noarg(key,valOpt,flag) =
+	       case valOpt
 		 of NONE => flag := true
 		  | SOME _ => errorNoArg key
 
 	    fun do_yesno(key,valOpt,flag) =
-	       case valOpt 
+	       case valOpt
 		 of NONE => flag := true
 		  | SOME "yes" => flag := true
 		  | SOME "no" => flag := false
 		  | SOME s => errorMustBe(key,yesNo)
 
 	    fun do_num(key,valOpt,flag) =
-	       case valOpt 
+	       case valOpt
 		 of NONE => errorMustBe(key,"a number")
 		  | SOME s => flag := getNat s
 		    handle Failed NONE => errorMustBe(key,"a number")
 			 | Failed (SOME s) => doError s
 
 	    fun do_warn(key,valOpt) =
-	       let val all = [O_WARN_MULT_ENUM,O_WARN_ATT_NO_ELEM,   
+	       let val all = [O_WARN_MULT_ENUM,O_WARN_ATT_NO_ELEM,
 			      O_WARN_MULT_ENT_DECL,O_WARN_MULT_NOT_DECL,O_WARN_MULT_ATT_DEF,
 			      O_WARN_MULT_ATT_DECL,O_WARN_SHOULD_DECLARE,O_WARN_XML_DECL]
 		  fun setFlags value = app (fn flag => flag := value) all
@@ -222,7 +222,7 @@ functor ParserOptions () : ParserOptions =
 		     | SOME _ => errorMustBe(key,allNone)
 	       end
 
-	    fun do_long(key,valOpt) = 
+	    fun do_long(key,valOpt) =
 	       case key
 		 of "validate" => true before do_yesno(key,valOpt,O_VALIDATE)
 		  | "compat" => true before do_yesno(key,valOpt,O_COMPATIBILITY)
@@ -231,53 +231,53 @@ functor ParserOptions () : ParserOptions =
 		  | "interoperability" => true before do_yesno(key,valOpt,O_INTEROPERABILITY)
 
 		  | "few-errors" => true before do_yesno(key,valOpt,O_ERROR_MINIMIZE)
-		    
+
 		  | "check-reserved" => true before do_yesno(key,valOpt,O_CHECK_RESERVED)
 		  | "check-predef" => true before do_yesno(key,valOpt,O_CHECK_PREDEFINED)
 		  | "check-predefined" => true before do_yesno(key,valOpt,O_CHECK_PREDEFINED)
 		  | "check-lang-id" => true before do_yesno(key,valOpt,O_CHECK_LANGID)
 		  | "check-iso639" => true before do_yesno(key,valOpt,O_CHECK_ISO639)
 		  | "check-xml-version" => true before do_yesno(key,valOpt,O_CHECK_VERSION)
-		    
+
 		  | "warn" => true before do_warn(key,valOpt)
 		  | "warn-xml-decl" => true before do_yesno(key,valOpt,O_WARN_XML_DECL)
 		  | "warn-att-elem" => true before do_yesno(key,valOpt,O_WARN_ATT_NO_ELEM)
 		  | "warn-predefined" => true before do_yesno(key,valOpt,O_WARN_SHOULD_DECLARE)
 		  | "warn-mult-decl" => true before do_mult_decl(key,valOpt)
 		  | "warn-uri" => true before do_yesno(key,valOpt,O_WARN_NON_ASCII_URI)
-		    
+
 		  | "include-ext" => true before do_yesno(key,valOpt,O_INCLUDE_EXT_PARSED)
 		  | "include-external" => true before do_yesno(key,valOpt,O_INCLUDE_EXT_PARSED)
 		  | "include-par" => true before do_yesno(key,valOpt,O_INCLUDE_PARAM_ENTS)
 		  | "include-parameter" => true before do_yesno(key,valOpt,O_INCLUDE_PARAM_ENTS)
-		    
+
 		  | _ => false
 
-	    fun do_short cs = 
-	       let fun doOne c = 
+	    fun do_short cs =
+	       let fun doOne c =
 		  case c
 		    of #"v" => false before O_VALIDATE := true
 		     | #"c" => false before O_COMPATIBILITY := true
 		     | #"i" => false before O_INTEROPERABILITY := true
 		     | _ => true
 	       in List.filter doOne cs
-	       end 
+	       end
 
-	    fun do_neg cs = 
-	       let fun doOne c = 
+	    fun do_neg cs =
+	       let fun doOne c =
 		  case c
 		    of #"v" => false before O_VALIDATE := false
 		     | #"c" => false before O_COMPATIBILITY := false
 		     | #"i" => false before O_INTEROPERABILITY := false
 		     | _ => true
 	       in List.filter doOne cs
-	       end 
+	       end
 
 	    and doit nil = nil
 	      | doit (opt::opts) =
 	       case opt
 		 of OPT_NOOPT => opts
-		  | OPT_LONG(key,value) => if do_long(key,value) then doit opts 
+		  | OPT_LONG(key,value) => if do_long(key,value) then doit opts
 					   else opt::doit opts
 		  | OPT_SHORT cs => (case do_short cs
 				       of nil => doit opts
@@ -286,9 +286,9 @@ functor ParserOptions () : ParserOptions =
 				       of nil => doit opts
 					| rest => OPT_NEG rest::doit opts)
 		  | OPT_STRING s => opt::doit opts
-	 
+
 	    val opts1 = setDfaOptions (opts,doError)
-	 in 
+	 in
 	    doit opts1
 	 end
    end

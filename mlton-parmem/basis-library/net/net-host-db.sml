@@ -99,13 +99,13 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
                  end
             else NONE
       in
-        fun getByAddr in_addr = 
+        fun getByAddr in_addr =
            get (Prim.getByAddress (in_addr, C_Socklen.fromInt (Vector.length in_addr)))
-        fun getByName name = 
+        fun getByName name =
            get (Prim.getByName (NullString.nullTerm name))
       end
 
-      fun getHostName () = 
+      fun getHostName () =
         let
           val n = 128
           val buf = CharArray.array (n, #"\000")
@@ -123,7 +123,7 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
         let
           fun scanW state =
             case reader state of
-              SOME (#"0", state') => 
+              SOME (#"0", state') =>
                 (case reader state' of
                     NONE => SOME (0w0, state')
                   | SOME (c, state'') =>
@@ -139,7 +139,7 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
               else let
                      fun finish (w, state) =
                        case reader state of
-                         SOME (#".", state') => 
+                         SOME (#".", state') =>
                            loop (n - 1, state', (w, state)::acc)
                        | _ => List.rev ((w, state)::acc)
                    in
@@ -148,14 +148,14 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
                      | NONE => List.rev acc
                    end
           val l = loop (4, state, [])
-          fun get1 w = 
+          fun get1 w =
             (Word8.fromLarge (Word.toLarge (Word.andb (w, 0wxFF))),
              Word.>>(w, 0w8))
           fun get2 w =
-            let 
+            let
               val (a,w) = get1 w
               val (b,w) = get1 w
-            in (a,b,w) 
+            in (a,b,w)
             end
           fun get3 w =
             let
@@ -170,9 +170,9 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
             in (a,b,c,d,w)
             end
           fun try l =
-            case l of 
+            case l of
               [] => NONE
-            | [(w, statew)] => 
+            | [(w, statew)] =>
                 let
                   val (d,c,b,a,w) = get4 w
                 in
@@ -180,7 +180,7 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
                     then SOME (Vector.fromList [a,b,c,d], statew)
                     else NONE
                 end
-            | [(x, statex), (w, statew)] => 
+            | [(x, statex), (w, statew)] =>
                 let
                   val (d,c,b,w) = get3 w
                   val (a,x) = get1 x
@@ -189,7 +189,7 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
                     then SOME (Vector.fromList [a,b,c,d], statew)
                     else try [(x, statex)]
                 end
-            | [(y, statey), (x, statex), (w, statew)] => 
+            | [(y, statey), (x, statex), (w, statew)] =>
                 let
                   val (d,c,w) = get2 w
                   val (b,x) = get1 x
@@ -199,7 +199,7 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
                     then SOME (Vector.fromList [a,b,c,d], statew)
                     else try [(y, statey), (x, statex)]
                 end
-            | [(z, statez), (y, statey), (x, statex), (w, statew)] => 
+            | [(z, statez), (y, statey), (x, statex), (w, statew)] =>
                 let
                   val (d,w) = get1 w
                   val (c,x) = get1 x
@@ -217,6 +217,6 @@ structure NetHostDB: NET_HOST_DB_EXTRA =
 
       fun fromString s = StringCvt.scanString scan s
       fun toString in_addr =
-        String.concatWith "." 
+        String.concatWith "."
         (Vector.foldr (fn (w,ss) => (Word8.fmt StringCvt.DEC w)::ss) [] in_addr)
    end

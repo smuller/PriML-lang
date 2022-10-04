@@ -23,7 +23,7 @@ struct
     | SOME i => SOME(Word32.fromLargeInt i)
 
   val fromInt = Word32.fromInt
-    
+
   val toString = tostring
   val fromString = fromstring
   val toInt = Word32.toIntX

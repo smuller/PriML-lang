@@ -886,110 +886,110 @@ structure Primitive =
 struct
 open Primitive
 
-structure Int8 = 
+structure Int8 =
    struct
       open Int8
       local
-         structure S = MkNum1(struct 
-                                 open Int8 
-                                 type num = int 
+         structure S = MkNum1(struct
+                                 open Int8
+                                 type num = int
                               end)
       in
          open S
       end
    end
-structure Int16 = 
+structure Int16 =
    struct
       open Int16
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Int16
-                                 type num = int 
+                                 type num = int
                               end)
       in
          open S
       end
    end
-structure Int32 = 
+structure Int32 =
    struct
       open Int32
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Int32
-                                 type num = int 
+                                 type num = int
                               end)
       in
          open S
       end
    end
-structure Int64 = 
+structure Int64 =
    struct
       open Int64
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Int64
-                                 type num = int 
+                                 type num = int
                               end)
       in
          open S
       end
    end
-structure IntInf = 
+structure IntInf =
    struct
       open IntInf
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open IntInf
-                                 type num = int 
+                                 type num = int
                               end)
       in
          open S
       end
    end
 
-structure Word8 = 
+structure Word8 =
    struct
       open Word8
       local
-         structure S = MkNum1(struct 
-                                 open Word8 
-                                 type num = word 
+         structure S = MkNum1(struct
+                                 open Word8
+                                 type num = word
                               end)
       in
          open S
       end
    end
-structure Word16 = 
+structure Word16 =
    struct
       open Word16
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Word16
-                                 type num = word 
+                                 type num = word
                               end)
       in
          open S
       end
    end
-structure Word32 = 
+structure Word32 =
    struct
       open Word32
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Word32
-                                 type num = word 
+                                 type num = word
                               end)
       in
          open S
       end
    end
-structure Word64 : PRIM_WORD = 
+structure Word64 : PRIM_WORD =
    struct
       open Word64
       local
-         structure S = MkNum1(struct 
+         structure S = MkNum1(struct
                                  open Word64
-                                 type num = word 
+                                 type num = word
                               end)
       in
          open S

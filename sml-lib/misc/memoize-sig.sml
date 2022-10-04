@@ -25,18 +25,18 @@ sig
   (* memoize a recursive function. it gets a memoized version of itself
      to call recursively as an argument. *)
   val memoizerec : ('arg, 'res) tabler ->
-    (('arg -> 'res) -> 'arg -> 'res) -> 
+    (('arg -> 'res) -> 'arg -> 'res) ->
     'arg -> 'res
 
-  (* for convenience when the argument is an equality type; 
+  (* for convenience when the argument is an equality type;
      same as: memoize (eq_tabler op=) *)
   val memoize'' : (''arg -> 'res) -> ''arg -> 'res
 
-  (* Example: 
+  (* Example:
 
      fun fact self 0 = 1
        | fact self n = n * self(n - 1)
-     
+
      val mf = memoizerec (cmp_tabler Int.compare) fact
 
      *)

@@ -1,7 +1,7 @@
 (* Modified by sweeks@acm.org on 2000-8-24.
  * Ported to MLton
  *)
-   
+
 (* lib-base-sig.sml
  *
  * COPYRIGHT (c) 1993 by AT&T Bell Laboratories.  See COPYRIGHT file for details.

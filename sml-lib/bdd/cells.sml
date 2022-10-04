@@ -157,7 +157,7 @@ struct
     fun new ({ typ, flags, island_index, xf, sweep, linear_velocity,
     angular_velocity, force, torque, world, prev, next, fixture_list,
     fixture_count, joint_list, contact_list, mass, inv_mass, i, inv_i,
-    linear_damping, angular_damping, sleep_time, data }) = 
+    linear_damping, angular_damping, sleep_time, data }) =
       B { typ = ref typ, flags = ref flags, island_index = ref island_index, xf
       = ref xf, sweep = ref sweep, linear_velocity = ref linear_velocity,
       angular_velocity = ref angular_velocity, force = ref force, torque = ref
@@ -195,7 +195,7 @@ struct
     fun set_sensor (F { sensor, ... }, v) = sensor := v
     fun set_data (F { data, ... }, v) = data := v
     fun new ({ aabb, density, next, body, shape, friction, restitution, proxy,
-    filter, sensor, data }) = 
+    filter, sensor, data }) =
       F { aabb = ref aabb, density = ref density, next = ref next, body = ref
       body, shape = ref shape, friction = ref friction, restitution = ref
       restitution, proxy = ref proxy, filter = ref filter, sensor = ref sensor,
@@ -224,7 +224,7 @@ struct
     fun set_manifold (C { manifold, ... }, v) = manifold := v
     fun set_toi_count (C { toi_count, ... }, v) = toi_count := v
     fun new ({ flags, prev, next, node_a, node_b, fixture_a, fixture_b,
-    manifold, toi_count }) = 
+    manifold, toi_count }) =
       C { flags = ref flags, prev = ref prev, next = ref next, node_a = ref
       node_a, node_b = ref node_b, fixture_a = ref fixture_a, fixture_b = ref
       fixture_b, manifold = ref manifold, toi_count = ref toi_count }
@@ -241,7 +241,7 @@ struct
     fun set_contact (E { contact, ... }, v) = contact := v
     fun set_prev (E { prev, ... }, v) = prev := v
     fun set_next (E { next, ... }, v) = next := v
-    fun new ({ other, contact, prev, next }) = 
+    fun new ({ other, contact, prev, next }) =
       E { other = ref other, contact = ref contact, prev = ref prev, next = ref
       next }
     fun eq (E { other, ... }, E { other = r___, ... }) =
@@ -281,7 +281,7 @@ struct
     fun set_inv_i_b (J { inv_i_b, ... }, v) = inv_i_b := v
     fun new ({ flags, typ, prev, next, edge_a, edge_b, body_a, body_b, data,
     local_center_a, local_center_b, inv_mass_a, inv_i_a, inv_mass_b, inv_i_b })
-    = 
+    =
       J { flags = ref flags, typ = ref typ, prev = ref prev, next = ref next,
       edge_a = ref edge_a, edge_b = ref edge_b, body_a = ref body_a, body_b =
       ref body_b, data = ref data, local_center_a = ref local_center_a,
@@ -300,7 +300,7 @@ struct
     fun set_joint (G { joint, ... }, v) = joint := v
     fun set_prev (G { prev, ... }, v) = prev := v
     fun set_next (G { next, ... }, v) = next := v
-    fun new ({ other, joint, prev, next }) = 
+    fun new ({ other, joint, prev, next }) =
       G { other = ref other, joint = ref joint, prev = ref prev, next = ref
       next }
     fun eq (G { other, ... }, G { other = r___, ... }) =
@@ -354,7 +354,7 @@ struct
     allow_sleep, ground_body, goodbye_joint_hook, goodbye_fixture_hook,
     inv_dt0, warm_starting, continuous_physics, broad_phase, contact_list,
     contact_count, should_collide, begin_contact, end_contact, pre_solve,
-    post_solve }) = 
+    post_solve }) =
       W { flags = ref flags, body_list = ref body_list, joint_list = ref
       joint_list, body_count = ref body_count, joint_count = ref joint_count,
       gravity = ref gravity, allow_sleep = ref allow_sleep, ground_body = ref

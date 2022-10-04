@@ -6,7 +6,7 @@
  * Adapted from the TIL benchmark suite by Allyn Dimock:
  * update to SML '97, Standard Basis Library, comment out unreachable code
  * Original code from Thomas Yan, who has given his permission for this
- * code be used as a benchmarking code for SML compilers 
+ * code be used as a benchmarking code for SML compilers
  * (e-mail message Tue, 10 Apr 2001 13:07:44 -0400 (EDT))
  *
  * The data structure for the intermediate results is described in
@@ -48,7 +48,7 @@ infix 7 smlnj_mod
 infix 7 smlnj_div
 
 exception Tabulate
-fun tabulate (i,f) = 
+fun tabulate (i,f) =
   if i <= 0 then raise Tabulate else
     let val a = array1(i,f 0)
       fun tabify j = if j < i then (update1(a,j,f j); tabify (j+1)) else a
@@ -87,7 +87,7 @@ structure Util = struct
                       fun copy ~1 = (update1(arr',i,[obj]); arr')
                         | copy j = (update1(arr',j,sub1(arr,j));
                                     copy(j-1))
-                      in copy(len-1) end 
+                      in copy(len-1) end
           in res
           end
 
@@ -95,7 +95,7 @@ structure Util = struct
     fun arrayoflists [] = arrayoflist []
       | arrayoflists ([]::ls) = arrayoflists ls
       | arrayoflists [l] = arrayoflist l
-      | arrayoflists (ls as (obj0::_)::_) = let  
+      | arrayoflists (ls as (obj0::_)::_) = let
           val a = array1(revfold (fn (l,n) => length l + n) ls 0,obj0)
           fun ins (i,[]) = i | ins (i,x::l) = (update1(a,i,x); ins(i+1,l))
           fun insert (i,[]) = a | insert (i,l::ll) = insert(ins(i,l),ll)
@@ -123,9 +123,9 @@ structure Util = struct
                         | Greater => (swap (k,hi-1); partition (lo,k,hi-1))
                 val (lo,hi) = partition (i,i,j)
                 in s(i,lo,pivot::s(hi,j,acc)) end
-           val res = s(0,length1 a,[]) 
+           val res = s(0,length1 a,[])
 
-          in 
+          in
            res
           end
 end
@@ -236,12 +236,12 @@ structure M = struct (* MONO *)
                                   else (* u>v *)   Util.Greater
           in fn (M m,M m') => cmp(m,m') end
 
-    fun display (M (l : int list)) : string = 
+    fun display (M (l : int list)) : string =
       let
         fun dv v = if v<26 then chr (v+ord #"a") else chr (v-26+ord #"A")
         fun d (vv,acc) = let val v = vv>>16 and p = vv andb 65535
                          in if p=1 then dv v::acc
-                            else 
+                            else
                               (dv v)::(String.explode (Int.toString p)) @ acc
                          end
       in String.implode(fold d l []) end
@@ -254,8 +254,8 @@ structure M = struct (* MONO *)
                 in if uu = (v andb ~65536) then let
                       val w = u + (v andb 65535)
                       in if uu = (w andb ~65536) then w::mul(us,vs)
-                         else 
-                           (Util.illegal 
+                         else
+                           (Util.illegal
                             (String.concat ["Mono.multiply overflow: ",
                                             display (M(u::us)),", ",
                                             display (M(v::vs))]))
@@ -299,7 +299,7 @@ structure MI = struct (* MONO_IDEAL *)
                             (* tag, encoded (var,pwr) and children *)
     datatype 'a mono_ideal = MI of (int * 'a mono_trie) ref
                             (* int maxDegree = least degree > all elements *)
-    
+
     fun rev ([],l) = l | rev (x::xs,l) = rev(xs,x::l)
 (* unused code
     fun tl (_::l) = l | tl [] = raise (Util.Impossible "MONO_IDEAL.tl")
@@ -313,7 +313,7 @@ structure MI = struct (* MONO_IDEAL *)
 *)
 
     val lshift = op <<
-(* unused code unless decode is used 
+(* unused code unless decode is used
     val rshift = op >>
 *)
     val andb = op &&
@@ -329,7 +329,7 @@ structure MI = struct (* MONO_IDEAL *)
     fun smallerVar (vp,vp') = vp < andb(vp',~65536)
 
     exception Found
-    fun search (MI(x),M.M m') = let 
+    fun search (MI(x),M.M m') = let
           val (d,mt) = !x
           val result = ref NONE
           (* exception Found of M.mono * '_a *)
@@ -343,7 +343,7 @@ structure MI = struct (* MONO_IDEAL *)
                 if smallerVar(vp',vp) then s'(m',m,trie)
                 else if grabPwr vp = 0 then (s(vp'::m',m,child);
                                              s'(vp'::m',m,children))
-                else if smallerVar(vp,vp') then NONE 
+                else if smallerVar(vp,vp') then NONE
                 else if vp<=vp' then (s(m',vp::m,child);
                                       s'(vp'::m',m,children))
                 else NONE
@@ -363,7 +363,7 @@ structure MI = struct (* MONO_IDEAL *)
                       if vp<vp' then (vp,i(m,emptyTrie))::(vp',child)::children
                       else if vp=vp' then (vp',i(m,child))::children
                       else (vp',child) :: j children
-                in 
+                in
                    if smallerVar(vp,vp') then
                        MT(a',[(grabVar vp,MT(NONE,trie)),(vp,i(m,emptyTrie))])
                    else if smallerVar(vp',vp) then i(grabVar vp'::vp::m,mt)
@@ -371,11 +371,11 @@ structure MI = struct (* MONO_IDEAL *)
                 end
           in mi := (Int.max(d,M.deg m),i (rev(map encode(M.explode m),[]),mt)) end
 
-    fun mkIdeal [] = mkEmpty() 
+    fun mkIdeal [] = mkEmpty()
       | mkIdeal (orig_ms : (M.mono * '_a) list)= let
           fun ins ((m,a),arr) = Util.insert((m,a),M.deg m,arr)
           val msa = arrayoflist orig_ms
-          val ms : (M.mono * '_a) list = 
+          val ms : (M.mono * '_a) list =
               Util.stripSort (fn ((m,_),(m',_)) => M.compare (m,m')) msa
           val buckets = revfold ins ms (array1(0,[]))
           val n = length1 buckets
@@ -429,15 +429,15 @@ fun pair(l,r) = let
       val a = sub1(counts,l)
       in update1(a,r,sub1(a,r)+1) end
 (* unused code unless printCounts is used
-fun getCounts () = 
+fun getCounts () =
   map (fn i => map (fn j => sub1(sub1(counts,i),j)) indices) indices
 *)
 
 structure P = struct
 
     datatype poly = P of (F.field*M.mono) list (* descending mono order *)
-(*      
-    fun show (P x) = (print "[ "; 
+(*
+    fun show (P x) = (print "[ ";
                       app (fn (f, m) =>
                            (print "("; F.show f; print ","; M.show m; print ") ")) x;
                       print " ]")
@@ -486,7 +486,7 @@ in
 
 (* unused code unless power is used
     val multiply = let
-          fun times (p1,p2) = 
+          fun times (p1,p2) =
                 revfold (fn ((a,m),tot) => plus (termMult(a,m,p2),tot)) p1 []
           in fn (P p1,P p2) => if length p1 > length p2 then P(times (p2,p1))
                                else P(times (p1,p2))
@@ -494,11 +494,11 @@ in
 *)
 
 (* unused code
-    fun singleReduce (P y,a,m,P x) = 
+    fun singleReduce (P y,a,m,P x) =
       (pair(length y,length x); P(minus(y,termMult(a,m,x))))
 *)
 
-    fun spair (a,m,P f,b,n,P g) = 
+    fun spair (a,m,P f,b,n,P g) =
       (pair(length f,length g); P(minus(termMult(a,m,f),termMult(b,n,g))))
     val termMult = fn (a,m,P f) => P(termMult(a,m,f))
 end
@@ -563,7 +563,7 @@ end
     fun display (P []) = F.display F.zero
       | display (P p) = let
           fun dsp (a,m) = let
-                val s = 
+                val s =
                       if M.deg m = 0 then F.display a
                       else if F.equal(F.one,F.negate a) then "-" ^ M.display m
                       else if F.equal(F.one,a) then M.display m
@@ -699,18 +699,18 @@ structure G = struct
           val tasksleft = ref 0
           fun feedback () = let
                 val n = !tasksleft
-                in 
-                    if (n && 15)=0 then print (Int.toString n) else (); 
-                        print "."; 
+                in
+                    if (n && 15)=0 then print (Int.toString n) else ();
+                        print ".";
                         TextIO.flushOut TextIO.stdOut;
                         tasksleft := n-1
                 end
 
-          fun try h = 
+          fun try h =
               let
                   val _ = feedback ()
                   val h = reduce(h,mi)
-              in if P.isZero h 
+              in if P.isZero h
                      then ()
                  else let val h = mkMonic h
                           val _ = (print "#"; TextIO.flushOut TextIO.stdOut)
@@ -725,7 +725,7 @@ structure G = struct
                 fun tryPair i = if i=0 then () else let
                       val ((b,n),g) = P.leadAndRest (sub1(fgs,i))
                       val k = M.lcm(m,n)
-                      in 
+                      in
                          try (P.spair(b,M.divide(k,m),f,a,M.divide(k,n),g));
                          tryPair (i-1)
                       end
@@ -742,10 +742,10 @@ pr ["DEGREE ",Int.toString d," with ",
     if d>=length1 fs then "0" else Int.toString(length(sub1(fs,d))),
       " generators to do"];
                  tasksleft := numPairs(sub1(!pairs,d),0);
-                 if d>=length1 fs then () 
+                 if d>=length1 fs then ()
                  else tasksleft := !tasksleft + length (sub1(fs,d));
                    if d>(!maxDeg) then ()
-                   else (             
+                   else (
                          reset();
                          newDegGens := [];
                          app tryPairs (sub1(!pairs,d));
@@ -834,7 +834,7 @@ fun read filename = let
       val _ = close_in stream
       in i end
 *)
-end (* local *) 
+end (* local *)
 
 end (* structure G *)
 
@@ -891,7 +891,7 @@ end
 
 (* Unused code unless analyze is used
 fun sort [] = []
-  | sort a = 
+  | sort a =
 let
     val a = arrayoflist a
     val b = tabulate(length1 a,fn i => i)
@@ -933,30 +933,30 @@ fun analyze gb = let
     end
 *)
 
-fun gb fs = 
+fun gb fs =
   let
     val g = G.grobner fs handle (Util.Illegal s) => (print s; raise Div)
     val fs = grab g
     fun info f = app print
-      [M.display(P.leadMono f), 
+      [M.display(P.leadMono f),
        " + ", Int.toString(P.numTerms f - 1), " terms\n"]
   in app info fs end
 
 
 fun report (e as Tabulate) = (print "exn: Tabulate\n"; raise e)
   | report (e as ArrayofList) = (print "exn: ArrayofList\n"; raise e)
-  | report (e as (Util.NotImplemented s)) = 
+  | report (e as (Util.NotImplemented s)) =
   (print ("exn: NotImplemented " ^ s ^ "\n"); raise e)
-  | report (e as (Util.Impossible s)) = 
+  | report (e as (Util.Impossible s)) =
   (print ("exn: Impossible " ^ s ^ "\n"); raise e)
-  | report (e as (Util.Illegal s)) = 
+  | report (e as (Util.Illegal s)) =
   (print ("exn: Illegal " ^ s ^ "\n"); raise e)
   | report (e as (M.DoesntDivide)) = (print ("exn: DoesntDivide\n"); raise e)
   | report (e as (MI.Found)) = (print ("exn: Found\n"); raise e)
 
 
 (* rather long running test case  *)
-(* val fs = map G.parsePoly 
+(* val fs = map G.parsePoly
  *   ["-El-Dh-Cd+Bo+xn+tm","-Fo+Ep-Ek-Dg-Cc+Ao+wn+sm","-Fn-Ej+Dp-Df-Cb+zo+vn+rm",
  *    "-Fm-Ei-De+Cp-Ca+yo+un+qm","Fl-Bp+Bk-Al-zh-yd+xj+ti","El-Bo-zg-yc+wj+si",
  *    "Dl-Bn-Aj+zk-zf-yb+vj+ri","Cl-Bm-Ai-ze+yk-ya+uj+qi",
@@ -976,20 +976,20 @@ fun report (e as Tabulate) = (print "exn: Tabulate\n"; raise e)
 
 (* val u5 = map G.parsePoly ["abcde-f5","a+b+c+d+e","ab+bc+cd+de+ea",
  *                        "abc+bcd+cde+dea+eab","abcd+bcde+cdea+deab+eabc"]
- * 
+ *
  * val u4 = map G.parsePoly ["abcd-e4","a+b+c+d","ab+bc+cd+da","abc+bcd+cda+dab"]
- * 
+ *
  *)
 
-(* fun runit () = 
+(* fun runit () =
  *   let
- *     val _ = (print "Enter fs, u7, u6, u5, or u4: "; 
+ *     val _ = (print "Enter fs, u7, u6, u5, or u4: ";
  *           TextIO.flushOut TextIO.stdOut)
  *     val s = TextIO.inputN(TextIO.stdIn,2)
- *     val data = 
- *       if (s = "fs") then fs else if (s = "u7") then u7 
- *       else if (s = "u6") then u6 else if (s = "u5") then u5 
- *       else if (s = "u4") then u4 else 
+ *     val data =
+ *       if (s = "fs") then fs else if (s = "u7") then u7
+ *       else if (s = "u6") then u6 else if (s = "u5") then u5
+ *       else if (s = "u4") then u4 else
  *      (print "no such data\n"; raise (Util.Impossible "no such data"))
  *   in
  *     gb data handle e => report e

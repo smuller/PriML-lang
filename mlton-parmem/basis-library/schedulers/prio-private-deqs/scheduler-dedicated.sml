@@ -244,7 +244,7 @@ fun timerStrings () =
     , counterString ("new thd", newThreadCounter)
     , counterString ("switch", switchCounter)
     ]
-    
+
 val _ = OS.Process.atExit (fn _ =>
   if not doInstrument then ()
   else print (timerStrings () ^ "\n"))
@@ -299,7 +299,7 @@ fun requestOfPR (p, r) =
     (P.toInt r) * numberOfProcessors + p
 
 fun dealAttempt (p, r) =
-    let val t1 = timerNow () 
+    let val t1 = timerNow ()
         val req = !(V.sub (reqCells, p))
         fun randP () =
             let val p' = R.randInt (0, numberOfProcessors - 2)

@@ -7,7 +7,7 @@
 
 structure Exit =
    struct
-      structure Status = 
+      structure Status =
          struct
             open PreOS.Status
             val fromInt = fromRep o C_Status.fromInt

@@ -4,7 +4,7 @@
 
 structure Nonce =
 struct
-  
+
   val words = ref
    ["cat", "dog", "toy", "robot", "shirt", "house", "helicopter",
     "comb", "skeletor", "kimono", "beard", "police", "olestra",

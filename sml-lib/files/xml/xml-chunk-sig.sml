@@ -43,15 +43,15 @@ sig
      completion rate. *)
   val consume_file_progress : (real -> unit) -> (chunk -> unit) -> string -> unit
 
-  (* process_file f infile outfile 
+  (* process_file f infile outfile
 
      Apply the function to each chunk in the file, writing them to the
      output file. Text "" can be used to delete chunks, though it's
      the caller's prerogative to keep tags properly nested. *)
   val process_file : (chunk -> chunk) -> string -> string -> unit
 
-  (* process_file progress f infile outfile 
-     
+  (* process_file progress f infile outfile
+
      Same, but periodically call the progress function with a
      monotonically increasing number in [0, 1] giving the current
      completion rate. *)

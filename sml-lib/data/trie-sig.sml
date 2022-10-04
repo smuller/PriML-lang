@@ -1,6 +1,6 @@
 (* A trie is a data structure that efficiently stores a set of strings
    (over an arbitrary alphabet) with associated data. It allows efficient
-   queries (or traversals) of the set on prefixes of strings. 
+   queries (or traversals) of the set on prefixes of strings.
 
    The trie is built as a functor (TrieFn) over the argument signature
    TRIEARG below. The structure Trie is also supplied with char = Char.char
@@ -22,7 +22,7 @@ sig
 
     (* same as insertwith #2 *)
     val insert : 'a trie -> string -> 'a -> unit
-    (* insertwith combine t key value 
+    (* insertwith combine t key value
        inserts key into the trie t. If the key is not already present,
        associate the given value. If it is present with value 'old',
        associate the value combine(old, value).
@@ -49,7 +49,7 @@ signature TRIEARG =
 sig
     type char
     type string
-        
+
     (* dense map of characters to integers *)
     val ord : char -> int
     val chr : int -> char

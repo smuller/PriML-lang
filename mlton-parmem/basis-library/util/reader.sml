@@ -76,4 +76,4 @@ fun reader4 reader =
    map (fn [w, x, y, z] => (w, x, y, z) | _ => raise Fail "Reader.reader4")
    (readerN (reader, 4))
 
-end   
+end

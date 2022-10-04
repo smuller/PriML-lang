@@ -8,10 +8,10 @@ struct
     fun tabulate (n, f) = ref { zero = 0, data = Array.tabulate(n, f) }
     fun fromList l = ref { zero = 0, data = Array.fromList l }
 
-    fun rotate_left (r as ref { zero, data }) = 
+    fun rotate_left (r as ref { zero, data }) =
         r := { zero = (zero + 1) mod (Array.length data), data = data }
 
-    fun rotate_right (r as ref { zero, data }) = 
+    fun rotate_right (r as ref { zero, data }) =
         r := { zero = (zero - 1) mod (Array.length data), data = data }
 
     (* Last element. Element zero falls off. *)
@@ -52,7 +52,7 @@ struct
             ArraySlice.app f first;
             ArraySlice.app f second
         end
-  
+
     fun tolist b = List.tabulate (length b, fn x => sub(b, x))
 
 end

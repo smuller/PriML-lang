@@ -1,6 +1,6 @@
 (*
  Test various basis library functions.  Quite incomplete.
- 
+
  This program should terminate without raising an exception and without
  printing anything if no bugs are discovered.
  If a bug is discovered, "assertion failed:" will be printed, followed
@@ -22,11 +22,11 @@ local
    val copy = fn {src, si, len, dst, di} =>
       ArraySlice.copy {src = ArraySlice.slice (src, si, len),
                        dst = dst, di = di}
-   fun appi f (arr, s, l) = 
+   fun appi f (arr, s, l) =
       ArraySlice.appi (fn (i,x) => f (i+s,x)) (ArraySlice.slice (arr, s, l))
 
    val a0 = array (0,())
-      
+
    val a1 = array (100,1)
 
    val a2 = fromList [0,1,2]
@@ -44,7 +44,7 @@ local
 
    val a5 = array (100, 0)
    val _ = appi (fn (i,_) => update (a5,i,i)) (a5, 0, NONE)
-      
+
    val _ =
       List.app assert
       [("Array.length 0", length a0 = 0),
@@ -67,7 +67,7 @@ local
       in update (a, i, sub (a,j)) ;
          update (a, j, t)
       end
-   
+
    fun bubbleSort (a, op <) =
       let val n = length a
          fun loop i =

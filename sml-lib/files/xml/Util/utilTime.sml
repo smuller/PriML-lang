@@ -12,8 +12,8 @@
 (*--------------------------------------------------------------------------*)
 signature UtilTime =
    sig
-      val time  : ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time } 
-      val timeN : int -> ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time } 
+      val time  : ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time }
+      val timeN : int -> ('a -> 'b) -> 'a -> 'b * {usr:Time.time, sys:Time.time }
    end
 
 structure UtilTime : UtilTime =
@@ -26,11 +26,11 @@ structure UtilTime : UtilTime =
 			 val ptime = Timer.checkCPUTimer timer
 		     in (y,ptime)
 		     end
-		  
+
       (*--------------------------------------------------------------------*)
       (* run f n times on x, and measure the runtime. return the time.      *)
       (*--------------------------------------------------------------------*)
-      fun timeN n f x = 
+      fun timeN n f x =
 	 let fun iter m = if m<=1 then f x else (ignore (f x); iter (m-1))
 	 in time iter n
 	 end

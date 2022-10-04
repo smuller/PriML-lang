@@ -1,6 +1,6 @@
 (* sharing on a non-object *)
 val () = MLton.share 13
-   
+
 (* tuple option array *)
 val a = Array.tabulate (100, fn i => SOME (i mod 2, i mod 3))
 val () = Array.update (a, 0, NONE)
@@ -11,7 +11,7 @@ fun msg () =
                   print (concat [Int.toString i, " => ",
                                  case z of
                                     NONE => "NONE"
-                                  | SOME (a, b) => 
+                                  | SOME (a, b) =>
                                        concat ["(", Int.toString a, ", ",
                                                Int.toString b, ")"],
                                  "\n"])) a)
@@ -32,7 +32,7 @@ fun msg () =
                   print (concat [Int.toString i, " => ",
                                  case z of
                                     NONE => "NONE"
-                                  | SOME (a, b) => 
+                                  | SOME (a, b) =>
                                        concat ["(", Int.toString a, ", ",
                                                Int.toString b, ")"],
                                        "\n"])) a)
@@ -41,7 +41,7 @@ val () = MLton.share a
 val () = msg ()
 
 (* tuple option ref array *)
-   
+
 val a = Array.tabulate (100, fn i => ref (SOME (i mod 2, i mod 3)))
 val () = Array.sub (a, 0) := NONE
 
@@ -51,7 +51,7 @@ fun msg () =
                   print (concat [Int.toString i, " => ",
                                  case !z of
                                     NONE => "NONE"
-                                  | SOME (a, b) => 
+                                  | SOME (a, b) =>
                                        concat ["(", Int.toString a, ", ",
                                                Int.toString b, ")"],
                                  "\n"])) a)
@@ -71,10 +71,10 @@ fun msg () =
    print (concat ["size of a is ", Int.toString (MLton.size a), "\n",
                   case Array.sub (a, 1) of
                      NONE => "NONE"
-                   | SOME (a, b) => 
+                   | SOME (a, b) =>
                         concat ["(", Int.toString a, ", ", Int.toString b, ")"],
                         "\n"])
-   
+
 val () = msg ()
 val () = MLton.share a
 val () = msg ()
@@ -106,7 +106,7 @@ val a =
 fun p () = print (concat ["size is ", Int.toString (MLton.size a), "\n"])
 
 val () = p ()
-   
+
 val () = MLton.share a
 
 val () = p ()
@@ -118,13 +118,13 @@ val s1 = Array.sub (a, 1)
 val () = print (concat [s0, " ", s1, "\n"])
 
 (* sharing of vectors in a tuple *)
-   
+
 val t = ("abcdef", concat ["abc", "def"])
 
 fun p () = print (concat ["size is ", Int.toString (MLton.size t), "\n"])
 
 val () = p ()
-   
+
 val () = MLton.share t
 
 val () = p ()
@@ -148,4 +148,4 @@ val s1 = Array.sub (a, 1)
 val () =
    print (concat [Int.toString (size s0), " ",
                   Int.toString (size s1), "\n"])
-   
+

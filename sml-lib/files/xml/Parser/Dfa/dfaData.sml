@@ -7,11 +7,11 @@
 (* Depends on:                                                              *)
 (*                                                                          *)
 (* Exceptions raised by functions in this structure:                        *)
-(*   boundsFollow : none                                                    *) 
-(*   mergeFirst   : ConflictFirst                                           *) 
-(*   mergeFollow  : ConflictFollow                                          *) 
+(*   boundsFollow : none                                                    *)
+(*   mergeFirst   : ConflictFirst                                           *)
+(*   mergeFollow  : ConflictFollow                                          *)
 (*--------------------------------------------------------------------------*)
-signature DfaData = 
+signature DfaData =
    sig
       type Dfa
 
@@ -20,7 +20,7 @@ signature DfaData =
        | CM_OPT of ContentModel
        | CM_REP of ContentModel
        | CM_PLUS of ContentModel
-       | CM_ALT of ContentModel list 
+       | CM_ALT of ContentModel list
        | CM_SEQ of ContentModel list
    end
 
@@ -32,15 +32,15 @@ structure DfaBase =
        | CM_OPT of ContentModel
        | CM_REP of ContentModel
        | CM_PLUS of ContentModel
-       | CM_ALT of ContentModel list 
+       | CM_ALT of ContentModel list
        | CM_SEQ of ContentModel list
 
       type Sigma = int
       type State = int
 
-      val dfaDontCare = ~2 
-      val dfaError    = ~1 
-      val dfaInitial  = 0 
+      val dfaDontCare = ~2
+      val dfaError    = ~1
+      val dfaInitial  = 0
 
       exception DfaTooLarge of int
       exception Ambiguous of Sigma * int * int
@@ -49,8 +49,8 @@ structure DfaBase =
 
       type Empty  = bool
       type First  = (State * Sigma) list
-      type Follow = First 
-	 
+      type Follow = First
+
       type Info = State * Empty * First
 
       datatype CM' =
@@ -64,10 +64,10 @@ structure DfaBase =
 
       type Row = Sigma * Sigma * State vector * bool
       val nullRow : Row = (1,0,Vector.fromList nil,false)
-	 
+
       type Dfa = Row vector
 
-      val emptyDfa : Dfa = Vector.fromList [(1,0,Vector.fromList nil,true)] 
+      val emptyDfa : Dfa = Vector.fromList [(1,0,Vector.fromList nil,true)]
    end
 
 structure DfaData = DfaBase : DfaData

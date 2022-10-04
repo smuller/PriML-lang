@@ -61,7 +61,7 @@ structure Cobol = struct
 
   type qualification = string
 
-  datatype qualifications = 
+  datatype qualifications =
     SEVERAL_QUALIFICATIONS of qualifications * qualification
   | NO_QUALIFICATIONS
 
@@ -115,7 +115,7 @@ structure Cobol = struct
   | GREATER_OR_EQUAL
   | LESS_OR_EQUAL
 
-  datatype sign_specification = 
+  datatype sign_specification =
     SIGN_SPECIFICATION_IS_POSITIVE
   | SIGN_SPECIFICATION_IS_NEGATIVE
   | SIGN_SPECIFICATION_IS_ZERO
@@ -282,7 +282,7 @@ structure Cobol = struct
   | TS2K of ts2k * pos * pos
   | TS2K_EXPANDS of identifier * pos * pos
   | TS2K_FIRST_OR_FINAL
-   END-CHANGED-MHS *)  
+   END-CHANGED-MHS *)
 
   datatype record_description_entries =
     RECORD_DESCRIPTION_ENTRIES of record_description_entries *
@@ -312,7 +312,7 @@ structure Cobol = struct
   datatype record_contains_clause =
     RECORD_CONTAINS of integer_range
 
-  datatype data_records_clause = 
+  datatype data_records_clause =
     DATA_RECORD_IS of data_names
 
   datatype sort_description_clause =
@@ -369,7 +369,7 @@ structure Cobol = struct
                      top_bottom_specifications
            * pos * pos
   | CODE_SET_CLAUSE of string
-           * pos * pos             
+           * pos * pos
 
   datatype file_description_clauses =
     FILE_DESCRIPTION_CLAUSES of file_description_clauses *
@@ -382,7 +382,7 @@ structure Cobol = struct
   datatype file_and_sort_description_entry =
     FILE_DESCRIPTION_ENTRY of file_description_entry
   | SORT_DESCRIPTION_ENTRY of sort_description_entry
-    
+
   datatype file_description_paragraph =
     FILE_DESCRIPTION_PARAGRAPH of file_and_sort_description_entry *
                                   record_description_entries
@@ -441,7 +441,7 @@ structure Cobol = struct
     SIMPLE_CONDITION of simple_condition
   | NEGATED_CONDITION of conditional_expression
     (* the manual says NOT simple_expression, but example in fig 11-12 *)
-    (* tells a different story!!                                       *) 
+    (* tells a different story!!                                       *)
   | AND_CONDITION of conditional_expression * conditional_expression
   | OR_CONDITION of conditional_expression * conditional_expression
 
@@ -465,7 +465,7 @@ structure Cobol = struct
   | MOVECORRESPONDING of identifier * identifier * pos * pos
 
   datatype from_environment =
-    NO_FROM 
+    NO_FROM
   | FROM of string * pos * pos
 
   datatype accept_statement =
@@ -617,7 +617,7 @@ structure Cobol = struct
                                                    sections *
                                                    pos * pos
   | PROCEDURE_DIVISION_FORMAT_2 of using_clause *
-                                   paragraphs * 
+                                   paragraphs *
                                    pos * pos
   | EMPTY_PROCEDURE_DIVISION
      (* no procedure division allowed by our parser though mandatory in S/36 *)
@@ -633,7 +633,7 @@ structure Cobol = struct
   | NO_DATA_DIVISION
 
   datatype environment_division =
-    ENVIRONMENT_DIVISION of 
+    ENVIRONMENT_DIVISION of
                             configuration_section *
                             input_output_section
   | NO_ENVIRONMENT_DIVISION
@@ -684,8 +684,8 @@ datatype cexpression =
 
 
 
-             
-structure MlyValue = 
+
+structure MlyValue =
 struct
 datatype svalue = VOID | ntVOID of unit | PSEUDOTEXT of  (string)
  | USERDEFINEDWORD of  (string) | PICTURESTRING of  (string)
@@ -832,8 +832,8 @@ exception Hojfeld of string
 (*og s: LrTable.NT |-> hojfelds_NT*)
 
 (*TODO 13/01/1998 14:54. hojfeld.: mine erklringer slut*)
-  
-fun actions(i392:int, defaultPos:pos, stack:(unit (*LrTable.state*) * (svalue * pos * pos)) list,  
+
+fun actions(i392:int, defaultPos:pos, stack:(unit (*LrTable.state*) * (svalue * pos * pos)) list,
             ():arg
             ) =
 case (i392, stack) of
@@ -847,16 +847,16 @@ case (i392, stack) of
 | (7, _) => raise Hojfeld "7"   (*act7(stack)*)
 | (8, _) => raise Hojfeld "8"   (*act8(stack,defaultPos)*)
 | (9, _) => raise Hojfeld "9"   (*act9(stack)*)
-| (10,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (10,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 76,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right)
 ,rest671) end
 | (11,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.data_name((USERDEFINEDWORD))
  in (hojfelds_NT 96,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right)
 ,rest671) end
-| (12,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (12,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 98,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right)
 ,rest671) end
@@ -869,44 +869,44 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 98,(result,USERDEFINEDWORD1left,qdata_name1right),
 rest671) end
-| (15,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (15,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 389,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (16,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.file_name((USERDEFINEDWORD))
  in (hojfelds_NT 200,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (17,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.index_name((USERDEFINEDWORD))
  in (hojfelds_NT 244,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (18,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.mnemonic_name((USERDEFINEDWORD))
  in (hojfelds_NT 309,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
-| (19,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (19,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 415,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
-| (20,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (20,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 291,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
-| (21,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (21,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 374,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (22,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.text_name((USERDEFINEDWORD))
  in (hojfelds_NT 486,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (23,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.paragraph_name((USERDEFINEDWORD))
  in (hojfelds_NT 357,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
@@ -914,7 +914,7 @@ result=MlyValue.paragraph_name((USERDEFINEDWORD))
 rest671) => let val result=MlyValue.paragraph_name((INTEGER))
  in (hojfelds_NT 357,(result,INTEGER1left,INTEGER1right),rest671) end
 | (25,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.section_name((USERDEFINEDWORD))
  in (hojfelds_NT 422,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
@@ -925,15 +925,15 @@ rest671) => let val result=MlyValue.section_name((INTEGER))
 rest671) => let val result=MlyValue.level_number((INTEGER))
  in (hojfelds_NT 290,(result,INTEGER1left,INTEGER1right),rest671) end
 | (28,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,
-USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val 
+USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => let val
 result=MlyValue.system_name((USERDEFINEDWORD))
  in (hojfelds_NT 478,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
-| (29,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (29,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 74,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right)
 ,rest671) end
-| (30,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (30,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 286,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
@@ -952,18 +952,18 @@ MlyValue.figurative_constant((Cobol.SPACE))
 | (35,(_,(_,SPACES1left,SPACES1right))::rest671) => let val result=
 MlyValue.figurative_constant((Cobol.SPACE))
  in (hojfelds_NT 288,(result,SPACES1left,SPACES1right),rest671) end
-| (36,(_,(_,HIGHVALUE1left,HIGHVALUE1right))::rest671) => let val 
+| (36,(_,(_,HIGHVALUE1left,HIGHVALUE1right))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.HIGHVALUE))
  in (hojfelds_NT 288,(result,HIGHVALUE1left,HIGHVALUE1right),rest671)
  end
-| (37,(_,(_,HIGHVALUES1left,HIGHVALUES1right))::rest671) => let val 
+| (37,(_,(_,HIGHVALUES1left,HIGHVALUES1right))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.HIGHVALUE))
  in (hojfelds_NT 288,(result,HIGHVALUES1left,HIGHVALUES1right),rest671)
  end
 | (38,(_,(_,LOWVALUE1left,LOWVALUE1right))::rest671) => let val result
 =MlyValue.figurative_constant((Cobol.LOWVALUE))
  in (hojfelds_NT 288,(result,LOWVALUE1left,LOWVALUE1right),rest671) end
-| (39,(_,(_,LOWVALUES1left,LOWVALUES1right))::rest671) => let val 
+| (39,(_,(_,LOWVALUES1left,LOWVALUES1right))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.LOWVALUE))
  in (hojfelds_NT 288,(result,LOWVALUES1left,LOWVALUES1right),rest671)
  end
@@ -973,50 +973,50 @@ MlyValue.figurative_constant((Cobol.QUOTE))
 | (41,(_,(_,QUOTES1left,QUOTES1right))::rest671) => let val result=
 MlyValue.figurative_constant((Cobol.QUOTE))
  in (hojfelds_NT 288,(result,QUOTES1left,QUOTES1right),rest671) end
-| (42,(_,(_,_,ZERO1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (42,(_,(_,_,ZERO1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_ZERO))
  in (hojfelds_NT 288,(result,ALL1left,ZERO1right),rest671) end
-| (43,(_,(_,_,ZEROS1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (43,(_,(_,_,ZEROS1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_ZERO))
  in (hojfelds_NT 288,(result,ALL1left,ZEROS1right),rest671) end
-| (44,(_,(_,_,ZEROES1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (44,(_,(_,_,ZEROES1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_ZERO))
  in (hojfelds_NT 288,(result,ALL1left,ZEROES1right),rest671) end
-| (45,(_,(_,_,SPACE1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (45,(_,(_,_,SPACE1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_SPACE))
  in (hojfelds_NT 288,(result,ALL1left,SPACE1right),rest671) end
-| (46,(_,(_,_,SPACES1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (46,(_,(_,_,SPACES1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_SPACE))
  in (hojfelds_NT 288,(result,ALL1left,SPACES1right),rest671) end
-| (47,(_,(_,_,HIGHVALUE1right))::(_,(_,ALL1left,_))::rest671) => let 
+| (47,(_,(_,_,HIGHVALUE1right))::(_,(_,ALL1left,_))::rest671) => let
 val result=MlyValue.figurative_constant((Cobol.ALL_HIGHVALUE))
  in (hojfelds_NT 288,(result,ALL1left,HIGHVALUE1right),rest671) end
-| (48,(_,(_,_,HIGHVALUES1right))::(_,(_,ALL1left,_))::rest671) => let 
+| (48,(_,(_,_,HIGHVALUES1right))::(_,(_,ALL1left,_))::rest671) => let
 val result=MlyValue.figurative_constant((Cobol.ALL_HIGHVALUE))
  in (hojfelds_NT 288,(result,ALL1left,HIGHVALUES1right),rest671) end
-| (49,(_,(_,_,LOWVALUE1right))::(_,(_,ALL1left,_))::rest671) => let 
+| (49,(_,(_,_,LOWVALUE1right))::(_,(_,ALL1left,_))::rest671) => let
 val result=MlyValue.figurative_constant((Cobol.ALL_LOWVALUE))
  in (hojfelds_NT 288,(result,ALL1left,LOWVALUE1right),rest671) end
-| (50,(_,(_,_,LOWVALUES1right))::(_,(_,ALL1left,_))::rest671) => let 
+| (50,(_,(_,_,LOWVALUES1right))::(_,(_,ALL1left,_))::rest671) => let
 val result=MlyValue.figurative_constant((Cobol.ALL_LOWVALUE))
  in (hojfelds_NT 288,(result,ALL1left,LOWVALUES1right),rest671) end
-| (51,(_,(_,_,QUOTE1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (51,(_,(_,_,QUOTE1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_QUOTE))
  in (hojfelds_NT 288,(result,ALL1left,QUOTE1right),rest671) end
-| (52,(_,(_,_,QUOTES1right))::(_,(_,ALL1left,_))::rest671) => let val 
+| (52,(_,(_,_,QUOTES1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((Cobol.ALL_QUOTE))
  in (hojfelds_NT 288,(result,ALL1left,QUOTES1right),rest671) end
 | (53,(_,(MlyValue.NONNUMERICLITERAL NONNUMERICLITERAL,_,
-NONNUMERICLITERAL1right))::(_,(_,ALL1left,_))::rest671) => let val 
+NONNUMERICLITERAL1right))::(_,(_,ALL1left,_))::rest671) => let val
 result=MlyValue.figurative_constant((
 Cobol.ALL_NONNUMERICLITERAL(NONNUMERICLITERAL)))
  in (hojfelds_NT 288,(result,ALL1left,NONNUMERICLITERAL1right),rest671)
  end
-| (54,(_,(_,LINAGECOUNTER1left,LINAGECOUNTER1right))::rest671) => let 
+| (54,(_,(_,LINAGECOUNTER1left,LINAGECOUNTER1right))::rest671) => let
 val result=MlyValue.special_register((Cobol.LINAGECOUNTER))
  in (hojfelds_NT 181,(result,LINAGECOUNTER1left,LINAGECOUNTER1right),
 rest671) end
-| (55,(_,(_,DEBUGITEM1left,DEBUGITEM1right))::rest671) => let val 
+| (55,(_,(_,DEBUGITEM1left,DEBUGITEM1right))::rest671) => let val
 result=MlyValue.special_register((Cobol.DEBUGITEM))
  in (hojfelds_NT 181,(result,DEBUGITEM1left,DEBUGITEM1right),rest671)
  end
@@ -1025,19 +1025,19 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 361,(result,PERIOD1left,PERIOD1right),rest671) end
 | (57,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 361,(result,defaultPos,defaultPos),rest671) end
-| (58,(_,(_,data_name1left,data_name1right))::rest671) => let val 
+| (58,(_,(_,data_name1left,data_name1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 100,(result,data_name1left,data_name1right),rest671)
  end
 | (59,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 100,(result,defaultPos,defaultPos),rest671) end
-| (60,(_,(_,procedure_name1left,procedure_name1right))::rest671) => 
+| (60,(_,(_,procedure_name1left,procedure_name1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 369,(result,procedure_name1left,procedure_name1right),
 rest671) end
 | (61,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 369,(result,defaultPos,defaultPos),rest671) end
-| (62,(_,(_,routine_name1left,routine_name1right))::rest671) => let 
+| (62,(_,(_,routine_name1left,routine_name1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 183,(result,routine_name1left,routine_name1right),
 rest671) end
@@ -1051,7 +1051,7 @@ Cobol.SEGMENT_NUMBER(INTEGER)))
 Cobol.NOSEGMENT_NUMBER))
  in (hojfelds_NT 428,(result,defaultPos,defaultPos),rest671) end
 | (66,(_,(MlyValue.data_name data_name,_,data_name1right))::(_,(
-MlyValue.data_names data_names,data_names1left,_))::rest671) => let 
+MlyValue.data_names data_names,data_names1left,_))::rest671) => let
 val result=MlyValue.data_names((
 Cobol.DATA_NAMES(data_names,data_name )))
  in (hojfelds_NT 97,(result,data_names1left,data_name1right),rest671)
@@ -1065,7 +1065,7 @@ Cobol.ONE_DATA_NAME(data_name)))
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 99,(result,qdata_names1left,qdata_name1right),rest671)
  end
-| (69,(_,(_,qdata_name1left,qdata_name1right))::rest671) => let val 
+| (69,(_,(_,qdata_name1left,qdata_name1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 99,(result,qdata_name1left,qdata_name1right),rest671)
  end
@@ -1073,12 +1073,12 @@ result=MlyValue.ntVOID(())
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 203,(result,file_names1left,file_name1right),rest671)
  end
-| (71,(_,(_,file_name1left,file_name1right))::rest671) => let val 
+| (71,(_,(_,file_name1left,file_name1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 203,(result,file_name1left,file_name1right),rest671)
  end
 | (72,(_,(MlyValue.index_name index_name,_,index_name1right))::(_,(
-MlyValue.index_names index_names,index_names1left,_))::rest671) => 
+MlyValue.index_names index_names,index_names1left,_))::rest671) =>
 let val result=MlyValue.index_names((
 Cobol.SEVERAL_INDEX_NAMES(index_names,index_name)))
  in (hojfelds_NT 245,(result,index_names1left,index_name1right),rest671
@@ -1092,34 +1092,34 @@ Cobol.ONE_INDEX_NAME(index_name)))
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 370,(result,procedure_names1left,procedure_name1right)
 ,rest671) end
-| (75,(_,(_,procedure_name1left,procedure_name1right))::rest671) => 
+| (75,(_,(_,procedure_name1left,procedure_name1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 370,(result,procedure_name1left,procedure_name1right),
 rest671) end
-| (76,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (76,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 106,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
-| (77,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (77,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 368,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right
 ),rest671) end
 | (78,(_,(_,INTEGER1left,INTEGER1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 368,(result,INTEGER1left,INTEGER1right),rest671) end
-| (79,(_,(_,SYSTEMCONSOLE1left,SYSTEMCONSOLE1right))::rest671) => let 
+| (79,(_,(_,SYSTEMCONSOLE1left,SYSTEMCONSOLE1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 154,(result,SYSTEMCONSOLE1left,SYSTEMCONSOLE1right),
 rest671) end
-| (80,(_,(_,REQUESTOR1left,REQUESTOR1right))::rest671) => let val 
+| (80,(_,(_,REQUESTOR1left,REQUESTOR1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 154,(result,REQUESTOR1left,REQUESTOR1right),rest671)
  end
-| (81,(_,(_,LOCALDATA1left,LOCALDATA1right))::rest671) => let val 
+| (81,(_,(_,LOCALDATA1left,LOCALDATA1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 154,(result,LOCALDATA1left,LOCALDATA1right),rest671)
  end
-| (82,(_,(_,ATTRIBUTEDATA1left,ATTRIBUTEDATA1right))::rest671) => let 
+| (82,(_,(_,ATTRIBUTEDATA1left,ATTRIBUTEDATA1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 154,(result,ATTRIBUTEDATA1left,ATTRIBUTEDATA1right),
 rest671) end
@@ -1129,7 +1129,7 @@ MlyValue.ntVOID(())
 | (84,(_,(_,CSP1left,CSP1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 154,(result,CSP1left,CSP1right),rest671) end
-| (85,(_,(_,SYSTEMSHUTDOWN1left,SYSTEMSHUTDOWN1right))::rest671) => 
+| (85,(_,(_,SYSTEMSHUTDOWN1left,SYSTEMSHUTDOWN1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 155,(result,SYSTEMSHUTDOWN1left,SYSTEMSHUTDOWN1right),
 rest671) end
@@ -1157,11 +1157,11 @@ MlyValue.ntVOID(())
 | (93,(_,(_,UPSI71left,UPSI71right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 155,(result,UPSI71left,UPSI71right),rest671) end
-| (94,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) => 
+| (94,(_,(_,USERDEFINEDWORD1left,USERDEFINEDWORD1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 47,(result,USERDEFINEDWORD1left,USERDEFINEDWORD1right)
 ,rest671) end
-| (95,(_,(_,ADVANCING1left,ADVANCING1right))::rest671) => let val 
+| (95,(_,(_,ADVANCING1left,ADVANCING1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 11,(result,ADVANCING1left,ADVANCING1right),rest671)
  end
@@ -1190,7 +1190,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 41,(result,AREA1left,AREA1right),rest671) end
 | (105,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 41,(result,defaultPos,defaultPos),rest671) end
-| (106,(_,(_,_,for_opt1right))::(_,(_,area1left,_))::rest671) => let 
+| (106,(_,(_,_,for_opt1right))::(_,(_,area1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 40,(result,area1left,for_opt1right),rest671) end
 | (107,(_,(_,AT1left,AT1right))::rest671) => let val result=
@@ -1203,25 +1203,25 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 54,(result,BY1left,BY1right),rest671) end
 | (110,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 54,(result,defaultPos,defaultPos),rest671) end
-| (111,(_,(_,CHARACTER1left,CHARACTER1right))::rest671) => let val 
+| (111,(_,(_,CHARACTER1left,CHARACTER1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 59,(result,CHARACTER1left,CHARACTER1right),rest671)
  end
 | (112,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 59,(result,defaultPos,defaultPos),rest671) end
-| (113,(_,(_,CHARACTERS1left,CHARACTERS1right))::rest671) => let val 
+| (113,(_,(_,CHARACTERS1left,CHARACTERS1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 61,(result,CHARACTERS1left,CHARACTERS1right),rest671)
  end
 | (114,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 61,(result,defaultPos,defaultPos),rest671) end
-| (115,(_,(_,COLLATING1left,COLLATING1right))::rest671) => let val 
+| (115,(_,(_,COLLATING1left,COLLATING1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 66,(result,COLLATING1left,COLLATING1right),rest671)
  end
 | (116,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 66,(result,defaultPos,defaultPos),rest671) end
-| (117,(_,(_,CONTAINS1left,CONTAINS1right))::rest671) => let val 
+| (117,(_,(_,CONTAINS1left,CONTAINS1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 78,(result,CONTAINS1left,CONTAINS1right),rest671) end
 | (118,rest671) => let val result=MlyValue.ntVOID(())
@@ -1246,7 +1246,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 213,(result,FOR1left,FOR1right),rest671) end
 | (126,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 213,(result,defaultPos,defaultPos),rest671) end
-| (127,(_,(_,_,REMOVAL1right))::(_,(_,for_opt1left,_))::rest671) => 
+| (127,(_,(_,_,REMOVAL1right))::(_,(_,for_opt1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 214,(result,for_opt1left,REMOVAL1right),rest671) end
 | (128,rest671) => let val result=MlyValue.ntVOID(())
@@ -1266,7 +1266,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 278,(result,IS1left,IS1right),rest671) end
 | (134,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 278,(result,defaultPos,defaultPos),rest671) end
-| (135,(_,(_,_,NOT1right))::(_,(_,IS1left,_))::rest671) => let val 
+| (135,(_,(_,_,NOT1right))::(_,(_,IS1left,_))::rest671) => let val
 result=MlyValue.is_not((Cobol.IS_NOT_NOT))
  in (hojfelds_NT 279,(result,IS1left,NOT1right),rest671) end
 | (136,(_,(_,IS1left,IS1right))::rest671) => let val result=
@@ -1293,7 +1293,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 295,(result,LINES1left,LINES1right),rest671) end
 | (144,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 295,(result,defaultPos,defaultPos),rest671) end
-| (145,(_,(_,_,is1right))::(_,(_,MODE1left,_))::rest671) => let val 
+| (145,(_,(_,_,is1right))::(_,(_,MODE1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 313,(result,MODE1left,is1right),rest671) end
 | (146,(_,(_,is1left,is1right))::rest671) => let val result=
@@ -1323,26 +1323,26 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 335,(result,ON1left,ON1right),rest671) end
 | (155,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 335,(result,defaultPos,defaultPos),rest671) end
-| (156,(_,(_,OPTIONAL1left,OPTIONAL1right))::rest671) => let val 
+| (156,(_,(_,OPTIONAL1left,OPTIONAL1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 348,(result,OPTIONAL1left,OPTIONAL1right),rest671) end
 | (157,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 348,(result,defaultPos,defaultPos),rest671) end
-| (158,(_,(_,_,is1right))::(_,(_,ORGANIZATION1left,_))::rest671) => 
+| (158,(_,(_,_,is1right))::(_,(_,ORGANIZATION1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 352,(result,ORGANIZATION1left,is1right),rest671) end
-| (159,(_,(_,_,TO1right))::(_,(_,PROCEED1left,_))::rest671) => let 
+| (159,(_,(_,_,TO1right))::(_,(_,PROCEED1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 371,(result,PROCEED1left,TO1right),rest671) end
 | (160,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 371,(result,defaultPos,defaultPos),rest671) end
-| (161,(_,(_,_,COLLATING1right))::(_,(_,PROGRAM1left,_))::rest671) => 
+| (161,(_,(_,_,COLLATING1right))::(_,(_,PROGRAM1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 373,(result,PROGRAM1left,COLLATING1right),rest671) end
 | (162,(_,(_,PROGRAM1left,PROGRAM1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 373,(result,PROGRAM1left,PROGRAM1right),rest671) end
-| (163,(_,(_,COLLATING1left,COLLATING1right))::rest671) => let val 
+| (163,(_,(_,COLLATING1left,COLLATING1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 373,(result,COLLATING1left,COLLATING1right),rest671)
  end
@@ -1371,13 +1371,13 @@ MlyValue.rounded((Cobol.ROUNDED))
 | (172,rest671) => let val result=MlyValue.separate_character((
 Cobol.NO_SEPARATE))
  in (hojfelds_NT 431,(result,defaultPos,defaultPos),rest671) end
-| (173,(_,(_,_,IS1right))::(_,(_,SIGN1left,_))::rest671) => let val 
+| (173,(_,(_,_,IS1right))::(_,(_,SIGN1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 437,(result,SIGN1left,IS1right),rest671) end
 | (174,(_,(_,IS1left,IS1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 437,(result,IS1left,IS1right),rest671) end
-| (175,(_,(_,_,is1right))::(_,(_,SIGN1left,_))::rest671) => let val 
+| (175,(_,(_,_,is1right))::(_,(_,SIGN1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 438,(result,SIGN1left,is1right),rest671) end
 | (176,rest671) => let val result=MlyValue.ntVOID(())
@@ -1387,24 +1387,24 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 440,(result,SIZE1left,SIZE1right),rest671) end
 | (178,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 440,(result,defaultPos,defaultPos),rest671) end
-| (179,(_,(_,STANDARD1left,STANDARD1right))::rest671) => let val 
+| (179,(_,(_,STANDARD1left,STANDARD1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 455,(result,STANDARD1left,STANDARD1right),rest671) end
 | (180,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 455,(result,defaultPos,defaultPos),rest671) end
-| (181,(_,(_,_,IS1right))::(_,(_,STATUS1left,_))::rest671) => let val 
+| (181,(_,(_,_,IS1right))::(_,(_,STATUS1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 464,(result,STATUS1left,IS1right),rest671) end
 | (182,(_,(_,IS1left,IS1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 464,(result,IS1left,IS1right),rest671) end
-| (183,(_,(_,_,CONTAINS1right))::(_,(_,TAPE1left,_))::rest671) => let 
+| (183,(_,(_,_,CONTAINS1right))::(_,(_,TAPE1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 483,(result,TAPE1left,CONTAINS1right),rest671) end
 | (184,(_,(_,TAPE1left,TAPE1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 483,(result,TAPE1left,TAPE1right),rest671) end
-| (185,(_,(_,CONTAINS1left,CONTAINS1right))::rest671) => let val 
+| (185,(_,(_,CONTAINS1left,CONTAINS1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 483,(result,CONTAINS1left,CONTAINS1right),rest671) end
 | (186,rest671) => let val result=MlyValue.ntVOID(())
@@ -1429,7 +1429,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 499,(result,TO1left,TO1right),rest671) end
 | (194,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 499,(result,defaultPos,defaultPos),rest671) end
-| (195,(_,(_,_,is1right))::(_,(_,USAGE1left,_))::rest671) => let val 
+| (195,(_,(_,_,is1right))::(_,(_,USAGE1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 508,(result,USAGE1left,is1right),rest671) end
 | (196,rest671) => let val result=MlyValue.ntVOID(())
@@ -1444,14 +1444,14 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 528,(result,WITH1left,WITH1right),rest671) end
 | (200,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 528,(result,defaultPos,defaultPos),rest671) end
-| (201,(_,(_,CORRESPONDING1left,CORRESPONDING1right))::rest671) => 
+| (201,(_,(_,CORRESPONDING1left,CORRESPONDING1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 82,(result,CORRESPONDING1left,CORRESPONDING1right),
 rest671) end
 | (202,(_,(_,CORR1left,CORR1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 82,(result,CORR1left,CORR1right),rest671) end
-| (203,(_,(_,JUSTIFIED1left,JUSTIFIED1right))::rest671) => let val 
+| (203,(_,(_,JUSTIFIED1left,JUSTIFIED1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 280,(result,JUSTIFIED1left,JUSTIFIED1right),rest671)
  end
@@ -1464,7 +1464,7 @@ MlyValue.ntVOID(())
 | (206,(_,(_,PIC1left,PIC1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 362,(result,PIC1left,PIC1right),rest671) end
-| (207,(_,(_,SYNCHRONIZED1left,SYNCHRONIZED1right))::rest671) => let 
+| (207,(_,(_,SYNCHRONIZED1left,SYNCHRONIZED1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 474,(result,SYNCHRONIZED1left,SYNCHRONIZED1right),
 rest671) end
@@ -1487,19 +1487,19 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 132,(result,ENDCALL1left,ENDCALL1right),rest671) end
 | (214,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 132,(result,defaultPos,defaultPos),rest671) end
-| (215,(_,(_,ENDCOMPUTE1left,ENDCOMPUTE1right))::rest671) => let val 
+| (215,(_,(_,ENDCOMPUTE1left,ENDCOMPUTE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 133,(result,ENDCOMPUTE1left,ENDCOMPUTE1right),rest671)
  end
 | (216,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 133,(result,defaultPos,defaultPos),rest671) end
-| (217,(_,(_,ENDDELETE1left,ENDDELETE1right))::rest671) => let val 
+| (217,(_,(_,ENDDELETE1left,ENDDELETE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 134,(result,ENDDELETE1left,ENDDELETE1right),rest671)
  end
 | (218,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 134,(result,defaultPos,defaultPos),rest671) end
-| (219,(_,(_,ENDDIVIDE1left,ENDDIVIDE1right))::rest671) => let val 
+| (219,(_,(_,ENDDIVIDE1left,ENDDIVIDE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 135,(result,ENDDIVIDE1left,ENDDIVIDE1right),rest671)
  end
@@ -1510,7 +1510,7 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 138,(result,ENDIF1left,ENDIF1right),rest671) end
 | (222,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 138,(result,defaultPos,defaultPos),rest671) end
-| (223,(_,(_,ENDMULTIPLY1left,ENDMULTIPLY1right))::rest671) => let 
+| (223,(_,(_,ENDMULTIPLY1left,ENDMULTIPLY1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 139,(result,ENDMULTIPLY1left,ENDMULTIPLY1right),
 rest671) end
@@ -1521,54 +1521,54 @@ MlyValue.ntVOID(())
  in (hojfelds_NT 142,(result,ENDREAD1left,ENDREAD1right),rest671) end
 | (226,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 142,(result,defaultPos,defaultPos),rest671) end
-| (227,(_,(_,ENDRETURN1left,ENDRETURN1right))::rest671) => let val 
+| (227,(_,(_,ENDRETURN1left,ENDRETURN1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 143,(result,ENDRETURN1left,ENDRETURN1right),rest671)
  end
 | (228,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 143,(result,defaultPos,defaultPos),rest671) end
-| (229,(_,(_,ENDREWRITE1left,ENDREWRITE1right))::rest671) => let val 
+| (229,(_,(_,ENDREWRITE1left,ENDREWRITE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 144,(result,ENDREWRITE1left,ENDREWRITE1right),rest671)
  end
 | (230,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 144,(result,defaultPos,defaultPos),rest671) end
-| (231,(_,(_,ENDSEARCH1left,ENDSEARCH1right))::rest671) => let val 
+| (231,(_,(_,ENDSEARCH1left,ENDSEARCH1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 145,(result,ENDSEARCH1left,ENDSEARCH1right),rest671)
  end
 | (232,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 145,(result,defaultPos,defaultPos),rest671) end
-| (233,(_,(_,ENDSTART1left,ENDSTART1right))::rest671) => let val 
+| (233,(_,(_,ENDSTART1left,ENDSTART1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 182,(result,ENDSTART1left,ENDSTART1right),rest671) end
 | (234,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 182,(result,defaultPos,defaultPos),rest671) end
-| (235,(_,(_,ENDSTRING1left,ENDSTRING1right))::rest671) => let val 
+| (235,(_,(_,ENDSTRING1left,ENDSTRING1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 146,(result,ENDSTRING1left,ENDSTRING1right),rest671)
  end
 | (236,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 146,(result,defaultPos,defaultPos),rest671) end
-| (237,(_,(_,ENDSUBTRACT1left,ENDSUBTRACT1right))::rest671) => let 
+| (237,(_,(_,ENDSUBTRACT1left,ENDSUBTRACT1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 147,(result,ENDSUBTRACT1left,ENDSUBTRACT1right),
 rest671) end
 | (238,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 147,(result,defaultPos,defaultPos),rest671) end
-| (239,(_,(_,ENDUNSTRING1left,ENDUNSTRING1right))::rest671) => let 
+| (239,(_,(_,ENDUNSTRING1left,ENDUNSTRING1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 149,(result,ENDUNSTRING1left,ENDUNSTRING1right),
 rest671) end
 | (240,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 149,(result,defaultPos,defaultPos),rest671) end
-| (241,(_,(_,ENDWRITE1left,ENDWRITE1right))::rest671) => let val 
+| (241,(_,(_,ENDWRITE1left,ENDWRITE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 150,(result,ENDWRITE1left,ENDWRITE1right),rest671) end
 | (242,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 150,(result,defaultPos,defaultPos),rest671) end
 | (243,(_,(MlyValue.identifier identifier,_,identifier1right))::(_,(
-MlyValue.identifiers identifiers,identifiers1left,_))::rest671) => 
+MlyValue.identifiers identifiers,identifiers1left,_))::rest671) =>
 let val result=MlyValue.identifiers((
 Cobol.SEVERAL_IDENTIFIERS(identifiers,identifier)))
  in (hojfelds_NT 239,(result,identifiers1left,identifier1right),rest671
@@ -1581,7 +1581,7 @@ Cobol.ONE_IDENTIFIER(identifier)))
 | (245,(_,(MlyValue.subscript_phrase subscript_phrase,_,
 subscript_phraseright as subscript_phrase1right))::(_,(
 MlyValue.qualifications qualifications,_,_))::(_,(
-MlyValue.USERDEFINEDWORD USERDEFINEDWORD,USERDEFINEDWORDleft as 
+MlyValue.USERDEFINEDWORD USERDEFINEDWORD,USERDEFINEDWORDleft as
 USERDEFINEDWORD1left,_))::rest671) => let val result=
 MlyValue.identifier((
 Cobol.QUALIFIED_IDENTIFIER(USERDEFINEDWORD,
@@ -1610,7 +1610,7 @@ rest671) end
 Cobol.NO_QUALIFICATIONS))
  in (hojfelds_NT 376,(result,defaultPos,defaultPos),rest671) end
 | (249,(_,(MlyValue.USERDEFINEDWORD USERDEFINEDWORD,_,
-USERDEFINEDWORD1right))::(_,(_,of_in1left,_))::rest671) => let val 
+USERDEFINEDWORD1right))::(_,(_,of_in1left,_))::rest671) => let val
 result=MlyValue.qualification((USERDEFINEDWORD))
  in (hojfelds_NT 375,(result,of_in1left,USERDEFINEDWORD1right),rest671)
  end
@@ -1620,7 +1620,7 @@ MlyValue.ntVOID(())
 | (251,(_,(_,IN1left,IN1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 330,(result,IN1left,IN1right),rest671) end
-| (252,(_,(_,_,RPAR1right))::_::(_,(_,LPAR1left,_))::rest671) => let 
+| (252,(_,(_,_,RPAR1right))::_::(_,(_,LPAR1left,_))::rest671) => let
 val result=MlyValue.subscript_phrase(())
  in (hojfelds_NT 471,(result,LPAR1left,RPAR1right),rest671) end
 | (253,rest671) => let val result=MlyValue.subscript_phrase(())
@@ -1629,7 +1629,7 @@ val result=MlyValue.subscript_phrase(())
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 472,(result,subscripts1left,subscript1right),rest671)
  end
-| (255,(_,(_,subscript1left,subscript1right))::rest671) => let val 
+| (255,(_,(_,subscript1left,subscript1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 472,(result,subscript1left,subscript1right),rest671)
  end
@@ -1678,8 +1678,8 @@ Cobol.DATA_NAME_OR_FILLER_IS_DATA_NAME(data_name)))
 Cobol.DATA_NAME_OR_FILLER_IS_FILLER(filler)))
  in (hojfelds_NT 366,(result,filler1left,filler1right),rest671) end
 | (267,(_,(MlyValue.identifier_or_literal identifier_or_literal,_,
-identifier_or_literal1right))::(_,(MlyValue.identifier_or_literals 
-identifier_or_literals,identifier_or_literals1left,_))::rest671) => 
+identifier_or_literal1right))::(_,(MlyValue.identifier_or_literals
+identifier_or_literals,identifier_or_literals1left,_))::rest671) =>
 let val result=MlyValue.identifier_or_literals((
 Cobol.SEVERAL_IDENTIFIER_OR_LITERALS(identifier_or_literals,
                                           identifier_or_literal)
@@ -1687,7 +1687,7 @@ Cobol.SEVERAL_IDENTIFIER_OR_LITERALS(identifier_or_literals,
  in (hojfelds_NT 234,(result,identifier_or_literals1left,
 identifier_or_literal1right),rest671) end
 | (268,(_,(MlyValue.identifier_or_literal identifier_or_literal,
-identifier_or_literal1left,identifier_or_literal1right))::rest671) => 
+identifier_or_literal1left,identifier_or_literal1right))::rest671) =>
 let val result=MlyValue.identifier_or_literals((
 Cobol.ONE_IDENTIFIER_OR_LITERAL(identifier_or_literal)))
  in (hojfelds_NT 234,(result,identifier_or_literal1left,
@@ -1719,7 +1719,7 @@ identifier_or_nonnumeric_literal_or_not_all_figurative_constant1right)
 identifier_or_nonnumeric_literal_or_not_all_figurative_constant1left,
 identifier_or_nonnumeric_literal_or_not_all_figurative_constant1right)
 ,rest671) end
-| (273,(_,(_,identifier1left,identifier1right))::rest671) => let val 
+| (273,(_,(_,identifier1left,identifier1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,identifier1left,identifier1right),rest671)
  end
@@ -1742,18 +1742,18 @@ MlyValue.ntVOID(())
 | (279,(_,(_,SPACES1left,SPACES1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,SPACES1left,SPACES1right),rest671) end
-| (280,(_,(_,HIGHVALUE1left,HIGHVALUE1right))::rest671) => let val 
+| (280,(_,(_,HIGHVALUE1left,HIGHVALUE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,HIGHVALUE1left,HIGHVALUE1right),rest671)
  end
-| (281,(_,(_,HIGHVALUES1left,HIGHVALUES1right))::rest671) => let val 
+| (281,(_,(_,HIGHVALUES1left,HIGHVALUES1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,HIGHVALUES1left,HIGHVALUES1right),rest671)
  end
-| (282,(_,(_,LOWVALUE1left,LOWVALUE1right))::rest671) => let val 
+| (282,(_,(_,LOWVALUE1left,LOWVALUE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,LOWVALUE1left,LOWVALUE1right),rest671) end
-| (283,(_,(_,LOWVALUES1left,LOWVALUES1right))::rest671) => let val 
+| (283,(_,(_,LOWVALUES1left,LOWVALUES1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,LOWVALUES1left,LOWVALUES1right),rest671)
  end
@@ -1763,7 +1763,7 @@ MlyValue.ntVOID(())
 | (285,(_,(_,QUOTES1left,QUOTES1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 93,(result,QUOTES1left,QUOTES1right),rest671) end
-| (286,(_,(_,identifier1left,identifier1right))::rest671) => let val 
+| (286,(_,(_,identifier1left,identifier1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 232,(result,identifier1left,identifier1right),rest671)
  end
@@ -1771,7 +1771,7 @@ result=MlyValue.ntVOID(())
 MlyValue.ntVOID(())
  in (hojfelds_NT 232,(result,INTEGER1left,INTEGER1right),rest671) end
 | (288,(_,(MlyValue.test_cobol_programs test_cobol_programs,
-test_cobol_programs1left,test_cobol_programs1right))::rest671) => let 
+test_cobol_programs1left,test_cobol_programs1right))::rest671) => let
 val result=MlyValue.test_cobol(( Cobol.TEST(test_cobol_programs) ))
  in (hojfelds_NT 3,(result,test_cobol_programs1left,
 test_cobol_programs1right),rest671) end
@@ -1781,20 +1781,20 @@ cobol_program1right))::rest671) => let val result=MlyValue.test_cobol(
  in (hojfelds_NT 3,(result,cobol_program1left,cobol_program1right),
 rest671) end
 | (290,(_,(MlyValue.test_cobol_program test_cobol_program,_,
-test_cobol_program1right))::(_,(MlyValue.test_cobol_programs 
-test_cobol_programs,test_cobol_programs1left,_))::rest671) => let val 
+test_cobol_program1right))::(_,(MlyValue.test_cobol_programs
+test_cobol_programs,test_cobol_programs1left,_))::rest671) => let val
 result=MlyValue.test_cobol_programs((
 Cobol.TEST_COBOL_PROGRAMS(test_cobol_programs, test_cobol_program)))
  in (hojfelds_NT 1,(result,test_cobol_programs1left,
 test_cobol_program1right),rest671) end
 | (291,(_,(MlyValue.test_cobol_program test_cobol_program,
-test_cobol_program1left,test_cobol_program1right))::rest671) => let 
+test_cobol_program1left,test_cobol_program1right))::rest671) => let
 val result=MlyValue.test_cobol_programs((
 Cobol.TEST_COBOL_PROGRAM(test_cobol_program)))
  in (hojfelds_NT 1,(result,test_cobol_program1left,
 test_cobol_program1right),rest671) end
-| (292,(_,(_,_,PROGEND1right))::(_,(MlyValue.cobol_program 
-cobol_program,_,_))::(_,(_,PROGBEGIN1left,_))::rest671) => let val 
+| (292,(_,(_,_,PROGEND1right))::(_,(MlyValue.cobol_program
+cobol_program,_,_))::(_,(_,PROGBEGIN1left,_))::rest671) => let val
 result=MlyValue.test_cobol_program((cobol_program))
  in (hojfelds_NT 2,(result,PROGBEGIN1left,PROGEND1right),rest671) end
 | (293,(_,(MlyValue.procedure_division procedure_division,_,
@@ -1821,11 +1821,11 @@ rest671) => let val result=MlyValue.ntVOID(())
 ::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 5,(result,process_options1left,process_option1right),
 rest671) end
-| (297,(_,(_,process_option1left,process_option1right))::rest671) => 
+| (297,(_,(_,process_option1left,process_option1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 5,(result,process_option1left,process_option1right),
 rest671) end
-| (298,(_,(_,SLASHSYMBOL1left,SLASHSYMBOL1right))::rest671) => let 
+| (298,(_,(_,SLASHSYMBOL1left,SLASHSYMBOL1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 6,(result,SLASHSYMBOL1left,SLASHSYMBOL1right),rest671)
  end
@@ -1913,7 +1913,7 @@ rest671) end
  in (hojfelds_NT 426,(result,SECURITY1left,comment_entry1right),rest671
 ) end
 | (322,(_,(MlyValue.input_output_section input_output_section,_,
-input_output_section1right))::(_,(MlyValue.configuration_section 
+input_output_section1right))::(_,(MlyValue.configuration_section
 configuration_section,_,_))::_::_::(_,(_,ENVIRONMENT1left,_))::rest671
 ) => let val result=MlyValue.environment_division((
 Cobol.ENVIRONMENT_DIVISION
@@ -1950,7 +1950,7 @@ rest671) => let val result=MlyValue.ntVOID(())
  end
 | (328,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 450,(result,defaultPos,defaultPos),rest671) end
-| (329,(_,(_,_,MODE1right))::_::(_,(_,with1left,_))::rest671) => let 
+| (329,(_,(_,_,MODE1right))::_::(_,(_,with1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 115,(result,with1left,MODE1right),rest671) end
 | (330,rest671) => let val result=MlyValue.ntVOID(())
@@ -1977,7 +1977,7 @@ rest671) => let val result=MlyValue.ntVOID(())
 | (337,(_,(_,WORDS1left,WORDS1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 443,(result,WORDS1left,WORDS1right),rest671) end
-| (338,(_,(_,CHARACTERS1left,CHARACTERS1right))::rest671) => let val 
+| (338,(_,(_,CHARACTERS1left,CHARACTERS1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 443,(result,CHARACTERS1left,CHARACTERS1right),rest671)
  end
@@ -1997,7 +1997,7 @@ rest671) => let val result=MlyValue.ntVOID(())
  end
 | (343,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 427,(result,defaultPos,defaultPos),rest671) end
-| (344,(_,(_,_,period1right))::(_,(MlyValue.special_names_clauses 
+| (344,(_,(_,_,period1right))::(_,(MlyValue.special_names_clauses
 special_names_clauses,_,_))::_::(_,(_,SPECIALNAMES1left,_))::rest671)
  => let val result=MlyValue.special_names_paragraph((
 Cobol.SPECIAL_NAMES_PARAGRAPH(special_names_clauses)))
@@ -2007,8 +2007,8 @@ Cobol.SPECIAL_NAMES_PARAGRAPH(special_names_clauses)))
 Cobol.NO_SPECIAL_NAMES_PARAGRAPH))
  in (hojfelds_NT 453,(result,defaultPos,defaultPos),rest671) end
 | (346,(_,(MlyValue.special_names_clause special_names_clause,_,
-special_names_clause1right))::(_,(MlyValue.special_names_clauses 
-special_names_clauses,special_names_clauses1left,_))::rest671) => let 
+special_names_clause1right))::(_,(MlyValue.special_names_clauses
+special_names_clauses,special_names_clauses1left,_))::rest671) => let
 val result=MlyValue.special_names_clauses((
 Cobol.SEVERAL_SPECIAL_NAMES_CLAUSES(special_names_clauses,
                                                special_names_clause)
@@ -2029,7 +2029,7 @@ Cobol.ALPHABET_CLAUSE))
  in (hojfelds_NT 103,(result,alphabet_clause1left,alphabet_clause1right
 ),rest671) end
 | (350,(_,(MlyValue.currency_sign_clause currency_sign_clause,
-currency_sign_clause1left,currency_sign_clause1right))::rest671) => 
+currency_sign_clause1left,currency_sign_clause1right))::rest671) =>
 let val result=MlyValue.special_names_clause((
 Cobol.CURRENCY_SIGN_CLAUSE(currency_sign_clause)))
  in (hojfelds_NT 103,(result,currency_sign_clause1left,
@@ -2067,13 +2067,13 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 462,(result,off_status1left,on_status_opt1right),
 rest671) end
-| (359,(_,(_,on_status1left,on_status1right))::rest671) => let val 
+| (359,(_,(_,on_status1left,on_status1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 340,(result,on_status1left,on_status1right),rest671)
  end
 | (360,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 340,(result,defaultPos,defaultPos),rest671) end
-| (361,(_,(_,off_status1left,off_status1right))::rest671) => let val 
+| (361,(_,(_,off_status1left,off_status1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 333,(result,off_status1left,off_status1right),rest671)
  end
@@ -2090,7 +2090,7 @@ result=MlyValue.ntVOID(())
 ,_))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 23,(result,alphabet_name1left,alphabet_specifier1right
 ),rest671) end
-| (366,(_,(_,STANDARD11left,STANDARD11right))::rest671) => let val 
+| (366,(_,(_,STANDARD11left,STANDARD11right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 25,(result,STANDARD11left,STANDARD11right),rest671)
  end
@@ -2114,10 +2114,10 @@ literal_also_range1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 299,(result,literal1left,literal_boundary1right),
 rest671) end
-| (372,(_,(_,_,literal1right))::(_,(_,through1left,_))::rest671) => 
+| (372,(_,(_,_,literal1right))::(_,(_,through1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 301,(result,through1left,literal1right),rest671) end
-| (373,(_,(_,also_literals1left,also_literals1right))::rest671) => 
+| (373,(_,(_,also_literals1left,also_literals1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 301,(result,also_literals1left,also_literals1right),
 rest671) end
@@ -2127,7 +2127,7 @@ rest671) => let val result=MlyValue.ntVOID(())
 rest671) end
 | (375,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 27,(result,defaultPos,defaultPos),rest671) end
-| (376,(_,(_,_,literal1right))::(_,(_,ALSO1left,_))::rest671) => let 
+| (376,(_,(_,_,literal1right))::(_,(_,ALSO1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 26,(result,ALSO1left,literal1right),rest671) end
 | (377,(_,(MlyValue.literal_range literal_range,_,literal_range1right)
@@ -2155,7 +2155,7 @@ through1left,_))::rest671) => let val result=MlyValue.through_literal(
 Cobol.NO_THROUGH_LITERAL))
  in (hojfelds_NT 493,(result,defaultPos,defaultPos),rest671) end
 | (382,(_,(MlyValue.NONNUMERICLITERAL NONNUMERICLITERAL,_,
-NONNUMERICLITERAL1right))::_::(_,(_,CURRENCY1left,_))::rest671) => 
+NONNUMERICLITERAL1right))::_::(_,(_,CURRENCY1left,_))::rest671) =>
 let val result=MlyValue.currency_sign_clause((
 Cobol.CURRENCY(NONNUMERICLITERAL)))
  in (hojfelds_NT 85,(result,CURRENCY1left,NONNUMERICLITERAL1right),
@@ -2197,11 +2197,11 @@ file_control_clause1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 186,(result,file_control_clause1left,
 file_control_clause1right),rest671) end
-| (392,(_,(_,assign_clause1left,assign_clause1right))::rest671) => 
+| (392,(_,(_,assign_clause1left,assign_clause1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 185,(result,assign_clause1left,assign_clause1right),
 rest671) end
-| (393,(_,(_,reserve_clause1left,reserve_clause1right))::rest671) => 
+| (393,(_,(_,reserve_clause1left,reserve_clause1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 185,(result,reserve_clause1left,reserve_clause1right),
 rest671) end
@@ -2221,7 +2221,7 @@ access_mode_clause1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 185,(result,file_status_clause1left,
 file_status_clause1right),rest671) end
-| (398,(_,(_,control_clause1left,control_clause1right))::rest671) => 
+| (398,(_,(_,control_clause1left,control_clause1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 185,(result,control_clause1left,control_clause1right),
 rest671) end
@@ -2246,24 +2246,24 @@ external_data_set1right),rest671) end
 ) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 164,(result,NONNUMERICLITERAL1left,
 NONNUMERICLITERAL1right),rest671) end
-| (404,(_,(_,_,areas1right))::_::(_,(_,RESERVE1left,_))::rest671) => 
+| (404,(_,(_,_,areas1right))::_::(_,(_,RESERVE1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 410,(result,RESERVE1left,areas1right),rest671) end
 | (405,(_,(_,_,data_organization1right))::(_,(_,organization_is1left,_
 ))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 351,(result,organization_is1left,
 data_organization1right),rest671) end
-| (406,(_,(_,SEQUENTIAL1left,SEQUENTIAL1right))::rest671) => let val 
+| (406,(_,(_,SEQUENTIAL1left,SEQUENTIAL1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 107,(result,SEQUENTIAL1left,SEQUENTIAL1right),rest671)
  end
 | (407,(_,(_,INDEXED1left,INDEXED1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 107,(result,INDEXED1left,INDEXED1right),rest671) end
-| (408,(_,(_,RELATIVE1left,RELATIVE1right))::rest671) => let val 
+| (408,(_,(_,RELATIVE1left,RELATIVE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 107,(result,RELATIVE1left,RELATIVE1right),rest671) end
-| (409,(_,(_,TRANSACTION1left,TRANSACTION1right))::rest671) => let 
+| (409,(_,(_,TRANSACTION1left,TRANSACTION1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 107,(result,TRANSACTION1left,TRANSACTION1right),
 rest671) end
@@ -2271,7 +2271,7 @@ rest671) end
 )::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 8,(result,ACCESS1left,relative_key_clause1right),
 rest671) end
-| (411,(_,(_,SEQUENTIAL1left,SEQUENTIAL1right))::rest671) => let val 
+| (411,(_,(_,SEQUENTIAL1left,SEQUENTIAL1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 9,(result,SEQUENTIAL1left,SEQUENTIAL1right),rest671)
  end
@@ -2291,7 +2291,7 @@ rest671) => let val result=MlyValue.ntVOID(())
 ))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 388,(result,RECORD1left,duplicates_phrase1right),
 rest671) end
-| (417,(_,(_,_,DUPLICATES1right))::(_,(_,with1left,_))::rest671) => 
+| (417,(_,(_,_,DUPLICATES1right))::(_,(_,with1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 128,(result,with1left,DUPLICATES1right),rest671) end
 | (418,rest671) => let val result=MlyValue.ntVOID(())
@@ -2325,7 +2325,7 @@ i_o_control_clause1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 221,(result,i_o_control_clause1left,
 i_o_control_clause1right),rest671) end
-| (427,(_,(_,rerun_clause1left,rerun_clause1right))::rest671) => let 
+| (427,(_,(_,rerun_clause1left,rerun_clause1right))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 220,(result,rerun_clause1left,rerun_clause1right),
 rest671) end
@@ -2383,7 +2383,7 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 208,(result,file_positions1left,file_position1right),
 rest671) end
-| (442,(_,(_,file_position1left,file_position1right))::rest671) => 
+| (442,(_,(_,file_position1left,file_position1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 208,(result,file_position1left,file_position1right),
 rest671) end
@@ -2391,13 +2391,13 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 207,(result,file_name1left,position_integer1right),
 rest671) end
-| (444,(_,(_,_,INTEGER1right))::(_,(_,POSITION1left,_))::rest671) => 
+| (444,(_,(_,_,INTEGER1right))::(_,(_,POSITION1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 365,(result,POSITION1left,INTEGER1right),rest671) end
 | (445,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 365,(result,defaultPos,defaultPos),rest671) end
 | (446,(_,(MlyValue.linkage_section linkage_section,_,
-linkage_section1right))::(_,(MlyValue.working_storage_section 
+linkage_section1right))::(_,(MlyValue.working_storage_section
 working_storage_section,_,_))::(_,(MlyValue.file_section file_section,
 _,_))::_::_::(_,(_,DATA1left,_))::rest671) => let val result=
 MlyValue.data_division((
@@ -2410,8 +2410,8 @@ Cobol.DATA_DIVISION(file_section,
 | (447,rest671) => let val result=MlyValue.data_division((
 Cobol.NO_DATA_DIVISION))
  in (hojfelds_NT 91,(result,defaultPos,defaultPos),rest671) end
-| (448,(_,(MlyValue.file_description_paragraphs 
-file_description_paragraphs,_,file_description_paragraphsright as 
+| (448,(_,(MlyValue.file_description_paragraphs
+file_description_paragraphs,_,file_description_paragraphsright as
 file_description_paragraphs1right))::_::_::(_,(_,FILEleft as FILE1left
 ,_))::rest671) => let val result=MlyValue.file_section((
 Cobol.FILE_SECTION(file_description_paragraphs,FILEleft,file_description_paragraphsright)
@@ -2421,7 +2421,7 @@ file_description_paragraphs1right),rest671) end
 | (449,rest671) => let val result=MlyValue.file_section((
 Cobol.NO_FILE_SECTION))
  in (hojfelds_NT 209,(result,defaultPos,defaultPos),rest671) end
-| (450,(_,(MlyValue.file_description_paragraph 
+| (450,(_,(MlyValue.file_description_paragraph
 file_description_paragraph,_,file_description_paragraph1right))::(_,(
 MlyValue.file_description_paragraphs file_description_paragraphs,
 file_description_paragraphs1left,_))::rest671) => let val result=
@@ -2434,9 +2434,9 @@ file_description_paragraph1right),rest671) end
 | (451,rest671) => let val result=MlyValue.file_description_paragraphs
 ((Cobol.NO_FILE_DESCRIPTION_PARAGRAPHS))
  in (hojfelds_NT 195,(result,defaultPos,defaultPos),rest671) end
-| (452,(_,(MlyValue.record_description_entries 
+| (452,(_,(MlyValue.record_description_entries
 record_description_entries,_,record_description_entries1right))::(_,(
-MlyValue.file_and_sort_description_entry 
+MlyValue.file_and_sort_description_entry
 file_and_sort_description_entry,file_and_sort_description_entry1left,_
 ))::rest671) => let val result=MlyValue.file_description_paragraph((
 Cobol.FILE_DESCRIPTION_PARAGRAPH(file_and_sort_description_entry,
@@ -2475,7 +2475,7 @@ file_description_clause1right),rest671) end
 Cobol.NO_FILE_DESCRIPTION_CLAUSES))
  in (hojfelds_NT 192,(result,defaultPos,defaultPos),rest671) end
 | (458,(_,(MlyValue.block_contains_clause block_contains_clause,
-block_contains_clause1left,block_contains_clause1right))::rest671) => 
+block_contains_clause1left,block_contains_clause1right))::rest671) =>
 let val result=MlyValue.file_description_clause((block_contains_clause
 ))
  in (hojfelds_NT 191,(result,block_contains_clause1left,
@@ -2491,19 +2491,19 @@ Cobol.FILE_DESCRIPTION_CLAUSE_IS_RECORD(record_contains_clause,
  in (hojfelds_NT 191,(result,record_contains_clause1left,
 record_contains_clause1right),rest671) end
 | (460,(_,(MlyValue.label_records_clause label_records_clause,
-label_records_clause1left,label_records_clause1right))::rest671) => 
+label_records_clause1left,label_records_clause1right))::rest671) =>
 let val result=MlyValue.file_description_clause((label_records_clause)
 )
  in (hojfelds_NT 191,(result,label_records_clause1left,
 label_records_clause1right),rest671) end
 | (461,(_,(MlyValue.value_of_clause value_of_clause,
-value_of_clause1left,value_of_clause1right))::rest671) => let val 
+value_of_clause1left,value_of_clause1right))::rest671) => let val
 result=MlyValue.file_description_clause((value_of_clause))
  in (hojfelds_NT 191,(result,value_of_clause1left,value_of_clause1right
 ),rest671) end
 | (462,(_,(MlyValue.data_records_clause data_records_clause,
 data_records_clauseleft as data_records_clause1left,
-data_records_clauseright as data_records_clause1right))::rest671) => 
+data_records_clauseright as data_records_clause1right))::rest671) =>
 let val result=MlyValue.file_description_clause((
 Cobol.FILE_DESCRIPTION_CLAUSE_IS_DATA(data_records_clause,
                                                  data_records_clauseleft,
@@ -2517,13 +2517,13 @@ MlyValue.file_description_clause((linage_clause))
  in (hojfelds_NT 191,(result,linage_clause1left,linage_clause1right),
 rest671) end
 | (464,(_,(MlyValue.code_set_clause code_set_clause,
-code_set_clause1left,code_set_clause1right))::rest671) => let val 
+code_set_clause1left,code_set_clause1right))::rest671) => let val
 result=MlyValue.file_description_clause((code_set_clause))
  in (hojfelds_NT 191,(result,code_set_clause1left,code_set_clause1right
 ),rest671) end
 | (465,(_,(MlyValue.characters_or_records characters_or_records,_,
 characters_or_recordsright as characters_or_records1right))::(_,(
-MlyValue.integer_range integer_range,_,_))::_::(_,(_,BLOCKleft as 
+MlyValue.integer_range integer_range,_,_))::_::(_,(_,BLOCKleft as
 BLOCK1left,_))::rest671) => let val result=
 MlyValue.block_contains_clause((
 Cobol.BLOCK(integer_range,
@@ -2541,30 +2541,30 @@ Cobol.SIMPLE_RANGE(INTEGER)))
 MlyValue.INTEGER INTEGER1,INTEGER1left,_))::rest671) => let val result
 =MlyValue.integer_range((Cobol.INTEGER_TO_INTEGER(INTEGER1,INTEGER2)))
  in (hojfelds_NT 265,(result,INTEGER1left,INTEGER2right),rest671) end
-| (468,(_,(_,characters1left,characters1right))::rest671) => let val 
+| (468,(_,(_,characters1left,characters1right))::rest671) => let val
 result=MlyValue.characters_or_records((Cobol.CHARACTERS))
  in (hojfelds_NT 62,(result,characters1left,characters1right),rest671)
  end
 | (469,(_,(_,RECORDS1left,RECORDS1right))::rest671) => let val result=
 MlyValue.characters_or_records((Cobol.RECORDS))
  in (hojfelds_NT 62,(result,RECORDS1left,RECORDS1right),rest671) end
-| (470,(_,(_,_,characters1right))::(_,(MlyValue.integer_range 
-integer_range,_,_))::_::(_,(_,RECORD1left,_))::rest671) => let val 
+| (470,(_,(_,_,characters1right))::(_,(MlyValue.integer_range
+integer_range,_,_))::_::(_,(_,RECORD1left,_))::rest671) => let val
 result=MlyValue.record_contains_clause((
 Cobol.RECORD_CONTAINS(integer_range)))
  in (hojfelds_NT 381,(result,RECORD1left,characters1right),rest671) end
 | (471,(_,(MlyValue.standard_or_omitted standard_or_omitted,_,
-standard_or_omitted1right))::_::(_,(_,LABEL1left,_))::rest671) => let 
+standard_or_omitted1right))::_::(_,(_,LABEL1left,_))::rest671) => let
 val result=MlyValue.label_records_clause((standard_or_omitted))
  in (hojfelds_NT 285,(result,LABEL1left,standard_or_omitted1right),
 rest671) end
-| (472,(_,(_,_,is1right))::(_,(_,RECORD1left,_))::rest671) => let val 
+| (472,(_,(_,_,is1right))::(_,(_,RECORD1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 387,(result,RECORD1left,is1right),rest671) end
-| (473,(_,(_,_,are1right))::(_,(_,RECORDS1left,_))::rest671) => let 
+| (473,(_,(_,_,are1right))::(_,(_,RECORDS1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 387,(result,RECORDS1left,are1right),rest671) end
-| (474,(_,(_,STANDARD1left,STANDARD1right))::rest671) => let val 
+| (474,(_,(_,STANDARD1left,STANDARD1right))::rest671) => let val
 result=MlyValue.standard_or_omitted((Cobol.LABEL_STANDARD))
  in (hojfelds_NT 456,(result,STANDARD1left,STANDARD1right),rest671) end
 | (475,(_,(_,OMITTED1left,OMITTED1right))::rest671) => let val result=
@@ -2581,14 +2581,14 @@ Cobol.VALUE_OF_CLAUSE(value_of_phrases,
  in (hojfelds_NT 518,(result,VALUE1left,value_of_phrases1right),rest671
 ) end
 | (477,(_,(MlyValue.value_of_phrase value_of_phrase,_,
-value_of_phrase1right))::(_,(MlyValue.value_of_phrases 
+value_of_phrase1right))::(_,(MlyValue.value_of_phrases
 value_of_phrases,value_of_phrases1left,_))::rest671) => let val result
 =MlyValue.value_of_phrases((
 Cobol.VALUE_OF_PHRASES(value_of_phrases, value_of_phrase)))
  in (hojfelds_NT 521,(result,value_of_phrases1left,
 value_of_phrase1right),rest671) end
 | (478,(_,(MlyValue.value_of_phrase value_of_phrase,
-value_of_phrase1left,value_of_phrase1right))::rest671) => let val 
+value_of_phrase1left,value_of_phrase1right))::rest671) => let val
 result=MlyValue.value_of_phrases((
 Cobol.VALUE_OF_PHRASE(value_of_phrase)))
  in (hojfelds_NT 521,(result,value_of_phrase1left,value_of_phrase1right
@@ -2604,10 +2604,10 @@ data_name_or_literal1right),rest671) end
 (_,DATA1left,_))::rest671) => let val result=
 MlyValue.data_records_clause((Cobol.DATA_RECORD_IS(data_names)))
  in (hojfelds_NT 108,(result,DATA1left,data_names1right),rest671) end
-| (481,(_,(MlyValue.top_bottom_specifications 
-top_bottom_specifications,_,top_bottom_specificationsright as 
-top_bottom_specifications1right))::(_,(MlyValue.footing_specification 
-footing_specification,_,_))::_::(_,(MlyValue.data_name_or_integer 
+| (481,(_,(MlyValue.top_bottom_specifications
+top_bottom_specifications,_,top_bottom_specificationsright as
+top_bottom_specifications1right))::(_,(MlyValue.footing_specification
+footing_specification,_,_))::_::(_,(MlyValue.data_name_or_integer
 data_name_or_integer,_,_))::_::(_,(_,LINAGEleft as LINAGE1left,_))::
 rest671) => let val result=MlyValue.linage_clause((
 Cobol.LINAGE_CLAUSE(data_name_or_integer,
@@ -2619,7 +2619,7 @@ Cobol.LINAGE_CLAUSE(data_name_or_integer,
  in (hojfelds_NT 293,(result,LINAGE1left,
 top_bottom_specifications1right),rest671) end
 | (482,(_,(MlyValue.data_name_or_integer data_name_or_integer,_,
-data_name_or_integer1right))::_::_::(_,(_,with1left,_))::rest671) => 
+data_name_or_integer1right))::_::_::(_,(_,with1left,_))::rest671) =>
 let val result=MlyValue.footing_specification((
 Cobol.FOOTING(data_name_or_integer)))
  in (hojfelds_NT 212,(result,with1left,data_name_or_integer1right),
@@ -2640,7 +2640,7 @@ top_bottom_specification1right),rest671) end
 | (485,rest671) => let val result=MlyValue.top_bottom_specifications((
 Cobol.NO_TOP_BOTTOM_SPECIFICATION))
  in (hojfelds_NT 502,(result,defaultPos,defaultPos),rest671) end
-| (486,(_,(_,_,data_name_or_integer1right))::(_,(MlyValue.top_bottom 
+| (486,(_,(_,_,data_name_or_integer1right))::(_,(MlyValue.top_bottom
 top_bottom,_,_))::_::(_,(_,lines1left,_))::rest671) => let val result=
 MlyValue.top_bottom_specification((top_bottom))
  in (hojfelds_NT 501,(result,lines1left,data_name_or_integer1right),
@@ -2660,7 +2660,7 @@ Cobol.CODE_SET_CLAUSE(alphabet_name,
 ))
  in (hojfelds_NT 65,(result,CODESET1left,alphabet_name1right),rest671)
  end
-| (490,(_,(_,_,PERIOD1right))::(_,(MlyValue.sort_description_clauses 
+| (490,(_,(_,_,PERIOD1right))::(_,(MlyValue.sort_description_clauses
 sort_description_clauses,_,_))::(_,(MlyValue.file_name file_name,_,_))
 ::(_,(_,SD1left,_))::rest671) => let val result=
 MlyValue.sort_description_entry((
@@ -2691,7 +2691,7 @@ Cobol.SORT_DESCRIPTION_CLAUSE_IS_RECORD
 record_contains_clause1right),rest671) end
 | (494,(_,(MlyValue.data_records_clause data_records_clause,
 data_records_clauseleft as data_records_clause1left,
-data_records_clauseright as data_records_clause1right))::rest671) => 
+data_records_clauseright as data_records_clause1right))::rest671) =>
 let val result=MlyValue.sort_description_clause((
 Cobol.SORT_DESCRIPTION_CLAUSE_IS_DATA(data_records_clause,
                                                  data_records_clauseleft,
@@ -2717,7 +2717,7 @@ Cobol.RECORD_DESCRIPTION_ENTRIES(Cobol.NO_RECORD_DESCRIPTION_ENTRIES,
 ))
  in (hojfelds_NT 385,(result,record_description_entry1left,
 record_description_entry1right),rest671) end
-| (497,(_,(MlyValue.record_description_entries 
+| (497,(_,(MlyValue.record_description_entries
 record_description_entries,record_description_entries1left,
 record_description_entries1right))::rest671) => let val result=
 MlyValue.record_description_entries_opt((
@@ -2734,7 +2734,7 @@ data_description_entry1left,data_description_entry1right))::rest671)
 data_description_entry))
  in (hojfelds_NT 386,(result,data_description_entry1left,
 data_description_entry1right),rest671) end
-| (500,(_,(MlyValue.data_description_entry_134 
+| (500,(_,(MlyValue.data_description_entry_134
 data_description_entry_134,data_description_entry_1341left,
 data_description_entry_1341right))::rest671) => let val result=
 MlyValue.data_description_entry((data_description_entry_134))
@@ -2745,7 +2745,7 @@ renames_clause1right))::rest671) => let val result=
 MlyValue.data_description_entry((renames_clause))
  in (hojfelds_NT 89,(result,renames_clause1left,renames_clause1right),
 rest671) end
-| (502,(_,(MlyValue.data_description_annotation 
+| (502,(_,(MlyValue.data_description_annotation
 data_description_annotation,data_description_annotation1left,
 data_description_annotation1right))::rest671) => let val result=
 MlyValue.data_description_entry((data_description_annotation))
@@ -2756,13 +2756,13 @@ TS2Kleft as TS2K1left,_))::rest671) => let val result=
 MlyValue.data_description_annotation((
 Cobol.TS2K_NOARROW(ts2k,TS2Kleft,ts2kright)))
  in (hojfelds_NT 541,(result,TS2K1left,ts2k1right),rest671) end
-| (504,(_,(MlyValue.ts2k ts2k2,_,ts2k2right))::_::(_,(MlyValue.ts2k 
-ts2k1,_,_))::(_,(_,TS2Kleft as TS2K1left,_))::rest671) => let val 
+| (504,(_,(MlyValue.ts2k ts2k2,_,ts2k2right))::_::(_,(MlyValue.ts2k
+ts2k1,_,_))::(_,(_,TS2Kleft as TS2K1left,_))::rest671) => let val
 result=MlyValue.data_description_annotation((
 Cobol.TS2K_ARROW(ts2k1,ts2k2,TS2Kleft,ts2k2right)))
  in (hojfelds_NT 541,(result,TS2K1left,ts2k2right),rest671) end
-| (505,(_,(MlyValue.ts2k ts2k2,_,ts2k2right))::_::(_,(MlyValue.ts2k 
-ts2k1,_,_))::_::(_,(_,TS2Kleft as TS2K1left,_))::rest671) => let val 
+| (505,(_,(MlyValue.ts2k ts2k2,_,ts2k2right))::_::(_,(MlyValue.ts2k
+ts2k1,_,_))::_::(_,(_,TS2Kleft as TS2K1left,_))::rest671) => let val
 result=MlyValue.data_description_annotation((
 Cobol.TS2K_ALL(ts2k1,ts2k2,TS2Kleft,ts2k2right)))
  in (hojfelds_NT 541,(result,TS2K1left,ts2k2right),rest671) end
@@ -2779,7 +2779,7 @@ Cobol.TS2K_ASSUME_SEPARATE(TS2Kleft,SEPARATEright)))
 MlyValue.data_description_clauses data_description_clauses,_,_))::(_,(
 MlyValue.redefines_clause redefines_clause,_,_))::(_,(
 MlyValue.data_name_or_filler data_name_or_filler,_,_))::(_,(
-MlyValue.level_number level_number,level_numberleft as 
+MlyValue.level_number level_number,level_numberleft as
 level_number1left,_))::rest671) => let val result=
 MlyValue.data_description_entry_134((
 (if (level_number = "88")
@@ -2817,7 +2817,7 @@ data_description_clause1right),rest671) end
 | (512,rest671) => let val result=MlyValue.data_description_clauses((
 Cobol.NO_DATA_DESCRIPTION_CLAUSES))
  in (hojfelds_NT 88,(result,defaultPos,defaultPos),rest671) end
-| (513,(_,(MlyValue.usage_clause usage_clause,usage_clauseleft as 
+| (513,(_,(MlyValue.usage_clause usage_clause,usage_clauseleft as
 usage_clause1left,usage_clauseright as usage_clause1right))::rest671)
  => let val result=MlyValue.data_description_clause((
 Cobol.DATA_DESCRIPTION_CLAUSE_IS_USAGE_CLAUSE(usage_clause,
@@ -2826,8 +2826,8 @@ Cobol.DATA_DESCRIPTION_CLAUSE_IS_USAGE_CLAUSE(usage_clause,
 ))
  in (hojfelds_NT 87,(result,usage_clause1left,usage_clause1right),
 rest671) end
-| (514,(_,(MlyValue.sign_clause sign_clause,sign_clauseleft as 
-sign_clause1left,sign_clauseright as sign_clause1right))::rest671) => 
+| (514,(_,(MlyValue.sign_clause sign_clause,sign_clauseleft as
+sign_clause1left,sign_clauseright as sign_clause1right))::rest671) =>
 let val result=MlyValue.data_description_clause((
 let val (lt,sc) = sign_clause
                  in Cobol.DATA_DESCRIPTION_CLAUSE_IS_SIGN_CLAUSE
@@ -2836,7 +2836,7 @@ let val (lt,sc) = sign_clause
 ))
  in (hojfelds_NT 87,(result,sign_clause1left,sign_clause1right),rest671
 ) end
-| (515,(_,(MlyValue.occurs_clause occurs_clause,occurs_clauseleft as 
+| (515,(_,(MlyValue.occurs_clause occurs_clause,occurs_clauseleft as
 occurs_clause1left,occurs_clauseright as occurs_clause1right))::
 rest671) => let val result=MlyValue.data_description_clause((
 let val (tld, adkp, ibp) = occurs_clause
@@ -2848,7 +2848,7 @@ let val (tld, adkp, ibp) = occurs_clause
 rest671) end
 | (516,(_,(MlyValue.synchronized_clause synchronized_clause,
 synchronized_clauseleft as synchronized_clause1left,
-synchronized_clauseright as synchronized_clause1right))::rest671) => 
+synchronized_clauseright as synchronized_clause1right))::rest671) =>
 let val result=MlyValue.data_description_clause((
 Cobol.DATA_DESCRIPTION_CLAUSE_IS_SYNCHRONIZED_CLAUSE
              (synchronized_clause,
@@ -2858,7 +2858,7 @@ Cobol.DATA_DESCRIPTION_CLAUSE_IS_SYNCHRONIZED_CLAUSE
  in (hojfelds_NT 87,(result,synchronized_clause1left,
 synchronized_clause1right),rest671) end
 | (517,(_,(_,justified_clauseleft as justified_clause1left,
-justified_clauseright as justified_clause1right))::rest671) => let 
+justified_clauseright as justified_clause1right))::rest671) => let
 val result=MlyValue.data_description_clause((
 Cobol.DATA_DESCRIPTION_CLAUSE_IS_JUSTIFIED_CLAUSE
              (justified_clauseleft,
@@ -2875,7 +2875,7 @@ Cobol.DATA_DESCRIPTION_CLAUSE_IS_BLANK_WHEN_ZERO_CLAUSE
 ))
  in (hojfelds_NT 87,(result,blank_when_zero_clause1left,
 blank_when_zero_clause1right),rest671) end
-| (519,(_,(MlyValue.value_clause value_clause,value_clauseleft as 
+| (519,(_,(MlyValue.value_clause value_clause,value_clauseleft as
 value_clause1left,value_clauseright as value_clause1right))::rest671)
  => let val result=MlyValue.data_description_clause((
 Cobol.DATA_DESCRIPTION_CLAUSE_IS_VALUE_CLAUSE(value_clause,
@@ -2908,30 +2908,30 @@ indicator_clause1right),rest671) end
 indicator1left,_))::rest671) => let val result=
 MlyValue.indicator_clause((INTEGER))
  in (hojfelds_NT 251,(result,indicator1left,INTEGER1right),rest671) end
-| (523,(_,(_,INDICATOR1left,INDICATOR1right))::rest671) => let val 
+| (523,(_,(_,INDICATOR1left,INDICATOR1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 252,(result,INDICATOR1left,INDICATOR1right),rest671)
  end
-| (524,(_,(_,INDICATORS1left,INDICATORS1right))::rest671) => let val 
+| (524,(_,(_,INDICATORS1left,INDICATORS1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 252,(result,INDICATORS1left,INDICATORS1right),rest671)
  end
 | (525,(_,(_,INDIC1left,INDIC1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 252,(result,INDIC1left,INDIC1right),rest671) end
-| (526,(_,(_,_,ZERO1right))::_::(_,(_,BLANK1left,_))::rest671) => let 
+| (526,(_,(_,_,ZERO1right))::_::(_,(_,BLANK1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 52,(result,BLANK1left,ZERO1right),rest671) end
-| (527,(_,(_,_,right1right))::(_,(_,justified1left,_))::rest671) => 
+| (527,(_,(_,_,right1right))::(_,(_,justified1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 281,(result,justified1left,right1right),rest671) end
-| (528,(_,(MlyValue.fixed_length_tables_clause 
+| (528,(_,(MlyValue.fixed_length_tables_clause
 fixed_length_tables_clause,fixed_length_tables_clause1left,
 fixed_length_tables_clause1right))::rest671) => let val result=
 MlyValue.occurs_clause((fixed_length_tables_clause))
  in (hojfelds_NT 329,(result,fixed_length_tables_clause1left,
 fixed_length_tables_clause1right),rest671) end
-| (529,(_,(MlyValue.variable_length_tables_clause 
+| (529,(_,(MlyValue.variable_length_tables_clause
 variable_length_tables_clause,variable_length_tables_clause1left,
 variable_length_tables_clause1right))::rest671) => let val result=
 MlyValue.occurs_clause((variable_length_tables_clause))
@@ -2939,8 +2939,8 @@ MlyValue.occurs_clause((variable_length_tables_clause))
 variable_length_tables_clause1right),rest671) end
 | (530,(_,(MlyValue.indexed_by_phrase indexed_by_phrase,_,
 indexed_by_phrase1right))::(_,(
-MlyValue.ascending_descending_key_phrases 
-ascending_descending_key_phrases,_,_))::_::(_,(MlyValue.INTEGER 
+MlyValue.ascending_descending_key_phrases
+ascending_descending_key_phrases,_,_))::_::(_,(MlyValue.INTEGER
 INTEGER,_,_))::(_,(_,OCCURS1left,_))::rest671) => let val result=
 MlyValue.fixed_length_tables_clause((
 (Cobol.FIXED_LENGTH_TABLE(INTEGER),
@@ -2949,10 +2949,10 @@ MlyValue.fixed_length_tables_clause((
 ))
  in (hojfelds_NT 211,(result,OCCURS1left,indexed_by_phrase1right),
 rest671) end
-| (531,(_,(MlyValue.ascending_descending_key_phrase 
+| (531,(_,(MlyValue.ascending_descending_key_phrase
 ascending_descending_key_phrase,_,
 ascending_descending_key_phrase1right))::(_,(
-MlyValue.ascending_descending_key_phrases 
+MlyValue.ascending_descending_key_phrases
 ascending_descending_key_phrases,ascending_descending_key_phrases1left
 ,_))::rest671) => let val result=
 MlyValue.ascending_descending_key_phrases((
@@ -2975,11 +2975,11 @@ Cobol.ASCENDING_DESCENDING_KEY_PHRASE(ascending_descending,
 ))
  in (hojfelds_NT 44,(result,ascending_descending1left,data_names1right)
 ,rest671) end
-| (534,(_,(_,ASCENDING1left,ASCENDING1right))::rest671) => let val 
+| (534,(_,(_,ASCENDING1left,ASCENDING1right))::rest671) => let val
 result=MlyValue.ascending_descending((Cobol.ASCENDING))
  in (hojfelds_NT 43,(result,ASCENDING1left,ASCENDING1right),rest671)
  end
-| (535,(_,(_,DESCENDING1left,DESCENDING1right))::rest671) => let val 
+| (535,(_,(_,DESCENDING1left,DESCENDING1right))::rest671) => let val
 result=MlyValue.ascending_descending((Cobol.DESCENDING))
  in (hojfelds_NT 43,(result,DESCENDING1left,DESCENDING1right),rest671)
  end
@@ -2993,10 +2993,10 @@ Cobol.NO_INDEXED_BY_PHRASE))
  in (hojfelds_NT 248,(result,defaultPos,defaultPos),rest671) end
 | (538,(_,(MlyValue.indexed_by_phrase indexed_by_phrase,_,
 indexed_by_phrase1right))::(_,(
-MlyValue.ascending_descending_key_phrases 
-ascending_descending_key_phrases,_,_))::(_,(MlyValue.data_name 
+MlyValue.ascending_descending_key_phrases
+ascending_descending_key_phrases,_,_))::(_,(MlyValue.data_name
 data_name,_,_))::_::_::_::(_,(MlyValue.INTEGER INTEGER2,_,_))::_::(_,(
-MlyValue.INTEGER INTEGER1,_,_))::(_,(_,OCCURS1left,_))::rest671) => 
+MlyValue.INTEGER INTEGER1,_,_))::(_,(_,OCCURS1left,_))::rest671) =>
 let val result=MlyValue.variable_length_tables_clause((
 (Cobol.VARIABLE_LENGTH_TABLE(INTEGER1,INTEGER2,data_name),
           ascending_descending_key_phrases,
@@ -3005,13 +3005,13 @@ let val result=MlyValue.variable_length_tables_clause((
  in (hojfelds_NT 522,(result,OCCURS1left,indexed_by_phrase1right),
 rest671) end
 | (539,(_,(MlyValue.character_string character_string,_,
-character_string1right))::_::(_,(_,picture1left,_))::rest671) => let 
+character_string1right))::_::(_,(_,picture1left,_))::rest671) => let
 val result=MlyValue.picture_clause((character_string))
  in (hojfelds_NT 363,(result,picture1left,character_string1right),
 rest671) end
 | (540,(_,(MlyValue.separate_character separate_character,_,
-separate_character1right))::(_,(MlyValue.leading_trailing 
-leading_trailing,_,_))::(_,(_,sign_is_opt1left,_))::rest671) => let 
+separate_character1right))::(_,(MlyValue.leading_trailing
+leading_trailing,_,_))::(_,(_,sign_is_opt1left,_))::rest671) => let
 val result=MlyValue.sign_clause((
 (leading_trailing, separate_character)))
  in (hojfelds_NT 436,(result,sign_is_opt1left,separate_character1right)
@@ -3019,7 +3019,7 @@ val result=MlyValue.sign_clause((
 | (541,(_,(_,LEADING1left,LEADING1right))::rest671) => let val result=
 MlyValue.leading_trailing((Cobol.LEADING_TRAILING_IS_LEADING))
  in (hojfelds_NT 287,(result,LEADING1left,LEADING1right),rest671) end
-| (542,(_,(_,TRAILING1left,TRAILING1right))::rest671) => let val 
+| (542,(_,(_,TRAILING1left,TRAILING1right))::rest671) => let val
 result=MlyValue.leading_trailing((Cobol.LEADING_TRAILING_IS_TRAILING))
  in (hojfelds_NT 287,(result,TRAILING1left,TRAILING1right),rest671) end
 | (543,(_,(MlyValue.left_right left_right,_,left_right1right))::(_,(_,
@@ -3034,7 +3034,7 @@ MlyValue.left_right((Cobol.LEFT))
 MlyValue.left_right((Cobol.RIGHT))
  in (hojfelds_NT 289,(result,RIGHT1left,RIGHT1right),rest671) end
 | (546,(_,(MlyValue.usage_specifier usage_specifier,_,
-usage_specifier1right))::(_,(_,usage_is1left,_))::rest671) => let val 
+usage_specifier1right))::(_,(_,usage_is1left,_))::rest671) => let val
 result=MlyValue.usage_clause((usage_specifier))
  in (hojfelds_NT 507,(result,usage_is1left,usage_specifier1right),
 rest671) end
@@ -3044,21 +3044,21 @@ MlyValue.usage_specifier((Cobol.USAGE_IS_DISPLAY))
 | (548,(_,(_,INDEX1left,INDEX1right))::rest671) => let val result=
 MlyValue.usage_specifier((Cobol.USAGE_IS_INDEX))
  in (hojfelds_NT 509,(result,INDEX1left,INDEX1right),rest671) end
-| (549,(_,(_,COMPUTATIONAL31left,COMPUTATIONAL31right))::rest671) => 
+| (549,(_,(_,COMPUTATIONAL31left,COMPUTATIONAL31right))::rest671) =>
 let val result=MlyValue.usage_specifier((Cobol.USAGE_IS_COMP3))
  in (hojfelds_NT 509,(result,COMPUTATIONAL31left,COMPUTATIONAL31right),
 rest671) end
 | (550,(_,(_,COMP31left,COMP31right))::rest671) => let val result=
 MlyValue.usage_specifier((Cobol.USAGE_IS_COMP3))
  in (hojfelds_NT 509,(result,COMP31left,COMP31right),rest671) end
-| (551,(_,(_,COMPUTATIONAL41left,COMPUTATIONAL41right))::rest671) => 
+| (551,(_,(_,COMPUTATIONAL41left,COMPUTATIONAL41right))::rest671) =>
 let val result=MlyValue.usage_specifier((Cobol.USAGE_IS_COMP4))
  in (hojfelds_NT 509,(result,COMPUTATIONAL41left,COMPUTATIONAL41right),
 rest671) end
 | (552,(_,(_,COMP41left,COMP41right))::rest671) => let val result=
 MlyValue.usage_specifier((Cobol.USAGE_IS_COMP4))
  in (hojfelds_NT 509,(result,COMP41left,COMP41right),rest671) end
-| (553,(_,(_,COMPUTATIONAL1left,COMPUTATIONAL1right))::rest671) => 
+| (553,(_,(_,COMPUTATIONAL1left,COMPUTATIONAL1right))::rest671) =>
 let val result=MlyValue.usage_specifier((Cobol.USAGE_IS_COMP))
  in (hojfelds_NT 509,(result,COMPUTATIONAL1left,COMPUTATIONAL1right),
 rest671) end
@@ -3066,19 +3066,19 @@ rest671) end
 MlyValue.usage_specifier((Cobol.USAGE_IS_COMP))
  in (hojfelds_NT 509,(result,COMP1left,COMP1right),rest671) end
 | (555,(_,(MlyValue.literal_ranges literal_ranges,_,
-literal_ranges1right))::(_,(_,value_is1left,_))::rest671) => let val 
+literal_ranges1right))::(_,(_,value_is1left,_))::rest671) => let val
 result=MlyValue.value_clause((literal_ranges))
  in (hojfelds_NT 516,(result,value_is1left,literal_ranges1right),
 rest671) end
-| (556,(_,(_,_,is1right))::(_,(_,VALUE1left,_))::rest671) => let val 
+| (556,(_,(_,_,is1right))::(_,(_,VALUE1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 517,(result,VALUE1left,is1right),rest671) end
-| (557,(_,(_,_,are1right))::(_,(_,VALUES1left,_))::rest671) => let 
+| (557,(_,(_,_,are1right))::(_,(_,VALUES1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 517,(result,VALUES1left,are1right),rest671) end
 | (558,(_,(_,_,PERIODright as PERIOD1right))::(_,(
 MlyValue.through_data_name through_data_name,_,_))::(_,(
-MlyValue.data_name data_name2,_,_))::_::(_,(MlyValue.data_name 
+MlyValue.data_name data_name2,_,_))::_::(_,(MlyValue.data_name
 data_name1,_,_))::(_,(MlyValue.level_number level_number,
 level_numberleft as level_number1left,_))::rest671) => let val result=
 MlyValue.renames_clause((
@@ -3098,10 +3098,10 @@ MlyValue.through_data_name((Cobol.THROUGH_DATA_NAME(data_name)))
 | (560,rest671) => let val result=MlyValue.through_data_name((
 Cobol.NOT_THROUGH_DATA_NAME))
  in (hojfelds_NT 492,(result,defaultPos,defaultPos),rest671) end
-| (561,(_,(MlyValue.record_description_entries_opt 
+| (561,(_,(MlyValue.record_description_entries_opt
 record_description_entries_opt,_,record_description_entries_optright
  as record_description_entries_opt1right))::_::_::(_,(_,
-WORKINGSTORAGEleft as WORKINGSTORAGE1left,_))::rest671) => let val 
+WORKINGSTORAGEleft as WORKINGSTORAGE1left,_))::rest671) => let val
 result=MlyValue.working_storage_section((
 Cobol.WORKINGSTORAGE_SECTION(record_description_entries_opt,
                                         WORKINGSTORAGEleft,record_description_entries_optright)
@@ -3111,7 +3111,7 @@ record_description_entries_opt1right),rest671) end
 | (562,rest671) => let val result=MlyValue.working_storage_section((
 Cobol.NO_WORKINGSTORAGE_SECTION))
  in (hojfelds_NT 529,(result,defaultPos,defaultPos),rest671) end
-| (563,(_,(MlyValue.record_description_entries_opt 
+| (563,(_,(MlyValue.record_description_entries_opt
 record_description_entries_opt,_,record_description_entries_optright
  as record_description_entries_opt1right))::_::_::(_,(_,LINKAGEleft
  as LINKAGE1left,_))::rest671) => let val result=
@@ -3124,10 +3124,10 @@ record_description_entries_opt1right),rest671) end
 | (564,rest671) => let val result=MlyValue.linkage_section((
 Cobol.NO_LINKAGE_SECTION))
  in (hojfelds_NT 297,(result,defaultPos,defaultPos),rest671) end
-| (565,(_,(MlyValue.sections sections,_,sectionsright as 
-sections1right))::(_,(MlyValue.declaratives_section 
+| (565,(_,(MlyValue.sections sections,_,sectionsright as
+sections1right))::(_,(MlyValue.declaratives_section
 declaratives_section,_,_))::_::(_,(MlyValue.using_clause using_clause,
-_,_))::_::(_,(_,PROCEDUREleft as PROCEDURE1left,_))::rest671) => let 
+_,_))::_::(_,(_,PROCEDUREleft as PROCEDURE1left,_))::rest671) => let
 val result=MlyValue.procedure_division((
 Cobol.PROCEDURE_DIVISION_FORMAT_1_DECLARATIVES(using_clause,
                                                           declaratives_section,
@@ -3137,7 +3137,7 @@ Cobol.PROCEDURE_DIVISION_FORMAT_1_DECLARATIVES(using_clause,
 ))
  in (hojfelds_NT 367,(result,PROCEDURE1left,sections1right),rest671)
  end
-| (566,(_,(MlyValue.sections sections,_,sectionsright as 
+| (566,(_,(MlyValue.sections sections,_,sectionsright as
 sections1right))::_::(_,(MlyValue.using_clause using_clause,_,_))::_::
 (_,(_,PROCEDUREleft as PROCEDURE1left,_))::rest671) => let val result=
 MlyValue.procedure_division((
@@ -3148,9 +3148,9 @@ Cobol.PROCEDURE_DIVISION_FORMAT_1_NO_DECLARATIVES(using_clause,
 ))
  in (hojfelds_NT 367,(result,PROCEDURE1left,sections1right),rest671)
  end
-| (567,(_,(MlyValue.paragraphs paragraphs,_,paragraphsright as 
+| (567,(_,(MlyValue.paragraphs paragraphs,_,paragraphsright as
 paragraphs1right))::_::(_,(MlyValue.using_clause using_clause,_,_))::_
-::(_,(_,PROCEDUREleft as PROCEDURE1left,_))::rest671) => let val 
+::(_,(_,PROCEDUREleft as PROCEDURE1left,_))::rest671) => let val
 result=MlyValue.procedure_division((
 Cobol.PROCEDURE_DIVISION_FORMAT_2(using_clause,
                                              paragraphs,
@@ -3162,7 +3162,7 @@ Cobol.PROCEDURE_DIVISION_FORMAT_2(using_clause,
 | (568,rest671) => let val result=MlyValue.procedure_division((
 Cobol.EMPTY_PROCEDURE_DIVISION))
  in (hojfelds_NT 367,(result,defaultPos,defaultPos),rest671) end
-| (569,(_,(_,_,data_names1right))::(_,(_,USING1left,_))::rest671) => 
+| (569,(_,(_,_,data_names1right))::(_,(_,USING1left,_))::rest671) =>
 let val result=MlyValue.using_clause(())
  in (hojfelds_NT 512,(result,USING1left,data_names1right),rest671) end
 | (570,rest671) => let val result=MlyValue.using_clause(())
@@ -3197,7 +3197,7 @@ declaratives_sections1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 117,(result,paragraph_name1left,sentences1right),
 rest671) end
-| (578,(_,(_,_,PERIOD1right))::(_,(MlyValue.segment_number_opt 
+| (578,(_,(_,_,PERIOD1right))::(_,(MlyValue.segment_number_opt
 segment_number_opt,_,_))::_::(_,(MlyValue.section_name section_name,
 section_name1left,_))::rest671) => let val result=MlyValue.sections((
 Cobol.NO_BODY_SECTION(section_name,segment_number_opt)))
@@ -3205,7 +3205,7 @@ Cobol.NO_BODY_SECTION(section_name,segment_number_opt)))
  end
 | (579,(_,(MlyValue.sections sections,_,sections1right))::_::(_,(
 MlyValue.segment_number_opt segment_number_opt,_,_))::_::(_,(
-MlyValue.section_name section_name,section_name1left,_))::rest671) => 
+MlyValue.section_name section_name,section_name1left,_))::rest671) =>
 let val result=MlyValue.sections((
 Cobol.NO_BODY_SECTION_FOLLOWED_BY_SECTION(section_name,
                                                      segment_number_opt,
@@ -3214,7 +3214,7 @@ Cobol.NO_BODY_SECTION_FOLLOWED_BY_SECTION(section_name,
  in (hojfelds_NT 424,(result,section_name1left,sections1right),rest671)
  end
 | (580,(_,(MlyValue.paragraphs_and_sections paragraphs_and_sections,_,
-paragraphs_and_sections1right))::_::(_,(MlyValue.segment_number_opt 
+paragraphs_and_sections1right))::_::(_,(MlyValue.segment_number_opt
 segment_number_opt,_,_))::_::(_,(MlyValue.section_name section_name,
 section_name1left,_))::rest671) => let val result=MlyValue.sections((
 Cobol.SECTION(section_name,
@@ -3233,7 +3233,7 @@ Cobol.SEVERAL_PARAGRAPHS_AND_SECTIONS(paragraph,
  in (hojfelds_NT 359,(result,paragraph1left,
 paragraphs_and_sections1right),rest671) end
 | (582,(_,(MlyValue.sections sections,_,sections1right))::(_,(
-MlyValue.paragraph paragraph,paragraph1left,_))::rest671) => let val 
+MlyValue.paragraph paragraph,paragraph1left,_))::rest671) => let val
 result=MlyValue.paragraphs_and_sections((
 Cobol.SINGLE_PARAGRAPH_AND_SECTIONS(paragraph,sections)))
  in (hojfelds_NT 359,(result,paragraph1left,sections1right),rest671)
@@ -3244,7 +3244,7 @@ Cobol.SINGLE_PARAGRAPH(paragraph)))
  in (hojfelds_NT 359,(result,paragraph1left,paragraph1right),rest671)
  end
 | (584,(_,(MlyValue.paragraph paragraph,_,paragraph1right))::(_,(
-MlyValue.paragraphs paragraphs,paragraphs1left,_))::rest671) => let 
+MlyValue.paragraphs paragraphs,paragraphs1left,_))::rest671) => let
 val result=MlyValue.paragraphs((
 Cobol.SEVERAL_PARAGRAPHS(paragraphs,paragraph)))
  in (hojfelds_NT 358,(result,paragraphs1left,paragraph1right),rest671)
@@ -3261,7 +3261,7 @@ Cobol.PARAGRAPH(paragraph_name,sentences)))
  in (hojfelds_NT 356,(result,paragraph_name1left,sentences1right),
 rest671) end
 | (587,(_,(MlyValue.sentence sentence,_,sentence1right))::(_,(
-MlyValue.sentences sentences,sentences1left,_))::rest671) => let val 
+MlyValue.sentences sentences,sentences1left,_))::rest671) => let val
 result=MlyValue.sentences((Cobol.SENTENCES(sentences,sentence)))
  in (hojfelds_NT 430,(result,sentences1left,sentence1right),rest671)
  end
@@ -3273,7 +3273,7 @@ statements1left,_))::rest671) => let val result=MlyValue.sentence((
 Cobol.SENTENCE(statements)))
  in (hojfelds_NT 429,(result,statements1left,PERIOD1right),rest671) end
 | (590,(_,(MlyValue.statement statement,_,statement1right))::(_,(
-MlyValue.statements statements,statements1left,_))::rest671) => let 
+MlyValue.statements statements,statements1left,_))::rest671) => let
 val result=MlyValue.statements((
 Cobol.SEVERAL_STATEMENTS(statements,statement)))
  in (hojfelds_NT 459,(result,statements1left,statement1right),rest671)
@@ -3294,7 +3294,7 @@ MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_INTEGER(INTEGER,INTEGERleft,INTEGERright)
 ))
  in (hojfelds_NT 476,(result,INTEGER1left,INTEGER1right),rest671) end
-| (594,(_,(MlyValue.DECIMALNUMBER DECIMALNUMBER,DECIMALNUMBERleft as 
+| (594,(_,(MlyValue.DECIMALNUMBER DECIMALNUMBER,DECIMALNUMBERleft as
 DECIMALNUMBER1left,DECIMALNUMBERright as DECIMALNUMBER1right))::
 rest671) => let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_DECIMALNUMBER
@@ -3322,7 +3322,7 @@ Cobol.ARITHMETIC_EXPRESSION_IS_BOOLEANLITERAL
 rest671) end
 | (597,(_,(MlyValue.figurative_constant figurative_constant,
 figurative_constantleft as figurative_constant1left,
-figurative_constantright as figurative_constant1right))::rest671) => 
+figurative_constantright as figurative_constant1right))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_FIGURATIVE_CONSTANT
                  (figurative_constant,figurative_constantleft,figurative_constantright)
@@ -3336,7 +3336,7 @@ Cobol.ARITHMETIC_EXPRESSION_IS_IDENTIFIER(identifier)))
  in (hojfelds_NT 476,(result,identifier1left,identifier1right),rest671)
  end
 | (599,(_,(MlyValue.arithmetic_expression arithmetic_expression,_,
-arithmetic_expression1right))::(_,(_,PLUSSYMBOL1left,_))::rest671) => 
+arithmetic_expression1right))::(_,(_,PLUSSYMBOL1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_PLUS_SIGN(arithmetic_expression)))
  in (hojfelds_NT 476,(result,PLUSSYMBOL1left,
@@ -3348,8 +3348,8 @@ Cobol.ARITHMETIC_EXPRESSION_IS_MINUS_SIGN(arithmetic_expression)))
  in (hojfelds_NT 476,(result,MINUSSYMBOL1left,
 arithmetic_expression1right),rest671) end
 | (601,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression1,arithmetic_expression1left,_))::rest671) => 
+arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression
+arithmetic_expression1,arithmetic_expression1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_EXPONENTIATION
             (arithmetic_expression1,arithmetic_expression2)
@@ -3357,8 +3357,8 @@ Cobol.ARITHMETIC_EXPRESSION_IS_EXPONENTIATION
  in (hojfelds_NT 476,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
 | (602,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression1,arithmetic_expression1left,_))::rest671) => 
+arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression
+arithmetic_expression1,arithmetic_expression1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_MULTIPLY
             (arithmetic_expression1,arithmetic_expression2)
@@ -3366,8 +3366,8 @@ Cobol.ARITHMETIC_EXPRESSION_IS_MULTIPLY
  in (hojfelds_NT 476,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
 | (603,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression1,arithmetic_expression1left,_))::rest671) => 
+arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression
+arithmetic_expression1,arithmetic_expression1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_DIVIDE
             (arithmetic_expression1,arithmetic_expression2)
@@ -3375,8 +3375,8 @@ Cobol.ARITHMETIC_EXPRESSION_IS_DIVIDE
  in (hojfelds_NT 476,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
 | (604,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression1,arithmetic_expression1left,_))::rest671) => 
+arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression
+arithmetic_expression1,arithmetic_expression1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_ADD
             (arithmetic_expression1,arithmetic_expression2)
@@ -3384,20 +3384,20 @@ Cobol.ARITHMETIC_EXPRESSION_IS_ADD
  in (hojfelds_NT 476,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
 | (605,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression1,arithmetic_expression1left,_))::rest671) => 
+arithmetic_expression2right))::_::(_,(MlyValue.arithmetic_expression
+arithmetic_expression1,arithmetic_expression1left,_))::rest671) =>
 let val result=MlyValue.arithmetic_expression((
 Cobol.ARITHMETIC_EXPRESSION_IS_SUBTRACT
             (arithmetic_expression1,arithmetic_expression2)
 ))
  in (hojfelds_NT 476,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
-| (606,(_,(_,_,RPAR1right))::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression,_,_))::(_,(_,LPAR1left,_))::rest671) => let val 
+| (606,(_,(_,_,RPAR1right))::(_,(MlyValue.arithmetic_expression
+arithmetic_expression,_,_))::(_,(_,LPAR1left,_))::rest671) => let val
 result=MlyValue.arithmetic_expression((arithmetic_expression))
  in (hojfelds_NT 476,(result,LPAR1left,RPAR1right),rest671) end
 | (607,(_,(MlyValue.expression expression,expression1left,
-expression1right))::rest671) => raise Hojfeld "607" 
+expression1right))::rest671) => raise Hojfeld "607"
 (*
    let val result=
 MlyValue.conditional_expression((convertCE(expression)))
@@ -3417,7 +3417,7 @@ arithmetic_expression1right),rest671) end
 | (609,(_,(MlyValue.arithmetic_expression arithmetic_expression,_,
 arithmetic_expressionright as arithmetic_expression1right))::(_,(
 MlyValue.relational_operator relational_operator,
-relational_operatorleft as relational_operator1left,_))::rest671) => 
+relational_operatorleft as relational_operator1left,_))::rest671) =>
 let val result=MlyValue.expression((
 CE_SINGLE_REL(relational_operator,
                          arithmetic_expression,
@@ -3427,7 +3427,7 @@ CE_SINGLE_REL(relational_operator,
  in (hojfelds_NT 42,(result,relational_operator1left,
 arithmetic_expression1right),rest671) end
 | (610,(_,(MlyValue.arithmetic_expression arithmetic_expression2,_,
-arithmetic_expression2right))::(_,(MlyValue.relational_operator 
+arithmetic_expression2right))::(_,(MlyValue.relational_operator
 relational_operator,_,_))::(_,(MlyValue.is_not is_not,_,_))::(_,(
 MlyValue.arithmetic_expression arithmetic_expression1,
 arithmetic_expression1left,_))::rest671) => let val result=
@@ -3442,8 +3442,8 @@ CE_REL(arithmetic_expression1,
  in (hojfelds_NT 42,(result,arithmetic_expression1left,
 arithmetic_expression2right),rest671) end
 | (611,(_,(MlyValue.data_class data_class,_,data_class1right))::(_,(
-MlyValue.is_not is_not,_,_))::(_,(MlyValue.arithmetic_expression 
-arithmetic_expression,arithmetic_expression1left,_))::rest671) => let 
+MlyValue.is_not is_not,_,_))::(_,(MlyValue.arithmetic_expression
+arithmetic_expression,arithmetic_expression1left,_))::rest671) => let
 val result=MlyValue.expression((
 CE_DC(arithmetic_expression,is_not,data_class)))
  in (hojfelds_NT 42,(result,arithmetic_expression1left,data_class1right
@@ -3464,7 +3464,7 @@ rest671) => let val result=MlyValue.expression((
 CE_FALSE(FALSEleft,FALSEright)))
  in (hojfelds_NT 42,(result,FALSE1left,FALSE1right),rest671) end
 | (615,(_,(_,environment_name_2left as environment_name_21left,
-environment_name_2right as environment_name_21right))::rest671) => 
+environment_name_2right as environment_name_21right))::rest671) =>
 let val result=MlyValue.expression((
 CE_SWITCH(environment_name_2left,environment_name_2right)))
  in (hojfelds_NT 42,(result,environment_name_21left,
@@ -3474,12 +3474,12 @@ NOT1left,_))::rest671) => let val result=MlyValue.expression((
 CE_NOT(expression)))
  in (hojfelds_NT 42,(result,NOT1left,expression1right),rest671) end
 | (617,(_,(MlyValue.expression expression2,_,expression2right))::_::(_
-,(MlyValue.expression expression1,expression1left,_))::rest671) => 
+,(MlyValue.expression expression1,expression1left,_))::rest671) =>
 let val result=MlyValue.expression((CE_AND(expression1,expression2)))
  in (hojfelds_NT 42,(result,expression1left,expression2right),rest671)
  end
 | (618,(_,(MlyValue.expression expression2,_,expression2right))::_::(_
-,(MlyValue.expression expression1,expression1left,_))::rest671) => 
+,(MlyValue.expression expression1,expression1left,_))::rest671) =>
 let val result=MlyValue.expression((CE_OR(expression1,expression2)))
  in (hojfelds_NT 42,(result,expression1left,expression2right),rest671)
  end
@@ -3490,35 +3490,35 @@ let val result=MlyValue.expression((CE_OR(expression1,expression2)))
 | (620,(_,(_,NUMERIC1left,NUMERIC1right))::rest671) => let val result=
 MlyValue.data_class((Cobol.DATA_CLASS_IS_NUMERIC))
  in (hojfelds_NT 122,(result,NUMERIC1left,NUMERIC1right),rest671) end
-| (621,(_,(_,ALPHABETIC1left,ALPHABETIC1right))::rest671) => let val 
+| (621,(_,(_,ALPHABETIC1left,ALPHABETIC1right))::rest671) => let val
 result=MlyValue.data_class((Cobol.DATA_CLASS_IS_ALPHABETIC))
  in (hojfelds_NT 122,(result,ALPHABETIC1left,ALPHABETIC1right),rest671)
  end
-| (622,(_,(_,_,than1right))::(_,(_,GREATER1left,_))::rest671) => let 
+| (622,(_,(_,_,than1right))::(_,(_,GREATER1left,_))::rest671) => let
 val result=MlyValue.relational_operator((Cobol.GREATER))
  in (hojfelds_NT 121,(result,GREATER1left,than1right),rest671) end
-| (623,(_,(_,GREATERSYMBOL1left,GREATERSYMBOL1right))::rest671) => 
+| (623,(_,(_,GREATERSYMBOL1left,GREATERSYMBOL1right))::rest671) =>
 let val result=MlyValue.relational_operator((Cobol.GREATER))
  in (hojfelds_NT 121,(result,GREATERSYMBOL1left,GREATERSYMBOL1right),
 rest671) end
-| (624,(_,(_,_,than1right))::(_,(_,LESS1left,_))::rest671) => let val 
+| (624,(_,(_,_,than1right))::(_,(_,LESS1left,_))::rest671) => let val
 result=MlyValue.relational_operator((Cobol.LESS))
  in (hojfelds_NT 121,(result,LESS1left,than1right),rest671) end
-| (625,(_,(_,LESSSYMBOL1left,LESSSYMBOL1right))::rest671) => let val 
+| (625,(_,(_,LESSSYMBOL1left,LESSSYMBOL1right))::rest671) => let val
 result=MlyValue.relational_operator((Cobol.LESS))
  in (hojfelds_NT 121,(result,LESSSYMBOL1left,LESSSYMBOL1right),rest671)
  end
-| (626,(_,(_,_,to1right))::(_,(_,EQUAL1left,_))::rest671) => let val 
+| (626,(_,(_,_,to1right))::(_,(_,EQUAL1left,_))::rest671) => let val
 result=MlyValue.relational_operator((Cobol.EQUAL))
  in (hojfelds_NT 121,(result,EQUAL1left,to1right),rest671) end
-| (627,(_,(_,EQSYMBOL1left,EQSYMBOL1right))::rest671) => let val 
+| (627,(_,(_,EQSYMBOL1left,EQSYMBOL1right))::rest671) => let val
 result=MlyValue.relational_operator((Cobol.EQUAL))
  in (hojfelds_NT 121,(result,EQSYMBOL1left,EQSYMBOL1right),rest671) end
-| (628,(_,(_,POSITIVE1left,POSITIVE1right))::rest671) => let val 
+| (628,(_,(_,POSITIVE1left,POSITIVE1right))::rest671) => let val
 result=MlyValue.sign_specification((
 Cobol.SIGN_SPECIFICATION_IS_POSITIVE))
  in (hojfelds_NT 123,(result,POSITIVE1left,POSITIVE1right),rest671) end
-| (629,(_,(_,NEGATIVE1left,NEGATIVE1right))::rest671) => let val 
+| (629,(_,(_,NEGATIVE1left,NEGATIVE1right))::rest671) => let val
 result=MlyValue.sign_specification((
 Cobol.SIGN_SPECIFICATION_IS_NEGATIVE))
  in (hojfelds_NT 123,(result,NEGATIVE1left,NEGATIVE1right),rest671) end
@@ -3526,7 +3526,7 @@ Cobol.SIGN_SPECIFICATION_IS_NEGATIVE))
 MlyValue.sign_specification((Cobol.SIGN_SPECIFICATION_IS_ZERO))
  in (hojfelds_NT 123,(result,ZERO1left,ZERO1right),rest671) end
 | (631,(_,(MlyValue.accept_statement accept_statement,
-accept_statement1left,accept_statement1right))::rest671) => let val 
+accept_statement1left,accept_statement1right))::rest671) => let val
 result=MlyValue.statement((Cobol.ACCEPT_STATEMENT(accept_statement)))
  in (hojfelds_NT 458,(result,accept_statement1left,
 accept_statement1right),rest671) end
@@ -3539,7 +3539,7 @@ rest671) end
  => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,alter_statement1left,alter_statement1right
 ),rest671) end
-| (634,(_,(_,call_statement1left,call_statement1right))::rest671) => 
+| (634,(_,(_,call_statement1left,call_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,call_statement1left,call_statement1right),
 rest671) end
@@ -3552,7 +3552,7 @@ cancel_statement1right),rest671) end
  in (hojfelds_NT 458,(result,close_statement1left,close_statement1right
 ),rest671) end
 | (637,(_,(MlyValue.compute_statement compute_statement,
-compute_statement1left,compute_statement1right))::rest671) => let val 
+compute_statement1left,compute_statement1right))::rest671) => let val
 result=MlyValue.statement((Cobol.COMPUTE_STATEMENT(compute_statement))
 )
  in (hojfelds_NT 458,(result,compute_statement1left,
@@ -3566,7 +3566,7 @@ delete_statement1right),rest671) end
  in (hojfelds_NT 458,(result,display_statement1left,
 display_statement1right),rest671) end
 | (640,(_,(MlyValue.divide_statement divide_statement,
-divide_statement1left,divide_statement1right))::rest671) => let val 
+divide_statement1left,divide_statement1right))::rest671) => let val
 result=MlyValue.statement((Cobol.DIVIDE_STATEMENT(divide_statement)))
  in (hojfelds_NT 458,(result,divide_statement1left,
 divide_statement1right),rest671) end
@@ -3574,7 +3574,7 @@ divide_statement1right),rest671) end
  => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,enter_statement1left,enter_statement1right
 ),rest671) end
-| (642,(_,(_,exit_statement1left,exit_statement1right))::rest671) => 
+| (642,(_,(_,exit_statement1left,exit_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,exit_statement1left,exit_statement1right),
 rest671) end
@@ -3614,12 +3614,12 @@ move_statement1right))::rest671) => let val result=MlyValue.statement(
  in (hojfelds_NT 458,(result,move_statement1left,move_statement1right),
 rest671) end
 | (651,(_,(MlyValue.multiply_statement multiply_statement,
-multiply_statement1left,multiply_statement1right))::rest671) => let 
+multiply_statement1left,multiply_statement1right))::rest671) => let
 val result=MlyValue.statement((
 Cobol.MULTIPLY_STATEMENT(multiply_statement)))
  in (hojfelds_NT 458,(result,multiply_statement1left,
 multiply_statement1right),rest671) end
-| (652,(_,(_,open_statement1left,open_statement1right))::rest671) => 
+| (652,(_,(_,open_statement1left,open_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,open_statement1left,open_statement1right),
 rest671) end
@@ -3627,7 +3627,7 @@ rest671) end
 ) => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,perform_statement1left,
 perform_statement1right),rest671) end
-| (654,(_,(_,read_statement1left,read_statement1right))::rest671) => 
+| (654,(_,(_,read_statement1left,read_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,read_statement1left,read_statement1right),
 rest671) end
@@ -3647,11 +3647,11 @@ rewrite_statement1right),rest671) end
  => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,search_statement1left,
 search_statement1right),rest671) end
-| (659,(_,(_,set_statement1left,set_statement1right))::rest671) => 
+| (659,(_,(_,set_statement1left,set_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,set_statement1left,set_statement1right),
 rest671) end
-| (660,(_,(_,sort_statement1left,sort_statement1right))::rest671) => 
+| (660,(_,(_,sort_statement1left,sort_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,sort_statement1left,sort_statement1right),
 rest671) end
@@ -3659,7 +3659,7 @@ rest671) end
  => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,start_statement1left,start_statement1right
 ),rest671) end
-| (662,(_,(_,stop_statement1left,stop_statement1right))::rest671) => 
+| (662,(_,(_,stop_statement1left,stop_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,stop_statement1left,stop_statement1right),
 rest671) end
@@ -3668,7 +3668,7 @@ rest671) end
  in (hojfelds_NT 458,(result,string_statement1left,
 string_statement1right),rest671) end
 | (664,(_,(MlyValue.subtract_statement subtract_statement,
-subtract_statement1left,subtract_statement1right))::rest671) => let 
+subtract_statement1left,subtract_statement1right))::rest671) => let
 val result=MlyValue.statement((
 Cobol.ADD_OR_SUBTRACT_STATEMENT(subtract_statement)))
  in (hojfelds_NT 458,(result,subtract_statement1left,
@@ -3677,7 +3677,7 @@ subtract_statement1right),rest671) end
 rest671) => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,unstring_statement1left,
 unstring_statement1right),rest671) end
-| (666,(_,(_,use_statement1left,use_statement1right))::rest671) => 
+| (666,(_,(_,use_statement1left,use_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,use_statement1left,use_statement1right),
 rest671) end
@@ -3685,7 +3685,7 @@ rest671) end
  => let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,write_statement1left,write_statement1right
 ),rest671) end
-| (668,(_,(_,copy_statement1left,copy_statement1right))::rest671) => 
+| (668,(_,(_,copy_statement1left,copy_statement1right))::rest671) =>
 let val result=MlyValue.statement((Cobol.OTHER_STATEMENT))
  in (hojfelds_NT 458,(result,copy_statement1left,copy_statement1right),
 rest671) end
@@ -3702,13 +3702,13 @@ exhibit_statement1right),rest671) end
  in (hojfelds_NT 458,(result,trace_statement1left,trace_statement1right
 ),rest671) end
 | (672,(_,(MlyValue.annotation_statement annotation_statement,
-annotation_statement1left,annotation_statement1right))::rest671) => 
+annotation_statement1left,annotation_statement1right))::rest671) =>
 let val result=MlyValue.statement((
 Cobol.ANNOTATION_STATEMENT(annotation_statement)))
  in (hojfelds_NT 458,(result,annotation_statement1left,
 annotation_statement1right),rest671) end
 | (673,(_,(MlyValue.identifier_or_literal identifier_or_literal,
-identifier_or_literal1left,identifier_or_literal1right))::rest671) => 
+identifier_or_literal1left,identifier_or_literal1right))::rest671) =>
 let val result=MlyValue.identifier_or_literal_or_ddt((
 Cobol.IDENTIFIER_OR_LITERAL_OR_DDT_IS_IDENTIFIER_OR_LITERAL(identifier_or_literal)
 ))
@@ -3720,7 +3720,7 @@ MlyValue.identifier_or_literal_or_ddt((
 Cobol.IDENTIFIER_OR_LITERAL_OR_DDT_IS_DDT(date_day_time)))
  in (hojfelds_NT 544,(result,date_day_time1left,date_day_time1right),
 rest671) end
-| (675,(_,(MlyValue.identifier identifier,_,identifierright as 
+| (675,(_,(MlyValue.identifier identifier,_,identifierright as
 identifier1right))::_::(_,(MlyValue.ts2k ts2k,_,_))::_::(_,(
 MlyValue.identifier_or_literal_or_ddt identifier_or_literal_or_ddt,_,_
 ))::_::(_,(_,TS2Kleft as TS2K1left,_))::rest671) => let val result=
@@ -3764,7 +3764,7 @@ Cobol.NO_FROM))
  => let val result=MlyValue.date_day_time((
 Cobol.DATE(DATEleft,DATEright)))
  in (hojfelds_NT 112,(result,DATE1left,DATE1right),rest671) end
-| (682,(_,(_,DAYleft as DAY1left,DAYright as DAY1right))::rest671) => 
+| (682,(_,(_,DAYleft as DAY1left,DAYright as DAY1right))::rest671) =>
 let val result=MlyValue.date_day_time((Cobol.DAY(DAYleft,DAYright)))
  in (hojfelds_NT 112,(result,DAY1left,DAY1right),rest671) end
 | (683,(_,(_,TIMEleft as TIME1left,TIMEright as TIME1right))::rest671)
@@ -3807,8 +3807,8 @@ Cobol.ADD_OR_SUBTRACT_CORRESPONDING
 ))
  in (hojfelds_NT 10,(result,ADD1left,end_add1right),rest671) end
 | (687,(_,(MlyValue.identifier_rounded identifier_rounded,_,
-identifier_rounded1right))::(_,(MlyValue.identifier_roundeds 
-identifier_roundeds,identifier_roundeds1left,_))::rest671) => let val 
+identifier_rounded1right))::(_,(MlyValue.identifier_roundeds
+identifier_roundeds,identifier_roundeds1left,_))::rest671) => let val
 result=MlyValue.identifier_roundeds((
 Cobol.SEVERAL_IDENTIFIER_ROUNDEDS(identifier_roundeds,
                                              identifier_rounded)
@@ -3816,24 +3816,24 @@ Cobol.SEVERAL_IDENTIFIER_ROUNDEDS(identifier_roundeds,
  in (hojfelds_NT 236,(result,identifier_roundeds1left,
 identifier_rounded1right),rest671) end
 | (688,(_,(MlyValue.identifier_rounded identifier_rounded,
-identifier_rounded1left,identifier_rounded1right))::rest671) => let 
+identifier_rounded1left,identifier_rounded1right))::rest671) => let
 val result=MlyValue.identifier_roundeds((
 Cobol.ONE_IDENTIFIER_ROUNDED(identifier_rounded)))
  in (hojfelds_NT 236,(result,identifier_rounded1left,
 identifier_rounded1right),rest671) end
 | (689,(_,(MlyValue.rounded rounded,_,rounded1right))::(_,(
-MlyValue.identifier identifier,identifier1left,_))::rest671) => let 
+MlyValue.identifier identifier,identifier1left,_))::rest671) => let
 val result=MlyValue.identifier_rounded((
 Cobol.IDENTIFIER_ROUNDED(identifier,rounded)))
  in (hojfelds_NT 235,(result,identifier1left,rounded1right),rest671)
  end
 | (690,(_,(MlyValue.size_error_clause size_error_clause,
-size_error_clause1left,size_error_clause1right))::rest671) => let val 
+size_error_clause1left,size_error_clause1right))::rest671) => let val
 result=MlyValue.size_error_clauses((size_error_clause))
  in (hojfelds_NT 442,(result,size_error_clause1left,
 size_error_clause1right),rest671) end
 | (691,(_,(MlyValue.imperative_statement imperative_statement,_,
-imperative_statement1right))::_::_::(_,(_,on1left,_))::rest671) => 
+imperative_statement1right))::_::_::(_,(_,on1left,_))::rest671) =>
 let val result=MlyValue.size_error_clause((
 Cobol.SIZE_ERROR(imperative_statement)))
  in (hojfelds_NT 441,(result,on1left,imperative_statement1right),
@@ -3841,14 +3841,14 @@ rest671) end
 | (692,rest671) => let val result=MlyValue.size_error_clause((
 Cobol.NO_SIZE_ERROR))
  in (hojfelds_NT 441,(result,defaultPos,defaultPos),rest671) end
-| (693,(_,(_,_,alterations1right))::(_,(_,ALTER1left,_))::rest671) => 
+| (693,(_,(_,_,alterations1right))::(_,(_,ALTER1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 32,(result,ALTER1left,alterations1right),rest671) end
 | (694,(_,(_,_,alteration1right))::(_,(_,alterations1left,_))::rest671
 ) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 34,(result,alterations1left,alteration1right),rest671)
  end
-| (695,(_,(_,alteration1left,alteration1right))::rest671) => let val 
+| (695,(_,(_,alteration1left,alteration1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 34,(result,alteration1left,alteration1right),rest671)
  end
@@ -3859,7 +3859,7 @@ rest671) end
 | (697,(_,(_,_,end_call1right))::_::_::_::(_,(_,CALL1left,_))::rest671
 ) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 55,(result,CALL1left,end_call1right),rest671) end
-| (698,(_,(_,_,identifiers1right))::(_,(_,USING1left,_))::rest671) => 
+| (698,(_,(_,_,identifiers1right))::(_,(_,USING1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 513,(result,USING1left,identifiers1right),rest671) end
 | (699,rest671) => let val result=MlyValue.ntVOID(())
@@ -3902,7 +3902,7 @@ MlyValue.ntVOID(())
 | (709,(_,(_,UNIT1left,UNIT1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 392,(result,UNIT1left,UNIT1right),rest671) end
-| (710,(_,(_,_,REWIND1right))::(_,(_,NO1left,_))::rest671) => let val 
+| (710,(_,(_,_,REWIND1right))::(_,(_,NO1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 320,(result,NO1left,REWIND1right),rest671) end
 | (711,(_,(_,LOCK1left,LOCK1right))::rest671) => let val result=
@@ -4026,13 +4026,13 @@ rest671) => let val result=MlyValue.ntVOID(())
 | (729,(_,(_,NAMED1left,NAMED1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 58,(result,NAMED1left,NAMED1right),rest671) end
-| (730,(_,(_,_,NAMED1right))::(_,(_,CHANGED1left,_))::rest671) => let 
+| (730,(_,(_,_,NAMED1right))::(_,(_,CHANGED1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 58,(result,CHANGED1left,NAMED1right),rest671) end
 | (731,(_,(_,EXIT1left,EXIT1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 163,(result,EXIT1left,EXIT1right),rest671) end
-| (732,(_,(_,_,PROGRAM1right))::(_,(_,EXIT1left,_))::rest671) => let 
+| (732,(_,(_,_,PROGRAM1right))::(_,(_,EXIT1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 162,(result,EXIT1left,PROGRAM1right),rest671) end
 | (733,(_,(_,_,procedure_name_opt1right))::_::(_,(_,GO1left,_))::
@@ -4044,7 +4044,7 @@ rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 218,(result,GO1left,identifier1right),rest671) end
 | (735,(_,(MlyValue.else_statements else_statements,_,
 else_statements1right))::(_,(MlyValue.then_statements then_statements,
-_,_))::(_,(_,_,thenright))::(_,(MlyValue.conditional_expression 
+_,_))::(_,(_,_,thenright))::(_,(MlyValue.conditional_expression
 conditional_expression,_,_))::(_,(_,IFleft as IF1left,_))::rest671)
  => let val result=MlyValue.if_statement((
 Cobol.IF(conditional_expression,then_statements,else_statements,
@@ -4053,19 +4053,19 @@ Cobol.IF(conditional_expression,then_statements,else_statements,
  in (hojfelds_NT 240,(result,IF1left,else_statements1right),rest671)
  end
 | (736,(_,(MlyValue.imperative_statement imperative_statement,
-imperative_statement1left,imperative_statement1right))::rest671) => 
+imperative_statement1left,imperative_statement1right))::rest671) =>
 let val result=MlyValue.then_statements((
 Cobol.THEN_STATEMENTS(imperative_statement)))
  in (hojfelds_NT 490,(result,imperative_statement1left,
 imperative_statement1right),rest671) end
-| (737,(_,(_,_,SENTENCE1right))::(_,(_,NEXT1left,_))::rest671) => let 
+| (737,(_,(_,_,SENTENCE1right))::(_,(_,NEXT1left,_))::rest671) => let
 val result=MlyValue.then_statements((Cobol.NEXT_SENTENCE))
  in (hojfelds_NT 490,(result,NEXT1left,SENTENCE1right),rest671) end
 | (738,(_,(_,_,end_if1right))::(_,(MlyValue.statements statements,_,_)
 )::(_,(_,ELSE1left,_))::rest671) => let val result=
 MlyValue.else_statements((Cobol.ELSE(statements)))
  in (hojfelds_NT 130,(result,ELSE1left,end_if1right),rest671) end
-| (739,(_,(_,_,SENTENCE1right))::_::(_,(_,ELSE1left,_))::rest671) => 
+| (739,(_,(_,_,SENTENCE1right))::_::(_,(_,ELSE1left,_))::rest671) =>
 let val result=MlyValue.else_statements((Cobol.ELSE_NEXT_SENTENCE))
  in (hojfelds_NT 130,(result,ELSE1left,SENTENCE1right),rest671) end
 | (740,(_,(_,end_if1left,end_if1right))::rest671) => let val result=
@@ -4200,7 +4200,7 @@ before_after_phrase1right),rest671) end
  in (hojfelds_NT 308,(result,MERGE1left,
 output_procedure_or_giving_phrase1right),rest671) end
 | (771,(_,(_,_,on_ascending_descending_key_phrase1right))::(_,(_,
-on_ascending_descending_key_phrases1left,_))::rest671) => let val 
+on_ascending_descending_key_phrases1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 337,(result,on_ascending_descending_key_phrases1left,
 on_ascending_descending_key_phrase1right),rest671) end
@@ -4226,7 +4226,7 @@ output_procedure_phrase1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 353,(result,output_procedure_phrase1left,
 output_procedure_phrase1right),rest671) end
-| (778,(_,(_,giving_phrase1left,giving_phrase1right))::rest671) => 
+| (778,(_,(_,giving_phrase1left,giving_phrase1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 353,(result,giving_phrase1left,giving_phrase1right),
 rest671) end
@@ -4234,7 +4234,7 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 354,(result,OUTPUT1left,procedure_range1right),rest671
 ) end
-| (780,(_,(_,procedure_name1left,procedure_name1right))::rest671) => 
+| (780,(_,(_,procedure_name1left,procedure_name1right))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 170,(result,procedure_name1left,procedure_name1right),
 rest671) end
@@ -4242,11 +4242,11 @@ rest671) end
 )::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 170,(result,procedure_name1left,procedure_name2right),
 rest671) end
-| (782,(_,(_,_,file_names1right))::(_,(_,GIVING1left,_))::rest671) => 
+| (782,(_,(_,_,file_names1right))::(_,(_,GIVING1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 217,(result,GIVING1left,file_names1right),rest671) end
-| (783,(_,(MlyValue.identifiers identifiers,_,identifiersright as 
-identifiers1right))::_::(_,(MlyValue.identifier_or_literal 
+| (783,(_,(MlyValue.identifiers identifiers,_,identifiersright as
+identifiers1right))::_::(_,(MlyValue.identifier_or_literal
 identifier_or_literal,_,_))::(_,(_,MOVEleft as MOVE1left,_))::rest671)
  => let val result=MlyValue.move_statement((
 Cobol.MOVE(identifier_or_literal,identifiers,
@@ -4285,14 +4285,14 @@ Cobol.MULTIPLY_GIVING(identifier_or_literal1,identifier_or_literal2
 ))
  in (hojfelds_NT 317,(result,MULTIPLY1left,end_multiply1right),rest671)
  end
-| (787,(_,(_,_,io_phrases1right))::(_,(_,OPEN1left,_))::rest671) => 
+| (787,(_,(_,_,io_phrases1right))::(_,(_,OPEN1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 341,(result,OPEN1left,io_phrases1right),rest671) end
 | (788,(_,(_,_,io_phrase1right))::(_,(_,io_phrases1left,_))::rest671)
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 274,(result,io_phrases1left,io_phrase1right),rest671)
  end
-| (789,(_,(_,io_phrase1left,io_phrase1right))::rest671) => let val 
+| (789,(_,(_,io_phrase1left,io_phrase1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 274,(result,io_phrase1left,io_phrase1right),rest671)
  end
@@ -4304,10 +4304,10 @@ result=MlyValue.ntVOID(())
 ))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 273,(result,OUTPUT1left,
 file_output_specifications1right),rest671) end
-| (792,(_,(_,_,file_names1right))::(_,(_,IO1left,_))::rest671) => let 
+| (792,(_,(_,_,file_names1right))::(_,(_,IO1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 273,(result,IO1left,file_names1right),rest671) end
-| (793,(_,(_,_,file_names1right))::(_,(_,EXTEND1left,_))::rest671) => 
+| (793,(_,(_,_,file_names1right))::(_,(_,EXTEND1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 273,(result,EXTEND1left,file_names1right),rest671) end
 | (794,(_,(_,_,file_input_specification1right))::(_,(_,
@@ -4324,10 +4324,10 @@ file_input_specification1right),rest671) end
 file_name1left,_))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 197,(result,file_name1left,
 file_input_specification_attribute1right),rest671) end
-| (797,(_,(_,REVERSED1left,REVERSED1right))::rest671) => let val 
+| (797,(_,(_,REVERSED1left,REVERSED1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 198,(result,REVERSED1left,REVERSED1right),rest671) end
-| (798,(_,(_,_,REWIND1right))::_::(_,(_,with1left,_))::rest671) => 
+| (798,(_,(_,_,REWIND1right))::_::(_,(_,with1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 198,(result,with1left,REWIND1right),rest671) end
 | (799,rest671) => let val result=MlyValue.ntVOID(())
@@ -4346,7 +4346,7 @@ file_output_specification1right),rest671) end
 file_name1left,_))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 204,(result,file_name1left,
 file_output_specification_attribute1right),rest671) end
-| (803,(_,(_,_,REWIND1right))::_::(_,(_,with1left,_))::rest671) => 
+| (803,(_,(_,_,REWIND1right))::_::(_,(_,with1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 205,(result,with1left,REWIND1right),rest671) end
 | (804,rest671) => let val result=MlyValue.ntVOID(())
@@ -4392,12 +4392,12 @@ rest671) end
 | (815,(_,(_,_,end_read1right))::_::_::_::_::_::_::(_,(_,READ1left,_))
 ::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 377,(result,READ1left,end_read1right),rest671) end
-| (816,(_,(_,_,identifier1right))::(_,(_,INTO1left,_))::rest671) => 
+| (816,(_,(_,_,identifier1right))::(_,(_,INTO1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 266,(result,INTO1left,identifier1right),rest671) end
 | (817,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 266,(result,defaultPos,defaultPos),rest671) end
-| (818,(_,(_,_,data_name1right))::_::(_,(_,KEY1left,_))::rest671) => 
+| (818,(_,(_,_,data_name1right))::_::(_,(_,KEY1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 283,(result,KEY1left,data_name1right),rest671) end
 | (819,rest671) => let val result=MlyValue.ntVOID(())
@@ -4430,7 +4430,7 @@ rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 400,(result,RELEASE1left,from_identifier1right),
 rest671) end
-| (827,(_,(_,_,identifier1right))::(_,(_,FROM1left,_))::rest671) => 
+| (827,(_,(_,_,identifier1right))::(_,(_,FROM1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 216,(result,FROM1left,identifier1right),rest671) end
 | (828,rest671) => let val result=MlyValue.ntVOID(())
@@ -4485,13 +4485,13 @@ rest671) end
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 435,(result,SET1left,mnemonic_switches1right),rest671)
  end
-| (843,(_,(_,_,TRUE1right))::_::_::(_,(_,SET1left,_))::rest671) => 
+| (843,(_,(_,_,TRUE1right))::_::_::(_,(_,SET1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 435,(result,SET1left,TRUE1right),rest671) end
-| (844,(_,(_,_,BY1right))::(_,(_,UP1left,_))::rest671) => let val 
+| (844,(_,(_,_,BY1right))::(_,(_,UP1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 505,(result,UP1left,BY1right),rest671) end
-| (845,(_,(_,_,BY1right))::(_,(_,DOWN1left,_))::rest671) => let val 
+| (845,(_,(_,_,BY1right))::(_,(_,DOWN1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 505,(result,DOWN1left,BY1right),rest671) end
 | (846,(_,(_,_,mnemonic_switch1right))::(_,(_,mnemonic_switches1left,_
@@ -4528,7 +4528,7 @@ sort_using_phrase1right),rest671) end
 rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 261,(result,INPUT1left,procedure_range1right),rest671)
  end
-| (855,(_,(_,_,file_names1right))::(_,(_,USING1left,_))::rest671) => 
+| (855,(_,(_,_,file_names1right))::(_,(_,USING1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 175,(result,USING1left,file_names1right),rest671) end
 | (856,(_,(_,_,end_start1right))::_::_::_::(_,(_,START1left,_))::
@@ -4539,10 +4539,10 @@ rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 284,(result,KEY1left,qdata_names1right),rest671) end
 | (858,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 284,(result,defaultPos,defaultPos),rest671) end
-| (859,(_,(_,_,RUN1right))::(_,(_,STOP1left,_))::rest671) => let val 
+| (859,(_,(_,_,RUN1right))::(_,(_,STOP1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 466,(result,STOP1left,RUN1right),rest671) end
-| (860,(_,(_,_,literal1right))::(_,(_,STOP1left,_))::rest671) => let 
+| (860,(_,(_,_,literal1right))::(_,(_,STOP1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 466,(result,STOP1left,literal1right),rest671) end
 | (861,(_,(_,_,end_string1right))::_::_::_::_::_::(_,(_,STRING1left,_)
@@ -4624,10 +4624,10 @@ Cobol.ADD_OR_SUBTRACT_CORRESPONDING
 ))
  in (hojfelds_NT 473,(result,SUBTRACT1left,end_subtract1right),rest671)
  end
-| (874,(_,(_,_,TRACE1right))::(_,(_,READY1left,_))::rest671) => let 
+| (874,(_,(_,_,TRACE1right))::(_,(_,READY1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 503,(result,READY1left,TRACE1right),rest671) end
-| (875,(_,(_,_,TRACE1right))::(_,(_,RESET1left,_))::rest671) => let 
+| (875,(_,(_,_,TRACE1right))::(_,(_,RESET1left,_))::rest671) => let
 val result=MlyValue.ntVOID(())
  in (hojfelds_NT 503,(result,RESET1left,TRACE1right),rest671) end
 | (876,(_,(_,_,end_unstring1right))::_::_::_::_::_::_::(_,(_,
@@ -4691,7 +4691,7 @@ rest671) => let val result=MlyValue.ntVOID(())
 USE1left,_))::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 511,(result,USE1left,procedure_specification1right),
 rest671) end
-| (893,(_,(_,_,PROCEDURES1right))::(_,(_,ALL1left,_))::rest671) => 
+| (893,(_,(_,_,PROCEDURES1right))::(_,(_,ALL1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 171,(result,ALL1left,PROCEDURES1right),rest671) end
 | (894,(_,(_,_,procedure_names1right))::_::(_,(_,ALL1left,_))::rest671
@@ -4702,14 +4702,14 @@ let val result=MlyValue.ntVOID(())
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 171,(result,procedure_names1left,procedure_names1right
 ),rest671) end
-| (896,(_,(_,EXCEPTION1left,EXCEPTION1right))::rest671) => let val 
+| (896,(_,(_,EXCEPTION1left,EXCEPTION1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 160,(result,EXCEPTION1left,EXCEPTION1right),rest671)
  end
 | (897,(_,(_,ERROR1left,ERROR1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 160,(result,ERROR1left,ERROR1right),rest671) end
-| (898,(_,(_,file_names1left,file_names1right))::rest671) => let val 
+| (898,(_,(_,file_names1left,file_names1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 275,(result,file_names1left,file_names1right),rest671)
  end
@@ -4755,7 +4755,7 @@ MlyValue.ntVOID(())
 | (912,(_,(_,LINE1left,LINE1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 536,(result,LINE1left,LINE1right),rest671) end
-| (913,(_,(_,_,LINE1right))::(_,(_,AT1left,_))::rest671) => let val 
+| (913,(_,(_,_,LINE1right))::(_,(_,AT1left,_))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 536,(result,AT1left,LINE1right),rest671) end
 | (914,rest671) => let val result=MlyValue.ntVOID(())
@@ -4814,7 +4814,7 @@ rest671) => let val result=MlyValue.ntVOID(())
 rest671) end
 | (932,rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 156,(result,defaultPos,defaultPos),rest671) end
-| (933,(_,(_,ENDOFPAGE1left,ENDOFPAGE1right))::rest671) => let val 
+| (933,(_,(_,ENDOFPAGE1left,ENDOFPAGE1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 140,(result,ENDOFPAGE1left,ENDOFPAGE1right),rest671)
  end
@@ -4825,10 +4825,10 @@ MlyValue.ntVOID(())
 )::rest671) => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 81,(result,COPY1left,copy_replacing_phrase1right),
 rest671) end
-| (936,(_,(_,_,library_name1right))::(_,(_,OF1left,_))::rest671) => 
+| (936,(_,(_,_,library_name1right))::(_,(_,OF1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 292,(result,OF1left,library_name1right),rest671) end
-| (937,(_,(_,_,library_name1right))::(_,(_,IN1left,_))::rest671) => 
+| (937,(_,(_,_,library_name1right))::(_,(_,IN1left,_))::rest671) =>
 let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 292,(result,IN1left,library_name1right),rest671) end
 | (938,rest671) => let val result=MlyValue.ntVOID(())
@@ -4852,14 +4852,14 @@ copy_replacing_specification1right),rest671) end
 | (943,(_,(_,_,operand2right))::_::(_,(_,operand1left,_))::rest671)
  => let val result=MlyValue.ntVOID(())
  in (hojfelds_NT 180,(result,operand1left,operand2right),rest671) end
-| (944,(_,(_,identifier1left,identifier1right))::rest671) => let val 
+| (944,(_,(_,identifier1left,identifier1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 342,(result,identifier1left,identifier1right),rest671)
  end
 | (945,(_,(_,literal1left,literal1right))::rest671) => let val result=
 MlyValue.ntVOID(())
  in (hojfelds_NT 342,(result,literal1left,literal1right),rest671) end
-| (946,(_,(_,PSEUDOTEXT1left,PSEUDOTEXT1right))::rest671) => let val 
+| (946,(_,(_,PSEUDOTEXT1left,PSEUDOTEXT1right))::rest671) => let val
 result=MlyValue.ntVOID(())
  in (hojfelds_NT 342,(result,PSEUDOTEXT1left,PSEUDOTEXT1right),rest671)
  end
@@ -4868,4 +4868,4 @@ result=MlyValue.ntVOID(())
 val void = MlyValue.VOID
 val extract = fn a => (fn MlyValue.test_cobol x => x
 | _ => let exception ParseInternal
-        in raise ParseInternal end) a 
+        in raise ParseInternal end) a

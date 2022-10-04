@@ -32,5 +32,5 @@ structure MutableQueue:
                                  [] => raise Fail "MutableQueue.deque"
                                | x :: l => (front := l; SOME x)
                            end)
-          | x :: l => (front := l; SOME x) 
+          | x :: l => (front := l; SOME x)
    end

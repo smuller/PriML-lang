@@ -1,8 +1,8 @@
 
-(* WordN for 0 <= N <= 32. 
+(* WordN for 0 <= N <= 32.
    For compatibility between mlton and NJ;
    mlton supports all of these, but NJ does
-   not. 
+   not.
 
    Note that this won't overload constants or
    math ops at the new types. This is because
@@ -15,16 +15,16 @@ functor WordNX(structure W : WORD
                val bits : int) :> WORD =
 struct
     (* structure W = Word32 *)
-    
+
     (* sanity check that we can implement a word of
        this size with the supplied structure *)
-    val () = if W.wordSize < bits 
+    val () = if W.wordSize < bits
              then raise Overflow (* maybe a better exception?? *)
              else ()
 
     (* representation invariant: always mod 2^bits *)
     type word = W.word
-    
+
     val mask = W.>> (W.fromInt ~1, Word.fromInt W.wordSize - Word.fromInt bits)
 
     exception Unimplemented

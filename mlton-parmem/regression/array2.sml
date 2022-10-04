@@ -3,7 +3,7 @@ open Array2
 val x = ref 0
 
 val i2s = Int.toString
-   
+
 fun test trv =
    let
       val a =
@@ -24,7 +24,7 @@ val _ =
    (array (m, 2, 13)
     ; print "FAIL")
    handle Size => print "OK"
-      
+
 val _ =
    (tabulate RowMajor (m, 2, fn _ => 13)
     ; print "FAIL")

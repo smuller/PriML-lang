@@ -20,7 +20,7 @@ structure IO: IO =
          General.addExnMessager
          (fn e =>
           case e of
-             Io {cause, function, name, ...} => 
+             Io {cause, function, name, ...} =>
                 SOME (concat ["Io: ", function, " \"", name, "\" failed with ",
                               exnMessage cause])
            | _ => NONE)

@@ -18,7 +18,7 @@ struct
       val tabulate : int * (int -> ('a * 'b * 'c)) -> ('a, 'b, 'c) array
   end =
   struct
-      type ('a, 'b, 'c) array = 
+      type ('a, 'b, 'c) array =
           'a Array.array * 'b Array.array * 'c Array.array
       (* PERF only need to do bounds check once *)
       fun sub ((a, b, c), i) = (Array.sub(a, i),
@@ -30,7 +30,7 @@ struct
               Array.update(b, i, bb);
               Array.update(c, i, cc)
           end
-      
+
       fun tabulate (0, _) = (Array.fromList nil,
                              Array.fromList nil,
                              Array.fromList nil)
@@ -55,7 +55,7 @@ struct
 
       fun length (a, _, _) = Array.length a
   end
-  
+
   (* XXX necessary? *)
   type priority = priority
 
@@ -96,7 +96,7 @@ struct
       let
         (* get it *)
         val me = Array.sub(a, i)
-          
+
         val li = 2 * i + 1
         val ri = 2 * i + 2
 
@@ -114,7 +114,7 @@ struct
         case compare (#1 me, #1 cl) of
           (* will swap, but with which child? *)
           GREATER =>
-            if ri >= n 
+            if ri >= n
             then swap cl li
             else let
                    val cr = Array.sub(a, 2 * i + 2)
@@ -123,11 +123,11 @@ struct
                       LESS => swap cl li
                     | _ => swap cr ri)
                  end
-                      
+
         | _ => if ri >= n
                then () (* done -- less than left child,
                           no right child *)
-               else let 
+               else let
                       val cr = Array.sub(a, 2 * i + 2)
                     in
                       case compare (#1 me, #1 cr) of
@@ -138,7 +138,7 @@ struct
 
 
   (* the element i may violate the order invariant by being too low.
-     swap it with its parent until it doesn't. 
+     swap it with its parent until it doesn't.
 
 
           a
@@ -151,7 +151,7 @@ struct
      we know b<d,e, a<b, c<f,g, a<f,g
      but it may not be the case that a<c, which violates
      the invt.
-       
+
 
           c
         /   \
@@ -160,7 +160,7 @@ struct
      d   e f   g
 
      if we swap a and c, we fix this (perhaps introducing
-     the same problem now with i=indexof(a)). 
+     the same problem now with i=indexof(a)).
 
      c < b because c < a < b.
      *)
@@ -188,14 +188,14 @@ struct
   fun insertusing h heap p a =
     let
       (* ensure we have enough room for this new one *)
-      val (n, arr) = 
+      val (n, arr) =
         let val (n, arr) = !heap
         in
           if n = Array.length arr
-          then 
+          then
           let
             val newsize = if n = 0 then 512
-                          (* grow exponentially, 
+                          (* grow exponentially,
                              but not doubling since
                              memory pressure is often
                              tight. *)
@@ -233,7 +233,7 @@ struct
     let
       (* now, remove the last element *)
       val (pl, al, hl) = removelast heap
-        
+
 
       val (pold, _, _) = Array.sub(#2 (!heap), i)
     in
@@ -254,10 +254,10 @@ struct
           | EQUAL => ()
         end
     end
-    
+
 
   fun min (ref (0, _)) = NONE
-    | min (heap as ref(_, a)) = 
+    | min (heap as ref(_, a)) =
     let
       val (p, a, h) = Array.sub(a, 0)
     in
@@ -271,7 +271,7 @@ struct
     end
 
   (* PERF this is simple, but we could also test whether this
-     is an increase or decrease, and then percolate_up or 
+     is an increase or decrease, and then percolate_up or
      percolate_down! *)
   fun adjust heap h p =
     let val (_, a) = get heap h
@@ -293,10 +293,10 @@ struct
   fun handtostring (ref n) = Int.toString n
   fun printheap atos ptos (ref (n, arr)) =
     let
-      fun pchild par d i = 
+      fun pchild par d i =
         if i < n
-        then 
-          let 
+        then
+          let
             val (p, a, h) = Array.sub(arr, i)
           in
             print (CharVector.tabulate(d * 2, fn _ => #" "));
@@ -306,7 +306,7 @@ struct
             if !h <> i then print "XXX!!!"
             else ();
               print "\n";
-              
+
               pchild p (d + 1) (i * 2 + 1);
               pchild p (d + 1) (i * 2 + 2)
           end

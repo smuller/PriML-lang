@@ -8,9 +8,9 @@ struct
              (* Key, quotation character, value *)
              attrs : (string * char * string) list,
              endslash : bool }
-  
+
   fun addattrs nil l = l
-    | addattrs ((k, q, v) :: t) l = 
+    | addattrs ((k, q, v) :: t) l =
     " " :: k :: implode [#"=", q] :: v :: implode [q] :: addattrs t l
 
   fun chunktostring (Text s) = s
@@ -57,7 +57,7 @@ struct
     | istagchar #"/" = false
     | istagchar c = not (iswhitespace c)
   val tagchars = repeat1 (satisfy istagchar) wth implode
-    
+
   val attrkeyval =
     (tagchars << whitespace << literal #"=" << whitespace) && strlit
     wth flat3
@@ -87,7 +87,7 @@ struct
                          Text (String.concat ("<?xml" :: addattrs attrs ["?>\n"])))
 
   (* PERF has to re-parse leading whitespace. *)
-  val text = 
+  val text =
     whitespace >> xmldecl << whitespace ||
     repeat1 (satisfy (fn x => x <> #"<")) wth Text o implode
 
@@ -127,12 +127,12 @@ struct
     let val ms = Pos.markstream s
     in transform chunk ms
     end
-  
+
   val chunkfile = chunkstream o filestream
   val chunkstring = chunkstream o stringstream
 
   fun consume_file_progress progress f s =
-    let 
+    let
 
       (* Repeating filestream so that we can also check
          the file's cursor *)
@@ -178,7 +178,7 @@ struct
       fun appme chunk =
         let val chunk = f chunk
           val s = chunktostring chunk
-        in 
+        in
           (* print ("Write chunk [" ^ s ^ "]\n"); *)
           writestring ff s
         end

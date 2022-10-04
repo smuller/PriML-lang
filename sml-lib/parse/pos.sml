@@ -15,30 +15,30 @@ struct
   fun initposex s = At {file = s, char = 1, line = 1, abschar = 1}
   val initpos = initposex "?"
 
-  fun nextchar (At {file, char, line, abschar}) = 
+  fun nextchar (At {file, char, line, abschar}) =
     At {file = file, char = char + 1,
         line = line, abschar = abschar + 1}
-    | nextchar (Between (_,{file, char, line, abschar})) = 
+    | nextchar (Between (_,{file, char, line, abschar})) =
     At {file = file, char = char + 1,
         line = line, abschar = abschar + 1}
 
-  fun nextline (At {file, char, line, abschar}) = 
+  fun nextline (At {file, char, line, abschar}) =
     At {file = file, char = 1, line = line + 1,
         abschar = abschar + 1}
-    | nextline (Between (_,{file, char, line, abschar})) = 
+    | nextline (Between (_,{file, char, line, abschar})) =
     At {file = file, char = 1, line = line + 1, abschar = abschar + 1}
 
   val tabsize = 8
-  fun tab {file, char=c, line=l, abschar} = 
-    { file = file, 
+  fun tab {file, char=c, line=l, abschar} =
+    { file = file,
       char = c + (tabsize - (c-1) mod tabsize),
       line = l,
       abschar = abschar + 1 }
 
-  fun nl {file, char=c, line=l, abschar} = 
+  fun nl {file, char=c, line=l, abschar} =
     {file = file, char = 1, line = l+1, abschar = abschar + 1}
 
-  fun graph {file, char=c, line=l, 
+  fun graph {file, char=c, line=l,
              abschar} = {file = file, char = c+1, line = l,
                                        abschar = abschar + 1}
 
@@ -73,7 +73,7 @@ struct
     in
       Stream.old_delay(mark(s, {file = "any?", char=1, line = ~1, abschar=1}))
     end
-    
+
   fun right (At coord) = coord
     | right (Between (_,coord)) = coord
 
@@ -81,7 +81,7 @@ struct
     | left (Between (coord,_)) = coord
 
   fun rightedge pos = At (right pos)
-    
+
   (* XX could use abschar for the following *)
   fun leftmost (a as {char=c1, line=l1, file=_, abschar=_},
                 b as {char=c2, line=l2, file, abschar=_}) : Coord =
@@ -114,10 +114,10 @@ struct
                          coord2 as {file, char, line, abschar})) =
         if coord1 = coord2 then coord2string coord1
         else if f1 = file
-             then coord2string coord1 ^ "-" ^ 
+             then coord2string coord1 ^ "-" ^
                   Int.toString line ^ "." ^ Int.toString (char - 1)
-             else coord2string coord1 ^ "-" ^ 
-                  coord2string {file = file, char=char-1, line=line, 
+             else coord2string coord1 ^ "-" ^
+                  coord2string {file = file, char=char-1, line=line,
                                 abschar=abschar-1}
 
   fun getabs (At c) = getabs (Between (c, c))

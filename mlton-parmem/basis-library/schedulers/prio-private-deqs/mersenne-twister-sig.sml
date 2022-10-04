@@ -1,4 +1,4 @@
-(* Standard Mersenne Twister pseudorandom number generator. 
+(* Standard Mersenne Twister pseudorandom number generator.
    (MT19937 with the improved initialization scheme.)
    Based on the BSD-licensed code by the algorithm's authors; this
    implementation also BSD-licensed (see mersenne-twister.sml for
@@ -31,7 +31,7 @@ sig
 
     (* Use input string as 32-bit words, with zero padding. *)
     val initstring : string -> mt
-        
+
     (* random_nat mt max
        Produce a random natural number [0, max). This has
        the correct distribution, but note that it

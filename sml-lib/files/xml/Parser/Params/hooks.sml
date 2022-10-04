@@ -3,12 +3,12 @@
 
 signature Hooks =
    sig
-      type AppData 
-      type AppFinal 
-      
+      type AppData
+      type AppFinal
+
       val hookXml       : AppData * HookData.XmlInfo -> AppData
       val hookFinish    : AppData -> AppFinal
-	 
+
       val hookError     : AppData * HookData.ErrorInfo -> AppData
       val hookWarning   : AppData * HookData.WarningInfo -> AppData
 

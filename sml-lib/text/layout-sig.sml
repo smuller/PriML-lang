@@ -11,7 +11,7 @@ signature LAYOUT =
    sig
 
       type layout
-         
+
       (* layout the objects on separate lines*)
       val align: layout list -> layout
       val alignPrefix: layout list * string -> layout
@@ -32,7 +32,7 @@ signature LAYOUT =
       val list: layout list -> layout
       (* give open, close, sep *)
       val listex : string -> string -> string -> layout list -> layout
-          
+
 
 (* (* what is this? *)
       val makeOutput: ('a -> layout) -> 'a * Outstream0.t -> unit
@@ -54,7 +54,7 @@ signature LAYOUT =
       val separate: layout list * string -> layout list
       (* adds string at beginning of all objects except first *)
       val separateLeft: layout list * string -> layout list
-      (* adds string at the end of all objects except last *) 
+      (* adds string at the end of all objects except last *)
       val separateRight: layout list * string -> layout list
       (* layout the objects on the same line *)
       val seq: layout list -> layout
@@ -66,17 +66,17 @@ signature LAYOUT =
       val tostringex : int -> layout -> string
       val tuple: layout list -> layout
       val tuple2: ('a -> layout) * ('b -> layout) -> 'a * 'b -> layout
-      val tuple3: ('a -> layout) * 
-                  ('b -> layout) * 
+      val tuple3: ('a -> layout) *
+                  ('b -> layout) *
                   ('c -> layout) -> 'a * 'b * 'c -> layout
-      val tuple4: ('a -> layout) * 
-                  ('b -> layout) * 
-                  ('c -> layout) * 
+      val tuple4: ('a -> layout) *
+                  ('b -> layout) *
+                  ('c -> layout) *
                   ('d -> layout) -> 'a * 'b * 'c * 'd -> layout
-      val tuple5: ('a -> layout) * 
-                  ('b -> layout) * 
-                  ('c -> layout) * 
-                  ('d -> layout) * 
+      val tuple5: ('a -> layout) *
+                  ('b -> layout) *
+                  ('c -> layout) *
+                  ('d -> layout) *
                   ('e -> layout) -> ('a * 'b * 'c * 'd * 'e) -> layout
       val vector: layout vector -> layout
    end

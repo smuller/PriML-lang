@@ -14,7 +14,7 @@ struct
     fun write w n =
         if n >= Array.length a
         then Array.vector a
-        else 
+        else
             let val s = w ()
             in
                 Array.update (a, n, s - 8192);

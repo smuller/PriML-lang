@@ -46,23 +46,23 @@ structure CUtil: C_UTIL =
 
             fun sub (cs, i) =
                Primitive.Char8.idFromWord8
-               (Pointer.getWord8 
-                (Pointer.fromWord cs, 
+               (Pointer.getWord8
+                (Pointer.fromWord cs,
                  C_Ptrdiff.fromInt i))
 
             fun update (cs, i, c) =
-               Pointer.setWord8 
-               (Pointer.fromWord cs, 
-                C_Ptrdiff.fromInt i, 
+               Pointer.setWord8
+               (Pointer.fromWord cs,
+                C_Ptrdiff.fromInt i,
                 Primitive.Char8.idToWord8 c)
 
             val length = makeLength (sub, fn #"\000" => true | _ => false)
 
-            fun toCharArrayOfLength (cs, n) = 
+            fun toCharArrayOfLength (cs, n) =
                toArrayOfLength (cs, sub, n)
 
             fun toStringOfLength (cs, n) =
-               String.unsafeFromArray 
+               String.unsafeFromArray
                (CharArray.fromPoly (toCharArrayOfLength (cs, n)))
 
             fun toString cs = toStringOfLength (cs, length cs)
@@ -72,15 +72,15 @@ structure CUtil: C_UTIL =
          struct
             type t = C_StringArray.t
 
-            fun sub (css: t, i) = 
+            fun sub (css: t, i) =
                (Pointer.toWord o Pointer.getCPointer)
-               (Pointer.fromWord css, 
+               (Pointer.fromWord css,
                 C_Ptrdiff.fromInt i)
 
             val length = makeLength (sub, C_Pointer.isNull)
 
-            val toArrayOfLength = 
-               fn (css, n) => 
+            val toArrayOfLength =
+               fn (css, n) =>
                toArrayOfLength (css, C_String.toString o sub, n)
 
             fun toArray css = toArrayOfLength (css, length css)

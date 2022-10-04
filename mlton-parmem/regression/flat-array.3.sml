@@ -7,4 +7,4 @@ val i = #1 (Array.sub (a, 0)) + #1 (Array.sub (a, 1))
 val x = #2 (Array.sub (a, 0)) + #2 (Array.sub (a, 1))
 
 val () = print (concat [Int.toString i, " ", Real.toString x, "\n"])
-   
+

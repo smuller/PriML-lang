@@ -14,7 +14,7 @@ structure List =
             fun qsort l =
                case l of
                   [] => []
-                | hd::tl => 
+                | hd::tl =>
                      let
                         val (lt,eq,gt) =
                            List.foldr
@@ -51,7 +51,7 @@ structure Name =
       datatype t = T of string list
 
       fun compare (T ss1, T ss2) =
-         List.collate 
+         List.collate
          (fn (s1,s2) =>
           String.compare (CharVector.map Char.toLower s1,
                           CharVector.map Char.toLower s2))
@@ -66,9 +66,9 @@ structure Name =
       fun parse ss =
          let
             val ss = Substring.droplSpace ss
-            val (names, rest) = 
-               Substring.splitl 
-               (fn c => Char.isAlphaNum c 
+            val (names, rest) =
+               Substring.splitl
+               (fn c => Char.isAlphaNum c
                    orelse c = #"." orelse c = #"_")
                ss
             val rest = Substring.droplSpace rest
@@ -87,12 +87,12 @@ structure Name =
 
 structure Type =
    struct
-      datatype t = 
+      datatype t =
          Array of t
        | Base of Name.t
        | Con of Name.t * t
        | Ref of t
-       | Unit 
+       | Unit
        | Vector of t
 
       fun toC t =
@@ -146,7 +146,7 @@ structure Type =
                              val (ret, rest) = parse rest
                           in
                              ({args = List.rev (arg::args),
-                               ret = ret}, 
+                               ret = ret},
                               rest)
                           end
                   else raise Fail (concat ["Type.parseFn: \"", Substring.string s, "\""])
@@ -179,7 +179,7 @@ structure Entry =
 
       fun toC entry =
          case entry of
-            Const {name, ty} => 
+            Const {name, ty} =>
                String.concat
                ["PRIVATE extern const ",
                 Type.toC ty,
@@ -188,7 +188,7 @@ structure Entry =
                 ";"]
           | Import {attrs, name, ty = {args, ret}} =>
                String.concat
-               [attrs, 
+               [attrs,
                 if String.size attrs > 0 then " " else "",
                 Type.toC ret,
                 " ",
@@ -236,7 +236,7 @@ structure Entry =
                 "\" private : (unit -> (",
                 Type.toML ty,
                 ")) * ((",
-                Type.toML ty, 
+                Type.toML ty,
                 ") -> unit);"]
 
       fun parseConst (s, name) =
@@ -319,7 +319,7 @@ val entries =
       fun loop entries =
          case TextIO.inputLine f of
             NONE => List.rev entries
-          | SOME s => 
+          | SOME s =>
                if String.isPrefix "#" s
                   then loop entries
                   else let
@@ -356,7 +356,7 @@ fun outputML entries =
       fun print s = TextIO.output (f, s)
       fun println s = if s <> "" then (print s; print "\n") else ()
 
-      val primStrs = 
+      val primStrs =
          (List.map (fn n => "Char" ^ n) ["8", "16", "32"]) @
          (List.map (fn n => "Int" ^ n) ["8", "16", "32", "64"]) @
          (List.map (fn n => "Real" ^ n) ["32", "64"]) @
@@ -368,7 +368,7 @@ fun outputML entries =
       val () = println "struct"
       val cur =
          List.foldl
-         (fn (entry, cur) => 
+         (fn (entry, cur) =>
           let
              val Name.T names = Entry.name entry
              val str = List.rev (List.tl (List.rev names))
@@ -376,14 +376,14 @@ fun outputML entries =
                 case (cur, str) of
                    ([], []) => ()
                  | ([], str) =>
-                      List.app (fn s => 
+                      List.app (fn s =>
                                 (println ("structure " ^ s ^ " = ")
                                  ; println "struct"
                                  ; if List.exists (fn s' => s = s') primStrs
                                       then println ("type t = " ^ s ^ ".t")
                                       else ()))
                                str
-                 | (cur, []) => 
+                 | (cur, []) =>
                       List.app (fn _ => println "end") cur
                  | (c::cur,s::str) =>
                       if c = s

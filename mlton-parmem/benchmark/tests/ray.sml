@@ -64,17 +64,17 @@ structure Interp =
       fun ordof(s, i) = Char.ord(String.sub(s, i))
       exception NotAChar
       exception NotAReal
-      fun fromStr x = 
+      fun fromStr x =
         (case Char.fromString x
           of SOME c => c
            | NONE => raise NotAChar)
 
-     fun strToReal s = 
+     fun strToReal s =
       (case Real.fromString s
         of SOME r => r
         | _ => raise NotAReal)
 
-    fun intToReal x = 
+    fun intToReal x =
      (strToReal ((Int.toString x) ^ ".0"))
 
 
@@ -185,7 +185,7 @@ structure Interp =
                         in
                           if (hd = ord (#"/"))
                             then (LITERAL(substring(tok, 1, size tok - 1)), deferred)
-                          else 
+                          else
                             if ((Char.isDigit (chr hd)) orelse (hd = ord (#"-")))
                             then (NUMBER(strToReal(tok)), deferred)
                             else (NAME tok, deferred)

@@ -1,5 +1,5 @@
 type word8 = Word8.word
-   
+
 (* Auxiliary functions for test cases *)
 
 infix 1 seq
@@ -7,8 +7,8 @@ fun e1 seq e2 = e2;
 fun check b = if b then "OK" else "WRONG";
 fun check' f = (if f () then "OK" else "WRONG") handle _ => "EXN";
 
-fun range (from, to) p = 
-    let open Int 
+fun range (from, to) p =
+    let open Int
     in
         (from > to) orelse (p from) andalso (range (from+1, to) p)
     end;
@@ -19,9 +19,9 @@ fun tst0 s s' = print (s ^ "    \t" ^ s' ^ "\n");
 fun tst  s b = tst0 s (check  b);
 fun tst' s f = tst0 s (check' f);
 
-fun tstrange s bounds = (tst s) o range bounds  
+fun tstrange s bounds = (tst s) o range bounds
 
-(* test/vector.sml -- some test cases for Vector 
+(* test/vector.sml -- some test cases for Vector
    PS 1994-12-10, 1995-06-14 *)
 
 (*KILL 05/11/1997 11:05. tho.:
@@ -30,9 +30,9 @@ use "auxil.sml";
 
 local
     open Word8Vector;
-    fun extract (vec, s, l) = 
+    fun extract (vec, s, l) =
       Word8VectorSlice.vector (Word8VectorSlice.slice (vec, s, l))
-    fun mapi f (vec, s, l) = 
+    fun mapi f (vec, s, l) =
       Word8VectorSlice.mapi (fn (i,x) => f (i+s,x)) (Word8VectorSlice.slice (vec, s, l))
     val i2w = Word8.fromInt;
     infix 9 sub;
@@ -85,21 +85,21 @@ val f = extract (e, 100, SOME 3);
 
 val test9:unit = tst' "test9" (fn _ => equal (f, b));
 
-val test9a:unit = tst' "test9a" (fn _ => equal (e, extract(e, 0, SOME (length e))) 
+val test9a:unit = tst' "test9a" (fn _ => equal (e, extract(e, 0, SOME (length e)))
                                  andalso equal (e, extract(e, 0, NONE)));
 val test9b:unit = tst' "test9b" (fn _ => equal (fromList [],
                                                 extract(e, 100, SOME 0)));
-val test9c:unit = tst0 "test9c" ((extract(e, ~1, SOME (length e))  seq "WRONG") 
+val test9c:unit = tst0 "test9c" ((extract(e, ~1, SOME (length e))  seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
-val test9d:unit = tst0 "test9d" ((extract(e, length e + 1, SOME 0)  seq "WRONG") 
+val test9d:unit = tst0 "test9d" ((extract(e, length e + 1, SOME 0)  seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
-val test9e:unit = tst0 "test9e" ((extract(e, 0, SOME (length e+1)) seq "WRONG") 
+val test9e:unit = tst0 "test9e" ((extract(e, 0, SOME (length e+1)) seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
-val test9f:unit = tst0 "test9f" ((extract(e, 20, SOME ~1)        seq "WRONG") 
+val test9f:unit = tst0 "test9f" ((extract(e, 20, SOME ~1)        seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
-val test9g:unit = tst0 "test9g" ((extract(e, ~1, NONE)  seq "WRONG") 
+val test9g:unit = tst0 "test9g" ((extract(e, ~1, NONE)  seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
-val test9h:unit = tst0 "test9h" ((extract(e, length e + 1, NONE)  seq "WRONG") 
+val test9h:unit = tst0 "test9h" ((extract(e, length e + 1, NONE)  seq "WRONG")
                             handle Subscript => "OK" | _ => "WRONG")
 val test9i:unit = tst' "test9i" (fn _ => equal (fromList [], extract (e, length e, SOME 0))
                                  andalso equal (fromList [], extract(e, length e, NONE)));
@@ -116,30 +116,30 @@ fun chkiteri iter f vec (res', last') =
                val res = iter (fn (i, x) => (last := i; f x)) vec
            in equal (res, res') andalso  !last = last' end)
 
-val test10a:unit = 
+val test10a:unit =
     chkiter map (fn x => 0w2*x) b (fromList [0w88,0w110,0w132], 0w66)
 
-val test11a:unit = 
+val test11a:unit =
     chkiteri mapi (fn x => 0w2*x) (b, 0, NONE) (fromList [0w88,0w110,0w132], 2)
-val test11b:unit = 
+val test11b:unit =
     chkiteri mapi (fn x => 0w2*x) (b, 1, NONE) (fromList [0w110,0w132], 2)
-val test11c:unit = 
+val test11c:unit =
     chkiteri mapi (fn x => 0w2*x) (b, 1, SOME 0) (fromList [], ~1)
-val test11d:unit = 
+val test11d:unit =
     chkiteri mapi (fn x => 0w2*x) (b, 1, SOME 1) (fromList [0w110], 1)
-val test11e:unit = 
+val test11e:unit =
     chkiteri mapi (fn x => 0w2*x) (b, 3, NONE) (fromList [], ~1)
 
 val test11f:unit =
-    tst0 "test11f" ((mapi #2 (b, 0, SOME 4) seq "WRONG") 
+    tst0 "test11f" ((mapi #2 (b, 0, SOME 4) seq "WRONG")
                     handle Subscript => "OK" | _ => "WRONG")
 val test11g:unit =
-    tst0 "test11g" ((mapi #2 (b, 3, SOME 1) seq "WRONG") 
+    tst0 "test11g" ((mapi #2 (b, 3, SOME 1) seq "WRONG")
                     handle Subscript => "OK" | _ => "WRONG")
 val test11h:unit =
-    tst0 "test11h" ((mapi #2 (b, 4, SOME 0) seq "WRONG") 
+    tst0 "test11h" ((mapi #2 (b, 4, SOME 0) seq "WRONG")
                     handle Subscript => "OK" | _ => "WRONG")
 val test11i:unit =
-    tst0 "test11i" ((mapi #2 (b, 4, NONE) seq "WRONG") 
+    tst0 "test11i" ((mapi #2 (b, 4, NONE) seq "WRONG")
                     handle Subscript => "OK" | _ => "WRONG")
 end;

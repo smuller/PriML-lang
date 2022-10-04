@@ -51,14 +51,14 @@ struct
             val d = P.frompoints [perturb x, perturb w, perturb y]
             val e = P.frompoints [perturb s, perturb z, perturb y]
 
-            val normed = 
-                SnapPoly.snap epsilon 
+            val normed =
+                SnapPoly.snap epsilon
                 [(A, a), (B, b), (C, c), (D, d), (E, e)]
         in
             (PointLocation.locator normed)
         end
 
-    fun show () = 
+    fun show () =
         let
             val f = TextIO.openOut "pointlocation-test.svg"
             fun wr s = TextIO.output(f, s)

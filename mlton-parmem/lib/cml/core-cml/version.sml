@@ -8,7 +8,7 @@
  * COPYRIGHT (c) 1996 AT&T Research.
  *)
 
-structure Version : VERSION = 
+structure Version : VERSION =
    struct
       val version = {
                      system = "Concurrent ML (MLton)",
@@ -20,9 +20,9 @@ structure Version : VERSION =
         | f ([x], l) = (Int.toString x)::l
         | f (x::r, l) = (Int.toString x) :: "." :: f(r, l)
 
-      val banner = 
+      val banner =
          concat (
-                 #system version :: 
+                 #system version ::
                  ", Version " ::
                  f (#version_id version, [", ", #date version])
                  )

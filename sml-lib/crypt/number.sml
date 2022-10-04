@@ -41,14 +41,14 @@ struct
       if y = n1 then x modd n
       else if y = n0 then n1
            else
-               let 
+               let
                    val (q, r) = quotrem (y, n2)
                    val t = modexp x q n
                    val t = (t ** t) modd n
                in
                    if r = n0 then t
                    else (t ** x) modd n
-               end 
+               end
 
   (* euclid(a, b)
      returns (g, x, y)

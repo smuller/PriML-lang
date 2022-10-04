@@ -10,68 +10,68 @@
  * Here is the puzzle.
  *
  * This word problem has 25 variables and 24 are given values. You must
- * solve 
- * the 25th. 
- * 
- * The trick is HOW? 
- * 
+ * solve
+ * the 25th.
+ *
+ * The trick is HOW?
+ *
  * If you look at the problem mathematically, no sweat. If you get lost
- * in the 
- * English, you are dead. 
- * 
+ * in the
+ * English, you are dead.
+ *
  * You will know you are right by checking the answer with all the
- * conditions. 
- * 
- * Less than 1 percent of the population can solve this problem. 
- * 
- * The question is: Based on the following clues, who owns the zebra? 
- * 
- * **There are five houses. 
- * 
- * **Each house has its own unique color. 
- * 
- * **All house owners are of different nationalities. 
- * 
- * **They all have different pets. 
- * 
- * **They all drink different drinks. 
- * 
- * **They all smoke different cigarettes. 
- * 
- * **The Englishman lives in the red house. 
- * 
- * **The Swede has a dog. 
- * 
- * **The Dane drinks tea. 
- * 
- * **The green house is adjacent to the white house on the left. 
- * 
- * **In the green house they drink coffee. 
- * 
- * **The man who smokes Pall Malls has birds. 
- * 
- * **In the yellow house they smoke Dunhills. 
- * 
- * **In the middle house they drink milk. 
- * 
- * **The Norwegian lives in the first house. 
- * 
+ * conditions.
+ *
+ * Less than 1 percent of the population can solve this problem.
+ *
+ * The question is: Based on the following clues, who owns the zebra?
+ *
+ * **There are five houses.
+ *
+ * **Each house has its own unique color.
+ *
+ * **All house owners are of different nationalities.
+ *
+ * **They all have different pets.
+ *
+ * **They all drink different drinks.
+ *
+ * **They all smoke different cigarettes.
+ *
+ * **The Englishman lives in the red house.
+ *
+ * **The Swede has a dog.
+ *
+ * **The Dane drinks tea.
+ *
+ * **The green house is adjacent to the white house on the left.
+ *
+ * **In the green house they drink coffee.
+ *
+ * **The man who smokes Pall Malls has birds.
+ *
+ * **In the yellow house they smoke Dunhills.
+ *
+ * **In the middle house they drink milk.
+ *
+ * **The Norwegian lives in the first house.
+ *
  * **The man who smokes Blends lives in a house next to the house with
- * cats. 
- * 
- * **In a house next to the house where they have a horse, they smoke 
- * Dunhills. 
- * 
- * **The man who smokes Blue Masters drinks beer. 
- * 
- * **The German smokes Princes. 
- * 
- * **The Norwegian lives next to the blue house. 
- * 
+ * cats.
+ *
+ * **In a house next to the house where they have a horse, they smoke
+ * Dunhills.
+ *
+ * **The man who smokes Blue Masters drinks beer.
+ *
+ * **The German smokes Princes.
+ *
+ * **The Norwegian lives next to the blue house.
+ *
  * **They drink water in a house next to the house where they smoke
- * Blends. 
- * 
- * Who owns the zebra? 
+ * Blends.
+ *
+ * Who owns the zebra?
  *)
 
 fun peek (l, p) = List.find p l
@@ -161,7 +161,7 @@ fun search () =
                           in print s
                              ; print (CharVector.tabulate (12 - size s,
                                                          fn _ => #" "))
-                          end) poss 
+                          end) poss
                 ; print "\n")
          in
             loop (cigarettes, cigaretteToString)
@@ -170,7 +170,7 @@ fun search () =
             ; loop (nationalities, nationalityToString)
             ; loop (pets, petToString)
          end
-   
+
       fun make f =
          fn (SOME x, SOME y) => f (x, y)
           | _ => true
@@ -198,7 +198,7 @@ fun search () =
          andalso adjacent (nat Norwegian, color Blue)
          andalso adjacent (drink Water, smoke Blend)
           )
-         
+
       fun tryEach (l, f) =
          let
             fun loop (l, ac) =
@@ -207,14 +207,14 @@ fun search () =
                 | x :: l => (f (x, l @ ac); loop (l, x :: ac))
          in loop (l, [])
          end
-               
+
       fun try (r: 'a attribute ref,
               f: unit -> (('a attribute -> unit)
                           * ( unit -> unit))) =
          let val {poss, unknown, known} = !r
          in case unknown of
             [] => ()
-          | _ => 
+          | _ =>
                tryEach (unknown, fn (x, unknown) =>
                        let val (each, done) = f ()
                        in tryEach (poss, fn (p, poss) =>

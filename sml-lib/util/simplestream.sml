@@ -42,14 +42,14 @@ struct
                   before i := !i + 1))
     end
 
-  fun fromfile s = 
+  fun fromfile s =
     let
       val f = ref (SOME (BinIO.openIn s))
     in
       (fn () =>
        case !f of
          NONE => NONE
-       | SOME ff => 
+       | SOME ff =>
            case BinIO.input1 ff of
              NONE => (BinIO.closeIn ff; f := NONE; NONE)
            | SOME c => SOME c)
@@ -81,7 +81,7 @@ struct
       (fn () =>
        case !lr of
          nil => NONE
-       | h :: t => 
+       | h :: t =>
            let in
              lr := t;
              SOME h
@@ -107,7 +107,7 @@ struct
           | c => tolinestreamnonempty (c :: l) s))
 
   fun tolist f =
-    (case f () of 
+    (case f () of
        NONE => nil
      | SOME c => c :: tolist f)
 
@@ -169,10 +169,10 @@ struct
   fun flatten f =
     let
       val cur = ref (fn _ => NONE)
-        
+
       fun rd () =
         case !cur () of
-          NONE => 
+          NONE =>
             (* get new cur? *)
             (case f () of
                SOME f' => (cur := f'; rd())

@@ -48,7 +48,7 @@ struct
                            move_buffer = ref nil }
 
   fun create_proxy (bp as BP { tree, count, ... }, aabb : aabb, a : 'a) : 'a proxy =
-      let 
+      let
           val p = DT.aabb_proxy (tree, aabb, a)
       in
           count := !count + 1;
@@ -63,9 +63,9 @@ struct
           DT.remove_proxy (tree, p)
       end
 
-  fun move_proxy (bp as BP { tree, ... } : 'a broadphase, 
+  fun move_proxy (bp as BP { tree, ... } : 'a broadphase,
                   p : 'a proxy, aabb, displacement) : unit =
-      let 
+      let
           val should_buffer = DT.move_proxy(tree, p, aabb, displacement)
       in
           if should_buffer
@@ -97,7 +97,7 @@ struct
 
   (* Copied from sml-lib to reduce code dependencies and encourage
      inlining.
-     
+
      Sorts a list from least to greatest, and arbitrarily discards
      duplicates.
 
@@ -121,7 +121,7 @@ struct
           fun ms nil = nil
             | ms [s] = [s]
             | ms [a, b] = merge [a] [b]
-            | ms ll = 
+            | ms ll =
               let val (a, b) = split ll
               in merge (ms a) (ms b)
               end
@@ -129,7 +129,7 @@ struct
       end
 
 
-  fun update_pairs (BP { tree, move_buffer, ... } : 'a broadphase, 
+  fun update_pairs (BP { tree, move_buffer, ... } : 'a broadphase,
                     add : 'a * 'a -> unit) : unit =
       let
           val () = dprint (fn () => "Update pairs... " ^ Int.toString (length (!move_buffer)) ^ " moves\n");
@@ -137,7 +137,7 @@ struct
           (* PERF: Maybe should use a growarray for this.
              Port note: This is a member variable of broadphase in Box2D, but
              cleared right here. *)
-          val pairs = ref nil : ('a proxy * 'a proxy) list ref 
+          val pairs = ref nil : ('a proxy * 'a proxy) list ref
 
           (* Perform tree queries for all moving proxies. *)
           val () = List.app
@@ -146,8 +146,8 @@ struct
                    (* We have to query the tree with the fat AABB so that
                       we don't fail to create a pair that may touch later. *)
                    val fat_aabb = fat_aabb query_proxy
-                       
-                   fun pxy v = 
+
+                   fun pxy v =
                        Real.fmt (StringCvt.FIX (SOME 2)) (vec2x v) ^ " " ^
                        Real.fmt (StringCvt.FIX (SOME 2)) (vec2y v)
                    val () = dprint (fn () => "  fat_aabb: " ^

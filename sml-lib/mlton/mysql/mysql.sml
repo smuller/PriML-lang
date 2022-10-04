@@ -37,7 +37,7 @@ struct
     (case fromcstring (mysql_error m) of
        "" => NONE
      | s => SOME s)
-      
+
   val error = protect error'
 
   fun getError (m : mptr) =
@@ -58,7 +58,7 @@ struct
   fun escapestring' (mysql : mptr) s =
       let
           val a = CharArray.array (size s * 2 + 1, chr 0)
-          val mysql_esc = _import "mysql_real_escape_string" : 
+          val mysql_esc = _import "mysql_real_escape_string" :
               mptr * CharArray.array * string * int -> int ;
 
           val len = mysql_esc (mysql, a, s, size s)
@@ -72,7 +72,7 @@ struct
     | escapevalue' _ (Int i) = Int.toString i
     | escapevalue' _ (BigInt i) = IntInf.toString i
     | escapevalue' (mysql : mptr) (String s) = "'" ^ escapestring' mysql s ^ "'"
-      
+
   val escapevalue = protect escapevalue'
 
   fun escapevalues' (mysql : mptr) l =
@@ -82,7 +82,7 @@ struct
 
   fun entrytos NONE = "NULL"
     | entrytos (SOME Unknown) = "Unknown"
-    | entrytos (SOME (String s)) = 
+    | entrytos (SOME (String s)) =
       let
           val h = StringUtil.harden (StringUtil.charspec "-A-Za-z0-9 .!@#$%^&*()_+=[]|{}:;'<>,./?") #"\\" 24 s
       in
@@ -105,7 +105,7 @@ struct
     | close _ = raise MySQL "already closed"
 
   fun free (rr as ref (SOME r)) =
-    let 
+    let
       val mysql_free_result = _import "mysql_free_result" : rptr -> unit ;
     in
       mysql_free_result r;
@@ -133,34 +133,34 @@ struct
       (* allocates *)
       val m = mysql_init null
     in
-      case 
+      case
         (case (passwd, unixsocket) of
            (SOME p, SOME u) =>
-             mysql_real_connectSS (m, String.toCString host, 
-                                   String.toCString user, 
-                                   String.toCString p, 
-                                   null, port, 
+             mysql_real_connectSS (m, String.toCString host,
+                                   String.toCString user,
+                                   String.toCString p,
+                                   null, port,
                                    String.toCString u, 0)
-         | (SOME p, NONE) => 
-             mysql_real_connectSN (m, String.toCString host, 
-                                   String.toCString user, 
-                                   String.toCString p, 
-                                   null, port, 
+         | (SOME p, NONE) =>
+             mysql_real_connectSN (m, String.toCString host,
+                                   String.toCString user,
+                                   String.toCString p,
+                                   null, port,
                                    null, 0)
-         | (NONE, SOME u) => 
-             mysql_real_connectNS (m, String.toCString host, 
-                                   String.toCString user, 
-                                   null, 
-                                   null, port, 
-                                   String.toCString u, 0)
-         | (NONE, NONE) => 
-             mysql_real_connectNN (m, String.toCString host, 
-                                   String.toCString user, 
+         | (NONE, SOME u) =>
+             mysql_real_connectNS (m, String.toCString host,
+                                   String.toCString user,
                                    null,
-                                   null, port, 
+                                   null, port,
+                                   String.toCString u, 0)
+         | (NONE, NONE) =>
+             mysql_real_connectNN (m, String.toCString host,
+                                   String.toCString user,
+                                   null,
+                                   null, port,
                                    null, 0)) of
            0w0 =>
-          let 
+          let
             val err = ("Error connecting: " ^ getError m)
           in
             (* ok to try to close? we need to deallocate it *)
@@ -188,17 +188,17 @@ struct
     in
       case (case password of
               NONE => mysql_real_connect_np (m, null,
-                                             String.toCString user, 
-                                             null, 
-                                             null, 0, 
+                                             String.toCString user,
+                                             null,
+                                             null, 0,
                                              null, 0)
             | SOME pw => mysql_real_connect (m, null,
-                                             String.toCString user, 
-                                             String.toCString pw, 
-                                             null, 0, 
+                                             String.toCString user,
+                                             String.toCString pw,
+                                             null, 0,
                                              null, 0)) of
         0w0 =>
-          let 
+          let
             val err = "Error connecting: " ^ getError m
           in
             (* ok to try to close? we need to deallocate it *)
@@ -223,7 +223,7 @@ struct
             then NONE (* XXX could check errors; call mysql_field_count *)
             else SOME(ref (SOME r))
           end
-      (* unfortunately hard to check error codes here, as they are #defines in 
+      (* unfortunately hard to check error codes here, as they are #defines in
          mysql.h. *)
       | _ => raise MySQL ("error in query: " ^ getError m)
     end
@@ -244,13 +244,13 @@ struct
              let
                val mysql_num_fields = _import "mysql_num_fields" : rptr -> int ;
                val mysql_fetch_row = _import "mysql_fetch_row" : rptr -> ptr ;
-               val mysql_fetch_lengths = _import "mysql_fetch_lengths" 
+               val mysql_fetch_lengths = _import "mysql_fetch_lengths"
                  : rptr -> ptr ;
 
                val n = mysql_num_fields r
 
 
-               val get_length_i = _import "mlton_mysql_get_length_i" 
+               val get_length_i = _import "mlton_mysql_get_length_i"
                  : ptr * int -> int ;
 
                val get_data_i = _import "mlton_mysql_get_data_i"
@@ -284,7 +284,7 @@ struct
                        val mysql_get_fieldtype_i =
                          _import "mlton_mysql_get_fieldtype_i"
                          : rptr * int -> int ;
-                         
+
                        val rf =
                          (* these numbers are just constants
                             cooked up for interfacing with
@@ -296,19 +296,19 @@ struct
                          | 3 => readint (* long int *)
                          | 4 => readint (* int24 *)
                          | 5 => readbig (* longlong *)
-                             
+
                          | 14 => readstring (* string *)
                          | 15 => readstring (* var_string *)
                          | 16 => readstring (* blob *)
                          | 17 => readstring (* enum *)
-                             
+
                          | 20 => readint (* char *)
-                             
+
                          | _ => readunknown (* anything else *)
                      in
                        rf
                      end
-                   
+
                    fun read i =
                      if i = n then nil
                      else let

@@ -54,7 +54,7 @@ struct
         case DLL.peekFront q of
           SOME e => Elem.depth e
         | NONE => 0
-      
+
       fun pot e = P.fromDepth maxDepth (Elem.depth e)
       val totpot = DLL.foldl (fn (e, p) => P.p (p, pot e)) P.zero q
 
@@ -69,7 +69,7 @@ struct
         [] => NONE
       | es => SOME es
     end
-  
+
   (*
   fun split q =
     case DLL.popBack q of

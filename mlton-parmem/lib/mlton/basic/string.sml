@@ -23,7 +23,7 @@ structure String: STRING =
                       end)
          end
 
-      fun concatV ss = 
+      fun concatV ss =
          case Vector.length ss of
             0 => ""
           | 1 => Vector.sub (ss, 0)
@@ -113,7 +113,7 @@ structure String: STRING =
                   val lss = length substring
                   val prefix = dropSuffix (s, ls - i)
                   val suffix = substituteAll (dropPrefix (s, i + lss),
-                                              {substring = substring, 
+                                              {substring = substring,
                                                replacement = replacement})
                in
                   concat [prefix, replacement, suffix]

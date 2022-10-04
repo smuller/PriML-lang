@@ -5,7 +5,7 @@ sig
   val eq : ch * ch -> bool
   val len : str -> int
   val sub : str * int -> ch
-    
+
                (* source, dest *)
   val MODIFY_COST : ch * ch -> int
   val INSERT_COST : ch -> int

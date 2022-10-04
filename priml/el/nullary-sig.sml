@@ -23,7 +23,7 @@ sig
        case e of
           B => e'
 
-        - become - 
+        - become -
 
        case e of
           B() => e'
@@ -32,7 +32,7 @@ sig
        writable in the concrete syntax.)
 
        occurrences of the type t become (()t) (not writable in the
-       concrete syntax -- that's TApp(nil, TVar "t"). 
+       concrete syntax -- that's TApp(nil, TVar "t").
 
        The rest of the compiler assumes this translation has
        been done. *)

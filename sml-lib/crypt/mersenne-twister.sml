@@ -1,6 +1,6 @@
 (* Original C source copyright (c) 1997 - 2002, Makoto Matsumoto and
-   Takuji Nishimura. 
-   Standard ML port copyright (c) 2008, Tom Murphy VII. 
+   Takuji Nishimura.
+   Standard ML port copyright (c) 2008, Tom Murphy VII.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,8 @@
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote 
-        products derived from this software without specific prior written 
+     3. The names of its contributors may not be used to endorse or promote
+        products derived from this software without specific prior written
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -37,7 +37,7 @@
     straightfoward port from C to SML is (it doesn't literally contain
     any of their code, just a translation of the algorithm), you might
     have to in order to comply with Matsumoto and Nishimura's
-    license.) 
+    license.)
 *)
 structure MersenneTwister :> MERSENNETWISTER =
 struct
@@ -64,12 +64,12 @@ struct
         let
             val mt = Array.array (N, 0w0)
             fun loop (prev, n) =
-                if n = N 
+                if n = N
                 then ()
                 else
-                    let 
-                        val v = 0w1812433253 * 
-                                (prev ^^ (prev >> 0w30)) + 
+                    let
+                        val v = 0w1812433253 *
+                                (prev ^^ (prev >> 0w30)) +
                                 (Word32.fromInt n)
                     in
                         Array.update(mt, n, v);
@@ -80,14 +80,14 @@ struct
             loop (s, 1);
             (mt, ref N)
         end
-    
+
     fun init (init_key : w32 Vector.vector) =
         let
             val (mt, mti) = init32 0w19650218
             val k = Int.max(Vector.length init_key, N)
             fun loop1 (0, i, _) = i
               | loop1 (k, i, j) =
-                let 
+                let
                     val () = Array.update
                         (mt, i,
                          (Array.sub(mt, i) ^^
@@ -169,7 +169,7 @@ struct
                                  else ()
                              val () = loop1 0
                              val () = loop2 (N - M)
-                                 
+
                              val y = (Array.sub(mt, N - 1) && UPPER_MASK) ||
                                      (Array.sub(mt, 0) && LOWER_MASK)
                              val () = Array.update(mt, N - 1,
@@ -198,12 +198,12 @@ struct
                a non-empty vector. *)
             val nwords = size s div 4 + 1
             fun wordat i =
-                if i >= size s 
+                if i >= size s
                 then 0w0
                 else Word32.fromInt (ord (CharVector.sub(s, i)))
         in
             init
-            (Vector.tabulate 
+            (Vector.tabulate
              (nwords,
               (fn w =>
                (wordat (w * 4) << 0w24) ||

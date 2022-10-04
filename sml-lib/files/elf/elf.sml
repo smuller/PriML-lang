@@ -83,7 +83,7 @@ struct
       | SHT_UNKNOWN of w32
 
     fun mustbezero constant 0 0 = constant
-      | mustbezero constant _ _ = constant 
+      | mustbezero constant _ _ = constant
          (* raise Elf "sh_link and sh_info must be 0 for this section type"*)
 
     fun secondzero maker n 0 = maker n
@@ -91,7 +91,7 @@ struct
 
     fun twoparams maker n m = maker (n, m)
 
-    val sectypes = Vector.fromList 
+    val sectypes = Vector.fromList
         [mustbezero SHT_NULL,
          mustbezero SHT_PROGBITS,
          twoparams  SHT_SYMTAB,
@@ -107,7 +107,7 @@ struct
 
     val num_sectype = Vector.length sectypes
 
-    datatype ptype = 
+    datatype ptype =
 	PT_NULL
       | PT_LOAD
       | PT_DYNAMIC
@@ -117,7 +117,7 @@ struct
       | PT_PHDR
       | PT_UNKNOWN of int
 
-    val ptypes = Vector.fromList [PT_NULL, PT_LOAD, PT_DYNAMIC, 
+    val ptypes = Vector.fromList [PT_NULL, PT_LOAD, PT_DYNAMIC,
 				  PT_INTERP, PT_NOTE, PT_SHLIB, PT_PHDR]
 
     val num_ptype = Vector.length ptypes
@@ -139,7 +139,7 @@ struct
 
     (* move to utility library? *)
     fun getflags nil _ = nil
-      | getflags ((r,b)::t) n = 
+      | getflags ((r,b)::t) n =
 	if (0w0 < Word32.andb (itow b, n)) then r :: getflags t n
 	else getflags t n
 
@@ -153,7 +153,7 @@ struct
 		orelse raise Elf "Class must be 32-bit"
 
 	    (* decide endianness *)
-	    val (r16, r32) = 
+	    val (r16, r32) =
 		case char () of
 		    #"\001" => (Reader.rlw16, Reader.rlw32)
 		  | #"\002" => (Reader.rbw16, Reader.rbw32)
@@ -187,7 +187,7 @@ struct
 	    val _ = print ("There are " ^ Int.toString e_shnum ^
 			   " sections.\n")
 
-	    val sections = get_sections f r16 r32 
+	    val sections = get_sections f r16 r32
 		           e_shoff e_shnum e_shentsize e_shstrndx
 
 	    val program = get_program f r16 r32
@@ -195,7 +195,7 @@ struct
 	in
 	    (sections, program)
 	end
-    
+
     and get_program _ _ _ 0 progs _ =
 	let in
 	    progs = 0 orelse raise Elf "e_phnum must be 0 when e_phoff is 0";
@@ -207,7 +207,7 @@ struct
 	    val _ = seek phoff
 
 	    fun get 0 = nil
-	      | get n = 
+	      | get n =
 		let
 
 		    val p_type   = (wtoi (r32 f)) handle _ => raise Elf "overflow at 5383!"
@@ -218,17 +218,17 @@ struct
 		    val p_memsz  = (wtoi (r32 f)) handle _ => raise Elf "overflow at 5671!"
 		    val p_flags  = getflags proflags (r32 f)
 		    val p_align  = (wtoi (r32 f)) handle _ => raise Elf "overflow at 5796!"
-		in 
+		in
 		    (case if p_type >= num_ptype then PT_UNKNOWN p_type
 			  else Vector.sub(ptypes, p_type) of
 			      PT_NULL => (* skip *) I
-			    | t => 
+			    | t =>
 				  let
-				      
+
 				  (* XXX check that p_align is power of two *)
 				  in
-				      cons 
-				      (t, p_offset, p_vaddr, p_paddr, p_filesz, 
+				      cons
+				      (t, p_offset, p_vaddr, p_paddr, p_filesz,
 				       p_memsz, p_flags, p_align)
 				  end)
 			 (get (n - 1))
@@ -238,12 +238,12 @@ struct
 	end
       | get_program _ _ _ _ _ _ = raise Elf "e_phentsize should be 32"
 
-    and get_sections _ _ _ 0 secs _ _ = 
+    and get_sections _ _ _ 0 secs _ _ =
 	let in
 	    secs = 0 orelse raise Elf "e_shnum must be 0 when e_shoff is 0";
 	    NONE
 	end
-      | get_sections (f as {size, seek, pos, char, vec, close}) 
+      | get_sections (f as {size, seek, pos, char, vec, close})
 	             r16 r32 shoff secs 40 stringsec =
 	let
 
@@ -264,7 +264,7 @@ struct
 		    val flist = getflags secflags sh_flags
 		    val shtype = if Word32.>= (sh_type, itow num_sectype) then SHT_UNKNOWN sh_type
 			         else (Vector.sub(sectypes, wtoi sh_type)) sh_link sh_info
-				     
+
 		    (* get the section data as a pair of its beginning and length, if
 		       the section exists. (Since sections may be pretty big, we don't
 		       read them into memory, though we verify that the offset and
@@ -288,9 +288,9 @@ struct
 		end :: get (n - 1)
 
 	    fun getzeros 0 = ()
-	      | getzeros n = 
+	      | getzeros n =
 		let in
-		    char () = #"\000" 
+		    char () = #"\000"
 		      orelse raise Elf "first section header table entry must be 40 zeros";
 		    getzeros (n - 1)
 		end
@@ -308,7 +308,7 @@ struct
 				  Reader.fromvec (Reader.vecat f beg len)
 			    | _ => raise Elf "header has bad sh_strndx: wrong type / no data")
 		              handle Subscript => raise Elf "header has bad sh_strndx : index too big"
-	    
+
 	    fun fetchname (0, a, b, c, d, e, f) = (NONE, a, b, c, d, e, f)
 	      | fetchname (n, a, b, c, d, e, f) = (SOME (Reader.strzat strtab n), a, b, c, d, e, f)
 

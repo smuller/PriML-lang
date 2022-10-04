@@ -23,7 +23,7 @@ struct
       (* Representation invariant: Always uses the minimum space, so that first
          and last elements of the vector are SOME if the vector has any elements
          at all. *)
-      type 't vec = 
+      type 't vec =
           { off : int, (* index of lowest child actually in index *)
             ch : 't option Vector.vector }
       fun empty () = { off = 0, ch = Vector.fromList nil }
@@ -31,7 +31,7 @@ struct
           (* Triggering exception is normal *)
           Vector.sub(ch, i - off) handle Subscript => NONE
 
-      fun null { ch, off = _ } = Vector.length ch = 0 
+      fun null { ch, off = _ } = Vector.length ch = 0
       fun appi f { ch, off } =
           Vector.appi (fn (i, SOME v) => f (i + off, v) | _ => ()) ch
       fun foldli f b { ch, off } =
@@ -42,7 +42,7 @@ struct
       fun tolist v = foldri (fn (i, x, r) => (i, x) :: r) nil v
 
       fun update (old as { off, ch }, i, v) =
-          let 
+          let
               (* need to be able to store old smallest element, and new element *)
               val nmin = if null old
                          then i
@@ -76,7 +76,7 @@ struct
               A.fold (fn (c, T(target as ref (ch, v))) =>
                       let val oc = A.ord c
                       in case V.sub(ch, oc) of
-                          NONE => 
+                          NONE =>
                               let val n = new()
                               in target := (V.update(ch, oc, n), v);
                                  n

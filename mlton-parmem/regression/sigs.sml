@@ -8,10 +8,10 @@ functor f () =
   end
 
 
-signature A = 
+signature A =
   sig type t val a : t
   end
-            
+
 signature B =
   sig
     type s
@@ -19,14 +19,14 @@ signature B =
     val a : s
   end
 
-signature C = 
+signature C =
   sig
     structure A : A
     structure B : B
     sharing type A.t = B.s = B.A.t
   end
 
-structure A = 
+structure A =
   struct
     datatype t = A | B
     val a = A

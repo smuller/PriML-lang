@@ -13,7 +13,7 @@ struct
     datatype c = CON | EXN
 
     fun ismono (GT, _) s = isSome (SM.find(GT, s))
-    fun nullexp (_, GC) s = 
+    fun nullexp (_, GC) s =
       case (SM.find(GC, s)) of
         NONE => false
       | SOME EXN => true
@@ -27,7 +27,7 @@ struct
         in
           %(case exp of
                 Constant _ => exp
-              | Var s => 
+              | Var s =>
                     if nullexp G s
                     then App(%exp, % `Record nil, false)
                     else exp
@@ -56,7 +56,7 @@ struct
                       map (fn (pl, ee) =>
                            (map (pul G) pl, self ee)) plel, NONE)
               | Case _ => raise Nullary "case SOME"
-              | Let (d, e) => 
+              | Let (d, e) =>
                  let val (GG, dd) = dul G d
                  in Let (dd, nul GG e)
                  end
@@ -66,7 +66,7 @@ struct
            )
         end
 
-    and tul G typ = 
+    and tul G typ =
         (case typ of
              TVar s =>
                  if ismono G s
@@ -106,7 +106,7 @@ struct
            (* this is where things are added *)
            | Datatype (sl, dats : (string * (string * typ option) list) list) =>
                  let
-                     (* inside the body, references should never be type applications. 
+                     (* inside the body, references should never be type applications.
                         XXX should filter out in case we're shadowing a type here *)
                      val GTarms = #1 G
 
@@ -129,10 +129,10 @@ struct
 
                      val (newdt, GC) = mapdt nil (#2 G) dats
 
-                       
+
                      (* for the body of the let, we should rewrite these types
                         to type applications if the type var list is empty. *)
-                     val types = 
+                     val types =
                          if List.null sl
                          then map #1 dats
                          else nil
@@ -184,11 +184,11 @@ struct
     and cul G (Cmd (sis, i)) =
         Cmd (List.map (fn (s, i) => (s, iul G i)) sis, iul G i)
 
-    fun nullary (Prog (tds, c)) = 
-      let 
+    fun nullary (Prog (tds, c)) =
+      let
         fun duls G nil = (nil, cul G c)
           | duls G ((Dec d) :: dr) =
-          let 
+          let
             val (GG, dd) = dul G d
             val (ddr, xxs) = duls GG dr
           in

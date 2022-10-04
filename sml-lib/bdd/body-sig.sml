@@ -31,7 +31,7 @@ sig
   (* The body type.
      static: zero mass, zero velocity, may be manually moved
      kinematic: zero mass, non-zero velocity set by user, moved by solver
-     dynamic: positive mass, non-zero velocity determined by forces, 
+     dynamic: positive mass, non-zero velocity determined by forces,
        moved by solver *)
   datatype body_type =
       Static
@@ -165,11 +165,11 @@ sig
   val get_local_vector : body * BDDMath.vec2 -> BDDMath.vec2
 
   (* Get the world linear velocity of a world point attached to this body. *)
-  val get_linear_velocity_from_world_point : body * BDDMath.vec2 -> 
+  val get_linear_velocity_from_world_point : body * BDDMath.vec2 ->
                                              BDDMath.vec2
 
   (* Get the world velocity of a local point. *)
-  val get_linear_velocity_from_local_point : body * BDDMath.vec2 -> 
+  val get_linear_velocity_from_local_point : body * BDDMath.vec2 ->
                                              BDDMath.vec2
 
   (* The linear damping of the body. *)

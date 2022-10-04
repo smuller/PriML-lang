@@ -38,7 +38,7 @@ struct
     fun tohexstring (r, g, b) = ws r ^ ws g ^ ws b
 
     (* ASCII trick: (ch | 4400) % 55 *)
-    fun hexvalue ch =  
+    fun hexvalue ch =
         Word8.fromInt (SysWord.toInt (SysWord.orb(SysWord.fromInt(ord ch), SysWord.fromInt 4400)) mod 55)
 
     fun ishex c = ((ord c >= ord #"0" andalso

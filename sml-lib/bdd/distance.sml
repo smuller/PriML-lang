@@ -72,31 +72,31 @@ struct
       }
 
   fun set_a ({ wa, wb, w, a = _, indexa, indexb }, aa) =
-      { wa = wa, wb = wb, w = w, a = aa, 
+      { wa = wa, wb = wb, w = w, a = aa,
         indexa = indexa, indexb = indexb }
 
-  datatype simplex = 
+  datatype simplex =
       Zero
     | One of simplex_vertex
     | Two of simplex_vertex * simplex_vertex
     | Three of simplex_vertex * simplex_vertex * simplex_vertex
 
-  fun svtos { wa, wb, w, a, indexa, indexb } = 
+  fun svtos { wa, wb, w, a, indexa, indexb } =
       vtos wa ^ "|" ^ vtos wb ^ "|" ^ vtos w ^ "|" ^
       rtos a ^ "|" ^ Int.toString indexa ^ "|" ^ Int.toString indexb
 
   fun stos Zero = "(Zero)"
     | stos (One sv) = "(One " ^ svtos sv ^ ")"
     | stos (Two (sv1, sv2)) = "(Two " ^ svtos sv1 ^ ", " ^ svtos sv2 ^ ")"
-    | stos (Three (sv1, sv2, sv3)) = "(Three " ^ 
-      svtos sv1 ^ ", " ^ 
-      svtos sv2 ^ ", " ^ 
+    | stos (Three (sv1, sv2, sv3)) = "(Three " ^
+      svtos sv1 ^ ", " ^
+      svtos sv2 ^ ", " ^
       svtos sv3 ^ ")"
 
 
   fun simplex_metric (One _) = 0.0
     | simplex_metric (Two (v1, v2)) = BDDMath.distance(#w v1, #w v2)
-    | simplex_metric (Three (v1, v2, v3)) = 
+    | simplex_metric (Three (v1, v2, v3)) =
       cross2vv(#w v2 :-: #w v1, #w v3 :-: #w v1)
     | simplex_metric _ = raise BDDDistance
 
@@ -104,7 +104,7 @@ struct
                   proxya : distance_proxy, transforma,
                   proxyb : distance_proxy, transformb) : simplex =
       let fun new() =
-          let 
+          let
               val () = dprint (fn () => "new simplex cache\n")
               val () = dprint (fn () => "vertexa: " ^ vtos (#vertex proxya 0) ^ "\n")
               val () = dprint (fn () => "vertexb: " ^ vtos (#vertex proxyb 0) ^ "\n")
@@ -128,7 +128,7 @@ struct
         else
             let
                 fun init i =
-                    let 
+                    let
                         val indexa = Array.sub(#indexa cache, i)
                         val indexb = Array.sub(#indexb cache, i)
                         val wa = transforma @*: #vertex proxya indexa
@@ -142,7 +142,7 @@ struct
                           w = wb :-: wa }
                     end
 
-                val simplex = 
+                val simplex =
                     case !(#count cache) of
                         1 => One (init 0)
                       | 2 => Two (init 0, init 1)
@@ -168,7 +168,7 @@ struct
     | simplex_count (Three _) = 3
 
   fun write_cache (simplex, cache : simplex_cache) : unit =
-      let 
+      let
           fun write i (v : simplex_vertex) =
               (Array.update(#indexa cache, i, #indexa v);
                Array.update(#indexb cache, i, #indexb v))
@@ -212,32 +212,32 @@ struct
           One v1 => (#wa v1, #wb v1)
         | Two (v1, v2) => (#a v1 *: #wa v1 :+: #a v2 *: #wa v2,
                            #a v1 *: #wb v1 :+: #a v2 *: #wb v2)
-        | Three (v1, v2, v3) => 
+        | Three (v1, v2, v3) =>
               let val p = #a v1 *: #wa v1 :+: #a v2 *: #wa v2 :+: #a v3 *: #wa v3
               in (p, vec2copy p)
               end
         | _ => raise BDDDistance
 
   (* Solve a line segment using barycentric coordinates.
-     
+
      p = a1 * w1 + a2 * w2
      a1 + a2 = 1
-     
+
      The vector from the origin to the closest point on the line is
      perpendicular to the line.
      e12 = w2 - w1
      dot(p, e) = 0
      a1 * dot(w1, e) + a2 * dot(w2, e) = 0
-     
+
      2-by-2 linear system
      [1      1     ][a1] = [1]
      [w1.e12 w2.e12][a2] = [0]
-     
+
      Define
      d12_1 =  dot(w2, e12)
      d12_2 = -dot(w1, e12)
      d12 = d12_1 + d12_2
-     
+
      Solution
      a1 = d12_1 / d12
      a2 = d12_2 / d12 *)
@@ -277,7 +277,7 @@ struct
         val w1 = #w v1
         val w2 = #w v2
         val w3 = #w v3
-        
+
         (* Edge12
            [1      1     ][a1] = [1]
            [w1.e12 w2.e12][a2] = [0]
@@ -307,7 +307,7 @@ struct
         val w3e23 = dot2(w3, e23)
         val d23_1 = w3e23
         val d23_2 = ~w2e23
-        
+
         (* Triangle123 *)
         val n123 = cross2vv(e12, e13)
 
@@ -318,7 +318,7 @@ struct
         if (d12_2 <= 0.0 andalso d13_2 <= 0.0)
         then (* w1 region *)
             One (set_a (v1, 1.0))
-        else 
+        else
         if (d12_1 > 0.0 andalso d12_2 > 0.0 andalso d123_3 <= 0.0)
         then (* e12 *)
             let
@@ -330,7 +330,7 @@ struct
         else
         if (d13_1 > 0.0 andalso d13_2 > 0.0 andalso d123_2 <= 0.0)
         then (* e13 *)
-            let 
+            let
                 val inv_d13 : real = 1.0 / (d13_1 + d13_2)
             in
                 Two (set_a (v1, d13_1 * inv_d13),
@@ -339,7 +339,7 @@ struct
         else
         if (d12_1 <= 0.0 andalso d23_2 <= 0.0)
         then (* w2 region *)
-            One (set_a (v2, 1.0)) 
+            One (set_a (v2, 1.0))
         else
         if (d13_1 <= 0.0 andalso d23_1 <= 0.0)
         then (* w3 region *)
@@ -365,7 +365,7 @@ struct
 
   val MAX_ITERS = 20
 
-  fun vertex_eq ({indexa, indexb, ...} : simplex_vertex, 
+  fun vertex_eq ({indexa, indexb, ...} : simplex_vertex,
                  {indexa = ia, indexb = ib, ...} : simplex_vertex) =
       indexa = ia andalso indexb = ib
 
@@ -374,7 +374,7 @@ struct
           Zero => false
         | One v1 => vertex_eq (v1, new)
         | Two (v1, v2) => vertex_eq (v1, new) orelse vertex_eq (v2, new)
-        | Three (v1, v2, v3) => 
+        | Three (v1, v2, v3) =>
               vertex_eq (v1, new) orelse
               vertex_eq (v2, new) orelse
               vertex_eq (v3, new)
@@ -395,7 +395,7 @@ struct
                 cache : simplex_cache) : distance_output =
       let
           (* Initialize the simplex. *)
-          val start_simplex = 
+          val start_simplex =
               read_cache(cache, proxya, transforma, proxyb, transformb)
 
           val () = dprint (fn () => "distance start simplex:\n  " ^ stos start_simplex ^ "\n")
@@ -419,7 +419,7 @@ struct
                         | _ => raise BDDDistance
               in
                   case solved of
-                    (* If we have 3 points, then the origin is in 
+                    (* If we have 3 points, then the origin is in
                        the corresponding triangle. *)
                     Three _ => (solved, iter)
                   | _ =>
@@ -440,7 +440,7 @@ struct
                           (solved, iter)
                       else
                       let
-                          (* Compute a tentative new simplex vertex using 
+                          (* Compute a tentative new simplex vertex using
                              support points. *)
                           val indexa =
                               #support proxya (mul_t22mv
@@ -461,8 +461,8 @@ struct
                           (* iter counts the number of support point calls. *)
                           val iter = iter + 1
                       in
-                          (* Check for duplicate support points. 
-                             This is the main termination criteria. 
+                          (* Check for duplicate support points.
+                             This is the main termination criteria.
 
                              Port note: In the original this was stored in
                              a copy of the simplex. Since simplex is
@@ -476,7 +476,7 @@ struct
                       end
                   end
               end
-          
+
           val (simplex, iter) = loop(start_simplex, 0)
 
           val (pointa, pointb) = simplex_witness_points simplex
@@ -484,7 +484,7 @@ struct
           val distance = BDDMath.distance(pointa, pointb)
       in
           if use_radii
-          then 
+          then
               let val ra = #radius proxya
                   val rb = #radius proxyb
               in
@@ -494,7 +494,7 @@ struct
                       (* Shapes are still not overlapped.
                          Move the witness points to the outer surface. *)
                       let val normal : vec2 = pointb :-: pointa
-                      in 
+                      in
                           ignore (vec2normalize normal : real);
                           { distance = distance - (ra + rb),
                             pointa = pointa :+: (ra *: normal),

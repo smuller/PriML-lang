@@ -14,9 +14,9 @@ structure Heap:
    end =
    struct
       fun heapSort (a : 'a array, lessthan : 'a * 'a -> bool) =
-         let 
+         let
             open Array
-            
+
             (* Push the hole down until value > both children *)
             fun pushHoleDown ( hole, end_of_heap, value ) =
                let
@@ -47,7 +47,7 @@ structure Heap:
                   (* Base case: no children *)
                   else update (a, hole, value)
                end
-            
+
             (* Move largest element to end_of_table, then restore invariant *)
             fun sortHeap end_of_heap =
                let val end_of_heap = Int.- (end_of_heap, 1)
@@ -57,7 +57,7 @@ structure Heap:
                        pushHoleDown (0, end_of_heap, value);
                        sortHeap end_of_heap
                end end
-            
+
             (* Start at last node w/ parent, loop till 0: push down *)
             val heapSize = Array.length a
             fun heapify i =
@@ -70,10 +70,10 @@ structure Heap:
             if Int.<= (heapSize, 1) then () else
             (heapify (Int.div (heapSize, 2)); sortHeap heapSize)
          end
-      
+
       fun binarySearch (a : 'a array, f : 'a -> bool) =
          let
-            fun loop (lower, upper) = 
+            fun loop (lower, upper) =
                (* Base case: one element left *)
                if Int.- (upper, lower) = 1
                then if f (Array.sub (a, lower)) then upper else lower

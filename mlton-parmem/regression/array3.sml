@@ -3,7 +3,7 @@ open Array
 val a = array (1000, 0)
 
 fun g i = (update (a, i, i); g (i + 1))
-   
+
 fun f i =
    if i = 100
       then g i

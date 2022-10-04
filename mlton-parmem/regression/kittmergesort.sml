@@ -2,10 +2,10 @@
 
 (* This is tmergesort taken from Paulson's book , page 99 *)
 
-(* The merge function has been modified slightly, to 
+(* The merge function has been modified slightly, to
    traverse and rebuild both arguments fully, even when
    the one argument is empty. This ensures that both
-   recursive calls of tmergesort in itself can put their 
+   recursive calls of tmergesort in itself can put their
    results in regions local to the body of tmergesort.
 
    One can show that the maximum number of live list elements
@@ -65,10 +65,10 @@ fun tmergesort [] = []
       in merge(tmergesort(take(k, xs)),
                tmergesort(drop(k, xs)))
       end
- 
 
-val result = 
-let 
+
+val result =
+let
   val n = 50000
   val xs = snd(randlist(n,1,[]))
   val _ = print "\n List generated\n"
@@ -78,4 +78,4 @@ in
   tmergesort xs;
   report("Sorted " ^ int_to_string n ^ " numbers\n")
 end
-    
+

@@ -14,12 +14,12 @@ struct
     structure LR = LargeReal
     structure LRM = LargeReal.Math
 
-    (* Return the unique x = d + r*max 
+    (* Return the unique x = d + r*max
        where x is in [-max, +max). Used to put
        degrees in the range [-90, +90), for example,
-       since some computations cause them to 
+       since some computations cause them to
        "wrap around". *)
-       
+
     fun plusminus_mod (d, max) =
         (* PERF there may be a cleverer way to do this?
            There's no equivalent of "mod" that works for
@@ -69,14 +69,14 @@ struct
        as a sphere, however. *)
     fun dist_km_haversine ({ lat = lat1, lon = lon1 },
                            { lat = lat2, lon = lon2 }) =
-        let 
+        let
             val r = 6371.0
             val dlat = torad (lat2 - lat1)
             val dlon = torad (lon2 - lon1)
             val lat1 = torad lat1
             val lat2 = torad lat2
 
-            val a = 
+            val a =
                 LRM.sin(dlat / 2.0) * LRM.sin(dlat / 2.0) +
                 LRM.cos lat1 * LRM.cos lat2 *
                 LRM.sin(dlon / 2.0) * LRM.sin(dlon / 2.0)
@@ -137,7 +137,7 @@ struct
                     val C = f / 16.0 * cosSqAlpha * (4.0 + f * (4.0 - 3.0 * cosSqAlpha))
                     val lambdaP = lambda
                     val lambda = L + (1.0 - C) * f * sinAlpha *
-                        (sigma + C * sinSigma * 
+                        (sigma + C * sinSigma *
                          (cos2SigmaM + C * cosSigma * (~1.0 + 2.0 * cos2SigmaM * cos2SigmaM)))
                 in
                     if lrm_abs(lambda - lambdaP) > 1e~12
@@ -150,7 +150,7 @@ struct
             val uSq = cosSqAlpha * (a * a - b * b) / (b * b)
             val A = 1.0 + uSq / 16384.0 * (4096.0 + uSq * (~768.0 + uSq * (320.0 - 175.0 * uSq)))
             val B = uSq / 1024.0 * (256.0 + uSq * (~128.0 + uSq * (74.0 - 47.0 * uSq)))
-            val deltaSigma = B * sinSigma * (cos2SigmaM + B / 4.0 * 
+            val deltaSigma = B * sinSigma * (cos2SigmaM + B / 4.0 *
                                              (cosSigma * (~1.0 + 2.0 * cos2SigmaM * cos2SigmaM) -
                                               B / 6.0 * cos2SigmaM * (~3.0 + 4.0 * sinSigma * sinSigma) *
                                               (~3.0 + 4.0 * cos2SigmaM * cos2SigmaM)))

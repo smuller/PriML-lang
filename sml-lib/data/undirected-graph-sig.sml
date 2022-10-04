@@ -8,7 +8,7 @@ sig
     (* Supplied by functor argument *)
     type weight
 
-    (* Nodes in this graph, associated with arbitrary data. 
+    (* Nodes in this graph, associated with arbitrary data.
        All operations require each of the nodes to be from
        the same graph. *)
     type 'a node
@@ -21,7 +21,7 @@ sig
     val add : 'a graph -> 'a -> 'a node
     val get : 'a node -> 'a
 
-    (* Create an edge between the two nodes with a weight. 
+    (* Create an edge between the two nodes with a weight.
        Weights must be strictly positive. Implies symmetric connection
        with same weight. Nodes must not already have an edge. *)
     val addedge : 'a node -> 'a node -> weight -> unit
@@ -58,7 +58,7 @@ sig
        If some nodes are unreachable (they have distance NONE) then
        they will have no parent in the output. The root also has
        no parent. *)
-    datatype 'a span = S of { a : 'a, 
+    datatype 'a span = S of { a : 'a,
                               dist : weight option,
                               parent : 'a span node option }
     val spanningtree : ('a * weight option) graph ->

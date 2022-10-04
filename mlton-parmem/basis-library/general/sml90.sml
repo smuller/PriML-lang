@@ -22,7 +22,7 @@ structure SML90:> SML90 =
       exception Ln
       exception Ord
       exception Mod = Div
-      exception Io of string 
+      exception Io of string
       exception Interrupt
 
       local open Real.Math
@@ -62,7 +62,7 @@ structure SML90:> SML90 =
       val std_out = TextIO.stdOut
       fun open_out f =
          TextIO.openOut f
-         handle IO.Io _ => raise Io (concat ["Cannot open ", f]) 
+         handle IO.Io _ => raise Io (concat ["Cannot open ", f])
       fun output (out, s) =
          TextIO.output (out, s)
          handle IO.Io _ => raise Io "Output stream is closed"

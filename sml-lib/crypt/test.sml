@@ -2,7 +2,7 @@
 exception SSHProt of string
 
     fun wtov (i : Word32.word) =
-        CharVector.fromList [chr (Word32.toInt 
+        CharVector.fromList [chr (Word32.toInt
                                   (Word32.andb(Word32.>>(i, 0w24), 0w255))),
                              chr (Word32.toInt
                                   (Word32.andb(Word32.>>(i, 0w16), 0w255))),
@@ -18,7 +18,7 @@ exception SSHProt of string
         (* I can reproduce what putty does using this code.
            but it seems we must get the wrong keys from
            the session key. Maybe we are not doing that
-           XOR stuff? 
+           XOR stuff?
 
            That would make sense -- the first 16 bytes cover
            the first two keys.
@@ -30,7 +30,7 @@ exception SSHProt of string
           let
             val l = Reader.rbw32 read
             val r = Reader.rbw32 read
-          in 
+          in
             print ("key : " ^ Word32.toString l ^ " / " ^
                    Word32.toString r ^ "\n");
             DES.key (l, r)
@@ -106,16 +106,16 @@ exception SSHProt of string
       end
 
 (*
-    val session = 
-      implode 
+    val session =
+      implode
       (map chr
-       [0x69, 0x3A, 0x98, 0xAF, 0x18, 0x91, 0xC4, 0x90, 0x10, 0x1D, 0xBE, 
-        0x1B, 0xA3, 0x39, 0x63, 0x4F, 0x56, 0x9D, 0xF9, 0xC6, 0x41, 0x6B, 
+       [0x69, 0x3A, 0x98, 0xAF, 0x18, 0x91, 0xC4, 0x90, 0x10, 0x1D, 0xBE,
+        0x1B, 0xA3, 0x39, 0x63, 0x4F, 0x56, 0x9D, 0xF9, 0xC6, 0x41, 0x6B,
         0x78, 0x6F, 0x2B, 0x4D, 0x14, 0xF1, 0x6A, 0x8C, 0x24, 0xF8])
 
 
-    val dat = 
-      (0wxEFB8FB32 : Word32.word, 
+    val dat =
+      (0wxEFB8FB32 : Word32.word,
        0wxB2642944 : Word32.word)
 *)
 
@@ -127,7 +127,7 @@ exception SSHProt of string
 
 (*
 val _ =
-  let 
+  let
 (*    val k = DES.key (0wx55555555, 0wx55555555)
     val i = (0wxFFFFFFFF, 0wxFFFFFFFF) *)
 (*    val k = DES.key (0wx01010101, 0wx01010101)
@@ -156,11 +156,11 @@ fun burn_rsa 0 = print "Done.\n"
   let
 
     val ((n,e), (_, d)) = RSA.keygen (fn _ => ()) 256
-      
+
     val _ = print ("n: " ^ IntInf.toString n ^ "\n");
     val _ = print ("e: " ^ IntInf.toString e ^ "\n");
     val _ = print ("d: " ^ IntInf.toString d ^ "\n");
-      
+
     val enc = RSA.crypt e n test
     val dec = RSA.crypt d n enc
     val _  = if test <> dec

@@ -2,7 +2,7 @@
 structure StringOnce :> STRINGONCE =
 struct
 
-    structure SM = 
+    structure SM =
         SplayMapFn(type ord_key = string val compare = String.compare)
 
 
@@ -15,7 +15,7 @@ struct
 
     fun arenaex sep = { sep = sep, ctr = ref 0, table = ref SM.empty }
 
-    fun clear ({ ctr, table, ... } : stringarena) = 
+    fun clear ({ ctr, table, ... } : stringarena) =
         let in
             table := SM.empty;
             ctr := 0
@@ -23,7 +23,7 @@ struct
 
     fun ++ x = (x := !x + 1; !x)
 
-    (* XXX this is not optimal. 
+    (* XXX this is not optimal.
        the best behavior would be to delay the
        choice of who gets to be 's' (without
        digits) to the first one whose f is
@@ -42,11 +42,11 @@ struct
                  (++ ctr,
                   fn () => s)
                (*
-                  if !ir = 0 
+                  if !ir = 0
                   then s
                   else s ^ sep ^ "0") *)
                end
-           | SOME ir => 
+           | SOME ir =>
                let
                    val me = ++ ir
                in

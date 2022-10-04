@@ -18,7 +18,7 @@ type t = I.instream
 val standard = stdIn
 val close = closeIn
 val inputChar = input1
-val peekChar = lookahead   
+val peekChar = lookahead
 val endOf = endOfStream
 
 fun foldChars (ins, a, f) =

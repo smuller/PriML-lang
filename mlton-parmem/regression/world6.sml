@@ -32,8 +32,8 @@ val _ =
             ; succeed ()
          end
     | Original => ()
-         
+
 val _ = OS.Process.system (concat[CommandLine.name (),
                                   " @MLton load-world ", w, " -- a b c"])
-   
+
 val _ = OS.FileSys.remove w

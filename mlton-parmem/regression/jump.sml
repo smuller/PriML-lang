@@ -1,6 +1,6 @@
 
 fun doit 2 = "zero"
-  | doit 6 = "one" 
+  | doit 6 = "one"
   | doit 10 = "two"
   | doit 14 = "three"
   | doit 18 = "four"

@@ -4,8 +4,8 @@
        (* exormorphic merge *)
        fun merge(xs, []):int list = cp xs
          | merge([], ys) = cp ys
-         | merge(l1 as x::xs, l2 as y::ys) = 
-               if x<y then x :: merge(xs, l2) 
+         | merge(l1 as x::xs, l2 as y::ys) =
+               if x<y then x :: merge(xs, l2)
                else y :: merge(l1, ys)
 
        (* splitting a list *)

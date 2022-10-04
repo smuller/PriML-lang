@@ -22,7 +22,7 @@ struct
     (* PERF? *)
 (*
     datatype ('a, 'b) part = LL of 'a | RR of 'b | MM of 'a * 'b
-    fun venn (a, b) = 
+    fun venn (a, b) =
       let
         val a = map LL a
         val b = map RR b

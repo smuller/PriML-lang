@@ -83,7 +83,7 @@ signature PRIM_INTWORD_CONV =
       val castFromWord64ToWord32: Primitive.Word64.word -> Primitive.Word32.word
       val castFromWord64ToWord64: Primitive.Word64.word -> Primitive.Word64.word
 
-      (* checked zero-extend or low-bits, 
+      (* checked zero-extend or low-bits,
        * Overflow if composed zero-extend not identity
        *)
       val zchckFromInt8ToInt8: Primitive.Int8.int -> Primitive.Int8.int
@@ -158,7 +158,7 @@ signature PRIM_INTWORD_CONV =
       val zchckFromWord64ToWord32: Primitive.Word64.word -> Primitive.Word32.word
       val zchckFromWord64ToWord64: Primitive.Word64.word -> Primitive.Word64.word
 
-      (* checked sign-extend or low-bits, 
+      (* checked sign-extend or low-bits,
        * Overflow if composed sign-extend not identity
        *)
       val schckFromInt8ToInt8: Primitive.Int8.int -> Primitive.Int8.int
@@ -487,14 +487,14 @@ structure IntWordConv : PRIM_INTWORD_CONV =
       val castFromWord64ToWord32 = zextdFromWord64ToWord32
       val castFromWord64ToWord64 = zextdFromWord64ToWord64
 
-      (* checked zero-extend or low-bits, 
+      (* checked zero-extend or low-bits,
        * Overflow if composed zero-extend not identity
        *)
       local
          fun (''l, ''s) make {zextdFromLargeToSmall: ''l -> ''s,
                               zextdFromSmallToLarge: ''s -> ''l} =
             if Primitive.Controls.detectOverflow
-               then fn (x: ''l) => let 
+               then fn (x: ''l) => let
                                       val res = zextdFromLargeToSmall x
                                    in
                                       if x = (zextdFromSmallToLarge res)
@@ -511,51 +511,51 @@ structure IntWordConv : PRIM_INTWORD_CONV =
          val zchckFromInt8ToWord16 = zextdFromInt8ToWord16
          val zchckFromInt8ToWord32 = zextdFromInt8ToWord32
          val zchckFromInt8ToWord64 = zextdFromInt8ToWord64
-         val zchckFromInt16ToInt8 = 
+         val zchckFromInt16ToInt8 =
             make {zextdFromLargeToSmall = zextdFromInt16ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToInt16}
          val zchckFromInt16ToInt16 = zextdFromInt16ToInt16
          val zchckFromInt16ToInt32 = zextdFromInt16ToInt32
          val zchckFromInt16ToInt64 = zextdFromInt16ToInt64
-         val zchckFromInt16ToWord8 = 
+         val zchckFromInt16ToWord8 =
             make {zextdFromLargeToSmall = zextdFromInt16ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToInt16}
          val zchckFromInt16ToWord16 = zextdFromInt16ToWord16
          val zchckFromInt16ToWord32 = zextdFromInt16ToWord32
          val zchckFromInt16ToWord64 = zextdFromInt16ToWord64
-         val zchckFromInt32ToInt8 = 
+         val zchckFromInt32ToInt8 =
             make {zextdFromLargeToSmall = zextdFromInt32ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToInt32}
-         val zchckFromInt32ToInt16 = 
+         val zchckFromInt32ToInt16 =
             make {zextdFromLargeToSmall = zextdFromInt32ToInt16,
                   zextdFromSmallToLarge = zextdFromInt16ToInt32}
          val zchckFromInt32ToInt32 = zextdFromInt32ToInt32
          val zchckFromInt32ToInt64 = zextdFromInt32ToInt64
-         val zchckFromInt32ToWord8 = 
+         val zchckFromInt32ToWord8 =
             make {zextdFromLargeToSmall = zextdFromInt32ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToInt32}
-         val zchckFromInt32ToWord16 = 
+         val zchckFromInt32ToWord16 =
             make {zextdFromLargeToSmall = zextdFromInt32ToWord16,
                   zextdFromSmallToLarge = zextdFromWord16ToInt32}
          val zchckFromInt32ToWord32 = zextdFromInt32ToWord32
          val zchckFromInt32ToWord64 = zextdFromInt32ToWord64
-         val zchckFromInt64ToInt8 = 
+         val zchckFromInt64ToInt8 =
             make {zextdFromLargeToSmall = zextdFromInt64ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToInt64}
-         val zchckFromInt64ToInt16 = 
+         val zchckFromInt64ToInt16 =
             make {zextdFromLargeToSmall = zextdFromInt64ToInt16,
                   zextdFromSmallToLarge = zextdFromInt16ToInt64}
-         val zchckFromInt64ToInt32 = 
+         val zchckFromInt64ToInt32 =
             make {zextdFromLargeToSmall = zextdFromInt64ToInt32,
                   zextdFromSmallToLarge = zextdFromInt32ToInt64}
          val zchckFromInt64ToInt64 = zextdFromInt64ToInt64
-         val zchckFromInt64ToWord8 = 
+         val zchckFromInt64ToWord8 =
             make {zextdFromLargeToSmall = zextdFromInt64ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToInt64}
-         val zchckFromInt64ToWord16 = 
+         val zchckFromInt64ToWord16 =
             make {zextdFromLargeToSmall = zextdFromInt64ToWord16,
                   zextdFromSmallToLarge = zextdFromWord16ToInt64}
-         val zchckFromInt64ToWord32 = 
+         val zchckFromInt64ToWord32 =
             make {zextdFromLargeToSmall = zextdFromInt64ToWord32,
                   zextdFromSmallToLarge = zextdFromWord32ToInt64}
          val zchckFromInt64ToWord64 = zextdFromInt64ToWord64
@@ -568,64 +568,64 @@ structure IntWordConv : PRIM_INTWORD_CONV =
          val zchckFromWord8ToWord16 = zextdFromWord8ToWord16
          val zchckFromWord8ToWord32 = zextdFromWord8ToWord32
          val zchckFromWord8ToWord64 = zextdFromWord8ToWord64
-         val zchckFromWord16ToInt8 = 
+         val zchckFromWord16ToInt8 =
             make {zextdFromLargeToSmall = zextdFromWord16ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToWord16}
          val zchckFromWord16ToInt16 = zextdFromWord16ToInt16
          val zchckFromWord16ToInt32 = zextdFromWord16ToInt32
          val zchckFromWord16ToInt64 = zextdFromWord16ToInt64
-         val zchckFromWord16ToWord8 = 
+         val zchckFromWord16ToWord8 =
             make {zextdFromLargeToSmall = zextdFromWord16ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToWord16}
          val zchckFromWord16ToWord16 = zextdFromWord16ToWord16
          val zchckFromWord16ToWord32 = zextdFromWord16ToWord32
          val zchckFromWord16ToWord64 = zextdFromWord16ToWord64
-         val zchckFromWord32ToInt8 = 
+         val zchckFromWord32ToInt8 =
             make {zextdFromLargeToSmall = zextdFromWord32ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToWord32}
-         val zchckFromWord32ToInt16 = 
+         val zchckFromWord32ToInt16 =
             make {zextdFromLargeToSmall = zextdFromWord32ToInt16,
                   zextdFromSmallToLarge = zextdFromInt16ToWord32}
          val zchckFromWord32ToInt32 = zextdFromWord32ToInt32
          val zchckFromWord32ToInt64 = zextdFromWord32ToInt64
-         val zchckFromWord32ToWord8 = 
+         val zchckFromWord32ToWord8 =
             make {zextdFromLargeToSmall = zextdFromWord32ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToWord32}
-         val zchckFromWord32ToWord16 = 
+         val zchckFromWord32ToWord16 =
             make {zextdFromLargeToSmall = zextdFromWord32ToWord16,
                   zextdFromSmallToLarge = zextdFromWord16ToWord32}
          val zchckFromWord32ToWord32 = zextdFromWord32ToWord32
          val zchckFromWord32ToWord64 = zextdFromWord32ToWord64
-         val zchckFromWord64ToInt8 = 
+         val zchckFromWord64ToInt8 =
             make {zextdFromLargeToSmall = zextdFromWord64ToInt8,
                   zextdFromSmallToLarge = zextdFromInt8ToWord64}
-         val zchckFromWord64ToInt16 = 
+         val zchckFromWord64ToInt16 =
             make {zextdFromLargeToSmall = zextdFromWord64ToInt16,
                   zextdFromSmallToLarge = zextdFromInt16ToWord64}
-         val zchckFromWord64ToInt32 = 
+         val zchckFromWord64ToInt32 =
             make {zextdFromLargeToSmall = zextdFromWord64ToInt32,
                   zextdFromSmallToLarge = zextdFromInt32ToWord64}
          val zchckFromWord64ToInt64 = zextdFromWord64ToInt64
-         val zchckFromWord64ToWord8 = 
+         val zchckFromWord64ToWord8 =
             make {zextdFromLargeToSmall = zextdFromWord64ToWord8,
                   zextdFromSmallToLarge = zextdFromWord8ToWord64}
-         val zchckFromWord64ToWord16 = 
+         val zchckFromWord64ToWord16 =
             make {zextdFromLargeToSmall = zextdFromWord64ToWord16,
                   zextdFromSmallToLarge = zextdFromWord16ToWord64}
-         val zchckFromWord64ToWord32 = 
+         val zchckFromWord64ToWord32 =
             make {zextdFromLargeToSmall = zextdFromWord64ToWord32,
                   zextdFromSmallToLarge = zextdFromWord32ToWord64}
          val zchckFromWord64ToWord64 = zextdFromWord64ToWord64
       end
 
-      (* checked sign-extend or low-bits, 
+      (* checked sign-extend or low-bits,
        * Overflow if composed sign-extend not identity
        *)
       local
          fun (''l, ''s) make {sextdFromLargeToSmall: ''l -> ''s,
                               sextdFromSmallToLarge: ''s -> ''l} =
             if Primitive.Controls.detectOverflow
-               then fn (x: ''l) => let 
+               then fn (x: ''l) => let
                                       val res = sextdFromLargeToSmall x
                                    in
                                       if x = (sextdFromSmallToLarge res)
@@ -642,51 +642,51 @@ structure IntWordConv : PRIM_INTWORD_CONV =
          val schckFromInt8ToWord16 = sextdFromInt8ToWord16
          val schckFromInt8ToWord32 = sextdFromInt8ToWord32
          val schckFromInt8ToWord64 = sextdFromInt8ToWord64
-         val schckFromInt16ToInt8 = 
+         val schckFromInt16ToInt8 =
             make {sextdFromLargeToSmall = sextdFromInt16ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToInt16}
          val schckFromInt16ToInt16 = sextdFromInt16ToInt16
          val schckFromInt16ToInt32 = sextdFromInt16ToInt32
          val schckFromInt16ToInt64 = sextdFromInt16ToInt64
-         val schckFromInt16ToWord8 = 
+         val schckFromInt16ToWord8 =
             make {sextdFromLargeToSmall = sextdFromInt16ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToInt16}
          val schckFromInt16ToWord16 = sextdFromInt16ToWord16
          val schckFromInt16ToWord32 = sextdFromInt16ToWord32
          val schckFromInt16ToWord64 = sextdFromInt16ToWord64
-         val schckFromInt32ToInt8 = 
+         val schckFromInt32ToInt8 =
             make {sextdFromLargeToSmall = sextdFromInt32ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToInt32}
-         val schckFromInt32ToInt16 = 
+         val schckFromInt32ToInt16 =
             make {sextdFromLargeToSmall = sextdFromInt32ToInt16,
                   sextdFromSmallToLarge = sextdFromInt16ToInt32}
          val schckFromInt32ToInt32 = sextdFromInt32ToInt32
          val schckFromInt32ToInt64 = sextdFromInt32ToInt64
-         val schckFromInt32ToWord8 = 
+         val schckFromInt32ToWord8 =
             make {sextdFromLargeToSmall = sextdFromInt32ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToInt32}
-         val schckFromInt32ToWord16 = 
+         val schckFromInt32ToWord16 =
             make {sextdFromLargeToSmall = sextdFromInt32ToWord16,
                   sextdFromSmallToLarge = sextdFromWord16ToInt32}
          val schckFromInt32ToWord32 = sextdFromInt32ToWord32
          val schckFromInt32ToWord64 = sextdFromInt32ToWord64
-         val schckFromInt64ToInt8 = 
+         val schckFromInt64ToInt8 =
             make {sextdFromLargeToSmall = sextdFromInt64ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToInt64}
-         val schckFromInt64ToInt16 = 
+         val schckFromInt64ToInt16 =
             make {sextdFromLargeToSmall = sextdFromInt64ToInt16,
                   sextdFromSmallToLarge = sextdFromInt16ToInt64}
-         val schckFromInt64ToInt32 = 
+         val schckFromInt64ToInt32 =
             make {sextdFromLargeToSmall = sextdFromInt64ToInt32,
                   sextdFromSmallToLarge = sextdFromInt32ToInt64}
          val schckFromInt64ToInt64 = sextdFromInt64ToInt64
-         val schckFromInt64ToWord8 = 
+         val schckFromInt64ToWord8 =
             make {sextdFromLargeToSmall = sextdFromInt64ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToInt64}
-         val schckFromInt64ToWord16 = 
+         val schckFromInt64ToWord16 =
             make {sextdFromLargeToSmall = sextdFromInt64ToWord16,
                   sextdFromSmallToLarge = sextdFromWord16ToInt64}
-         val schckFromInt64ToWord32 = 
+         val schckFromInt64ToWord32 =
             make {sextdFromLargeToSmall = sextdFromInt64ToWord32,
                   sextdFromSmallToLarge = sextdFromWord32ToInt64}
          val schckFromInt64ToWord64 = sextdFromInt64ToWord64
@@ -699,51 +699,51 @@ structure IntWordConv : PRIM_INTWORD_CONV =
          val schckFromWord8ToWord16 = sextdFromWord8ToWord16
          val schckFromWord8ToWord32 = sextdFromWord8ToWord32
          val schckFromWord8ToWord64 = sextdFromWord8ToWord64
-         val schckFromWord16ToInt8 = 
+         val schckFromWord16ToInt8 =
             make {sextdFromLargeToSmall = sextdFromWord16ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToWord16}
          val schckFromWord16ToInt16 = sextdFromWord16ToInt16
          val schckFromWord16ToInt32 = sextdFromWord16ToInt32
          val schckFromWord16ToInt64 = sextdFromWord16ToInt64
-         val schckFromWord16ToWord8 = 
+         val schckFromWord16ToWord8 =
             make {sextdFromLargeToSmall = sextdFromWord16ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToWord16}
          val schckFromWord16ToWord16 = sextdFromWord16ToWord16
          val schckFromWord16ToWord32 = sextdFromWord16ToWord32
          val schckFromWord16ToWord64 = sextdFromWord16ToWord64
-         val schckFromWord32ToInt8 = 
+         val schckFromWord32ToInt8 =
             make {sextdFromLargeToSmall = sextdFromWord32ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToWord32}
-         val schckFromWord32ToInt16 = 
+         val schckFromWord32ToInt16 =
             make {sextdFromLargeToSmall = sextdFromWord32ToInt16,
                   sextdFromSmallToLarge = sextdFromInt16ToWord32}
          val schckFromWord32ToInt32 = sextdFromWord32ToInt32
          val schckFromWord32ToInt64 = sextdFromWord32ToInt64
-         val schckFromWord32ToWord8 = 
+         val schckFromWord32ToWord8 =
             make {sextdFromLargeToSmall = sextdFromWord32ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToWord32}
-         val schckFromWord32ToWord16 = 
+         val schckFromWord32ToWord16 =
             make {sextdFromLargeToSmall = sextdFromWord32ToWord16,
                   sextdFromSmallToLarge = sextdFromWord16ToWord32}
          val schckFromWord32ToWord32 = sextdFromWord32ToWord32
          val schckFromWord32ToWord64 = sextdFromWord32ToWord64
-         val schckFromWord64ToInt8 = 
+         val schckFromWord64ToInt8 =
             make {sextdFromLargeToSmall = sextdFromWord64ToInt8,
                   sextdFromSmallToLarge = sextdFromInt8ToWord64}
-         val schckFromWord64ToInt16 = 
+         val schckFromWord64ToInt16 =
             make {sextdFromLargeToSmall = sextdFromWord64ToInt16,
                   sextdFromSmallToLarge = sextdFromInt16ToWord64}
-         val schckFromWord64ToInt32 = 
+         val schckFromWord64ToInt32 =
             make {sextdFromLargeToSmall = sextdFromWord64ToInt32,
                   sextdFromSmallToLarge = sextdFromInt32ToWord64}
          val schckFromWord64ToInt64 = sextdFromWord64ToInt64
-         val schckFromWord64ToWord8 = 
+         val schckFromWord64ToWord8 =
             make {sextdFromLargeToSmall = sextdFromWord64ToWord8,
                   sextdFromSmallToLarge = sextdFromWord8ToWord64}
-         val schckFromWord64ToWord16 = 
+         val schckFromWord64ToWord16 =
             make {sextdFromLargeToSmall = sextdFromWord64ToWord16,
                   sextdFromSmallToLarge = sextdFromWord16ToWord64}
-         val schckFromWord64ToWord32 = 
+         val schckFromWord64ToWord32 =
             make {sextdFromLargeToSmall = sextdFromWord64ToWord32,
                   sextdFromSmallToLarge = sextdFromWord32ToWord64}
          val schckFromWord64ToWord64 = sextdFromWord64ToWord64

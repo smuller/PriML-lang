@@ -20,7 +20,7 @@ structure UriDecode : UriDecode =
 
       val Byte2Char = Chars.fromLargeWord o Word8.toLargeWord
 
-      fun hexValue c = 
+      fun hexValue c =
          if #"0"<=c andalso #"9">=c then SOME (Byte.charToByte c-0wx30)
          else if #"A"<=c andalso #"F">=c then SOME (Byte.charToByte c-0wx37)
          else if #"a"<=c andalso #"f">=c then SOME (Byte.charToByte c-0wx57)
@@ -28,13 +28,13 @@ structure UriDecode : UriDecode =
 
       exception Failed of char list
 
-      fun getQuads cs = 
-         case cs 
-           of c1::c2::cs1 => (case (hexValue c1,hexValue c2) 
+      fun getQuads cs =
+         case cs
+           of c1::c2::cs1 => (case (hexValue c1,hexValue c2)
                                 of (SOME b1,SOME b2) => ((b1 << 0w4 || b2),cs1)
-                                 | _ => raise Failed cs1) 
+                                 | _ => raise Failed cs1)
             | _ => raise Failed nil
-      
+
       (*--------------------------------------------------------------------*)
       (* decode UTF-8                                                       *)
       (*--------------------------------------------------------------------*)
@@ -49,20 +49,20 @@ structure UriDecode : UriDecode =
       val diff2 = 0wx00003080
       val diff3 = diff2 <<< 0wx6 ||| 0wx00020080
       val diff4 = diff3 <<< 0wx6 ||| 0wx00400080
-      val diff5 = diff4 <<< 0wx6 ||| 0wx08000080 
+      val diff5 = diff4 <<< 0wx6 ||| 0wx08000080
       val diff6 = diff5 <<< 0wx6 ||| 0wx00000080
       val diffsByLen = Vector.fromList [0w0,0w0,diff2,diff3,diff4,diff5,diff6]
 
-      fun getByte cs = 
-         case cs 
+      fun getByte cs =
+         case cs
            of #"%"::cs1 => getQuads cs1
             | c::cs1 => (Byte.charToByte c,cs1)
             | nil => raise Failed nil
-                    
+
       fun getBytes(b,cs,n) =
-         let 
-            fun do_err (cs,m) = 
-               if n<m then raise Failed cs 
+         let
+            fun do_err (cs,m) =
+               if n<m then raise Failed cs
                else let val (_,cs1) = getByte cs
                     in do_err (cs1,m+1)
                     end
@@ -76,12 +76,12 @@ structure UriDecode : UriDecode =
             val (w,cs1) = doit (Byte2Char b,cs,2)
             val diff = Vector.sub(diffsByLen,n)
             val c = w-diff
-         in 
-            if c<0wx100 then (Char2char c,cs1) 
+         in
+            if c<0wx100 then (Char2char c,cs1)
             else raise Failed cs1
          end
 
-      fun getCharUtf8 cs = 
+      fun getCharUtf8 cs =
          let val (b,cs1) = getQuads cs
          in case Array.sub(byte1switch,Word8.toInt b)
               of 0 (* error   *) => raise Failed cs1
@@ -90,9 +90,9 @@ structure UriDecode : UriDecode =
          end
 
       fun decodeUriUtf8 str =
-         let 
+         let
             val cs = String.explode str
-            
+
             fun doit yet nil = yet
               | doit yet (c::cs) =
 	       if #"%"<>c then doit (c::yet) cs
@@ -102,34 +102,34 @@ structure UriDecode : UriDecode =
 				      handle Failed cs => (yet,cs)
 		    in doit yet1 cs1
 		    end
-	 in 
+	 in
 	    String.implode(rev(doit nil cs))
          end
 
       (*--------------------------------------------------------------------*)
       (* decode Latin                                                       *)
       (*--------------------------------------------------------------------*)
-      fun getChar cs = 
-         case cs 
-           of #"%"::cs1 => let val (b,cs2) = getQuads cs1 
+      fun getChar cs =
+         case cs
+           of #"%"::cs1 => let val (b,cs2) = getQuads cs1
 			   in (Byte.byteToChar b,cs2)
 			   end
             | c::cs1 => (c,cs1)
             | nil => raise Failed nil
-                    
+
       fun decodeUriLatin str =
-         let 
+         let
             val cs = String.explode str
-            
+
             fun doit yet nil = yet
-              | doit yet (c::cs) = 
+              | doit yet (c::cs) =
 	       let val (yet1,cs1) = let val (ch,cs1) = getChar cs
 				    in (ch::yet,cs1)
 				    end
 				 handle Failed cs => (yet,cs)
 	       in doit yet1 cs1
 	       end
-	 in 
+	 in
 	    String.implode(rev(doit nil cs))
          end
    end

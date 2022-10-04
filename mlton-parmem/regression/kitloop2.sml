@@ -4,7 +4,7 @@
    uses storage mode analsysis  *)
 
 val x =
-let 
+let
   val N = 500
   val I = 1000
 

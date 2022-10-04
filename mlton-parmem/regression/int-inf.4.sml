@@ -5,5 +5,5 @@ fun dump (x: IntInf.int): unit =
              then print "\n"
              else dump rest
        end
-                  
+
 val _ = dump 12345678901234567890

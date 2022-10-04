@@ -32,7 +32,7 @@ sig
   (* move_proxy (broadphase, proxy, aabb, displacement)
      Call MoveProxy as many times as you like, then when you are done
      call UpdatePairs to finalize the proxy pairs (for your time step). *)
-  val move_proxy : 'a broadphase * 'a proxy * BDDTypes.aabb * BDDMath.vec2 -> 
+  val move_proxy : 'a broadphase * 'a proxy * BDDTypes.aabb * BDDMath.vec2 ->
                    unit
 
   (* Get the fat AABB for a proxy. *)
@@ -69,8 +69,8 @@ sig
      The input ray extends from p1 to p1 + maxFraction * (p2 - p1).
      The callback is called for each proxy that is hit by the ray. A return
      value of 0.0 means to stop. *)
-  val ray_cast : 'a broadphase * 
-                 (BDDTypes.ray_cast_input * 'a proxy -> real) * 
+  val ray_cast : 'a broadphase *
+                 (BDDTypes.ray_cast_input * 'a proxy -> real) *
                  BDDTypes.ray_cast_input -> unit
 
   (* Compute the height of the embedded tree. *)

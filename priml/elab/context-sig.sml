@@ -36,14 +36,14 @@ sig
 
 
     (* context extension operations *)
-    
+
     (* bind a priority *)
     val bindp : context -> string -> Variable.var -> context
     val bindplab : context -> string -> context
 
     val bindpcons : context -> IL.prio * IL.prio -> context
 
-    (* bind an identifier to a variable and give that variable 
+    (* bind an identifier to a variable and give that variable
        the indicated type at the indicated world *)
     val bindv : context -> string -> IL.typ IL.poly -> Variable.var -> context
     (* also idstatus, if not Normal; not necessary to give EL name *)

@@ -22,7 +22,7 @@ structure Queue:
                               [] => raise Fail "deque"
                             | x :: l => (back := []; front := l; SOME x)
                            end)
-          | x :: l => (front := l; SOME x) 
+          | x :: l => (front := l; SOME x)
    end
 
 structure Thread:
@@ -48,15 +48,15 @@ structure Thread:
                NONE => valOf (!topLevel)
              | SOME t => t
       end
-   
+
       fun 'a exit (): 'a = switch (fn _ => next ())
-      
+
       fun new (f: unit -> unit): Thread.Runnable.t =
          Thread.prepare
          (Thread.new (fn () => ((f () handle _ => exit ())
                                 ; exit ())),
           ())
-         
+
       fun schedule t = (ready t; next ())
 
       fun yield (): unit = switch (fn t => schedule (Thread.prepare (t, ())))
@@ -81,7 +81,7 @@ structure Thread:
 val rec delay =
    fn 0 => ()
     | n => delay (n - 1)
-         
+
 val rec loop =
    fn 0 => ()
     | n => (delay 500000; loop (n - 1))

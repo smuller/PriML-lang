@@ -18,7 +18,7 @@ fun testIntInf (i: IntInf.int) =
    end
 val _ = testIntInf 13
 val _ = testIntInf 12345678901234567890
-      
+
 val r = ref 13
 val n = 2
 val rs = Array.tabulate (n, ref)

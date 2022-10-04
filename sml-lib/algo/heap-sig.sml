@@ -7,12 +7,12 @@ sig
 
   (* given by the argument to HeapFn *)
   type priority
-    
+
   type 'a heap
 
   (* handle that can be used to adjust priority later.
      don't use a hand after the corresponding element has
-     been removed by 'min' or 'delete'. 
+     been removed by 'min' or 'delete'.
 
      If used in the wrong heap, all bets are off! If you have a static
      number of heaps, I suggest instantiating the heap functor

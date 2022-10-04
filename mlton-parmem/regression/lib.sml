@@ -1,4 +1,4 @@
-datatype 'a Option = None | Some of 'a 
+datatype 'a Option = None | Some of 'a
 
 fun digit n = chr(ord #"0" + n)
 fun digits(n,acc) =
@@ -9,8 +9,8 @@ fun toString(n) = implode(digits(n,[]))
 
 fun writeln s = print(s^"\n")
 
-fun percent(i: int, j: int)(*:int*) = 
-     floor((real i * 100.0)/real j) 
+fun percent(i: int, j: int)(*:int*) =
+     floor((real i * 100.0)/real j)
 
 (* seek: (char -> bool) -> instream -> string list:
    seek(pred)(is) returns the list of characters obtained
@@ -19,7 +19,7 @@ fun percent(i: int, j: int)(*:int*) =
    empty list is returned.
 *)
 exception Impossible
-fun seek (pred: char -> bool) (is: TextIO.instream): char list = 
+fun seek (pred: char -> bool) (is: TextIO.instream): char list =
   let fun readLoop() =
             (case explode (TextIO.inputN(is, 1)) of
                []  =>  []
@@ -40,22 +40,22 @@ fun dropwhile pred l =
   end
 
 (* takewhile: ('a -> bool) -> 'a list -> 'a list; exomorphic *)
-fun takewhile pred l = 
+fun takewhile pred l =
   let fun take_loop [] = []
         | take_loop (l as x::xs) =
            if pred x then x:: take_loop xs else []
   in take_loop l
   end
 
-fun isSpace(ch:char) = 
-      ch = #" " orelse ch = #"\t" orelse ch = #"\n" 
+fun isSpace(ch:char) =
+      ch = #" " orelse ch = #"\t" orelse ch = #"\n"
       (* orelse ch= "\f" orelse ch = "\r" orelse ch = "\v"*)
 
 fun readWord(is): string Option =
   case
-    implode(takewhile(not o isSpace) 
+    implode(takewhile(not o isSpace)
             (dropwhile isSpace (readLn is)))
   of "" => None
    | word => Some word
 
-        
+

@@ -28,14 +28,14 @@ end
 structure DecodeReader : DecodeReader =
 struct
    open
-      UniChar Uri UtilError 
+      UniChar Uri UtilError
 
    fun Byte2Char b = Chars.fromLargeWord(Word8.toLargeWord b)
-   fun Byte2Hex b = 
+   fun Byte2Hex b =
       "0x"^UtilString.toUpperString(StringCvt.padLeft #"0" 2 (Word8.toString b))
    fun Char2Byte c = Word8.fromLargeWord(Chars.toLargeWord c)
 
-   type instream = TextIO.instream 
+   type instream = TextIO.instream
    val closeIn   = TextIO.closeIn
    val input     = TextIO.input
    val input1    = TextIO.input1
@@ -59,14 +59,14 @@ struct
    (*--------------------------------------------------------------------*)
    (* open a file; report IO errors by raising NoSuchFile.               *)
    (*--------------------------------------------------------------------*)
-   fun openFile uriOpt = 
-      let val (typ,stream) = 
-	 case uriOpt 
+   fun openFile uriOpt =
+      let val (typ,stream) =
+	 case uriOpt
 	   of NONE => (STD,stdIn)
 	    | SOME uri => let val (str,fname,tmp) = retrieveUri uri
 			  in (FNAME(uri,str,fname,tmp),openIn fname)
 			  end
-		       handle IO.Io {name,cause,...} 
+		       handle IO.Io {name,cause,...}
 		       => raise NoSuchFile(name,exnMessage cause)
       in ((typ,stream,0),nullVec,0,0)
       end
@@ -77,9 +77,9 @@ struct
    fun closeStream (typ,stream,_) =
       case typ
 	of STD => ()
-	 | FNAME(_,uri,fname,tmp) 
+	 | FNAME(_,uri,fname,tmp)
 	   => let val _ = closeIn stream handle IO.Io _ => ()
-		  val _ = (if tmp andalso OS.FileSys.access(fname,nil) 
+		  val _ = (if tmp andalso OS.FileSys.access(fname,nil)
 			      then OS.FileSys.remove fname else ())
 		     handle exn as OS.SysErr _ =>
 			TextIO.output(TextIO.stdErr,String.concat

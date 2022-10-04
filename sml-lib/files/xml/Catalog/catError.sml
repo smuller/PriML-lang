@@ -20,7 +20,7 @@ signature CatError =
        | LOC_NOCOMMENT
        | LOC_PUBID
        | LOC_SYSID
-	 
+
       datatype Expected =
 	 EXP_NAME
        | EXP_LITERAL
@@ -29,7 +29,7 @@ signature CatError =
 	 ERR_DECODE_ERROR of Decode.Error.DecodeError
        | ERR_NO_SUCH_FILE of string * string
        | ERR_ILLEGAL_HERE of UniChar.Char * Location
-       | ERR_MISSING_WHITE 
+       | ERR_MISSING_WHITE
        | ERR_EOF of Location
        | ERR_EXPECTED of Expected * UniChar.Char
        | ERR_XML of Errors.Error
@@ -39,15 +39,15 @@ signature CatError =
       val catMessage : CatError -> string list
    end
 
-structure CatError : CatError = 
+structure CatError : CatError =
    struct
       open Errors UtilError UtilString
 
-      type Position = string * int * int 
+      type Position = string * int * int
       val nullPosition = ("",0,0)
 
-      fun Position2String (fname,l,c) = 
-	 if fname="" then "" 
+      fun Position2String (fname,l,c) =
+	 if fname="" then ""
 	 else String.concat ["[",fname,":",Int2String l,".",Int2String c,"]"]
 
       datatype Location =
@@ -58,15 +58,15 @@ structure CatError : CatError =
        | LOC_SYSID
 
       fun Location2String loc =
-	 case loc 
+	 case loc
 	   of LOC_CATALOG => "catalog file"
 	    | LOC_COMMENT => "comment"
 	    | LOC_NOCOMMENT => "something other than a comment"
 	    | LOC_PUBID   => "public identifier"
 	    | LOC_SYSID   => "system identifier"
-      
+
       fun InLocation2String loc =
-	 case loc 
+	 case loc
 	   of LOC_CATALOG => "in a catalog file"
 	    | LOC_COMMENT => "in a comment"
 	    | LOC_NOCOMMENT => "outside of comments"
@@ -86,7 +86,7 @@ structure CatError : CatError =
 	 ERR_DECODE_ERROR of Decode.Error.DecodeError
        | ERR_NO_SUCH_FILE of string * string
        | ERR_ILLEGAL_HERE of UniChar.Char * Location
-       | ERR_MISSING_WHITE 
+       | ERR_MISSING_WHITE
        | ERR_EOF of Location
        | ERR_EXPECTED of Expected * UniChar.Char
        | ERR_XML of Error
@@ -97,21 +97,21 @@ structure CatError : CatError =
 	 case err
 	   of ERR_DECODE_ERROR err => Decode.Error.decodeMessage err
 	    | ERR_NO_SUCH_FILE(f,msg) => ["Could not open file",quoteErrorString f,"("^msg^")"]
-	      
-	    | ERR_ILLEGAL_HERE (c,loc) => 
+
+	    | ERR_ILLEGAL_HERE (c,loc) =>
 	      ["Character",quoteErrorChar c,"is not allowed",InLocation2String loc]
-	      
+
 	    | ERR_MISSING_WHITE => ["Missing white space"]
 	    | ERR_EOF loc => [toUpperFirst (Location2String loc),"ended by end of file"]
-	    | ERR_EXPECTED (exp,c) => 
+	    | ERR_EXPECTED (exp,c) =>
 	      ["Expected",Expected2String exp,"but found",quoteErrorChar c]
 
 	    | ERR_XML err => errorMessage err
-	    | ERR_MISSING_ATT(elem,att) => 
+	    | ERR_MISSING_ATT(elem,att) =>
 	      ["Element",quoteErrorData elem,"has no",quoteErrorData att,"attribute"]
-	    | ERR_NON_PUBID(att,cs) => 
+	    | ERR_NON_PUBID(att,cs) =>
 	      ["Value specified for attribute",quoteErrorData att,"contains non-PublicId",
-	       case cs 
+	       case cs
 		 of [c] => "character"^quoteErrorChar c
 		  | cs => List2xString ("characters ",", ","") quoteErrorChar cs]
    end

@@ -10,7 +10,7 @@ signature IntLists =
       val inIntList      : int * IntList -> bool
       val subIntList     : IntList * IntList -> bool
 
-      val compareIntLists: IntList * IntList -> order 
+      val compareIntLists: IntList * IntList -> order
       val hashIntList    : IntList -> word
 
       val addIntList     : int * IntList -> IntList
@@ -23,7 +23,7 @@ signature IntLists =
       val IntList2String : IntList -> string
    end
 
-structure IntLists : IntLists = 
+structure IntLists : IntLists =
    struct
       open UtilCompare UtilHash UtilInt UtilList UtilString
 
@@ -45,5 +45,5 @@ structure IntLists : IntLists =
       val compareIntLists = compareList Int.compare
       val hashIntList = hashList hashInt
 
-      val IntList2String = List2String Int.toString 
-   end			      
+      val IntList2String = List2String Int.toString
+   end

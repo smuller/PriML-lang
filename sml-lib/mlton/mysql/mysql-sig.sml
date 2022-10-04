@@ -1,5 +1,5 @@
 
-(* Minimal client interface for mysql 
+(* Minimal client interface for mysql
    (http://mysql.org/) *)
 signature MYSQL =
 sig
@@ -25,7 +25,7 @@ sig
   (* connect user password *)
   val connect : string -> string option -> mysql
 
-  (* connectex host user password port unixsocketname 
+  (* connectex host user password port unixsocketname
      use "localhost" as the host for local connections (treated specially)
      use NONE for the password to not specify one.
      use "" as the user to use the current user.
@@ -34,7 +34,7 @@ sig
      *)
   val connectex : string -> string -> string option -> int -> string option -> mysql
 
-  (* must call this to avoid leaking resources. 
+  (* must call this to avoid leaking resources.
      after calling it, should discard the argument and all aliases. *)
   val close : mysql -> unit
 
@@ -44,14 +44,14 @@ sig
   (* you must free the results of queries *)
   val free : result -> unit
 
-  (* readone m r 
+  (* readone m r
      reads one row from the result set. *)
   val readone : mysql -> result -> entry option list option
 
   (* readall m r
      read the entire matrix of results *)
   val readall : mysql -> result -> entry option list list
- 
+
   (* Print an entry (option) or entire row, for diagnostics.
      Truncates long data. *)
   val entrytos : entry option -> string
@@ -61,7 +61,7 @@ sig
   val escapestring : mysql -> string -> string
   (* Ready a value for being sent to the server, which can be anything
      but Unknown. Ints are rendered as ints, strings are escaped and quoted. *)
-  val escapevalue : mysql -> entry -> string 
+  val escapevalue : mysql -> entry -> string
   (* Escapes a whole row of values for inserting with 'insert into'.
      Surrounds the tuple with parentheses and separates by commas. *)
   val escapevalues : mysql -> entry list -> string

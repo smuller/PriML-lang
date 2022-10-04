@@ -15,43 +15,43 @@ structure SimpleRPC : SIMPLE_RPC =
 
       type 'a event = 'a CML.event
 
-      fun call reqMB arg = 
+      fun call reqMB arg =
          let val replV = SyncVar.iVar()
          in
             Mailbox.send(reqMB, (arg, replV))
             ; SyncVar.iGet replV
          end
 
-      fun mkRPC f = 
+      fun mkRPC f =
          let
             val reqMB = Mailbox.mailbox()
-            val entryEvt = 
-               CML.wrap 
-               (Mailbox.recvEvt reqMB, fn (arg, replV) => 
+            val entryEvt =
+               CML.wrap
+               (Mailbox.recvEvt reqMB, fn (arg, replV) =>
                 SyncVar.iPut(replV, f arg))
          in
             {call = call reqMB, entryEvt = entryEvt}
          end
 
-      fun mkRPC_In f = 
+      fun mkRPC_In f =
          let
             val reqMB = Mailbox.mailbox()
             val reqEvt = Mailbox.recvEvt reqMB
-            fun entryEvt state = 
-               CML.wrap 
-               (reqEvt, fn (arg, replV) => 
+            fun entryEvt state =
+               CML.wrap
+               (reqEvt, fn (arg, replV) =>
                 SyncVar.iPut(replV, f(arg, state)))
          in
             {call = call reqMB, entryEvt = entryEvt}
          end
 
-      fun mkRPC_Out f = 
+      fun mkRPC_Out f =
          let
             val reqMB = Mailbox.mailbox()
             val reqEvt = Mailbox.recvEvt reqMB
-            val entryEvt = 
-               CML.wrap 
-               (reqEvt, fn (arg, replV) => 
+            val entryEvt =
+               CML.wrap
+               (reqEvt, fn (arg, replV) =>
                 let val (res, state') = f arg
                 in SyncVar.iPut(replV, res); state'
                 end)
@@ -59,13 +59,13 @@ structure SimpleRPC : SIMPLE_RPC =
             {call = call reqMB, entryEvt = entryEvt}
          end
 
-      fun mkRPC_InOut f = 
+      fun mkRPC_InOut f =
          let
             val reqMB = Mailbox.mailbox()
             val reqEvt = Mailbox.recvEvt reqMB
-            fun entryEvt state = 
-               CML.wrap 
-               (reqEvt, fn (arg, replV) => 
+            fun entryEvt state =
+               CML.wrap
+               (reqEvt, fn (arg, replV) =>
                 let val (res, state') = f(arg, state)
                 in SyncVar.iPut(replV, res); state'
                 end)

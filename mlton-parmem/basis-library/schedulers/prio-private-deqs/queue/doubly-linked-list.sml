@@ -6,7 +6,7 @@ structure DoublyLinkedList =
 struct
 
   datatype 'a node = Leaf | Node of 'a node ref * 'a * 'a node ref * bool ref
-  
+
   type 'a hand = 'a node ref * 'a * 'a node ref * bool ref
 
   (* front, back *)
@@ -112,7 +112,7 @@ struct
           Node (h as (_, x, r', _)) => leftToRight (f (x, h, b)) r'
         | Leaf => b
     in
-      leftToRight b front 
+      leftToRight b front
     end
 
   fun foldrh f b (_, back) =

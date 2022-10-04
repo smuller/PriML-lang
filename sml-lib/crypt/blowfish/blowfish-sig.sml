@@ -2,13 +2,13 @@
 signature BLOWFISH =
 sig
 
-  (* abstract type of decryption state. 
+  (* abstract type of decryption state.
      you must create this from a key before
      encrypting or decrypting.
      *)
   type fish
 
-    
+
   (* string can be up to 56 bytes. *)
   val init : string -> fish
 
@@ -29,7 +29,7 @@ end
    the below signature, as in:
 
    structure FastBlowfish = BlowfishFn(Word32Array)
-   
+
    Note that with mlton, Word32.word Array.word is compiled as Word32Array.array,
    so the provided Blowfish structure is fast already.
 *)

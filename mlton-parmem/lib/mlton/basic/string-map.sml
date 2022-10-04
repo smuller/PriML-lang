@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure StringMap: STRING_MAP = 
+structure StringMap: STRING_MAP =
 struct
 
 datatype 'a t = T of {map: {name: string,
@@ -27,7 +27,7 @@ fun lookup (T {map, default}, name) =
 
 fun domain (T {map, ...}) = List.revMap (!map, fn {name, ...} => name)
 
-fun keepAll (T{map, ...}, pred) = 
+fun keepAll (T{map, ...}, pred) =
    List.keepAllMap (!map, fn {name, value} =>
                     if pred value then SOME name else NONE)
 

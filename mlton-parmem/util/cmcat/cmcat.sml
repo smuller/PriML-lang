@@ -1,6 +1,6 @@
 (*
  * Authors: Stephen Weeks (sweeks@sweeks.com)
- *          Matthew Fluet (fluet@cs.cornell.edu) 
+ *          Matthew Fluet (fluet@cs.cornell.edu)
  *
  * This requires that you have SML/NJ installed.
  * It works with SML/NJ 110.44 and may require changes to work with other
@@ -59,7 +59,7 @@ struct
             end
       end
 
-   structure SrcDescr :> 
+   structure SrcDescr :>
       sig
          type t
          val make : String.t * String.t -> t
@@ -116,9 +116,9 @@ struct
 
                               val T {node, ...} =
                                  HashSet.lookupOrInsert
-                                 (m, hash, fn T {srcdescr = srcdescr', ...} => 
+                                 (m, hash, fn T {srcdescr = srcdescr', ...} =>
                                   SrcDescr.equals(srcdescr, srcdescr'),
-                                  fn () => 
+                                  fn () =>
                                   case CM.Graph.graph (SrcDescr.src srcdescr) of
                                      NONE => let
                                                 val node = Graph.newNode g
@@ -131,7 +131,7 @@ struct
                                              in
                                                 result
                                              end
-                                   | SOME {graph, imports, nativesrc, ...} => 
+                                   | SOME {graph, imports, nativesrc, ...} =>
                                         let
                                            val node = Graph.newNode g
                                            val imports =
@@ -148,7 +148,7 @@ struct
                                                   List.push(todo, (SrcDescr.make (src, descr), finish)) ;
                                                   SrcDescr.make (src, descr)
                                                end)
-                                           val result = 
+                                           val result =
                                               T {graph = SOME {graph = graph,
                                                                imports = imports,
                                                                nativesrc = nativesrc},
@@ -168,9 +168,9 @@ struct
                val libs =
                   case Graph.topologicalSort g of
                      NONE => raise Fail "topologicalSort of import graph failed"
-                   | SOME nodes => 
+                   | SOME nodes =>
                         let
-                           val libs = 
+                           val libs =
                               List.map
                               (nodes, fn n =>
                                let
@@ -186,9 +186,9 @@ struct
                libs
             end
 
-         fun filter (libs : {graph: {graph: PG.graph, 
+         fun filter (libs : {graph: {graph: PG.graph,
                                      imports: SrcDescr.t List.t,
-                                     nativesrc: String.t -> String.t} option, 
+                                     nativesrc: String.t -> String.t} option,
                              srcdescr: SrcDescr.t} List.t) =
             let
                datatype t = T of {hash: Word.t,
@@ -256,26 +256,26 @@ struct
 
                val _ =
                   List.foreach
-                  (libs, 
+                  (libs,
                    fn {graph = NONE, srcdescr, ...} =>
                    let
                       val hash = SrcDescr.hash srcdescr
                       val _ =
                          HashSet.insertIfNew
-                         (exports, hash, 
-                          fn S {srcdescr = srcdescr', ...} => 
+                         (exports, hash,
+                          fn S {srcdescr = srcdescr', ...} =>
                           SrcDescr.equals(srcdescr, srcdescr'),
                           fn () => S {hash = hash,
                                       known = false,
                                       srcdescr = srcdescr,
                                       syms = ref []},
-                          fn _ => raise Fail (concat ["srcdescr: ", 
-                                                      SrcDescr.toString srcdescr, 
+                          fn _ => raise Fail (concat ["srcdescr: ",
+                                                      SrcDescr.toString srcdescr,
                                                       " repeated"]))
                    in
                       ()
                    end
-                    | {graph = SOME {graph = PG.GRAPH {defs, export, imports}, 
+                    | {graph = SOME {graph = PG.GRAPH {defs, export, imports},
                                      imports = imports', ...},
                        srcdescr, ...} =>
                    let
@@ -291,18 +291,18 @@ struct
                                              case HashSet.peek
                                                   (exports, hash, fn S {srcdescr, ...} =>
                                                    SrcDescr.equals(import, srcdescr)) of
-                                                NONE => raise Fail (concat ["srcdescr: ", 
-                                                                            SrcDescr.toString srcdescr, 
+                                                NONE => raise Fail (concat ["srcdescr: ",
+                                                                            SrcDescr.toString srcdescr,
                                                                             " unknown"])
                                               | SOME s => s
                                        in
                                           if known
-                                             then 
+                                             then
                                                 fn symsSyms =>
                                                 List.keepAll
                                                 (!envSyms, fn (srcdescr,ns,v,node) =>
                                                  List.contains(symsSyms,(ns,v),(op =)))
-                                             else 
+                                             else
                                                 fn symsSyms =>
                                                 List.map
                                                 (symsSyms, fn (ns,s) =>
@@ -351,7 +351,7 @@ struct
                                     fn _ => raise Fail (concat ["lhs: ", lhs, " violates VARNAME_ONCE"])) ;
                                    ()
                                 end
-                           | PG.SYMS vns => 
+                           | PG.SYMS vns =>
                                 let
                                    val hash = String.hash lhs
                                    val syms =
@@ -376,7 +376,7 @@ struct
                                     fn _ => raise Fail (concat ["lhs: ", lhs, " violates VARNAME_ONCE"])) ;
                                    ()
                                 end
-                           | PG.IMPORT {lib, syms} => 
+                           | PG.IMPORT {lib, syms} =>
                                 let
                                    val hash = Word.xorb(srcdescr_hash, String.hash lhs)
 
@@ -390,7 +390,7 @@ struct
                                           | SOME (V {syms, ...}) => syms
                                       end
                                    val syms = importFn lib symsSyms
-                                   val result = 
+                                   val result =
                                       T {hash = hash,
                                          lhs = (srcdescr, lhs),
                                          syms = syms}
@@ -402,7 +402,7 @@ struct
                                     fn _ => raise Fail (concat ["lhs: ", lhs, " violates VARNAME_ONCE"])) ;
                                    ()
                                 end
-                           | PG.COMPILE {src, env, syms} => 
+                           | PG.COMPILE {src, env, syms} =>
                                 let
                                    val hash = Word.xorb(srcdescr_hash, String.hash lhs)
                                    val envSyms =
@@ -414,7 +414,7 @@ struct
                                                env = env') of
                                             NONE => raise Fail (concat ["lhs: ", lhs, " violates ENV_TYPE"])
                                           | SOME (T {syms, ...}) => syms
-                                      end       
+                                      end
                                    val symsSyms =
                                       let val hash = String.hash syms
                                       in
@@ -426,7 +426,7 @@ struct
                                       end
                                    val node = Graph.newNode g
                                    val _ = set(node, addKeep (srcdescr, lhs))
-                                   val _ = 
+                                   val _ =
                                       List.foreach
                                       (envSyms, fn (_,_,_,node') =>
                                        ignore(Graph.addEdge(g, {from = node, to = node'})))
@@ -434,7 +434,7 @@ struct
                                       List.map
                                       (symsSyms, fn (ns,v) =>
                                        (srcdescr,ns,v,node))
-                                   val result = 
+                                   val result =
                                       T {hash = hash,
                                          lhs = (srcdescr, lhs),
                                          syms = syms}
@@ -446,7 +446,7 @@ struct
                                     fn _ => raise Fail (concat ["lhs: ", lhs, " violates VARNAME_ONCE"])) ;
                                    ()
                                 end
-                           | PG.FILTER {env, syms} => 
+                           | PG.FILTER {env, syms} =>
                                 let
                                    val hash = Word.xorb(srcdescr_hash, String.hash lhs)
                                    val envSyms =
@@ -472,7 +472,7 @@ struct
                                       List.keepAll
                                       (envSyms, fn (srcdescr,ns,v,node) =>
                                        List.contains(symsSyms,(ns,v),(op =)))
-                                   val result = 
+                                   val result =
                                       T {hash = hash,
                                          lhs = (srcdescr, lhs),
                                          syms = syms}
@@ -484,7 +484,7 @@ struct
                                     fn _ => raise Fail (concat ["lhs: ", lhs, " violates VARNAME_ONCE"])) ;
                                    ()
                                 end
-                           | PG.MERGE vns => 
+                           | PG.MERGE vns =>
                                 let
                                    val hash = Word.xorb(srcdescr_hash, String.hash lhs)
                                    val syms =
@@ -503,7 +503,7 @@ struct
                                       T {hash = hash,
                                          lhs = (srcdescr, lhs),
                                          syms = syms}
-                                in      
+                                in
                                    HashSet.insertIfNew
                                    (symsNodesDefs, hash, fn T {lhs = (srcdescr',lhs'), ...} =>
                                     SrcDescr.equals(srcdescr, srcdescr') andalso
@@ -530,8 +530,8 @@ struct
                          HashSet.insertIfNew
                          (exports, srcdescr_hash, fn S {srcdescr = srcdescr', ...} =>
                           SrcDescr.equals(srcdescr, srcdescr'), fn () => result,
-                          fn _ => raise Fail (concat ["srcdescr: ", 
-                                                      SrcDescr.toString srcdescr, 
+                          fn _ => raise Fail (concat ["srcdescr: ",
+                                                      SrcDescr.toString srcdescr,
                                                       " repeated"]))
 
                    in
@@ -544,7 +544,7 @@ struct
                        (exports, SrcDescr.hash srcdescr, fn S {srcdescr = srcdescr', ...} =>
                         SrcDescr.equals(srcdescr, srcdescr')) of
                      NONE => raise Fail "nodes"
-                   | SOME (S {syms , ...}) => 
+                   | SOME (S {syms , ...}) =>
                         List.map(!syms,fn (_,_,_,n) => n)
                val _ =
                   Graph.dfsNodes
@@ -555,8 +555,8 @@ struct
                val keep = fn (srcdescr, vn) =>
                   Option.isSome
                   (HashSet.peek
-                   (keep, Word.xorb(SrcDescr.hash srcdescr, String.hash vn), 
-                    fn W {lhs = (srcdescr',vn'), ...} => 
+                   (keep, Word.xorb(SrcDescr.hash srcdescr, String.hash vn),
+                    fn W {lhs = (srcdescr',vn'), ...} =>
                     SrcDescr.equals(srcdescr, srcdescr') andalso
                     vn = vn'))
 
@@ -574,7 +574,7 @@ struct
    fun cmcat {comments, defines, out, sources} =
       let
          (* Define preprocessor symbols *)
-         val _ = List.foreach(defines, fn sym => 
+         val _ = List.foreach(defines, fn sym =>
                               (#set (CM.symval sym)) (SOME 1))
          val _ = (#set CM.Control.verbose) false
          val _ = (#set CM.Control.warn_obsolete) false
@@ -590,22 +590,22 @@ struct
              then (Out.output (out, "(* " ^ (SrcDescr.descr srcdescr) ^ "\n");
                                List.foreach
                                (imports srcdescr, fn (ns,s) =>
-                               Out.output (out, " * " ^ (case ns of 
-                                                            PG.SGN => "signature " 
-                                                          | PG.STR => "structure " 
-                                                          | PG.FCT => "functor ") ^ 
+                               Out.output (out, " * " ^ (case ns of
+                                                            PG.SGN => "signature "
+                                                          | PG.STR => "structure "
+                                                          | PG.FCT => "functor ") ^
                                                 s ^ "\n"));
                                Out.output (out, " *)\n"))
              else ()
            | {graph = SOME {graph, nativesrc, ...}, srcdescr, ...} =>
           (if comments
-              then Out.output (out, 
-                               "(* " ^ 
-                               (OS.Path.mkRelative {path = SrcDescr.src srcdescr, relativeTo = dir}) ^ 
+              then Out.output (out,
+                               "(* " ^
+                               (OS.Path.mkRelative {path = SrcDescr.src srcdescr, relativeTo = dir}) ^
                                " *)\n")
               else ();
            let val PG.GRAPH {defs, ...} = graph
-           in 
+           in
               List.foreach
               (defs, fn def =>
                case def of
@@ -628,7 +628,7 @@ struct
        let
           val comments = ref false
           val defines = ref ["MLton"]
-          fun loop args = 
+          fun loop args =
              case args of
                 [file] =>
                    cmcat {comments = !comments,

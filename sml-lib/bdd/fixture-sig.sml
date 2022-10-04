@@ -25,7 +25,7 @@ sig
   (* This holds contact filtering data. *)
   type filter
 
-  val filter : 
+  val filter :
     { (* The collision category bits. Normally you would just set one bit. *)
       category_bits : Word16.word,
 
@@ -85,7 +85,7 @@ sig
   val test_point : fixture * BDDMath.vec2 -> bool
 
   (* Cast a ray against this shape. *)
-  val ray_cast : fixture * BDDTypes.ray_cast_input -> 
+  val ray_cast : fixture * BDDTypes.ray_cast_input ->
       BDDTypes.ray_cast_output option
 
   (* Get the mass data for this fixture. The mass data is based on the

@@ -24,7 +24,7 @@ val _ =
    (List.tabulate (100, fn i => i + 1))
 
 val _ = print "OK\n"
-      
-    
+
+
 
 

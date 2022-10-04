@@ -15,15 +15,15 @@ signature CHOOSE_WORDN_ARG =
       val fWord64: Word64.word t
    end
 
-functor ChooseWordN_Word8 (A : CHOOSE_WORDN_ARG) : 
-   sig val f : Word8.word A.t end = 
+functor ChooseWordN_Word8 (A : CHOOSE_WORDN_ARG) :
+   sig val f : Word8.word A.t end =
    struct val f = A.fWord8 val _ = A.fWord16 val _ = A.fWord32 val _ = A.fWord64 end
-functor ChooseWordN_Word16 (A : CHOOSE_WORDN_ARG) : 
-   sig val f : Word16.word A.t end = 
+functor ChooseWordN_Word16 (A : CHOOSE_WORDN_ARG) :
+   sig val f : Word16.word A.t end =
    struct val _ = A.fWord8 val f = A.fWord16 val _ = A.fWord32 val _ = A.fWord64 end
-functor ChooseWordN_Word32 (A : CHOOSE_WORDN_ARG) : 
-   sig val f : Word32.word A.t end = 
+functor ChooseWordN_Word32 (A : CHOOSE_WORDN_ARG) :
+   sig val f : Word32.word A.t end =
    struct val _ = A.fWord8 val _ = A.fWord16 val f = A.fWord32 val _ = A.fWord64 end
-functor ChooseWordN_Word64 (A : CHOOSE_WORDN_ARG) : 
-   sig val f : Word64.word A.t end = 
+functor ChooseWordN_Word64 (A : CHOOSE_WORDN_ARG) :
+   sig val f : Word64.word A.t end =
    struct val _ = A.fWord8 val _ = A.fWord16 val _ = A.fWord32 val f = A.fWord64 end

@@ -28,7 +28,7 @@ fun prSh oper w a c =
 
 fun mkInt i n = if n = 0
                   then i
-                  else mkInt (IntInf.+ (IntInf.* (i, IntInf.fromInt 10),i)) 
+                  else mkInt (IntInf.+ (IntInf.* (i, IntInf.fromInt 10),i))
                              (n - 1)
 
 val mkInt = fn i => fn n => mkInt (IntInf.fromInt i) n
@@ -86,7 +86,7 @@ fun loop (n', m') (n, m) =
   let
     fun loop' i =
       let
-        fun loop'' j = 
+        fun loop'' j =
           if j > m
             then loop' (i + 1)
             else (tryBin (mkInt i j, mkInt i j);

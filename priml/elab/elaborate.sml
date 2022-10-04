@@ -3,7 +3,7 @@ structure Elaborate :> ELABORATE =
 struct
 
   val sequenceunit = Params.flag false
-    (SOME ("-sequence-unit", 
+    (SOME ("-sequence-unit",
            "Require sequenced expressions and 'do' declarations to be of type unit")) "sequenceunit"
 
   val warnmatch = Params.flag true
@@ -51,8 +51,8 @@ struct
   fun tuple l =
       let
           fun mktup _ nil = nil
-            | mktup n (h::t) = 
-              (Int.toString n, h) :: 
+            | mktup n (h::t) =
+              (Int.toString n, h) ::
               mktup (n + 1) t
       in
           IL.TRec(mktup 1 l)
@@ -63,8 +63,8 @@ struct
            (0, Typ t, _) => t
          (* nullary rewrites these, so it should be impossible *)
          | (0, Lambda f, _) => error loc ("invariant violation: lookupt got Lambda for " ^ str)
-         | (kind, _, _) => 
-               error loc (str ^ " expects " ^ 
+         | (kind, _, _) =>
+               error loc (str ^ " expects " ^
                           itos kind ^ " type argument"
                           ^ (if kind = 1 then "" else "s") ^ "."))
            handle C.Absent _ => error loc ("Unbound type name " ^ str)
@@ -83,14 +83,14 @@ struct
              (* XXX there are no modvars any more *)
              ((case C.con ctx str of
                    (kind, Lambda f, _) =>
-                       if kind = length l 
-                       then f (map (elabtex ctx prefix loc) l) 
-                       else error loc 
+                       if kind = length l
+                       then f (map (elabtex ctx prefix loc) l)
+                       else error loc
                            (str ^ " expects " ^ itos kind ^ " type argument"
                             ^ (if kind = 1 then "" else "s") ^ " -- gave " ^
                             itos (length l))
                  | _ => error loc (str ^ " is not a type constructor."))
-                   handle Context.Absent _ => 
+                   handle Context.Absent _ =>
                           error loc ("Unbound type constructor " ^ str))
 (*
        | E.TAddr w => TAddr (elabw ctx loc w)
@@ -99,17 +99,17 @@ struct
        | E.TSham (NONE, t) => Shamrock(V.namedvar "shamt_unused", elabtex ctx prefix loc t)
        | E.TSham (SOME _, _) => error loc "sham vars unimplemented (and how did you get one??)"
 *)
-       | E.TRec ltl => let 
-                           val ltl = ListUtil.sort 
+       | E.TRec ltl => let
+                           val ltl = ListUtil.sort
                                      (ListUtil.byfirst ML5pghUtil.labelcompare) ltl
-                       in 
+                       in
                            if ListUtil.alladjacent
-                                (ListUtil.byfirst op<>) ltl 
+                                (ListUtil.byfirst op<>) ltl
                            then TRec (ListUtil.mapsecond (elabtex ctx prefix loc) ltl)
                            else error loc "Duplicate label in record type"
                        end
        | E.TNum n => if n >= 0
-                     then 
+                     then
                        TRec (List.tabulate(n, (fn i => (Int.toString (i + 1),
                                                         new_evar ()))))
                      else error loc "num type (record length) must be non-negative"
@@ -153,9 +153,9 @@ struct
             (*
     | (pt, v, i, Context.Modal w) =>
         let
-            (* If polymorphic, instantiate the variable's 
-               forall-quantified type variables with new 
-               evars. Use type application on the expression 
+            (* If polymorphic, instantiate the variable's
+               forall-quantified type variables with new
+               evars. Use type application on the expression
                to record this. *)
 
             val (tt, worlds, tys) = evarize pt
@@ -169,18 +169,18 @@ struct
 
   and elab ctx ((e, loc) : EL.exp) =
       case e of
-          E.Seq (e1, e2) => 
+          E.Seq (e1, e2) =>
               let val (e1, e1t) = elab ctx e1
                   val (e2, e2t) = elab ctx e2
-              in 
+              in
                 (if !sequenceunit
                  then unify ctx loc "sequence unit" e1t (IL.TRec nil)
                  else ());
                 (Seq(e1, e2), e2t)
               end
 
-        | E.Var vv => 
-              let 
+        | E.Var vv =>
+              let
                 val (v, t) = dovar ctx loc vv
               in
 (*                 unifyw ctx loc ("variable " ^ vv) here w; *)
@@ -213,7 +213,7 @@ struct
                      val { worlds, tys, dom, cod } = Podata.potype po
                      val dom = map ptoil dom
                      val cod = ptoil cod
-                     
+
                    in
                      if List.null worlds
                      then if length tys = length ts
@@ -222,23 +222,23 @@ struct
                                let
                                  val ts = map (elabt ctx loc) ts
                                  val (args, argts) = ListPair.unzip ` map (elab ctx) es
-                                   
+
                                  val (l, _, tvs) = ElabUtil.evarizes (Poly({prios=nil,
                                                                             tys=tys},
                                                                            cod :: dom))
-                                   
+
                                  val cod = hd l
                                  val dom = tl l
-                                   
+
                                in
                                  (* One side is all unique evars, so this always succeeds *)
                                  ListPair.app (fn (t1, t2) =>
                                                unify ctx loc "primapp" t1 t2) (tvs, ts);
-                            
+
                                  (* args must match domain *)
                                  ListPair.app (fn (t1, t2) =>
                                           unify ctx loc "primapp arg" t1 t2) (dom, argts);
-                                 
+
                                  (Primapp(po, args, ts),
                                   cod)
                                end
@@ -246,7 +246,7 @@ struct
                         else error loc "not the right number of type args in primapp"
                      else error loc "unimplemented: world polymorphism in primop"
                    end)
-                   
+
 
         | E.Constant(E.CInt i) => value (Int i, Initial.ilint)
         | E.Constant(E.CChar c) => value (Int (Word32.fromInt (ord c)), Initial.ilchar)
@@ -255,7 +255,7 @@ struct
 
         | E.Constant (E.CString s) => value (String s, Initial.ilstring)
 
-        | E.Vector nil => 
+        | E.Vector nil =>
               let
                 val t = new_evar()
               in
@@ -283,11 +283,11 @@ struct
 
                    fun dowrites _ nil e = e
                      | dowrites m (h::t) e =
-                       $ ` 
+                       $ `
                        E.Seq
                        ($ `
                         E.App($ ` E.Var "update_",
-                              $ ` 
+                              $ `
                               E.Record
                               [("1", $ ` E.Var arr),
                                ("2", $ ` E.Constant ` E.CInt m),
@@ -311,7 +311,7 @@ struct
                end
 
 (*
-        | E.Say (imps, ee) => 
+        | E.Say (imps, ee) =>
                let
                  fun sayimport s = jtoil ctx (case JSImports.importtype s of
                                                 NONE => error loc ("unknown say import " ^ s)
@@ -346,8 +346,8 @@ struct
 
                  (* then we generate:
                    letcc out : string cont
-                   in 
-                      let (v1, v2, ...) = 
+                   in
+                      let (v1, v2, ...) =
                          letcc k : tuplet cont
                          in throw (say (imports, k)) to out
                          end
@@ -366,7 +366,7 @@ struct
                                   (tuple,
                                    tuplet,
                                    (Letcc(k, tuplet,
-                                          Throw (Say (map (fn (imp, _, _, t) => (imp, t)) imps, Value ` Var k), 
+                                          Throw (Say (map (fn (imp, _, _, t) => (imp, t)) imps, Value ` Var k),
                                                  Value ` Var out))))),
                              (* project components *)
                              project 1 imps `
@@ -378,7 +378,7 @@ struct
                   Initial.ilstring)
                end
 
-        | E.Throw (e1, e2) => 
+        | E.Throw (e1, e2) =>
                let
                  val (ee1, t1) = elab ctx here e1
                  val (ee2, t2) = elab ctx here e2
@@ -393,15 +393,15 @@ struct
                  val cv = V.namedvar s
                  val bodt = new_evar ()
                  val ctx' = C.bindv ctx s (mono (IL.TCont bodt)) cv here
-                   
+
                  val (ee, tt) = elab ctx' here e
                in
                  unify ctx loc "letcc" tt bodt;
                  (Letcc (cv, bodt, ee), bodt)
                end
-               
+
         (* better code for string constants *)
-        | E.Jointext [e] => 
+        | E.Jointext [e] =>
                let val (e, t) = elab ctx here e
                in  unify ctx loc "jointext-singleton" t Initial.ilstring;
                    (e, t)
@@ -421,16 +421,16 @@ struct
         | E.Record lel =>
                let
                    val letl = ListUtil.mapsecond (elab ctx) lel
-                   val _ = ListUtil.alladjacent (ListUtil.byfirst op<>) 
-                              (ListUtil.sort 
+                   val _ = ListUtil.alladjacent (ListUtil.byfirst op<>)
+                              (ListUtil.sort
                                (ListUtil.byfirst ML5pghUtil.labelcompare) lel)
-                           orelse error loc 
+                           orelse error loc
                               "Duplicate labels in record expression"
                in
                    (* might be a value, if everything is a value *)
                  if List.all (fn (_, (Value _, _)) => true | _ => false) letl
                  then
-                     (Value ` VRecord (map (fn (l, (Value e, t)) => (l, e) 
+                     (Value ` VRecord (map (fn (l, (Value e, t)) => (l, e)
                                             | _ => error loc "impossible") letl),
                       TRec (map (fn (l, (e, t)) => (l, t)) letl))
                  else
@@ -448,8 +448,8 @@ struct
                    case ttt of
                        TRec ltl =>
                            (case ListUtil.Alist.find op= ltl s of
-                               NONE => error loc 
-                                         ("label " ^ s ^ 
+                               NONE => error loc
+                                         ("label " ^ s ^
                                           " not in projection object type!")
                              | SOME tres => (Proj(s, ttt, ee), tres))
                      | _ => error loc "projection must be of record type"
@@ -459,7 +459,7 @@ struct
         (* FIXME if ff is a constructor, then expand in place and
            return the value. *)
         | E.App(ef, ea, _) =>
-               let 
+               let
                  val (ff, ft) = elab ctx ef
                  val (aa, at) = elab ctx ea
                  val dom = new_evar ()
@@ -471,7 +471,7 @@ struct
                end
 
         | E.Constrain(e, t) =>
-               let 
+               let
                    val (ee, tt) = elab ctx e
                    val tc = elabt ctx loc t
 
@@ -486,12 +486,12 @@ struct
         | E.Orelse (a,b) =>
                elab ctx (E.If (a, Initial.trueexp loc, b), loc)
 
-        | E.Andthen (a, b) => 
+        | E.Andthen (a, b) =>
                elab ctx (E.If (a, (E.Seq (b, (E.Record nil, loc)), loc),
                                     (E.Record nil, loc)), loc)
 
-        | E.Otherwise (a, b) => 
-               elab ctx (E.If (a, 
+        | E.Otherwise (a, b) =>
+               elab ctx (E.If (a,
                                     (E.Record nil, loc),
                                     (E.Seq (b, (E.Record nil, loc)), loc)), loc)
 
@@ -502,13 +502,13 @@ struct
                          ([Initial.falsepat], ff)], NONE), loc)
 
         | E.Case (es, m, default) =>
-               let 
+               let
                  val def = case default of
                    SOME f => f
-                 | NONE => 
+                 | NONE =>
                      fn () =>
-                     let 
-                       val warnstring = 
+                     let
+                       val warnstring =
                          ("maybe inexhaustive match(case) at " ^ ltos loc)
 
                        val rexp = (EL.Raise (Initial.matchexp loc), loc)
@@ -523,7 +523,7 @@ struct
                    fun force nil nc acc =
                             Pattern.elaborate true elab elabt nc loc
                                  (rev acc, m, def)
-                     | force ((E.Var v, _)::rest) nc acc = 
+                     | force ((E.Var v, _)::rest) nc acc =
                             force rest nc (v::acc)
                      | force (e::rest) nc acc =
                             let
@@ -541,7 +541,7 @@ struct
                end
 
 (*
-        | E.Sham (wv, e) => 
+        | E.Sham (wv, e) =>
             let
                 val wvv = V.namedvar (case wv of
                                           NONE => "sham_unused"
@@ -557,7 +557,7 @@ struct
                   | _ => error loc "sham expects a value, got expression"
             end
 
-        (* could be "hold" or "held" depending on whether 
+        (* could be "hold" or "held" depending on whether
            the body is a value. *)
         | E.Hold e =>
             let
@@ -566,7 +566,7 @@ struct
             in
                 case ee of
                     Value va => (Value ` Hold(there, va), At (tt, there))
-                  | _ => 
+                  | _ =>
                     let
                         val nv = V.namedvar "h"
                     in
@@ -581,7 +581,7 @@ struct
         | E.Raise e =>
             (case C.con ctx Initial.exnname of
                  (0, Typ exnt, Extensible) =>
-                     let 
+                     let
                          val (ee, tt) = elab ctx e
                          val ret = new_evar ()
                      in
@@ -596,7 +596,7 @@ struct
                 let
                     val es = newstr "exn"
                     val ev = V.namedvar es
-                        
+
                     val (ee, tt) = elab ctx e1
 
                     val mctx = C.bindv ctx es (mono exnt) ev
@@ -604,10 +604,10 @@ struct
                     (* re-raise exception if nothing matches *)
                     fun def () =
                         (EL.Raise (EL.Var es, loc), loc)
-                        
-                    (* XXX5 and world.. 
+
+                    (* XXX5 and world..
                        (this DOES include the world, right? -  6 Sep 2007) *)
-                    val (match, mt) = 
+                    val (match, mt) =
                         Pattern.elaborate true elab elabt mctx loc
                            ([es], ListUtil.mapfirst ListUtil.list pel, def)
                 in
@@ -648,10 +648,10 @@ struct
               val pvars = List.map V.named_var pvs
               val pcons = List.concat pcs
               val var = V.named_var "anonpfn"
-                                    
+
           List.foldl (fn (pp,  =>
                          case pp of
-                             PPVar s => 
+                             PPVar s =>
    *)
         | E.PApply (e, p) =>
           let (* val _ = print "elaborating e\n" *)
@@ -775,20 +775,20 @@ struct
       foldl (fn (tv, ctx) => C.bindc ctx tv (Typ ` new_evar ()) 0 Regular)
             ctx tyvars
 
-  and elabf ctx 
+  and elabf ctx
             (arg : string)
-            (clauses : (EL.pat list * EL.typ option * EL.exp) list) 
+            (clauses : (EL.pat list * EL.typ option * EL.exp) list)
             loc =
       let in
           (* ensure clauses all have the same length *)
           ListUtil.allpairssym (fn ((a, _, _), (b, _, _)) =>
                                 length a = length b) clauses
-               orelse error loc 
+               orelse error loc
                   "clauses don't all have the same number of curried args";
 
           (* now we make big nested function *)
 
-          (* p11 p12 p13 ... : t1 = e1 
+          (* p11 p12 p13 ... : t1 = e1
              p21 p22 p23 ... : t2 = e2
               ...
 
@@ -802,12 +802,12 @@ struct
                         p21 p22 p23 => e2
                           ...
                         _ _ _ => raise Match)
-                     : t1 : t2 : ... : tn 
+                     : t1 : t2 : ... : tn
 
 
                  in f3
                  end
-             in f2 
+             in f2
              end
 
              *)
@@ -815,13 +815,13 @@ struct
             [([pat], to, e)] =>
               let
                   (* base case *)
-                  val (exp, tt) = 
+                  val (exp, tt) =
                       Pattern.elaborate true elab elabt ctx loc
                          ([arg],
                           [([pat], e)],
                           (fn () =>
-                           let 
-                             val warnstring = 
+                           let
+                             val warnstring =
                                ("maybe inexhaustive match(fun) at " ^ ltos loc)
                              val rexp = (EL.Raise (Initial.matchexp loc), loc)
                            in
@@ -832,7 +832,7 @@ struct
                            end))
               in
                   (case to of
-                       SOME t => unify ctx loc 
+                       SOME t => unify ctx loc
                                    "codomain type constraint on fun" tt
                                    (elabt ctx loc t)
                      | _ => ());
@@ -845,7 +845,7 @@ struct
                    (* we already have an arg since we're inside the
                       function body, so that's where all this 'tl'
                       stuff comes from *)
-                   val args = arg :: 
+                   val args = arg ::
                        map (fn p =>
                             (case p of
                                  E.PVar s => newstr s
@@ -861,10 +861,10 @@ struct
                    fun buildf nil =
                        (* build the case, slapping all of the
                           body constraints on its outside *)
-                       (* XXX5 
+                       (* XXX5
                           allow world constraints *)
-                       foldr (fn (t, e) => (E.Constrain(e, t), loc)) 
-                             (E.Case (map (fn a => (E.Var a, loc)) args, 
+                       foldr (fn (t, e) => (E.Constrain(e, t), loc))
+                             (E.Case (map (fn a => (E.Var a, loc)) args,
                                       columns, NONE), loc)
                              constraints
                      | buildf (x::rest) =
@@ -872,7 +872,7 @@ struct
                            val fc = newstr "fc"
                        in
                          (* XXX inline? *)
-                           (E.Let((E.Fun { inline = false, 
+                           (E.Let((E.Fun { inline = false,
                                            funs = [(nil, fc, [([E.PVar x], NONE,
                                                                buildf rest)])] }, loc),
                                   (E.Var fc, loc)),
@@ -882,12 +882,12 @@ struct
                    elab ctx ` buildf ` tl args
                end)
 
-      end handle Pattern.Pattern s => 
+      end handle Pattern.Pattern s =>
             error loc ("Pattern compilation failed: " ^ s)
 
   and elabds ctx nil = (nil, ctx)
     | elabds ctx ((d : EL.dec) :: rest) =
-    let 
+    let
       val (ds, ctx) = elabd ctx d
       val (rs, ctx) = elabds ctx rest
     in
@@ -900,10 +900,10 @@ struct
 *)
 
   (* return a new context, and an il.dec list *)
-  and elabd ctx ((d, loc) : EL.dec) 
-    : IL.dec list * C.context =  
+  and elabd ctx ((d, loc) : EL.dec)
+    : IL.dec list * C.context =
     case d of
-      E.Do e => 
+      E.Do e =>
         let val (ee, tt) = elab ctx e
         in
           (if !sequenceunit
@@ -933,7 +933,7 @@ struct
 
     | E.ExternVal (atvs, id, ty, wo, lo) =>
           let
-            
+
             (* use imported label if given, otherwise it's the same as the id *)
             val implab = case lo of NONE => id | SOME l => l
 
@@ -949,19 +949,19 @@ struct
             fun checkdups atvs =
               ListUtil.alladjacent op <> `
               ListUtil.sort String.compare atvs
-              orelse 
+              orelse
               error loc ("duplicate type vars in extern val declaration (" ^ id ^ ")")
 
             (* no dup tyvars *)
             val _ = checkdups atvs
-              
+
             (* augment atvs with real variables too *)
             val atvs = map (fn x => (x, V.namedvar x)) atvs
-             
+
             (* put tyvars in context for elaboration of type *)
             val actx =
               foldl (fn ((s, x),c) =>
-                     C.bindc c s (Typ (TVar x)) 0 
+                     C.bindc c s (Typ (TVar x)) 0
                      Regular) actx atvs
 
             (* now elaborate the type. *)
@@ -974,7 +974,7 @@ struct
 
           in
             (* XXX5 allow worlds *)
-            ( [ExternVal(Poly({worlds=nil, tys=map #2 atvs}, 
+            ( [ExternVal(Poly({worlds=nil, tys=map #2 atvs},
                               (implab, v, tt, varsort)))],
              C.bindex ctx (SOME id) ptt v Normal varsort)
           end
@@ -1007,10 +1007,10 @@ struct
                 (* need to generate the tag as well as
                    a constructor function *)
                 val tagv = V.namedvar (tag ^ "_tag")
-                val d = elabt ctx loc 
+                val d = elabt ctx loc
                      (case dom of
-                          NONE => 
-                              error loc 
+                          NONE =>
+                              error loc
                               "bug: nullary phase did not write newtag decl"
                         | SOME x => x)
 
@@ -1023,7 +1023,7 @@ struct
                    FSel (0,
                          Fns
                          [{ name = ctor, arg = [carg],
-                            dom = [d], cod = cod, 
+                            dom = [d], cod = cod,
                             inline = true,
                             recu = false, total = true,
                             body = Tag(Value ` Var carg, Value tag) }])
@@ -1031,7 +1031,7 @@ struct
             in(*
               if mkvalid
               then
-                let 
+                let
                   (* Tag type must be mobile if this is a vtag *)
 (*                  val () = require_mobile ctx loc "newvtag" d *)
                   val mtagv = V.namedvar (tag ^ "_here")
@@ -1043,7 +1043,7 @@ struct
                     Val (mono ` (tagv, TTag (d, ev), Value ` Var mtagv)),
                     (* then declare the constructor valid *)
                     Letsham(Poly ({worlds = nil, tys = nil},
-                                  (ctor, (wv, fntype), 
+                                  (ctor, (wv, fntype),
                                    Sham (wv, fnvalue (Polyuvar { worlds = nil,
                                                                  tys = nil,
                                                                  var = tagv })))))
@@ -1079,7 +1079,7 @@ struct
                prepass ensures every arm is 'of' some type.
 
                               tyvars       type
-               Datatype of  string list * (string * 
+               Datatype of  string list * (string *
                               ctor      members
                             (string * typ option) list) list
                *)
@@ -1104,7 +1104,7 @@ struct
               val _ =
                   ListUtil.alladjacent op <> `
                     ListUtil.sort String.compare (atvs @ map #1 dl)
-                  orelse error loc 
+                  orelse error loc
                     "tyvar and datatype share same name in datatype decl"
 
               (* check: no duplicated constructors *)
@@ -1112,7 +1112,7 @@ struct
                   app (fn (dt, arms) =>
                        let
                            val sorted =
-                               ListUtil.sort (ListUtil.byfirst 
+                               ListUtil.sort (ListUtil.byfirst
                                               String.compare) arms
                        in
                            ListUtil.alladjacent
@@ -1131,16 +1131,16 @@ struct
               val dl =
                   ListUtil.mapi (fn ((dt, arms), n) =>
                                  (dt, arms, n,
-                                  V.namedvar (dt 
+                                  V.namedvar (dt
                                               (* ^ "_" ^ itos n ^ "_" *)))) dl
 
               (* augment atvs with real variables too *)
               val atvs = map (fn x => (x, V.namedvar x)) atvs
 
-                  
+
               (* put tyvars in context for arms *)
-                  
-              val actx = 
+
+              val actx =
                   foldl (fn ((s, x),c) =>
                          C.bindc c s (Typ (TVar x)) 0 Regular) ctx atvs
 
@@ -1148,12 +1148,12 @@ struct
                  recursive variable for the purpose of elaborating
                  the arms. *)
 
-              val actx = 
+              val actx =
                   foldl (fn ((dt, _, _, v), c) =>
                          C.bindc c dt (Typ (TVar v)) 0 Regular) actx dl
 
               fun gen_arminfo NONE = NonCarrier
-                | gen_arminfo (SOME t) = 
+                | gen_arminfo (SOME t) =
                 let
                   val tt = elabt actx loc t
                 in
@@ -1166,7 +1166,7 @@ struct
                      datatypes, etc...
                      *)
                   Carrier { carried = tt,
-                            definitely_allocated = 
+                            definitely_allocated =
                             (case tt of
                                TRec (_ :: _ :: _) => true
                              | TVec _ => true
@@ -1178,19 +1178,19 @@ struct
               (* elaborate each arm *)
               val dl =
                   map (fn (dt, arms, n, v) =>
-                       (dt, 
+                       (dt,
                         ListUtil.mapsecond gen_arminfo arms,
                         n, v)) dl
 
               (* make body of mu *)
               val mubod =
                   map (fn (_, arms, _, v) => (v, Sum arms)) dl
-                  
+
               (* make il con for each, consuming n *)
-              val dl = 
+              val dl =
                   map (fn (dt, arms, n, v) =>
                        (dt, arms, Mu(n, mubod), v)) dl
-                       
+
 
               (* outside the mu, we need to substitute the mu
                  itself for the datatype type variable. *)
@@ -1216,17 +1216,17 @@ struct
                         | bs ((_,v)::vrest) (tt::trest) s =
                           bs vrest trest ` V.Map.insert (s, v, tt)
                         | bs _ _ _ =
-                          error loc 
+                          error loc
                             "wrong number of type arguments to datatype"
                   in
-                      Lambda (fn tl => 
+                      Lambda (fn tl =>
                               Subst.tsubst (bs atvs tl V.Map.empty) body)
                   end
 
               (* setup done. now generate the new context and decls. *)
 
               (* first add the datatypes *)
-              val nctx = 
+              val nctx =
                   foldl
                    (fn ((dt, _, mu), c) =>
                     C.bindc c dt (wrapper mu) kind Regular) ctx dl
@@ -1234,14 +1234,14 @@ struct
               (* now bind all the constructors *)
 
               val atvs = map #2 atvs
-                  
+
 
               (* generate a list:
                  (ctor string, ctor var, ctor type, ctor decl) *)
-              val ctors = 
+              val ctors =
                   List.concat `
                   map (fn (dt, arms, mu) =>
-                       map (fn (ctor, NonCarrier) => 
+                       map (fn (ctor, NonCarrier) =>
                             let
                               val cty = Poly({prios=nil, tys=atvs}, mu)
 
@@ -1250,22 +1250,22 @@ struct
                               val arms = ListUtil.mapsecond (arminfo_map musubst) arms
                             in
                                 (ctor, v, cty,
-                                 Val (Poly({prios = nil, 
+                                 Val (Poly({prios = nil,
                                      tys = atvs},
                                     (v, mu, Roll(mu,
                                                  Inject(Sum arms, ctor, NONE))))))
                             end
- 
+
                            | (ctor, Carrier { carried = ty, ... }) =>
-                            let 
+                            let
                                 val arms = ListUtil.mapsecond (arminfo_map musubst) arms
                                 val dom = musubst ty
 
-                                val cty = 
+                                val cty =
                                   Poly({prios=nil,
                                         tys=atvs},
-                                       (Arrow 
-                                        (true (* yes total! *), 
+                                       (Arrow
+                                        (true (* yes total! *),
                                          [dom], mu)))
 
                                 val ctorf = V.namedvar ("ctor_" ^ ctor)
@@ -1291,7 +1291,7 @@ struct
                                                        body =
                                                        Roll(mu,
                                                             Inject
-                                                            (Sum arms, ctor, 
+                                                            (Sum arms, ctor,
                                                              SOME ` Value ` Var x))}])))))
                             end) arms) dl
 
@@ -1312,11 +1312,11 @@ struct
               fun conf l =
                    if length l <> kind
                    then error loc "(bug) wrong number of args to Lambda"
-                   else 
-                       let val nc = 
-                           ListPair.foldl 
+                   else
+                       let val nc =
+                           ListPair.foldl
                               (fn (tv, t, ctx) =>
-                               C.bindc ctx tv (Typ t) 0 Regular) 
+                               C.bindc ctx tv (Typ t) 0 Regular)
                               ctx (tyvars, l)
                        in
                            elabt nc loc typ
@@ -1326,13 +1326,13 @@ struct
                  body is not bogus (unelaboratable) prima facie *)
               ignore ` conf (List.tabulate (kind, fn _ => new_evar ()));
 
-              ListUtil.allpairssym op<> tyvars 
+              ListUtil.allpairssym op<> tyvars
                  orelse error loc "duplicate tyvars in type dec";
               ([], C.bindc ctx tv (Lambda conf) kind Regular)
           end
 
     (* For functions, we also do automatic validity inference.
-       
+
        Basically, since this is a value, we don't restrict the
        declaration to 'here'. Instead we elaborate it at an
        existential world, and then if that world is unrestricted at
@@ -1351,12 +1351,12 @@ struct
               (* okay to have no clauses in a function, but there
                  should be at least one function in any mutually-recursive
                  bundle *)
-              val  _ = List.null bundle 
+              val  _ = List.null bundle
                          andalso error loc "BUG: *no* fns in bundle?"
 
               val _ = ListUtil.allpairssym (fn ((_, f, _), (_, g, _)) =>
                                             f <> g) bundle
-                         orelse error loc 
+                         orelse error loc
                              "duplicate functions in fun..and"
 (*
               (* functions are values, so we elaborate at an existential
@@ -1366,7 +1366,7 @@ struct
 
               (* make var for each fn *)
               val binds =
-                  map (fn (tv, f, b) => 
+                  map (fn (tv, f, b) =>
                        let val vv = V.namedvar f
                            val dom = new_evar ()
                            val cod = new_evar ()
@@ -1380,9 +1380,9 @@ struct
                  at (mono) existential arrow type. *)
               fun onectx c tv =
                   let
-                      val nc = 
+                      val nc =
                           foldl (fn ((_, f, _, vv, dom, cod), ct) =>
-                                 C.bindv ct f (mono (Arrow(false, 
+                                 C.bindv ct f (mono (Arrow(false,
                                                             [dom],
                                                             cod))) vv)
                                 c binds
@@ -1424,7 +1424,7 @@ struct
                       ({ name = vv,
                          arg = [x],
                          dom = [dom],
-                         (* PERF only if requested by code (which generally should 
+                         (* PERF only if requested by code (which generally should
                             only be done in compiler support code, like the
                             implementation of plus). We should detect here some
                             other functions that would benefit from inlining *)
@@ -1433,13 +1433,13 @@ struct
                          recu = true,
                          total = false,
                          cod = cod,
-                         body = exp } :: fs, 
+                         body = exp } :: fs,
                        (f, vv, Arrow(false, [dom], cod)) :: efs,
                        dpt @ cpt @ tpolys,
                        dpw @ cpw @ wpolys)
                   end
 
-              val (fs, efs, tps, wps) = 
+              val (fs, efs, tps, wps) =
                   foldl folder (nil, nil, nil, nil) ` map onef binds
 
               (* check if atworld can be generalized. if so,
@@ -1448,8 +1448,8 @@ struct
 (*               val maybevalid = polywgen outer_context *)
 
               (* we'll generalize both the binding of the bundle
-                 and the binding of each of the projections in the same way (this way). 
-                 
+                 and the binding of each of the projections in the same way (this way).
+
                  We generalize both type variables and world variables.
                  *)
               fun mkpoly tps wps at = Poly({prios = wps, tys = tps}, at)
@@ -1475,7 +1475,7 @@ struct
                 end
 *)
               (* bind as regular value or as a valid value *)
-              val bind = 
+              val bind =
                   (*case maybevalid of
                       NONE => (fn Poly ({ worlds, tys }, (v, t, e)) =>
                                Leta(Poly ({worlds = worlds, tys = tys},
@@ -1486,7 +1486,7 @@ struct
                                   ) *)
                   (fn Poly ({prios, tys}, (v, t, e)) =>
                       Val (Poly ({prios = prios, tys = tys}, (v, t, e))))
-              
+
               (* we bind the bundle as a var or uvar.. *)
               val PolyOccur = Polyvar
 (*
@@ -1503,14 +1503,14 @@ struct
               (* if just one, then we want to produce better code: *)
               case fs of
                  [ f as { name, arg, dom, inline, recu, total, cod, body } ] =>
-                   ([bind ` mkpoly tps wps ` (name, Arrow (false, dom, cod), 
+                   ([bind ` mkpoly tps wps ` (name, Arrow (false, dom, cod),
                                               Value (FSel(0, Fns [f])))], fctx)
-                | _ => 
+                | _ =>
                    let val bundv = V.namedvar ` StringUtil.delimit "_" (map (V.basename o #name) fs)
                    in
-                     ( 
+                     (
                       (* the bundle... *)
-                      (bind ` mkpoly tps wps ` (bundv, Arrows ` map (fn { dom, cod, ... } => 
+                      (bind ` mkpoly tps wps ` (bundv, Arrows ` map (fn { dom, cod, ... } =>
                                                                      (false, dom, cod)) fs,
                                                 Value (Fns fs))) ::
                       (* then bind the projections... *)
@@ -1518,9 +1518,9 @@ struct
                                      let val tps = tps (* map V.alphavary ps *)
                                           (* (would also need to rename through dom/cod) *)
                                      in
-                                       bind ` mkpoly tps wps ` (name, 
-                                                                Arrow (false, dom, cod), 
-                                                                Value (FSel(i, 
+                                       bind ` mkpoly tps wps ` (name,
+                                                                Arrow (false, dom, cod),
+                                                                Value (FSel(i,
                                                                      PolyOccur { tys = map TVar tps,
                                                                                  prios = map PVar wps,
                                                                                  var = bundv })))
@@ -1545,7 +1545,7 @@ struct
                                 Value v => SOME v
                               | _ => NONE)
 
-             val { t = tt, tl = tps, wl = wps } = 
+             val { t = tt, tl = tps, wl = wps } =
                  if isSome polydec
                  then polygen ctx tt here
                  else { t = tt, tl = nil, wl = nil }
@@ -1553,7 +1553,7 @@ struct
              val vv = Variable.namedvar v
 
              val ctx = C.bindex ctx (SOME v) (Poly ({worlds = wps,
-                                                     tys = tps}, t)) vv Normal 
+                                                     tys = tps}, t)) vv Normal
                                              (C.Valid wv)
 
              val va = Variable.namedvar "letsham_serialize"
@@ -1563,7 +1563,7 @@ struct
                  NONE =>
                      ([Bind(Val, mono(va, tt, ee)),
                        Letsham ` mono (vv, (wv, t), Var va)], ctx)
-               | SOME valu => 
+               | SOME valu =>
                      ([Letsham ` Poly({ worlds = wps, tys = tps },
                                       (vv, (wv, t), valu))], ctx)
          end
@@ -1575,14 +1575,14 @@ struct
              val (ee, tt) = elab nctx exp
              val there = new_wevar ()
              val t = new_evar ()
-                 
+
              val () = unify ctx loc "leta" tt (At(t, there))
 
              val polydec = (case ee of
                                 Value v => SOME v
                               | _ => NONE)
 
-             val { t = tt, tl = tps, wl = wps } = 
+             val { t = tt, tl = tps, wl = wps } =
                  if isSome polydec
                  then polygen ctx tt there
                  else { t = tt, tl = nil, wl = nil }
@@ -1590,7 +1590,7 @@ struct
              val vv = Variable.namedvar v
 
              val ctx = C.bindex ctx (SOME v) (Poly ({worlds = wps,
-                                                     tys = tps}, t)) vv Normal 
+                                                     tys = tps}, t)) vv Normal
                                              (C.Modal there)
 
 
@@ -1601,7 +1601,7 @@ struct
                  NONE =>
                      ([Bind(Val, mono(va, tt, ee)),
                        Leta ` mono (vv, t, Var va)], ctx)
-               | SOME valu => 
+               | SOME valu =>
                      ([Leta ` Poly({ worlds = wps, tys = tps },
                                    (* XXX5 is this supposed to be "t" or "t at w" (= tt)? (also above) *)
                                    (vv, t, valu))], ctx)
@@ -1617,13 +1617,13 @@ struct
     | E.Val (tyvars, E.PVar v, exp) =>
           let
               (* simply bind tyvars;
-                 let generalization actually determine the type. 
+                 let generalization actually determine the type.
                  if we want to have these type vars act like SML,
                  we can check after the decls are over that each
-                 one is still free and generalizable. 
+                 one is still free and generalizable.
                  XXX5 we let these sit in the exported context --
                       that's definitely wrong!
-                      
+
                  how so? the identifiers are certainly gone because
                  we don't use nctx after elaborating the body.
                  *)
@@ -1635,7 +1635,7 @@ struct
                              | _ => false)
 
 
-              val { t = tt, tl = tps, wl = wps } = 
+              val { t = tt, tl = tps, wl = wps } =
                 if polydec
                 then polygen ctx tt
                 else { t = tt, tl = nil, wl = nil }
@@ -1643,7 +1643,7 @@ struct
               val vv = Variable.namedvar v
 
               val ctx = C.bindex ctx (SOME v) (Poly ({prios = wps,
-                                                      tys = tps}, tt)) vv Normal 
+                                                      tys = tps}, tt)) vv Normal
 
           in
               ([Val (Poly({ prios = wps, tys = tps }, (vv, tt, ee)))], ctx)
@@ -1655,9 +1655,9 @@ struct
     | E.Val (tyvars, E.PAs (v, p), exp) =>
             let
               (* val (x as p) = e
-                 
+
                  means
-                 
+
                  val x = e
                  val p = x
                  *)
@@ -1677,19 +1677,19 @@ struct
               (* val (a, b, c) = e
 
                  means
-                 
+
                  val x = e
                  val a = #a/3 e
                  val b = #b/3 e
                  val c = #c/3 e
-                 
+
                  *)
               val t = E.TNum ` length spl
               val v = newstr "brec"
               val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), loc)
 
               fun projs ctx nil = (nil, ctx)
-                | projs ctx ((l, p) :: rest) = 
+                | projs ctx ((l, p) :: rest) =
                 let
                     val (decls, ctx) = elabd ctx (E.Val (tyvars, p, (E.Proj(l, t, (E.Var v, loc)), loc)), loc)
                   val (decls2, ctx) = projs ctx rest
@@ -1766,11 +1766,11 @@ struct
 
       | EL.ExportType (tys, s, SOME t) =>
           let
-              
+
             fun checkdups atvs =
               ListUtil.alladjacent op <> `
               ListUtil.sort String.compare atvs
-              orelse 
+              orelse
               error loc ("duplicate type vars in export type declaration (" ^ s ^ ")")
 
             val _ = checkdups tys
@@ -1790,7 +1790,7 @@ struct
             fun checkdups atvs =
               ListUtil.alladjacent op <> `
               ListUtil.sort String.compare atvs
-              orelse 
+              orelse
               error loc ("duplicate type vars in export val declaration (" ^ lab ^ ")")
 
             val _ = checkdups tys
@@ -1858,7 +1858,7 @@ struct
           ([], [], ctx)
           tds
 
-  fun elaborate (EL.Prog (dl, c)) = 
+  fun elaborate (EL.Prog (dl, c)) =
     let
       (* val () = clear_mobile () *)
       val () = clear_evars ()
@@ -1881,7 +1881,7 @@ struct
     in
       finalize_evars ();
       (idl, prios, cons, fs, ec)
-    end handle e as Match => raise Elaborate ("match:" ^ 
+    end handle e as Match => raise Elaborate ("match:" ^
                                               StringUtil.delimit " / " ` Port.exnhistory e)
 
 

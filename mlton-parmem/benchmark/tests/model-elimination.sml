@@ -21,7 +21,7 @@ signature PP =
                          linewidth : int,
                          flush     : unit -> unit }
 
-      datatype break_style = 
+      datatype break_style =
          CONSISTENT
        | INCONSISTENT
 
@@ -38,7 +38,7 @@ signature PP =
       val pp_to_string   : int -> (ppstream -> 'a -> unit) -> 'a -> string
    end
 
-(* 
+(*
    This structure provides tools for creating customized Oppen-style
    pretty-printers, based on the type ppstream.  A ppstream is an
    output stream that contains prettyprinting commands.  The commands
@@ -51,8 +51,8 @@ signature PP =
    properly nested dynamically.  All calls to begin_block and
    end_block must be properly nested (dynamically).
 
-   [ppconsumer] is the type of sinks for pretty-printing.  A value of 
-   type ppconsumer is a record 
+   [ppconsumer] is the type of sinks for pretty-printing.  A value of
+   type ppconsumer is a record
                  { consumer  : string -> unit,
                    linewidth : int,
                    flush     : unit -> unit }
@@ -81,7 +81,7 @@ signature PP =
    consumer from a ppstream.
 
    [add_break ppstrm (size, offset)] notifies the pretty-printer that
-   a line break is possible at this point.  
+   a line break is possible at this point.
    * When the current block style is CONSISTENT:
       ** if the entire block fits on the remainder of the line, then
          output size spaces; else
@@ -101,7 +101,7 @@ signature PP =
    [begin_block ppstrm style blockoffset] begins a new block and
    level of indentation, with the given style and block offset.
 
-   [end_block ppstrm] closes the current block.  
+   [end_block ppstrm] closes the current block.
 
    [clear_ppstream ppstrm] restarts the stream, without affecting the
    underlying consumer.
@@ -119,30 +119,30 @@ signature PP =
    ppstrm whose consumer accumulates the output in a string s.  Then
    evaluates (printit ppstrm x) and finally returns the string s.
 
-   
+
    Example 1: A simple prettyprinter for Booleans:
 
        load "PP";
-       fun ppbool pps d = 
+       fun ppbool pps d =
            let open PP
            in
-               begin_block pps INCONSISTENT 6; 
+               begin_block pps INCONSISTENT 6;
                add_string pps (if d then "right" else "wrong");
                end_block pps
            end;
 
    Now one may define a ppstream to print to, and exercise it:
 
-       val ppstrm = PP.mk_ppstream {consumer  = 
-                                    fn s => TextIO.output(TextIO.stdOut, s), 
+       val ppstrm = PP.mk_ppstream {consumer  =
+                                    fn s => TextIO.output(TextIO.stdOut, s),
                                     linewidth = 72,
-                                    flush     = 
+                                    flush     =
                                      fn () => TextIO.flushOut TextIO.stdOut};
 
        fun ppb b = (ppbool ppstrm b; PP.flush_ppstream ppstrm);
 
        - ppb false;
-       wrong> val it = () : unit   
+       wrong> val it = () : unit
 
    The prettyprinter may also be installed in the toplevel system;
    then it will be used to print all expressions of type bool
@@ -160,25 +160,25 @@ signature PP =
 
    Example 2: Prettyprinting simple expressions (examples/pretty/ppexpr.sml):
 
-       datatype expr = 
-           Cst of int 
+       datatype expr =
+           Cst of int
          | Neg of expr
          | Plus of expr * expr
 
-       fun ppexpr pps e0 = 
+       fun ppexpr pps e0 =
            let open PP
                fun ppe (Cst i)        = add_string pps (Int.toString i)
                  | ppe (Neg e)        = (add_string pps "~"; ppe e)
                  | ppe (Plus(e1, e2)) = (begin_block pps CONSISTENT 0;
                                          add_string pps "(";
-                                         ppe e1; 
+                                         ppe e1;
                                          add_string pps " + ";
                                          add_break pps (0, 1);
-                                         ppe e2; 
+                                         ppe e2;
                                          add_string pps ")";
                                          end_block pps)
            in
-               begin_block pps INCONSISTENT 0; 
+               begin_block pps INCONSISTENT 0;
                ppe e0;
                end_block pps
            end
@@ -194,7 +194,7 @@ signature PP =
        val e5 = Plus(Neg e4, e4);
        val e6 = Plus(e5, e5);
        val e7 = Plus(e6, e6);
-       val e8 = 
+       val e8 =
            Plus(e3, Plus(e3, Plus(e3, Plus(e3, Plus(e3, Plus(e3, e7))))));
 *)
 (*#line 0.0 "$HOME/dev/sml/basic/src/PP.sml"*)
@@ -211,7 +211,7 @@ signature PP =
 structure PP :> PP =
 struct
 
-open Array 
+open Array
 infix 9 sub
 
 (* the queue library, formerly in unit Ppqueue *)
@@ -222,7 +222,7 @@ exception QUEUE_FULL
 exception QUEUE_EMPTY
 exception REQUESTED_QUEUE_SIZE_TOO_SMALL
 
-local 
+local
     fun ++ i n = (i + 1) mod n
     fun -- i n = (i - 1) mod n
 in
@@ -826,7 +826,7 @@ val transform : ('a -> 'b) -> ('key,'a) dict -> ('key, 'b) dict
 
 end
 
-(* 
+(*
    [('key, 'a) dict] is the type of applicative maps from domain type
    'key to range type 'a, or equivalently, applicative dictionaries
    with keys of type 'key and values of type 'a.  They are implemented
@@ -838,7 +838,7 @@ end
    [insert(m, i, v)] extends (or modifies) map m to map i to v.
 
    [find (m, k)] returns v if m maps k to v; otherwise raises NotFound.
-   
+
    [peek(m, k)] returns SOME v if m maps k to v; otherwise returns NONE.
 
    [remove(m, k)] removes k from the domain of m and returns the
@@ -871,9 +871,9 @@ end
    where (k, v) is an entry in m.
 *)
 (*#line 0.0 "$HOME/dev/sml/basic/src/Binarymap.sml"*)
-(* Binarymap -- modified for Milton ML 
+(* Binarymap -- modified for Milton ML
  * from SML/NJ library v. 0.2 file binary-dict.sml.
- * COPYRIGHT (c) 1993 by AT&T Bell Laboratories.  
+ * COPYRIGHT (c) 1993 by AT&T Bell Laboratories.
  * See file mosml/copyrght/copyrght.att for details.
  *
  * This code was adapted from Stephen Adams' binary tree implementation
@@ -916,19 +916,19 @@ end
 
 structure Binarymap :> Binarymap =
 struct
- 
+
 exception NotFound
 
 fun wt (i : int) = 3 * i
 
-datatype ('key, 'a) dict = 
+datatype ('key, 'a) dict =
     DICT of ('key * 'key -> order) * ('key, 'a) tree
 and ('key, 'a) tree =
-    E 
-  | T of {key   : 'key, 
-          value : 'a, 
-          cnt   : int, 
-          left  : ('key, 'a) tree, 
+    E
+  | T of {key   : 'key,
+          value : 'a,
+          cnt   : int,
+          left  : ('key, 'a) tree,
           right : ('key, 'a) tree}
 
 fun treeSize E            = 0
@@ -940,22 +940,22 @@ local
     fun N(k,v,E,E) = T{key=k,value=v,cnt=1,left=E,right=E}
       | N(k,v,E,r as T n) = T{key=k,value=v,cnt=1+(#cnt n),left=E,right=r}
       | N(k,v,l as T n,E) = T{key=k,value=v,cnt=1+(#cnt n),left=l,right=E}
-      | N(k,v,l as T n,r as T n') = 
+      | N(k,v,l as T n,r as T n') =
           T{key=k,value=v,cnt=1+(#cnt n)+(#cnt n'),left=l,right=r}
 
-    fun single_L (a,av,x,T{key=b,value=bv,left=y,right=z,...}) = 
+    fun single_L (a,av,x,T{key=b,value=bv,left=y,right=z,...}) =
           N(b,bv,N(a,av,x,y),z)
       | single_L _ = raise Match
-    fun single_R (b,bv,T{key=a,value=av,left=x,right=y,...},z) = 
+    fun single_R (b,bv,T{key=a,value=av,left=x,right=y,...},z) =
           N(a,av,x,N(b,bv,y,z))
       | single_R _ = raise Match
-    fun double_L (a,av,w,T{key=c,value=cv, 
+    fun double_L (a,av,w,T{key=c,value=cv,
                            left=T{key=b,value=bv,left=x,right=y,...},
                            right=z,...}) =
           N(b,bv,N(a,av,w,x),N(c,cv,y,z))
       | double_L _ = raise Match
     fun double_R (c,cv,T{key=a,value=av,left=w,
-                         right=T{key=b,value=bv,left=x,right=y,...},...},z) = 
+                         right=T{key=b,value=bv,left=x,right=y,...},...},z) =
           N(b,bv,N(a,av,w,x),N(c,cv,y,z))
       | double_R _ = raise Match
 
@@ -985,41 +985,41 @@ local
             in
               if rln < rrn then  single_L p  else  double_L p
             end
-        
+
           else if ln >= wt rn then  (*left is too big*)
             let val lln = treeSize ll
                 val lrn = treeSize lr
             in
               if lrn < lln then  single_R p  else  double_R p
             end
-    
+
           else T{key=k,value=v,cnt=ln+rn+1,left=l,right=r}
 
     local
       fun min (T{left=E,key,value,...}) = (key,value)
         | min (T{left,...}) = min left
         | min _ = raise Match
-  
+
       fun delmin (T{left=E,right,...}) = right
-        | delmin (T{key,value,left,right,...}) = 
+        | delmin (T{key,value,left,right,...}) =
           T'(key,value,delmin left,right)
         | delmin _ = raise Match
     in
       fun delete' (E,r) = r
         | delete' (l,E) = l
-        | delete' (l,r) = let val (mink,minv) = min r 
+        | delete' (l,r) = let val (mink,minv) = min r
                           in T'(mink,minv,l,delmin r) end
     end
 in
     fun mkDict cmpKey = DICT(cmpKey, E)
-    
-    fun insert (DICT (cmpKey, t),x,v) = 
+
+    fun insert (DICT (cmpKey, t),x,v) =
         let fun ins E = T{key=x,value=v,cnt=1,left=E,right=E}
               | ins (T(set as {key,left,right,value,...})) =
                 case cmpKey (key,x) of
                     GREATER => T'(key,value,ins left,right)
                   | LESS    => T'(key,value,left,ins right)
-                  | _       => 
+                  | _       =>
                         T{key=x,value=v,left=left,right=right,cnt= #cnt set}
         in DICT(cmpKey, ins t) end
 
@@ -1034,9 +1034,9 @@ in
 
     fun peek arg = (SOME(find arg)) handle NotFound => NONE
 
-    fun remove (DICT(cmpKey, t), x) = 
+    fun remove (DICT(cmpKey, t), x) =
         let fun rm E = raise NotFound
-              | rm (set as T{key,left,right,value,...}) = 
+              | rm (set as T{key,left,right,value,...}) =
                 (case cmpKey (key,x) of
                      GREATER => let val (left', v) = rm left
                                 in (T'(key, value, left', right), v) end
@@ -1046,7 +1046,7 @@ in
             val (newtree, valrm) = rm t
         in (DICT(cmpKey, newtree), valrm) end
 
-    fun listItems (DICT(_, d)) = 
+    fun listItems (DICT(_, d)) =
         let fun d2l E res = res
               | d2l (T{key,value,left,right,...}) res =
                 d2l left ((key,value) :: d2l right res)
@@ -1082,12 +1082,12 @@ in
             end
       in DICT(cmpKey, a d) end
 
-    fun transform f (DICT(cmpKey, d)) = 
+    fun transform f (DICT(cmpKey, d)) =
         let fun a E = E
-              | a (T{key,value,left,right,cnt}) = 
+              | a (T{key,value,left,right,cnt}) =
                 let val left' = a left
                 in
-                    T{cnt=cnt, key=key, value=f value, left = left', 
+                    T{cnt=cnt, key=key, value=f value, left = left',
                       right = a right}
                 end
       in DICT(cmpKey, a d) end
@@ -1107,7 +1107,7 @@ val force : 'a susp -> 'a
 
 end
 
-(* 
+(*
    ['a susp] is the type of lazily evaluated expressions with result
    type 'a.
 
@@ -1133,9 +1133,9 @@ type 'a susp = 'a thunk ref;
 
 fun delay (f : unit -> 'a) = ref (THUNK f);
 
-fun force (su : 'a susp) : 'a = 
+fun force (su : 'a susp) : 'a =
   case !su of
-    VAL v   => v 
+    VAL v   => v
   | THUNK f => let val v = f () in su := VAL v; v end
 
 end
@@ -3333,7 +3333,7 @@ in
   val term_compare    = cmt o wrap;
   val formula_compare = cm o wrap;
 end;
-  
+
 (* ------------------------------------------------------------------------- *)
 (* Basic operations on literals.                                             *)
 (* ------------------------------------------------------------------------- *)
@@ -3455,7 +3455,7 @@ local
     | fv vs ((av, Iff (p, q)   ) :: fms) = fv vs ((av, p) :: (av, q) :: fms)
     | fv vs ((av, Forall (x, p)) :: fms) = fv vs ((insert x av, p) :: fms)
     | fv vs ((av, Exists (x, p)) :: fms) = fv vs ((insert x av, p) :: fms);
-in    
+in
   fun FVT tm  = rev (fvt [] [] [tm]);
   fun FV  fm  = rev (fv  [] [([], fm)]);
   fun FVL fms = rev (fv  [] (map (pair []) fms));
@@ -3685,7 +3685,7 @@ in
   fun term_subst    env tm = if null env then tm else always (tm_subst env) tm;
   fun formula_subst env fm = fm_subst env fm;
 end;
-  
+
 fun norm (sub as Subst dict) =
   let
     fun check (a, b, (c, d)) =
@@ -4587,7 +4587,7 @@ local
   fun cycle _ _ ([], _) = raise BUG "cycle" ""
     | cycle f v (h :: t, avoid) =
     let val h' = f h avoid in (h', (t @ [h], h' :: avoid)) end;
-in    
+in
   fun generalize_clause fm =
     let
       open Subst1
@@ -4953,7 +4953,7 @@ fun UNIT_SQUASH th =
   in
     FACTOR (INST (squash |<>| (clause th)) th)
   end;
-  
+
 val REFLEXIVITY = REFL (Var "x");
 
 val SYMMETRY =
@@ -5869,7 +5869,7 @@ QUOTE "\n(!w x. sentence x ==> holds w x \\/ holds w (not x)) /\\\n(!w x. ~(hold
 (* ========================================================================= *)
 
 val equality = [
- 
+
 (* ------------------------------------------------------------------------- *)
 (* Trivia (some of which demonstrate ex-bugs in the prover).                 *)
 (* ------------------------------------------------------------------------- *)
@@ -5927,7 +5927,7 @@ QUOTE "\n(?z w. !x y. f0 x y <=> x = z /\\ y = w) ==>\n?w. !y. (?z. !x. f0 x y <
 {name = "UNSKOLEMIZED_MELHAM",
  goal = [
 QUOTE "\n(!x y. g x = g y ==> f x = f y) ==> !y. ?w. !x. y = g x ==> w = f x"]},
- 
+
 (* ------------------------------------------------------------------------- *)
 (* The example always given for congruence closure.                          *)
 (* ------------------------------------------------------------------------- *)
@@ -6027,7 +6027,7 @@ QUOTE "\nocean atlantic /\\ ocean indian /\\ borders atlantic brazil /\\\nborder
 (* ------------------------------------------------------------------------- *)
 (* Problems used by the fol unit test to exercise the TPTP parser.           *)
 (* ------------------------------------------------------------------------- *)
- 
+
 {name = "PUZ001-1",
  goal = [
 
@@ -6290,7 +6290,7 @@ QUOTE "\n(!x. product x x (square x)) /\\\n(!x y z. ~product x y z \\/ product y
  *    extract nonequality "P59",
  *    extract nonequality "DAVIS_PUTNAM_EXAMPLE",
  *    extract nonequality "BAD_CONNECTIONS",
- * 
+ *
  *    extract equality "TRANS_SYMM",
  *    extract equality "CYCLIC_SUBSTITUTION_BUG",
  *    extract equality "P48"];
@@ -6643,7 +6643,7 @@ local
   fun munge_lit (n, Atom (Fn (p, a))) = Atom (Fn (munge p n, a))
     | munge_lit (n, Not (Atom (Fn (p, a)))) = Not (Atom (Fn (munge p n, a)))
     | munge_lit _ = raise BUG "munge_lit" "bad literal";
-  fun distinctivize fms = map munge_lit (enumerate 0 fms);    
+  fun distinctivize fms = map munge_lit (enumerate 0 fms);
   fun advance NONE s = (SOME NONE, s)
     | advance (SOME ths) s =
     let
@@ -6961,7 +6961,7 @@ type parameters =
    divide_conquer   : bool,
    unit_lemmaizing  : bool};
 
-val defaults = 
+val defaults =
   {ancestor_pruning = true,
    ancestor_cutting = true,
    state_simplify   = true,
@@ -7586,7 +7586,7 @@ fun resolvers_info (net : resolvers) = int_to_string (N.size net);
 
 val pp_resolvers = pp_map resolvers_info pp_string;
 
-val dest_resolvers : resolvers -> thm list = 
+val dest_resolvers : resolvers -> thm list =
   map snd o List.filter (equal 0 o fst) o N.to_list;
 
 (* ------------------------------------------------------------------------- *)
@@ -8748,7 +8748,7 @@ local
 
   val meson_prune =
     if pure then ["P29", "LDA007-3", "GRP010-4", "GEO002-4"] else ["GEO002-4"];
-      
+
   val prune =
     let
       val {meson, resolution, ...} = !Metis1.settings

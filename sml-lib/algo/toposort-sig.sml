@@ -1,5 +1,5 @@
 
-(* Topological sort algorithm. 
+(* Topological sort algorithm.
 
    Given a list of nodes and constraints between them,
    produce a list that satisfies the constaints, if
@@ -7,7 +7,7 @@
    "item a must appear somewhere before item b in
    the list." If a topological sorting doesn't exist,
    raise the exception TopoSort.
-   
+
    To use this algorithm, map 'node' over your items
    to create nodes. Then, create a list of constraints
    (pairs of nodes that must be ordered), and call
@@ -18,7 +18,7 @@
 
 signature TOPOSORT =
 sig
-    
+
     exception TopoSort of string
 
     type 'a node

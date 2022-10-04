@@ -107,7 +107,7 @@ struct
     | TForall of ppat * typ
 
   and dec_ =
-      (* wish we had refinements here. 
+      (* wish we had refinements here.
          val pat cannot contain PConstant or PApp *)
       (* val (a, b) loop = Util.loop : a -> b *)
       Val of string list * pat * exp
@@ -119,14 +119,14 @@ struct
        and g p1 p2 : t3 = e3
          | ... *)
     | Fun of { inline : bool,
-               funs : (string list * string * 
+               funs : (string list * string *
                        (pat list * typ option * exp) list) list }
 
     | WFun of string * ppat list * pat list * typ option * exp
 
     (* datatype (a, b, c) t = A of t | B of b | C of t1
        and                u = D of u | E of t *)
-    | Datatype of string list * 
+    | Datatype of string list *
                   (string * (string * typ option) list) list
     | Tagtype of string
       (* newtag Fail (valid?) of string in exn *)
@@ -158,7 +158,7 @@ struct
     Unit of dec list * export list
 
   and export =
-    (* in the case that the export is not supplied, 
+    (* in the case that the export is not supplied,
        we assume the identifier also used for export *)
     ExportType of string list * string * typ option
   | ExportVal of string list * string * exp option

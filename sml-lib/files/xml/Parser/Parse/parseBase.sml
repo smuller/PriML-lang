@@ -1,12 +1,12 @@
-signature ParseBase = 
-   sig 
+signature ParseBase =
+   sig
       include Dfa DtdManager Resolve DfaOptions ParserOptions
 
       exception NoSuchChar of AppData * State
       exception NoSuchEntity of AppData * State
       exception NotFound of UniChar.Char * AppData * State
       exception SyntaxError of UniChar.Char * AppData * State
-      
+
       val expectedOrEnded : Errors.Expected * Errors.Location -> UniChar.Char -> Errors.Error
 
       val recoverXml  : UniChar.Char * AppData * State -> UniChar.Char * AppData * State
@@ -34,14 +34,14 @@ functor ParseBase (structure Dtd           : Dtd
       structure DtdManager = DtdManager (structure Dtd = Dtd
 					 structure Hooks = Hooks
 					 structure ParserOptions = ParserOptions)
-      open 
+      open
 	 Base DtdManager DfaOptions Dfa Errors ParserOptions Resolve UniChar
-	 
+
       exception NoSuchChar of AppData * State
       exception NoSuchEntity of AppData * State
       exception NotFound of UniChar.Char * AppData * State
       exception SyntaxError of UniChar.Char * AppData * State
-      
+
       fun expectedOrEnded (exp,ended) c =
 	 if c=0wx00 then ERR_ENDED_BY_EE ended
 	 else ERR_EXPECTED(exp,[c])
@@ -54,18 +54,18 @@ functor ParseBase (structure Dtd           : Dtd
    (* the typo is an omitted quote character.                            *)
    (*--------------------------------------------------------------------*)
    fun recoverXml caq =
-      let 
+      let
 	 fun do_lit ch (c,a,q) =
 	    case c
 	      of 0wx00 => (c,a,q)
-	       | 0wx3F (* #"?" *) => 
+	       | 0wx3F (* #"?" *) =>
 		 let val (c1,a1,q1) = getChar (a,q)
 		 in if c1=0wx3E (* #">" *) then (c1,a1,q1)
 		    else do_lit ch (c1,a1,q1)
 		 end
 	       | _ => if c=ch then (getChar (a,q))
 		      else do_lit ch (getChar (a,q))
-	 fun doit (c,a,q) = 
+	 fun doit (c,a,q) =
 	    case c
 	      of 0wx00 => (c,a,q)
 	       | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -75,18 +75,18 @@ functor ParseBase (structure Dtd           : Dtd
 	       | 0wx3C (* #"<" *) => (c,a,q)
 	       | 0wx3E (* #">" *) => (getChar (a,q))
 	       | _ => doit (getChar (a,q))
-      in 
+      in
 	 doit caq
       end
-   
+
    fun recoverETag caq =
-      let 
+      let
 	 fun do_lit ch (c,a,q) =
 	    case c
 	      of 0wx00 => (c,a,q)
 	       | _ => if c=ch then (getChar (a,q))
 		      else do_lit ch (getChar (a,q))
-	 fun doit (c,a,q) = 
+	 fun doit (c,a,q) =
 	    case c
 	      of 0wx00 => (c,a,q)
 	       | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -95,18 +95,18 @@ functor ParseBase (structure Dtd           : Dtd
 	       | 0wx3E (* #">" *) => (getChar (a,q))
 	       | 0wx3C (* #"<" *) => (c,a,q)
 	       | _ => doit (getChar (a,q))
-      in 
+      in
 	 doit caq
       end
-   
+
    fun recoverSTag caq =
-      let 
+      let
 	 fun do_lit ch (c,a,q) =
 	    case c
 	      of 0wx00 => (c,a,q)
 	       | _ => if c=ch then (getChar (a,q))
 		      else do_lit ch (getChar (a,q))
-	 fun doit (c,a,q) = 
+	 fun doit (c,a,q) =
 	    case c
 	      of 0wx00 => (false,(c,a,q))
 	       | 0wx22 (* #""""*) => doit (do_lit c (getChar (a,q)))
@@ -119,12 +119,12 @@ functor ParseBase (structure Dtd           : Dtd
 	       | 0wx3E (* #">" *) => (false,getChar (a,q))
 	       | 0wx3C (* #"<" *) => (false,(c,a,q))
 	       | _ => doit (getChar (a,q))
-      in 
+      in
 	 doit caq
       end
-   
-   fun recoverDecl hasSubset caq = 
-      let 
+
+   fun recoverDecl hasSubset caq =
+      let
 	 fun do_lit ch (c,a,q) =
 	    if c=0wx00 then (c,a,q)
 	    else if c=ch then getChar (a,q)

@@ -1,5 +1,5 @@
 (*
- * Author: Matthew Fluet (mfluet@acm.org) 
+ * Author: Matthew Fluet (mfluet@acm.org)
  *
  * This requires that you have SML/NJ installed.
  * It works with SML/NJ 110.47 and may require changes to work with other
@@ -63,7 +63,7 @@ struct
 
          fun make (file : string) =
             if OS.FileSys.access (file, [OS.FileSys.A_READ])
-               then 
+               then
                   let
                      val lines =
                         let
@@ -85,11 +85,11 @@ struct
                       if CharVector.all Char.isSpace line
                          orelse CharVector.sub (line, 0) = #"#"
                          then NONE
-                         else 
+                         else
                             case String.tokens Char.isSpace line of
-                               [cmAnchor, mlbPath] => 
+                               [cmAnchor, mlbPath] =>
                                   SOME {cmAnchor = cmAnchor, mlbPath = mlbPath}
-                             | _ =>  die (concat ["strange cm->mlb mapping: ", 
+                             | _ =>  die (concat ["strange cm->mlb mapping: ",
                                                   file, ":: ", line]))
                      lines
                   end
@@ -101,8 +101,8 @@ struct
    fun cm2mlb {defines, maps, out, sources} =
       let
          (* Define preprocessor symbols *)
-         val _ = 
-            List.app 
+         val _ =
+            List.app
             (fn sym => (#set (CM.symval sym)) (SOME 1))
             defines
          val _ = (#set CM.Control.verbose) false
@@ -151,7 +151,7 @@ struct
                          fun doitAnchoredPath arcs =
                             let
                                fun loop (prefix, suffix) =
-                                  if List.null prefix 
+                                  if List.null prefix
                                      then concat ["(* ", cmLibDescr, " =??=> *) ", mlbLibDef ()]
                                      else case peekAnchorMap (String.concatWith "/" (List.rev prefix)) of
                                              SOME mlbPath =>
@@ -174,22 +174,22 @@ struct
                          val mlbLib =
                             if String.sub (cmLibDescr, 0) = #"$"
                                then case String.fields (fn #"/" => true | _ => false) cmLibDescr of
-                                       "$" :: (arcs as (arc0 :: _)) => 
+                                       "$" :: (arcs as (arc0 :: _)) =>
                                           doitAnchoredPath (("$" ^ arc0) :: arcs)
                                      | arc0 :: arcs =>
                                           let
                                              val arc0 =
                                                 case CharVector.findi (fn (_, #"(") => true | _ => false) arc0 of
-                                                   SOME (i, _) => 
+                                                   SOME (i, _) =>
                                                       String.extract (arc0, i + 2, SOME (String.size arc0 - i - 3))
                                                  | NONE => arc0
-                                          in 
+                                          in
                                              doitAnchoredPath (arc0 :: arcs)
                                           end
                                      | arcs => doitAnchoredPath arcs
                                else concat ["(* ", cmLibOSString, " ===> *) ", mlbLibDef ()]
                       in
-                         concat 
+                         concat
                          ["  basis ", bid, " =\n",
                           "    bas\n",
                           "      ", mlbLib, "\n",
@@ -207,7 +207,7 @@ struct
                               outstream = out};
                   TextIO.output (out, "end\n")
                end
-          | NONE => die ("CM.Graph.graph " ^ sources ^ " failed") 
+          | NONE => die ("CM.Graph.graph " ^ sources ^ " failed")
       end
 
    fun usage msg =
@@ -218,7 +218,7 @@ struct
       let
          val defines = ref ["MLton"]
          val maps = ref []
-         fun loop args = 
+         fun loop args =
             case args of
                [file] =>
                   cm2mlb {defines = !defines,

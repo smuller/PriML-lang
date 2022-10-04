@@ -27,7 +27,7 @@ end
 fun update (t, a, b) = Set.update (t, (a, b))
 
 fun peek (t, a) =
-   Option.map (Set.peek (t, Set.hash (t, 
+   Option.map (Set.peek (t, Set.hash (t,
 
 fun update (T {buckets = ref buckets, equals, mask, ...}, w, a, b) =
    let

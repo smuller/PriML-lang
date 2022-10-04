@@ -22,7 +22,7 @@ structure Queue:
                               [] => raise Fail "deque"
                             | x :: l => (back := []; front := l; SOME x)
                            end)
-          | x :: l => (front := l; SOME x) 
+          | x :: l => (front := l; SOME x)
    end
 
 structure Thread:

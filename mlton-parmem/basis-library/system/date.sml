@@ -65,7 +65,7 @@ structure Date :> DATE =
                  tm_mday  : C_Int.t,
                  tm_min   : C_Int.t,
                  tm_mon   : C_Int.t,
-                 tm_sec   : C_Int.t, 
+                 tm_sec   : C_Int.t,
                  tm_wday  : C_Int.t,
                  tm_yday  : C_Int.t,
                  tm_year  : C_Int.t}
@@ -86,7 +86,7 @@ structure Date :> DATE =
        val getgmtime_ = make Prim.gmTime
     end
 
-    fun setTmBuf ({tm_hour, tm_isdst, tm_mday, tm_min, tm_mon, 
+    fun setTmBuf ({tm_hour, tm_isdst, tm_mday, tm_min, tm_mon,
                    tm_sec, tm_wday, tm_yday, tm_year}: tmoz) : unit =
        (Tm.setHour tm_hour
         ; Tm.setIsDst tm_isdst
@@ -105,11 +105,11 @@ structure Date :> DATE =
 
     val toweekday: int -> weekday =
        fn 0 => Sun | 1 => Mon | 2 => Tue | 3 => Wed
-        | 4 => Thu | 5 => Fri | 6 => Sat 
+        | 4 => Thu | 5 => Fri | 6 => Sat
         | _ => raise Fail "Internal error: Date.toweekday"
 
     val fromwday: weekday -> int =
-       fn Sun => 0 | Mon => 1 | Tue => 2 | Wed => 3 
+       fn Sun => 0 | Mon => 1 | Tue => 2 | Wed => 3
         | Thu => 4 | Fri => 5 | Sat => 6
 
     val tomonth: int -> month =
@@ -123,16 +123,16 @@ structure Date :> DATE =
         | May => 4 | Jun => 5 | Jul => 6  | Aug => 7
         | Sep => 8 | Oct => 9 | Nov => 10 | Dec => 11
 
-    fun tmozToDate ({tm_hour, tm_isdst, tm_mday, tm_min, tm_mon, 
-                     tm_sec, tm_wday, tm_yday, tm_year}: tmoz) offset = 
+    fun tmozToDate ({tm_hour, tm_isdst, tm_mday, tm_min, tm_mon,
+                     tm_sec, tm_wday, tm_yday, tm_year}: tmoz) offset =
        T {day = C_Int.toInt tm_mday,
           hour = C_Int.toInt tm_hour,
           isDst = (case tm_isdst of
-                      0 => SOME false 
+                      0 => SOME false
                     | 1 => SOME true
                     | _ => NONE),
-          minute = C_Int.toInt tm_min, 
-          month = tomonth (C_Int.toInt tm_mon), 
+          minute = C_Int.toInt tm_min,
+          month = tomonth (C_Int.toInt tm_mon),
           offset = offset,
           second = C_Int.toInt tm_sec,
           weekDay = toweekday (C_Int.toInt tm_wday),
@@ -140,9 +140,9 @@ structure Date :> DATE =
           year = (C_Int.toInt tm_year) + 1900}
 
     fun leapyear (y: int) =
-       y mod 4 = 0 andalso y mod 100 <> 0 orelse y mod 400 = 0   
+       y mod 4 = 0 andalso y mod 100 <> 0 orelse y mod 400 = 0
 
-    fun monthdays year month : int = 
+    fun monthdays year month : int =
       case month of
          Jan => 31
        | Feb => if leapyear year then 29 else 28
@@ -175,9 +175,9 @@ structure Date :> DATE =
                            | SOME true => 1
                            | NONE=> ~1),
               tm_mday = C_Int.fromInt day,
-              tm_min = C_Int.fromInt minute, 
+              tm_min = C_Int.fromInt minute,
               tm_mon = C_Int.fromInt (frommonth month),
-              tm_sec = C_Int.fromInt second, 
+              tm_sec = C_Int.fromInt second,
               tm_wday = C_Int.fromInt (fromwday weekDay),
               tm_yday = C_Int.fromInt yearDay,
               tm_year = C_Int.fromInt (year - 1900)}
@@ -187,11 +187,11 @@ structure Date :> DATE =
 
     (* Reingold: Number of the day within the year: *)
 
-    fun dayinyear (year: int, month: month, day: int): int = 
+    fun dayinyear (year: int, month: month, day: int): int =
         let val monthno = frommonth month
         in
             day - 1 + 31 * monthno
-            - (if monthno > 1 then 
+            - (if monthno > 1 then
                    (27 + 4 * monthno) div 10 - (if leapyear year then 1 else 0)
                else 0)
         end
@@ -199,7 +199,7 @@ structure Date :> DATE =
     (* Reingold: Find the number of days elapsed from the (imagined)
        Gregorian date Sunday, December 31, 1 BC to the given date. *)
 
-    fun todaynumber year month day = 
+    fun todaynumber year month day =
         let val prioryears = year - 1
         in
             dayinyear (year, month, day)
@@ -212,7 +212,7 @@ structure Date :> DATE =
 
     (* Reingold et al: from absolute day number to year, month, date: *)
 
-    fun fromdaynumber n = 
+    fun fromdaynumber n =
         let val d0 = n - 1
             val n400 = d0 div 146097
             val d1 = d0 mod 146097
@@ -225,16 +225,16 @@ structure Date :> DATE =
             val year = 400 * n400 + 100 * n100 + n4 * 4 + n1 + 1
             fun loop month day =
                 let val mdays = monthdays year (tomonth month)
-                in 
+                in
                     if mdays < day then loop (month+1) (day-mdays)
                     else (year, tomonth month, day)
                 end
-        in 
-            if n100 = 4 orelse n1 = 4 then 
+        in
+            if n100 = 4 orelse n1 = 4 then
                 (year-1, Dec, 31)
             else
-                loop 0 day 
-        end         
+                loop 0 day
+        end
 
     (* -------------------------------------------------- *)
 
@@ -252,8 +252,8 @@ structure Date :> DATE =
             val (year, month, day) = fromdaynumber dayno
             val date1 = T {day = day,
                            hour = hour,
-                           isDst = (case offset of 
-                                       NONE   => NONE 
+                           isDst = (case offset of
+                                       NONE   => NONE
                                      | SOME _ => SOME false),
                            minute = minute,
                            month = month,
@@ -262,34 +262,34 @@ structure Date :> DATE =
                            weekDay = weekday dayno,
                            year = year,
                            yearDay = dayinyear (year, month, day)}
-        in 
+        in
             (* One cannot reliably compute DST in non-local timezones,
             not even given the offset from UTC.  Countries in the
             Northern hemisphere have DST during Mar-Oct, those around
             Equator do not have DST, and those in the Southern
             hemisphere have DST during Oct-Mar. *)
             if year < 1970 orelse year > 2037 then date1
-            else 
-                case offset of 
-                    NONE   => 
+            else
+                case offset of
+                    NONE   =>
                         tmozToDate (getlocaltime_ (mktime_ (dateToTmoz date1)))
                         offset
                   | SOME _ => date1
         end
 
-    fun fromTimeLocal t = 
+    fun fromTimeLocal t =
         tmozToDate (getlocaltime_ (C_Time.fromInt (Time.toSeconds t))) NONE
 
-    fun fromTimeUniv t = 
+    fun fromTimeUniv t =
         tmozToDate (getgmtime_ (C_Time.fromInt (Time.toSeconds t))) (SOME 0)
 
-    (* The following implements conversion from a local date to 
+    (* The following implements conversion from a local date to
      * a Time.time.  It IGNORES wday and yday.
      *)
 
-    fun toTime (date as T {offset, ...}) = 
+    fun toTime (date as T {offset, ...}) =
         let
-           val secoffset = 
+           val secoffset =
               case offset of
                  NONE      => 0
                | SOME secs => localoffset + secs
@@ -311,7 +311,7 @@ structure Date :> DATE =
               Array.update (a, Char.ord (String.sub (validChars, i)), true));
              fn c => Array.sub (a, Char.ord c)
           end
-    in     
+    in
        fun fmt fmtStr d =
           let
              val _ = setTmBuf (dateToTmoz d)
@@ -500,18 +500,18 @@ structure Date :> DATE =
     fun fromString s = StringCvt.scanString scan s
 
     (* Ignore timezone and DST when comparing dates: *)
-    fun compare 
+    fun compare
         (T {year=y1,month=mo1,day=d1,hour=h1,minute=mi1,second=s1, ...},
          T {year=y2,month=mo2,day=d2,hour=h2,minute=mi2,second=s2, ...}) =
         let
-           fun cmp (v1, v2, cmpnext) = 
+           fun cmp (v1, v2, cmpnext) =
               case Int.compare (v1, v2) of
                  EQUAL => cmpnext ()
                | r => r
-        in 
-            cmp (y1, y2, 
-            fn _ => cmp (frommonth mo1, frommonth mo2, 
-            fn _ => cmp (d1, d2,                
+        in
+            cmp (y1, y2,
+            fn _ => cmp (frommonth mo1, frommonth mo2,
+            fn _ => cmp (d1, d2,
             fn _ => cmp (h1, h2,
             fn _ => cmp (mi1, mi2,
             fn _ => cmp (s1, s2,
@@ -519,16 +519,16 @@ structure Date :> DATE =
         end
 
     fun date { year, month, day, hour, minute, second, offset } =
-       if year < 0 then raise Date 
+       if year < 0 then raise Date
        else
           let
-             val (dayoffset, offset') = 
+             val (dayoffset, offset') =
                 case offset of
                    NONE => (0, NONE)
-                 | SOME time => 
+                 | SOME time =>
                       let
                          val secs = Time.toSeconds time
-                         val secoffset = 
+                         val secoffset =
                             if secs <= 82800 then ~secs else 86400 - secs
                       in
                          (Int.quot (secs, 86400), SOME secoffset)
@@ -538,8 +538,8 @@ structure Date :> DATE =
              normalizedate year month day' hour minute second offset'
           end
 
-    fun offset (T {offset, ...}) = 
+    fun offset (T {offset, ...}) =
         Option.map
-        (fn secs => Time.fromSeconds ((86400 + secs) mod 86400)) 
+        (fn secs => Time.fromSeconds ((86400 + secs) mod 86400))
         offset
   end

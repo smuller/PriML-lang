@@ -18,7 +18,7 @@ open PrimitiveFFI.MLton.Syslog
 
 type openflag = C_Int.t
 
-local 
+local
    open Logopt
 in
    val CONS = LOG_CONS
@@ -74,16 +74,16 @@ in
 end
 
 val openlog = fn (s, opt, fac) =>
-   let 
+   let
       val optf = foldl C_Int.orb 0 opt
    in
      openlog (NullString.nullTerm s, optf, fac)
    end
 
-val closelog = fn () => 
+val closelog = fn () =>
    closelog ()
 
-val log = fn (lev, msg) => 
+val log = fn (lev, msg) =>
    syslog (lev, NullString.nullTerm msg)
 
 end

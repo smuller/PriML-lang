@@ -12,7 +12,7 @@ struct
       fun ptos (PVar s) = s
         | ptos PWild = "_"
         | ptos (PAs (s, p)) = "(" ^ s ^  " as " ^ ptos p ^ ")"
-        | ptos (PRecord spl) = 
+        | ptos (PRecord spl) =
           "{" ^ StringUtil.delimit ", " (map (fn (s, p) =>
                                               s ^ " = " ^
                                               ptos p) spl) ^ "}"
@@ -25,9 +25,9 @@ struct
       and etosi i (e, _) =
           (case e of
                Var s => s
-             | Let (d, e) => "let\n" ^ nspaces (i + 3) ^ 
+             | Let (d, e) => "let\n" ^ nspaces (i + 3) ^
                              dtosi (i + 3) d ^ "\n" ^
-                             nspaces i ^ "in\n" ^ nspaces (i + 3) ^ 
+                             nspaces i ^ "in\n" ^ nspaces (i + 3) ^
                              etosi (i + 3) e ^ "\n" ^ nspaces i ^ "end"
              | (Constant (CInt i)) => "0x" ^ Word32.toString i
              | (Constant (CChar c)) => "CHR '" ^ implode[c] ^ "'"
@@ -36,7 +36,7 @@ struct
       and dtosi i (d, _) =
           (case d of
                Do e => "do " ^ etosi (i + 3) e
-             | Val (tv, p, e) => 
+             | Val (tv, p, e) =>
                    "val" ^
                    (case tv of
                         nil => ""

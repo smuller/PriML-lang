@@ -2,7 +2,7 @@
 functor SetUtil(structure S : ORD_SET) : SETUTIL where type set = S.set
                                                    and type item = S.item =
 struct
-    
+
   type set = S.set
   type item = S.item
 

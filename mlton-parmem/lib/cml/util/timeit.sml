@@ -8,7 +8,7 @@ structure TimeIt : TIMEIT =
       val timeitFlg = true
 
       fun timeit (name: string) (f: 'a -> 'b) (a: 'a) : 'b =
-         if timeitFlg 
+         if timeitFlg
             then let
                     val start = Time.now ()
                     fun done () =
@@ -16,7 +16,7 @@ structure TimeIt : TIMEIT =
                           val finish = Time.now ()
                           val diff = Time.-(finish, start)
                        in
-                          Debug.sayDebug 
+                          Debug.sayDebug
                           ([], fn () =>
                            concat [name, ": ",
                                    LargeInt.toString (Time.toMilliseconds diff),

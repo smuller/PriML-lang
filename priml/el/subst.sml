@@ -25,7 +25,7 @@ struct
     | tsubst s (Sum ltl) = Sum (ListUtil.mapsecond (arminfo_map (tsubst s)) ltl)
     | tsubst s (Mu (i, vtl)) =
            let (* remove bindings for each variable *)
-               val ns = foldl (fn ((v,_), s) => 
+               val ns = foldl (fn ((v,_), s) =>
                                VM.insert (s, v, TVar v)) s vtl
            in  Mu (i, ListUtil.mapsecond (tsubst ns) vtl)
            end
@@ -91,7 +91,7 @@ struct
       end
   (*
     | prsubst s (TAddr w) = TAddr (wsubsw s w)
-    | prsubst s (x as Shamrock (wv, t)) = 
+    | prsubst s (x as Shamrock (wv, t)) =
       let val nv = Variable.alphavary wv
           val t' = prsubst (fromlist [(wv, WVar nv)]) t
       in Shamrock(wv, prsubst s t')
@@ -120,14 +120,14 @@ struct
     | pbinds (E.PConstrain (p, t)) v = pbinds p v
     | pbinds (E.PConstant _) _ = false
     | pbinds (E.PVar i) v = i = v
-    | pbinds (E.PRecord lpl) v = 
+    | pbinds (E.PRecord lpl) v =
       ListUtil.existsecond (fn p => pbinds p v) lpl
     | pbinds (E.PApp  (_, SOME p)) v = pbinds p v
     | pbinds (E.PApp  (_, NONE)) v = false
     | pbinds (E.PWhen (_, p)) v = pbinds p v
 
   (* exp/var in exp'. assumes exp closed. *)
-     
+
   fun esubst (s as (vv : string, ee : EL.exp_)) (e,loc) =
       (fn x => (x, loc))
       (case e of
@@ -145,7 +145,7 @@ struct
 (*
          | E.Throw (a, b) => E.Throw(esubst s a, esubst s b)
          | E.Letcc (v, e') =>
-               if v = vv 
+               if v = vv
                then e
                else E.Letcc(v, esubst s e')
 *)
@@ -158,12 +158,12 @@ struct
          | E.If (a,b,c) => E.If (esubst s a, esubst s b, esubst s c)
 
          | E.Constrain (e,t) => E.Constrain (esubst s e, t)
-         | E.Case (el, pel, NONE) => E.Case (map (esubst s) el, 
+         | E.Case (el, pel, NONE) => E.Case (map (esubst s) el,
                                              map (mlsubst s) pel, NONE)
          | E.Case _ => raise Subst "case SOME"
          | E.Raise e => E.Raise (esubst s e)
 (*
-         | E.Say (imports, e) => E.Say (imports, 
+         | E.Say (imports, e) => E.Say (imports,
                                         (* check shadowing... *)
                                         if List.exists (fn (_, v) => v = vv) imports
                                         then e
@@ -180,9 +180,9 @@ struct
      )
 
 
-  (* pattern lists as in fn; 
+  (* pattern lists as in fn;
      just pretend it's a tuple for the sake of bindings *)
-  (* XXX is this accurate? are earlier args available in the 'when' 
+  (* XXX is this accurate? are earlier args available in the 'when'
      clauses for pats in later args? *)
   and fsubst (s as (vv, ee)) (pl,e) =
       if pbinds (E.PRecord (map (fn p => ("", p)) pl)) vv then (pl, e)
@@ -198,7 +198,7 @@ struct
     | psubst s (E.PConstrain (p, t)) = E.PConstrain(psubst s p, t)
     | psubst s (E.PConstant c) = E.PConstant c
     | psubst s (E.PVar i) = E.PVar i
-    | psubst s (E.PRecord lpl) = 
+    | psubst s (E.PRecord lpl) =
     E.PRecord (ListUtil.mapsecond (psubst s) lpl)
     | psubst s (E.PApp  (t, p)) = E.PApp (t, Option.map (psubst s) p)
     | psubst s (E.PWhen (e, p)) = E.PWhen (esubst s e, psubst s p)
@@ -215,27 +215,27 @@ struct
   and dsubst (s as (vv,ee)) ((d,loc) : E.dec) =
       (fn (x,b) => ((x, loc), b))
       (case d of
-           E.Val (tyvars, p, e) => (E.Val (tyvars, psubst s p, esubst s e), 
+           E.Val (tyvars, p, e) => (E.Val (tyvars, psubst s p, esubst s e),
                                         pbinds p vv)
          | E.Do e => (E.Do (esubst s e), false)
-         | E.Fun { inline, funs = l } => 
+         | E.Fun { inline, funs = l } =>
                (* if any function is named the same as this variable,
                  do no substitution and return shadowed. *)
                if List.exists (fn (_, f, _) => f = vv) l then (d, true)
                else let
                         fun dfs (pl, to, e) =
-                            if pbinds (E.PRecord (map (fn x => 
-                                                       ("", x)) pl)) vv 
+                            if pbinds (E.PRecord (map (fn x =>
+                                                       ("", x)) pl)) vv
                             then (map (psubst s) pl, to, e)
                             else (map (psubst s) pl, to, esubst s e)
                     in (E.Fun { inline = inline,
-                                funs = (map (fn (tyvars, f, branches) => 
+                                funs = (map (fn (tyvars, f, branches) =>
                                              (tyvars, f, map dfs branches)) l) }, false)
                     end
          | E.Datatype (_, dl) =>
-               (* datatypes have no expressions, 
+               (* datatypes have no expressions,
                   but bind some constructors *)
-               let fun one (_, ctors) = 
+               let fun one (_, ctors) =
                    List.exists (fn (i,_) => i = vv) ctors
                in (d, List.exists one dl)
                end

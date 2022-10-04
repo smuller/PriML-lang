@@ -30,7 +30,7 @@ fun ('a, 'b) fluidLet (r: 'a t, x: 'a, th: unit -> 'b): 'b =
       Exn.finally (th, fn () => r := old)
    end
 
-fun getSet layout = 
+fun getSet layout =
    let val r = ref NONE
       fun get () =
          case !r of

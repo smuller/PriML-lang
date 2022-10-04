@@ -5,9 +5,9 @@
 (* In order to be used as a dictinary/symbol table key, a type must have a  *)
 (* null value, hash to words, must be comparable and printable.             *)
 (*--------------------------------------------------------------------------*)
-signature Key = 
+signature Key =
    sig
-      type Key 
+      type Key
 
       val null     : Key
       val hash     : Key -> word

@@ -12,7 +12,7 @@ val suffix = "\
  * They must also be alphanumeric and less than 78 bytes.
  *   => We convert non-alnums to _
  *   => We trim the filename to the last 40 bytes.
- * 
+ *
  * The contents of the installer cab are sorted by the identifier we choose.
  * Similar files compress better when they are near each other.
  *   => Use: rev(filename).hash as the identifier
@@ -23,7 +23,7 @@ fun slashes c = if c = #"\\" then #"/" else c
 fun hash (c, w) = w * 0w5746711073709751657 + Word64.fromInt (Char.ord (slashes c))
 fun alnum c = if Char.isAlphaNum c orelse c = #"." then c else #"_"
 fun trim s = if String.size s > 40 then String.substring (s, 0, 40) else s
-fun rev s = 
+fun rev s =
    let val len = CharVector.length s in
    CharVector.tabulate (len, fn i => CharVector.sub (s, len-1-i)) end
 fun escape s =
@@ -46,10 +46,10 @@ fun dirEntry path =
                      \Source='staging/" ^ path ^ "' KeyPath='yes' />\n\
       \      </Component>\n\
       \    </DirectoryRef>\n"
-   end 
-and guid path = 
+   end
+and guid path =
    let
-      val guid = 
+      val guid =
          MLton.Process.create {
             args = [path],
             env = NONE,
@@ -69,8 +69,8 @@ and guid path =
    end
 
 fun tail path = String.substring (path, 0, String.size path - 1)
-fun head path = if String.isPrefix "./" path 
-                then String.extract (path, 2, NONE) 
+fun head path = if String.isPrefix "./" path
+                then String.extract (path, 2, NONE)
                 else path
 val trim = head o tail
 fun loop () =

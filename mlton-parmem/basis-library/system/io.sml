@@ -97,14 +97,14 @@ structure OS_IO: OS_IO =
       and priBit = PrimitiveFFI.OS.IO.POLLPRI
       fun fromPollDesc (PollDesc (iod, {rd, wr, pri})) =
             ( iodToFd iod,
-              join (rd, rdBit, 
-              join (wr, wrBit, 
+              join (rd, rdBit,
+              join (wr, wrBit,
               join (pri, priBit, 0)))
             )
-      fun toPollInfo (fd, i) = 
+      fun toPollInfo (fd, i) =
             PollInfo (fdToIod fd, {
-              rd = test(i, rdBit), 
-              wr = test(i, wrBit), 
+              rd = test(i, rdBit),
+              wr = test(i, wrBit),
               pri = test(i, priBit)
             })
     in
@@ -130,7 +130,7 @@ structure OS_IO: OS_IO =
                                        revents))
           in
             Array.foldri
-            (fn (i, w, l) => 
+            (fn (i, w, l) =>
              if w <> 0
                then (toPollInfo (Vector.sub (fds, i), w))::l
                else l)

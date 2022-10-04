@@ -5,28 +5,28 @@
 (*   checkAttValue       : AttValue InternalError                           *)
 (*   checkDefinedIds     : none                                             *)
 (*   genMissingAtts      : none                                             *)
-(*   makeAttValue        : AttValue InternalError                           *) 
+(*   makeAttValue        : AttValue InternalError                           *)
 (*--------------------------------------------------------------------------*)
 functor DtdAttributes (structure Dtd           : Dtd
 		       structure Entities      : Entities
-		       structure ParserOptions : ParserOptions) = 
+		       structure ParserOptions : ParserOptions) =
    struct
       structure DtdDeclare = DtdDeclare (structure Dtd = Dtd
 					 structure Entities = Entities
 					 structure ParserOptions = ParserOptions)
-      open 
-	 UniChar UniClasses UtilList 
-	 Base Dtd DtdDeclare Errors Entities HookData ParserOptions 
+      open
+	 UniChar UniClasses UtilList
+	 Base Dtd DtdDeclare Errors Entities HookData ParserOptions
 
       val THIS_MODULE = "DtdAttributes"
-      
+
       exception AttValue of AppData
 
       (*--------------------------------------------------------------------*)
       (* this is the list of language codes in ISO 639.                     *)
       (*--------------------------------------------------------------------*)
-      val iso639codes = 
-	 Vector.fromList 
+      val iso639codes =
+	 Vector.fromList
 	 ["AA","AB","AF","AM","AR","AS","AY","AZ",
 	  "BA","BE","BG","BH","BI","BN","BO","BR",
 	  "CA","CO","CS","CY",
@@ -57,13 +57,13 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*--------------------------------------------------------------------*)
       (* a two-dimensional field [0..25][0..25] of booleans for ISO 639.    *)
       (*--------------------------------------------------------------------*)
-      val iso639field = 
-	 let 
+      val iso639field =
+	 let
 	    val arr = Array.tabulate(26,fn _ => Array.array(26,false))
-	    val _ = Vector.map 
+	    val _ = Vector.map
 	       (fn s => Array.update(Array.sub(arr,ord(String.sub(s,0))-65),
 				     ord(String.sub(s,1))-65,
-				     true)) 
+				     true))
 	       iso639codes
 	 in Vector.tabulate(26,fn i => Array.vector (Array.sub(arr,i)))
 	 end
@@ -78,18 +78,18 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* are these two letters an ISO 639 code?                             *)
       (*--------------------------------------------------------------------*)
       fun isIso639 (c1,c2) =
-	 if !O_CHECK_ISO639 then 
+	 if !O_CHECK_ISO639 then
 	    Vector.sub(Vector.sub(iso639field,cIndex c1),cIndex c2)
 	    handle Subscript => false
 	 else isAsciiLetter c1 andalso isAsciiLetter c2
-	
+
       (*--------------------------------------------------------------------*)
       (* does this match Subcode ('-' Subcode)* ?                           *)
       (* is this a sequence of ('-' Subcode) ?                              *)
       (* Iana codes and user codes also end on ([a-z] | [A-Z])+             *)
       (*--------------------------------------------------------------------*)
       fun isSubcode' nil = false
-	| isSubcode' (c::cs) = 
+	| isSubcode' (c::cs) =
 	 let fun doit nil = true
 	       | doit (c::cs) = if c=0wx2D then isSubcode' cs
 				else isAsciiLetter c andalso doit cs
@@ -98,7 +98,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       fun isSubcode nil = true
 	| isSubcode (c::cs) = c=0wx2D andalso isSubcode' cs
       val isIanaUser = isSubcode'
-	 
+
       (*--------------------------------------------------------------------*)
       (* Check whether a "xml:lang" attribute matches the LanguageID        *)
       (* production. 2.12:                                                  *)
@@ -113,17 +113,17 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the "xml:lang" attribute does *)
       (* not have a valid value.                                            *)
       (*--------------------------------------------------------------------*)
-      fun checkAttSpec (a,q) (aidx,cs) = 
+      fun checkAttSpec (a,q) (aidx,cs) =
 	 if !O_CHECK_LANGID andalso aidx=xmlLangIdx
 	    then let val valid = case cs
 				   of c::0wx2D::cs' => (c=0wx49 orelse
 							c=0wx69 orelse
-							c=0wx58 orelse 
+							c=0wx58 orelse
 							c=0wx78) andalso isIanaUser cs'
 				    | c1::c2::cs' => isIso639 (c1,c2) andalso isSubcode cs'
-				    | _ => false 
-		 in 
-		    if valid then a 
+				    | _ => false
+		 in
+		    if valid then a
 		    else raise AttValue(hookError(a,(getPos q,ERR_ATT_IS_NOT(cs,IT_LANG_ID))))
 		 end
 	 else a
@@ -147,7 +147,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* value as a char vector.                                            *)
       (*--------------------------------------------------------------------*)
       fun splitAttValue av =
-	 let 
+	 let
 	    fun doOne nil = (nil,nil,nil)
 	      | doOne (c::cs) = if c=0wx20 then let val (toks,ys) = doAll true cs
 						in (nil,toks,ys)
@@ -161,7 +161,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 					  in ((c::tok)::toks,
 					      if addS then 0wx20::c::ys else c::ys)
 					  end
-		    
+
 	    val (tokens,normed) = doAll false av
 	 in (Data2Vector normed,tokens)
 	 end
@@ -184,7 +184,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 	 end
 
       (*--------------------------------------------------------------------*)
-      (* Check whether a sequence of chars forms a name (token).            *) 
+      (* Check whether a sequence of chars forms a name (token).            *)
       (*--------------------------------------------------------------------*)
       fun isNmToken cs = List.all isName cs
       fun isaName nil = false
@@ -194,10 +194,10 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* Check whether a list of tokens is a single what fulfilling isWhat. *)
       (* print an error and raise AttValue if it is not.                    *)
       (*--------------------------------------------------------------------*)
-      fun checkOne (isWhat,what,detail) (a,q) toks = 
-	 case toks 
+      fun checkOne (isWhat,what,detail) (a,q) toks =
+	 case toks
 	   of nil => raise AttValue (hookError(a,(getPos q,ERR_EXACTLY_ONE detail)))
-	    | [one] => if isWhat one then one 
+	    | [one] => if isWhat one then one
 		       else raise AttValue(hookError(a,(getPos q,ERR_ATT_IS_NOT(one,what))))
 	    | more => raise AttValue(hookError(a,(getPos q,ERR_AT_MOST_ONE detail)))
       (*--------------------------------------------------------------------*)
@@ -205,10 +205,10 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* fil isWhat.                                                        *)
       (* print an error and raise AttValue if not.                          *)
       (*--------------------------------------------------------------------*)
-      fun checkList (isWhat,what,detail) (a,q) toks = 
-	 case toks 
+      fun checkList (isWhat,what,detail) (a,q) toks =
+	 case toks
 	   of nil => raise AttValue (hookError(a,(getPos q,ERR_AT_LEAST_ONE detail)))
-	    | _ => app (fn one => if isWhat one then () 
+	    | _ => app (fn one => if isWhat one then ()
 				  else let val err = ERR_ATT_IS_NOT(one,what)
 				       in raise AttValue(hookError(a,(getPos q,err)))
 				       end) toks
@@ -227,8 +227,8 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* was already used.                                                  *)
       (* print an error and raise AttValue if it is not a name.             *)
       (*--------------------------------------------------------------------*)
-      fun takeId (dtd,inDtd) (a,q) toks = 
-	 let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeId (dtd,inDtd) (a,q) toks =
+	 let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
 	     val idx = Id2Index dtd one
 	     val _ = if inDtd then ()
 		     else let val (decl,refs) = getId dtd idx
@@ -239,7 +239,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 			  end
 	 in (SOME(AV_ID idx),a)
 	 end
-	    
+
       (*--------------------------------------------------------------------*)
       (* Convert a list of tokens into an IDREF/IDREFS att value. 3.3.1:    *)
       (*                                                                    *)
@@ -252,14 +252,14 @@ functor DtdAttributes (structure Dtd           : Dtd
 	 let val (decl,refs) = getId dtd idx
 	 in setId dtd (idx,(decl,getPos q::refs))
 	 end
-      fun takeIdref (dtd,_) (a,q) toks = 
-	 let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeIdref (dtd,_) (a,q) toks =
+	 let val one = checkOne (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
 	     val idx=Id2Index dtd one
 	     val _ = setIdRef (dtd,q) idx
 	 in (SOME(AV_IDREF idx),a)
 	 end
-      fun takeIdrefs (dtd,_) (a,q) toks = 
-	 let val _ = checkList (isaName,IT_NAME,IT_ID_NAME) (a,q) toks 
+      fun takeIdrefs (dtd,_) (a,q) toks =
+	 let val _ = checkList (isaName,IT_NAME,IT_ID_NAME) (a,q) toks
 	     val idxs = map (Id2Index dtd) toks
 	     val _ = app (setIdRef (dtd,q)) idxs
 	 in (SOME(AV_IDREFS idxs),a)
@@ -290,13 +290,13 @@ functor DtdAttributes (structure Dtd           : Dtd
 				    end
 	 in idx
 	 end
-      fun takeEntity (dtd,inDtd) (aq as (a,_)) toks = 
-	 let val one = checkOne (isaName,IT_NAME,IT_ENT_NAME) aq toks 
+      fun takeEntity (dtd,inDtd) (aq as (a,_)) toks =
+	 let val one = checkOne (isaName,IT_NAME,IT_ENT_NAME) aq toks
 	     val idx = checkEntity (dtd,inDtd) aq one
 	 in (SOME(AV_ENTITY idx),a)
 	 end
-      fun takeEntities (dtd,inDtd) (aq as (a,_)) toks = 
-	 let val _ = checkList (isaName,IT_NAME,IT_ENT_NAME) aq toks 
+      fun takeEntities (dtd,inDtd) (aq as (a,_)) toks =
+	 let val _ = checkList (isaName,IT_NAME,IT_ENT_NAME) aq toks
 	     val idxs = map (checkEntity (dtd,inDtd) aq) toks
 	 in (SOME(AV_ENTITIES idxs),a)
 	 end
@@ -312,17 +312,17 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the notation's index  is not  *)
       (* in the list given as 1st arg.                                      *)
       (*--------------------------------------------------------------------*)
-      fun takeNotation is (dtd,inDtd) (aq as (a,q)) toks = 
-	 let val one = checkOne (isaName,IT_NAME,IT_NOT_NAME) aq toks 
+      fun takeNotation is (dtd,inDtd) (aq as (a,q)) toks =
+	 let val one = checkOne (isaName,IT_NAME,IT_NOT_NAME) aq toks
 	     val idx = AttNot2Index dtd one
 	     val _ = if member idx is then ()
 		     else let val nots = map (Index2AttNot dtd) is
 			      val err = ERR_MUST_BE_AMONG(IT_NOT_NAME,one,nots)
 			  in raise AttValue (hookError(a,(getPos q,err)))
-			  end 
+			  end
 	 in (SOME(AV_NOTATION(is,idx)),a)
 	 end
-	    
+
       (*--------------------------------------------------------------------*)
       (* Convert a list of tokens into an enumerated att value. 3.3.1:      *)
       (*                                                                    *)
@@ -334,8 +334,8 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* print an error and raise AttValue if the token's index is not      *)
       (* in the list given as 1st arg.                                      *)
       (*--------------------------------------------------------------------*)
-      fun takeGroup is (dtd,_) (aq as (a,q)) toks = 
-	 let val one = checkOne (isNmToken,IT_NMTOKEN,IT_NMTOKEN) aq toks 
+      fun takeGroup is (dtd,_) (aq as (a,q)) toks =
+	 let val one = checkOne (isNmToken,IT_NMTOKEN,IT_NMTOKEN) aq toks
 	     val idx = AttNot2Index dtd one
 	     val _ = if member idx is then ()
 		     else let val toks = map (Index2AttNot dtd) is
@@ -344,7 +344,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 			  end
 	 in (SOME(AV_GROUP(is,idx)),a)
 	 end
-	       
+
       (*--------------------------------------------------------------------*)
       (* Given an attribute type and a list of characters, construct the    *)
       (* corresponding AttValue.                                            *)
@@ -353,18 +353,18 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* is ill-formed.                                                     *)
       (*--------------------------------------------------------------------*)
       fun makeAttValue dtd (a,q) (aidx,attType,ext,inDtd,cs) =
-	 if attType=AT_CDATA 
+	 if attType=AT_CDATA
 	    then let val cv = Data2Vector cs
 		 in if !O_VALIDATE andalso hasDtd dtd
 		       then (cv,(SOME(AV_CDATA cv),checkAttSpec (a,q) (aidx,cs)))
 		    else (cv,(NONE,a))
 		 end
-	 else 
-	    if !O_VALIDATE andalso hasDtd dtd then 
-	       let 
+	 else
+	    if !O_VALIDATE andalso hasDtd dtd then
+	       let
 		  val a1 = checkAttSpec (a,q) (aidx,cs)
 		  val (cv,toks) = splitAttValue cs
-		  val a2 = 
+		  val a2 =
 		     if ext andalso standsAlone dtd
 			then let val cdata = Data2Vector cs
 			     in if cdata=cv then a1
@@ -374,7 +374,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 				     end
 			     end
 		     else a1
-	       in case attType 
+	       in case attType
 		    of AT_NMTOKEN => (cv,(SOME(AV_NMTOKEN(checkOne(isNmToken,IT_NMTOKEN,
 								   IT_NMTOKEN) (a2,q) toks)),a2))
 		     | AT_NMTOKENS => (cv,(SOME(AV_NMTOKENS toks),a2)) before
@@ -390,7 +390,7 @@ functor DtdAttributes (structure Dtd           : Dtd
 						       "AT_CDATA in the innermost case")
 	       end
 	    else (normAttValue cs,(NONE,a))
-	       
+
       (*--------------------------------------------------------------------*)
       (* given an attribute value literal and the attribute type, generate  *)
       (* the AttValue, and check whether it complies with its default value.*)
@@ -407,11 +407,11 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* return the value as a AttPresent value.                            *)
       (*--------------------------------------------------------------------*)
-      fun checkAttValue dtd (a,q) ((aidx,attType,defVal,ext),literal,cs) = 
+      fun checkAttValue dtd (a,q) ((aidx,attType,defVal,ext),literal,cs) =
 	 let val (cv,(av,a1)) = makeAttValue dtd (a,q) (aidx,attType,ext,false,cs)
-	 in if !O_VALIDATE andalso hasDtd dtd then 
-	    case defVal 
-	      of AD_FIXED((def,cv',_),_) => 
+	 in if !O_VALIDATE andalso hasDtd dtd then
+	    case defVal
+	      of AD_FIXED((def,cv',_),_) =>
 		 if cv=cv' then (AP_PRESENT(literal,cv,av),a1)
 		 else raise AttValue
 		    (hookError(a1,(getPos q,ERR_FIXED_VALUE(Index2AttNot dtd aidx,cv,cv'))))
@@ -424,27 +424,27 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* since the lexical constraints are checked when the default is      *)
       (* declared we only need to check whether notations are declared and  *)
-      (* entities are declared and unparsed. An ID attribute cannot be      *) 
+      (* entities are declared and unparsed. An ID attribute cannot be      *)
       (* defaulted, so no need to check for duplicate ID attributes.        *)
       (*--------------------------------------------------------------------*)
       fun checkDefaultValue dtd (a,q,pos) av =
-	 let 
-	    fun checkEntity (idx,a) = 
+	 let
+	    fun checkEntity (idx,a) =
 	       let val (ent,_) = getGenEnt dtd idx
 	       in case ent
 		    of GE_UNPARSED _ => a
 		     | GE_NULL => hookError(a,(getPos q,ERR_UNDECLARED
 					       (IT_GEN_ENT,Index2GenEnt dtd idx,
 						LOC_ATT_DEFAULT pos)))
-		     | _ => hookError(a,(getPos q,ERR_MUST_BE_UNPARSED 
+		     | _ => hookError(a,(getPos q,ERR_MUST_BE_UNPARSED
 					 (Index2GenEnt dtd idx,LOC_ATT_DEFAULT pos)))
 	       end
-	    
+
 	    fun checkNotation (idx,a) =
 	       if hasNotation dtd idx then a
 	       else hookError(a,(getPos q,ERR_UNDECLARED
 				 (IT_NOTATION,Index2AttNot dtd idx,LOC_ATT_DEFAULT pos)))
-	 in 
+	 in
 	    case av
 	      of SOME(AV_ENTITY i) => checkEntity (i,a)
 	       | SOME(AV_ENTITIES is) => foldl checkEntity a is
@@ -471,9 +471,9 @@ functor DtdAttributes (structure Dtd           : Dtd
       (*                                                                    *)
       (* return the AttSpecList of all attributes for this tag.             *)
       (*--------------------------------------------------------------------*)
-      fun genMissingAtts dtd (a,q) (defs,specd) = 
-	 let 
-	    fun default a (idx,(v as (_,_,av),(pos,checked)),ext) = 
+      fun genMissingAtts dtd (a,q) (defs,specd) =
+	 let
+	    fun default a (idx,(v as (_,_,av),(pos,checked)),ext) =
 	       let val a1 = if ext andalso !O_VALIDATE andalso standsAlone dtd
 			       then let val err = ERR_STANDALONE_DEF(Index2AttNot dtd idx)
 					val _ = setStandAlone dtd (not (!O_ERROR_MINIMIZE))
@@ -482,17 +482,17 @@ functor DtdAttributes (structure Dtd           : Dtd
 			    else a
 		   val a2 = if !O_VALIDATE andalso not (!checked andalso !O_ERROR_MINIMIZE)
 			       then checkDefaultValue dtd (a1,q,pos) av before checked := true
-			    else a1 
+			    else a1
 	       in (AP_DEFAULT v,a1)
 	       end
 	    fun doit a nil = (specd,a)
-	      | doit a ((idx,_,dv,ext)::rest) = 
-	       let val (value,a1) = 
-		  case dv 
+	      | doit a ((idx,_,dv,ext)::rest) =
+	       let val (value,a1) =
+		  case dv
 		    of AD_DEFAULT v => default a (idx,v,ext)
 		     | AD_FIXED v => default a (idx,v,ext)
 		     | AD_IMPLIED => (AP_IMPLIED,a)
-		     | AD_REQUIRED => 
+		     | AD_REQUIRED =>
 		       let val a1 = if not (!O_VALIDATE) then a
 				    else hookError(a,(getPos q,
 						      ERR_MISSING_ATT(Index2AttNot dtd idx)))
@@ -514,7 +514,7 @@ functor DtdAttributes (structure Dtd           : Dtd
       (* return nothing.                                                    *)
       (*--------------------------------------------------------------------*)
       fun handleUndeclAtt dtd (a,q) (aidx,att,eidx,elem) =
-	 if !O_ERROR_MINIMIZE then 
+	 if !O_ERROR_MINIMIZE then
 	    let val {decl,atts,errAtts} = getElement dtd eidx
 	    in if member aidx errAtts then a
 	       else let val a1 = if !O_VALIDATE andalso hasDtd dtd
@@ -534,5 +534,5 @@ functor DtdAttributes (structure Dtd           : Dtd
 			   else a
 	      in checkAttName (a1,q) att
 	      end
-	   
+
    end

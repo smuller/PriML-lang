@@ -14,7 +14,7 @@ structure List =
       open List
 
       fun exists(l, p) = List.exists p l
-         
+
       fun map(l, f) = List.map f l
 
       fun fold(l, b, f) =

@@ -5,7 +5,7 @@
 
 
 
-structure KeyUri : Key = 
+structure KeyUri : Key =
    struct
       type Key = Uri.Uri
 
@@ -15,4 +15,4 @@ structure KeyUri : Key =
       val hash     = Uri.hashUri
    end
 
-structure UriDict = Dict (structure Key = KeyUri) 
+structure UriDict = Dict (structure Key = KeyUri)

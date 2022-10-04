@@ -89,7 +89,7 @@ structure Immediate =
                  val status = Never)
 structure Delayed =
    struct
-      structure C = 
+      structure C =
          TraceControl (type flags = flags
                       val map = map
                       structure StringMap = StringMap
@@ -212,7 +212,7 @@ structure Immediate =
       fun message (l: Layout.t): unit =
          case !debug of
             None => ()
-          | _ => 
+          | _ =>
                let
                   val (out, done) =
                      case !debug of
@@ -295,7 +295,7 @@ fun traceInfo ({name, flags = {immediate, delayed, time}},
                layoutArg, layoutAns, check) f a =
    if not shouldTrace
       then f a
-   else 
+   else
       let
          val immediate = Immediate.isOn immediate
          val delayed = Delayed.isOn delayed

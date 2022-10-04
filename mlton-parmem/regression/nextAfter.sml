@@ -46,4 +46,4 @@ end
 
 structure Z = Test (Real32)
 structure Z = Test (Real64)
-   
+

@@ -6,7 +6,7 @@
  * Main signature for regular expressions.
  *)
 
-signature REGEXP = 
+signature REGEXP =
   sig
 
     type regexp
@@ -17,7 +17,7 @@ signature REGEXP =
     type 'a match = {pos : 'a, len : int} MatchTree.match_tree
 
     val compile : (char,'a) StringCvt.reader -> (regexp, 'a) StringCvt.reader
-	(* read an external representation of a regular expression from a stream 
+	(* read an external representation of a regular expression from a stream
 	 *)
 
     val compileString : string -> regexp
@@ -29,15 +29,15 @@ signature REGEXP =
 	 *)
 
     val prefix : regexp -> (char,'a) StringCvt.reader -> ('a match, 'a) StringCvt.reader
-        (* attempt to match the stream at the current position with the 
+        (* attempt to match the stream at the current position with the
 	 * regular expression
 	 *)
 
     val match : (string * ('a match -> 'b)) list
 	  -> (char,'a) StringCvt.reader -> ('b, 'a) StringCvt.reader
-        (* attempt to match the stream at the current position with one 
+        (* attempt to match the stream at the current position with one
 	 * of the external representations of regular expressions and trigger
-	 * the corresponding action 
+	 * the corresponding action
 	 *)
 
   end

@@ -7,10 +7,10 @@ struct
       let
         val ss = size s
 
-        fun next n () = 
+        fun next n () =
           if n >= ss
           then Stream.Nil
-          else Stream.Cons(CharVector.sub(s, n), 
+          else Stream.Cons(CharVector.sub(s, n),
                            Stream.delay (next (n + 1)))
       in
         Stream.delay (next 0)
@@ -25,45 +25,45 @@ struct
             fun step () =
                 case BinIO.input1 ff of
                     NONE => (BinIO.closeIn ff; Stream.Nil)
-                  | SOME b => Stream.Cons(Byte.byteToChar b, 
+                  | SOME b => Stream.Cons(Byte.byteToChar b,
                                           Stream.delay step)
         in
             Stream.delay step
         end
 
     (* convert a file to a byte stream *)
-    fun ftobytestream f = 
-        let 
+    fun ftobytestream f =
+        let
           val ff = BinIO.openIn f
 
-          fun step () = 
+          fun step () =
               case BinIO.input1 ff of
                   NONE => (BinIO.closeIn ff; Stream.Nil)
                 | SOME b => Stream.Cons(b, Stream.delay step)
-        in 
+        in
           Stream.delay step
         end
 
-    fun ftoUTF8stream f = 
-        let 
+    fun ftoUTF8stream f =
+        let
           val ff = BinIO.openIn f
 
           exception UTF8
           fun getn(s,0) = s
-            | getn(s,i) = 
+            | getn(s,i) =
               case BinIO.input1 ff of
                 NONE => raise UTF8
-              | SOME b => 
+              | SOME b =>
                 if Word8.>>(b,0wx6) = 0wx2
                 then getn(s ^ str(Byte.byteToChar b), i-1)
                 else raise UTF8
 
-          fun step () = 
+          fun step () =
               case BinIO.input1 ff of
                   NONE => (BinIO.closeIn ff; Stream.Nil)
-                | SOME b => 
-                  let val s = 
-                          if Word8.>>(b,0wx7) = 0wx0 
+                | SOME b =>
+                  let val s =
+                          if Word8.>>(b,0wx7) = 0wx0
                           then str(Byte.byteToChar b)
                           else if Word8.>>(b,0wx5) = 0wx6
                           then getn(str(Byte.byteToChar b),1)
@@ -78,10 +78,10 @@ struct
                           else raise UTF8
                   in Stream.Cons(s, Stream.delay step) end
                   handle UTF8 => Stream.Nil
-        in 
+        in
           Stream.delay step
         end
-        
+
 
     fun ltostream l =
         foldr Stream.cons Stream.empty l
@@ -107,12 +107,12 @@ struct
        | Stream.Cons (a, t) => a :: headn (n - 1) t)
 
     fun foldstream f state s =
-        let 
-          fun push state s = 
-          (fn () => 
-           (case Stream.force s of 
+        let
+          fun push state s =
+          (fn () =>
+           (case Stream.force s of
               Stream.Nil => Stream.Nil
-            | Stream.Cons (a, t) => 
+            | Stream.Cons (a, t) =>
               let val (c, state') = f(a, state)
               in Stream.Cons(c, Stream.delay (push state' t)) end))
         in Stream.delay (push state s) end

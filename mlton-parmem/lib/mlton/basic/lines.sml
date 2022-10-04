@@ -16,7 +16,7 @@ fun startStop(ins, out, {start: int, stop: int}): unit =
             then ()
          else (case In.inputLine ins of
                   NONE => ()
-                | SOME l => 
+                | SOME l =>
                      (if i >= start
                          then Out.output(out, l)
                       else ();

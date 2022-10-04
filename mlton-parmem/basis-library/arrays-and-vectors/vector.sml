@@ -13,20 +13,20 @@ structure Vector: VECTOR_EXTRA =
 
       type 'a vector = 'a vector
 
-      structure VectorSlice = 
+      structure VectorSlice =
          struct
             open Slice
             type 'a vector = 'a vector
             val vector = sequence
 
             val isSubvector = isSubsequence
-            val span = fn (sl, sl') => 
-               Primitive.Vector.Slice.span 
-                  (op = : ''a vector * ''a vector -> bool) 
+            val span = fn (sl, sl') =>
+               Primitive.Vector.Slice.span
+                  (op = : ''a vector * ''a vector -> bool)
                   (sl, sl')
          end
 
-      fun update (v, i, x) = 
+      fun update (v, i, x) =
          (Primitive.Vector.update (v, SeqIndex.fromInt i, x))
          handle Overflow => raise Subscript
 

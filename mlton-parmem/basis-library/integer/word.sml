@@ -16,11 +16,11 @@ type t = word
 val wordSize: Int.int = Primitive.Int32.zextdToInt sizeInBits
 val sizeInBitsWord = Primitive.Word32.zextdToWord sizeInBitsWord
 
-fun << (i, n) = 
+fun << (i, n) =
    if Word.>= (n, sizeInBitsWord)
       then zero
       else W.<<? (i, Primitive.Word32.zextdFromWord n)
-fun >> (i, n) = 
+fun >> (i, n) =
    if Word.>= (n, sizeInBitsWord)
       then zero
       else W.>>? (i, Primitive.Word32.zextdFromWord n)
@@ -61,7 +61,7 @@ fun toInt w =
       if Primitive.Controls.detectOverflow
          andalso (case Int.precision of
                      NONE => false
-                   | SOME precision => 
+                   | SOME precision =>
                         Int32.<= (precision, W.sizeInBits))
          andalso Int.< (i, 0)
          then raise Overflow
@@ -76,7 +76,7 @@ fun toLargeInt w =
       if Primitive.Controls.detectOverflow
          andalso (case LargeInt.precision of
                      NONE => false
-                   | SOME precision => 
+                   | SOME precision =>
                         Int32.<= (precision, W.sizeInBits))
          andalso LargeInt.< (i, 0)
          then raise Overflow
@@ -125,18 +125,18 @@ end
 
 (*
 fun fmt radix (w: word): string =
-   let 
+   let
       val radix = fromInt (StringCvt.radixToInt radix)
       fun loop (q, chars) =
-         let 
+         let
             val chars = StringCvt.digitToChar (toInt (q mod radix)) :: chars
             val q = q div radix
-         in 
+         in
             if q = zero
                then String.implode chars
             else loop (q, chars)
          end
-   in 
+   in
       loop (w, [])
    end
 *)

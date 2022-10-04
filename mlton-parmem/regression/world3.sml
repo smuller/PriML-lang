@@ -21,7 +21,7 @@ open MLton.World
 
 val (w, out) = MLton.TextIO.mkstemp "/tmp/world"
 val _ = TextIO.closeOut out
-   
+
 exception Foo
 
 fun f n =
@@ -34,5 +34,5 @@ fun f n =
 val _ = (f 13; ()) handle Foo => (print "caught foo\n"; succeed ())
 
 val _ = run (fn () => load w)
-   
+
 val _ = OS.FileSys.remove w

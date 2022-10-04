@@ -41,8 +41,8 @@ signature WORD_FROM_TO_ARG =
       val toInt8X: word -> Primitive.Int8.int
       val toInt16X: word -> Primitive.Int16.int
       val toInt32X: word -> Primitive.Int32.int
-      val toInt64X: word -> Primitive.Int64.int   
-      val toIntInfX: word -> Primitive.IntInf.int   
+      val toInt64X: word -> Primitive.Int64.int
+      val toIntInfX: word -> Primitive.IntInf.int
       (* Lowbits or zero extend. *)
       val toWord8: word -> Primitive.Word8.word
       val toWord16: word -> Primitive.Word16.word
@@ -55,7 +55,7 @@ signature WORD_FROM_TO_ARG =
       val toWord64X: word -> Primitive.Word64.word
    end
 
-signature WORD_FROM_TO_RES =   
+signature WORD_FROM_TO_RES =
    sig
       type word
 

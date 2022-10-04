@@ -18,10 +18,10 @@ sig
        All channels must have the same number of samples!
        *)
     type 'a channels = 'a Vector.vector
-    
+
     datatype frames =
         (* eight-bit is unsigned samples *)
-        Bit8 of Word8.word Vector.vector channels 
+        Bit8 of Word8.word Vector.vector channels
         (* but anything else is signed.
            Int16 structure is not standard, so use
            system int. *)
@@ -29,10 +29,10 @@ sig
       | Bit32 of Int32.int Vector.vector channels
 
     (* Everything else is computed from input *)
-    type wave = 
+    type wave =
         { frames : frames,
           samplespersec : Word32.word }
-          
+
     val tobytes : wave -> Word8.word Vector.vector
     val tofile : wave -> string -> unit
 

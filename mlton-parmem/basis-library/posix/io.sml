@@ -61,7 +61,7 @@ fun dupfd {base, old} =
    (fn () => Prim.fcntl3 (FileDesc.toRep old, F_DUPFD, FileDesc.toRep base))
 
 fun getfd fd =
-   SysCall.simpleResultRestart 
+   SysCall.simpleResultRestart
    (fn () => Prim.fcntl2 (FileDesc.toRep fd, F_GETFD))
 
 fun setfd (fd, flags): unit =
@@ -69,7 +69,7 @@ fun setfd (fd, flags): unit =
    (fn () => Prim.fcntl3 (FileDesc.toRep fd, F_SETFD, flags))
 
 fun getfl fd : O.flags * open_mode =
-   let 
+   let
       val n = SysCall.simpleResultRestart
               (fn () => Prim.fcntl2 (FileDesc.toRep fd, F_GETFL))
       val flags = C_Int.andb (n, C_Int.notb O_ACCMODE)
@@ -183,17 +183,17 @@ end
 local
    val pos0 = Position.fromInt 0
    fun isReg fd = FS.ST.isReg(FS.fstat fd)
-   fun posFns (closed, fd) = 
+   fun posFns (closed, fd) =
       if (isReg fd)
          then let
                  val pos = ref pos0
                  fun getPos () = !pos
-                 fun setPos p = (if !closed 
-                                    then raise IO.ClosedStream 
+                 fun setPos p = (if !closed
+                                    then raise IO.ClosedStream
                                  else ();
                                     pos := lseek(fd,p,SEEK_SET))
-                 fun endPos () = (if !closed 
-                                     then raise IO.ClosedStream 
+                 fun endPos () = (if !closed
+                                     then raise IO.ClosedStream
                                   else ();
                                      FS.ST.size(FS.fstat fd))
                  fun verifyPos () = let
@@ -210,9 +210,9 @@ local
                   verifyPos = SOME verifyPos}
               end
       else {pos = ref pos0,
-            getPos = NONE, 
-            setPos = NONE, 
-            endPos = NONE, 
+            getPos = NONE,
+            setPos = NONE,
+            endPos = NONE,
             verifyPos = NONE}
 
    fun make {RD, WR, fromVector, readArr, setMode, toArraySlice, toVectorSlice,
@@ -240,7 +240,7 @@ local
                val (buf, i, sz) = ArraySlice.base (toArraySlice sl)
                val bytesRead =
                   SysCall.simpleResultRestart'
-                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
                    primReadArr (fd, buf, i, sz))
                val bytesRead = C_SSize.toInt bytesRead
             in
@@ -249,12 +249,12 @@ local
          fun readVec (fd, n) =
             let
                val buf = Array.arrayUninit n
-               val bytesRead = 
+               val bytesRead =
                   SysCall.simpleResultRestart'
-                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
                    primReadArr (fd, buf, 0, n))
                val bytesRead = C_SSize.toInt bytesRead
-            in 
+            in
                fromVector
                (if n = bytesRead
                    then Vector.unsafeFromArray buf
@@ -265,7 +265,7 @@ local
                val (buf, i, sz) = ArraySlice.base (toArraySlice sl)
                val bytesWrote =
                   SysCall.simpleResultRestart'
-                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
                    primWriteArr (fd, buf, i, sz))
                val bytesWrote = C_SSize.toInt bytesWrote
             in
@@ -276,7 +276,7 @@ local
                val (buf, i, sz) = VectorSlice.base (toVectorSlice sl)
                val bytesWrote =
                   SysCall.simpleResultRestart'
-                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+                  ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
                    primWriteVec (fd, buf, i, sz))
                val bytesWrote = C_SSize.toInt bytesWrote
             in
@@ -288,18 +288,18 @@ local
                val {pos, getPos, setPos, endPos, verifyPos} =
                   posFns (closed, fd)
                val blocking = ref initBlkMode
-               fun blockingOn () = 
+               fun blockingOn () =
                   (setfl(fd, O.flags[]); blocking := true)
-               fun blockingOff () = 
+               fun blockingOff () =
                   (setfl(fd, O.nonblock); blocking := false)
-               fun ensureOpen () = 
+               fun ensureOpen () =
                   if !closed then raise IO.ClosedStream else ()
                fun incPos k = pos := Position.+ (!pos, Position.fromInt k)
-               val readVec = fn n => 
+               val readVec = fn n =>
                   let val v = readVec (fd, n)
                   in incPos (vectorLength v); v
                   end
-               val readArr = fn x => 
+               val readArr = fn x =>
                   let val k = readArr (fd, x)
                   in incPos k; k
                   end
@@ -313,11 +313,11 @@ local
                    (SOME (f x)
                     handle (e as PosixError.SysErr (_, SOME cause)) =>
                        if cause = PosixError.again then NONE else raise e))
-               val close = 
+               val close =
                   fn () => if !closed then () else (closed := true; close fd)
-               val avail = 
+               val avail =
                   if isReg fd
-                     then fn () => if !closed 
+                     then fn () => if !closed
                                       then SOME 0
                                    else SOME (Position.toInt
                                               (Position.-
@@ -350,7 +350,7 @@ local
                fun incPos k = (pos := Position.+ (!pos, Position.fromInt k); k)
                val blocking = ref initBlkMode
                val appendFlgs = O.flags(if appendMode then [O.append] else [])
-               fun updateStatus () = 
+               fun updateStatus () =
                   let
                      val flgs = if !blocking
                                    then appendFlgs
@@ -358,19 +358,19 @@ local
                   in
                      setfl(fd, flgs)
                   end
-               fun ensureOpen () = 
+               fun ensureOpen () =
                   if !closed then raise IO.ClosedStream else ()
-               fun ensureBlock x = 
+               fun ensureBlock x =
                   if !blocking then () else (blocking := x; updateStatus ())
                fun putV x = incPos (writeVec x)
                fun putA x = incPos (writeArr x)
-               fun write (put, block) arg = 
+               fun write (put, block) arg =
                   (ensureOpen (); ensureBlock block; put (fd, arg))
-               fun handleBlock writer arg = 
+               fun handleBlock writer arg =
                   SOME(writer arg)
                   handle (e as PosixError.SysErr (_, SOME cause)) =>
                      if cause = PosixError.again then NONE else raise e
-               val close = 
+               val close =
                   fn () => if !closed then () else (closed := true; close fd)
                val () = setMode fd
             in

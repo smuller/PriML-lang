@@ -19,7 +19,7 @@ fun f ["gauss"] =
 	(* fake gaussian: ln (y / y - 1) *)
 	   val d = MLX.opendisplay NONE
 	   val rt = MLX.defaultrootwindow d
-	       
+
 	   val w = MLX.createsimplewindow d rt 5 5 512 512 1 0wx000000 0wx111111
 
 	   val gc = MLX.creategc d (MLX.wd w)
@@ -31,8 +31,8 @@ fun f ["gauss"] =
 	   val arr = Array.array(512, 0)
 
 	   fun r 0 = ()
-	     | r n = 
-	       let 
+	     | r n =
+	       let
 		   val p = (randpct () * 0.9999) + 0.00001
 (* 		   val _ = print ("0: " ^ Real.toString p ^ "\n")*)
 		   val p = Math.ln (p / (1.0 - p))
@@ -50,8 +50,8 @@ fun f ["gauss"] =
 	   fun drw 0 mx = ()
 	     | drw n mx =
 	       let in
-		   MLX.drawpoint d (MLX.wd w) gc n (512 - 
-						    Real.trunc(512.0 * 
+		   MLX.drawpoint d (MLX.wd w) gc n (512 -
+						    Real.trunc(512.0 *
 							       (Real.fromInt (Array.sub(arr, n))) / mx));
 		   drw (n - 1) mx
 	       end
@@ -82,11 +82,11 @@ fun f ["gauss"] =
        let
 	   val d = MLX.opendisplay NONE
 	   val rt = MLX.defaultrootwindow d
-	       
+
 	   val w = MLX.createsimplewindow d rt 5 5 512 512 1 0wx000000 0wx111111
-	       
+
 	   val gc = MLX.creategc d (MLX.wd w)
-	       
+
 	   val _ = MLX.mapwindow d w
 	   val _ = MLX.raisewindow d w
 	   val _ = MLX.flush d
@@ -110,7 +110,7 @@ fun f ["gauss"] =
 	   val a = Array.array (xs * ys, Empty)
 
 	   fun rnd 0 = ()
-	     | rnd n = (Array.update (a, (randint () mod 30) * 30 + (randint () mod 30), 
+	     | rnd n = (Array.update (a, (randint () mod 30) * 30 + (randint () mod 30),
 				      if (randint () mod 2 = 1) then Wall else Box);
 			rnd (n - 1))
 
@@ -159,7 +159,7 @@ fun f ["gauss"] =
 	   fun go _ =
 	       (case MLX.nextevent d of
 		    (_, _, _, MLX.Key (true, _, _, _, _, _, _, _, _, _, k, _)) =>
-			let 
+			let
 			    val kk = Word32.toInt k
 			in
 			    print ("KEYEVENT! " ^ (Int.toString kk) ^ "\n");
@@ -183,15 +183,15 @@ fun f ["gauss"] =
 	   ()
 
        end
-  | f ["draw"] = 
+  | f ["draw"] =
     let
 	val d = MLX.opendisplay NONE
 	val rt = MLX.defaultrootwindow d
 
 	val w = MLX.createsimplewindow d rt 5 5 512 512 1 0wx000000 0wx111111
-	    
+
 	val gc = MLX.creategc d (MLX.wd w)
-	    
+
 	val _ = MLX.mapwindow d w
 	val _ = MLX.raisewindow d w
 	val _ = MLX.flush d
@@ -215,7 +215,7 @@ fun f ["gauss"] =
 (*		print "Calling nextevent..."; *)
 		(case MLX.nextevent d of
 		     (_, _, _, MLX.Key (b, _, _, _, _, _, _, _, _, _, k, _)) =>
-			 let 
+			 let
 			     val kk = Word32.toInt k
 			 in
 			     MLX.setforeground d gc (if b then 0wxFFFFFF else 0wx111111);
@@ -253,7 +253,7 @@ fun f ["gauss"] =
 			 end
 		   | _ => forever drw oldx oldy)
 	    end handle MLX.X s => (print ("exn: " ^ s ^ "\n"); forever drw oldx oldy)
-		
+
 	fun mb () =
 	    (case MLX.nextevent d of
 		 (_, _, _, MLX.Motion (_, _, _, _, x, y, _, _, _, _, _)) => forever false x y
@@ -261,7 +261,7 @@ fun f ["gauss"] =
 
 	val _ = mb ()
 
-	val _ = MLX.freegc d gc    
+	val _ = MLX.freegc d gc
 	val _ = MLX.closedisplay d
     in () end
   | f ["bounce"] =
@@ -278,7 +278,7 @@ fun f ["gauss"] =
 	fun go ((x, y, dx, dy,c)::l) ll =
 	    let
 		val dy = dy - 0.05;
-		fun bouncein s d min max = 
+		fun bouncein s d min max =
 		    if (s > max andalso d > 0.0) then (max, ~0.95 *  d)
 		    else if (s < min andalso d < 0.0) then (min, ~0.95 * d)
 			 else (s + d, d)
@@ -292,7 +292,7 @@ fun f ["gauss"] =
 		MLX.fillrectangle d (MLX.wd w) gc (Real.trunc nx) (512 - Real.trunc ny) 8 8;
 		go l ((nx, ny, dx, dy, c)::ll)
 	    end
-	  | go nil ll = 
+	  | go nil ll =
 	    let in
 		MLX.flush d;
 		MLX.usleep 1000;
@@ -303,20 +303,20 @@ fun f ["gauss"] =
 		 (80.0, 20.0, 1.3, 4.1, 0wx330099),
 		 (20.0, 120.0, ~1.1, ~1.2, 0wx88EE33),
 		 (300.0, 412.0, ~2.0, ~3.0, 0wxFFFF44)]
-	    
-	fun a (r1, r2, r3, r4, c) = (r1 + 10.0, r2 - 10.0, r3 * r3,  r4 * 1.31, 
+
+	fun a (r1, r2, r3, r4, c) = (r1 + 10.0, r2 - 10.0, r3 * r3,  r4 * 1.31,
 				     Word32.xorb (c, 0wx9030F0))
 	fun b (r1, r2, r3, r4, c) = (r2, 512.0 - r1, r4, ~r3, Word32.xorb (c, 0wxABCDEF))
 
-	fun c (r1, r2, r3, r4, c) = (r2 * r2, r1 / 2.0, ~r4, r3 * 2.0, 
+	fun c (r1, r2, r3, r4, c) = (r2 * r2, r1 / 2.0, ~r4, r3 * 2.0,
 				     Word32.orb(0wxFF, Word32.<<(c,0w3)))
 
 	val _ = go (l @ (map a l) @ (map b l)
-		    @ (map c l) @ (map (c o a) l) 
+		    @ (map c l) @ (map (c o a) l)
 		    @ (map (a o c) l)
 		    @ (map (a o b) l) @ (map (b o a) l)) nil
 
-	val _ = MLX.freegc d gc    
+	val _ = MLX.freegc d gc
 	val _ = MLX.closedisplay d
 
     in () end

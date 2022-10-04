@@ -13,8 +13,8 @@ struct
       CharArray.vector (CA.finalize a)
 
   fun readex opts r =
-    let 
-        datatype state = 
+    let
+        datatype state =
             (* Normal: inside unescaped token and have seen some non-whitespace
                characters (which are in the array). The count is the length of
                the prefix that we should keep if we discard whitespace from the
@@ -27,20 +27,20 @@ struct
           | SAW_QUOTE of CA.growarray * bool
 
         (* Horizontal whitespace. *)
-        val isws = 
+        val isws =
             (if List.exists (fn TRIM_WHITESPACE => true | _ => false) opts
              then (fn #" " => true | #"\t" => true | _ => false)
              else (fn _ => false))
 
-        val allowing_crlf = 
+        val allowing_crlf =
             List.exists (fn ALLOW_CRLF => true | _ => false) opts
 
         (* PERF could have streaming interface. *)
         (* We don't translate CRLF inside quotes. *)
         fun nextchar s =
-            if Reader.eof r 
+            if Reader.eof r
             then NONE
-            else 
+            else
                 let
                     fun ch () =
                         let val c = #char r ()
@@ -76,11 +76,11 @@ struct
                 fun fillcols state =
                     let val c = nextchar state
                     in case (state, c) of
-                        (UNESCAPED (a, n), SOME #",") => 
+                        (UNESCAPED (a, n), SOME #",") =>
                             let in
                                 (* discard trailing whitespace, if any *)
                                 CA.truncate a n;
-                                push (string a); 
+                                push (string a);
                                 fillcols (UNESCAPED (CA.empty(), 0))
                             end
 
@@ -97,7 +97,7 @@ struct
                                 fillcols (INSIDE_QUOTES a)
                             end
 
-                      | (INSIDE_QUOTES _, NONE) => 
+                      | (INSIDE_QUOTES _, NONE) =>
                             raise CSV "File ended during quotation"
 
                       | (SAW_QUOTE (a, _), NONE) =>

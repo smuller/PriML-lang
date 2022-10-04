@@ -6,7 +6,7 @@ struct
 end*)
 (*structure Tm = BetterTime*)
 structure Tm = TSCTime
-structure A = Array 
+structure A = Array
 structure V = Vector
 structure P = Priority
 structure I = Interrupt
@@ -176,7 +176,7 @@ fun timerStrings () =
     , counterString ("switch", switchCounter)
     , counterString ("succ requests", succRequestCounter)
     ]
-    
+
 val _ = OS.Process.atExit (fn _ =>
   if not doInstrument then ()
   else print (timerStrings () ^ "\n"))
@@ -269,7 +269,7 @@ fun requestOfPR (p, r) =
     (P.toInt r) * numberOfProcessors + p
 
 fun dealAttempt (p, r) =
-    let val t1 = timerNow () 
+    let val t1 = timerNow ()
         val req = !(V.sub (reqCells, p))
         fun randP () =
             let val p' = R.randInt (0, numberOfProcessors - 2)
@@ -413,7 +413,7 @@ fun pushInt (r, t) =
         val q = queue (p, r)
         (* val _ = log 7 (fn _ => "pushing work at " ^ (P.toString r) ^ "\n") *)
     in
-        Q.push (q, t) 
+        Q.push (q, t)
     end
 
 fun push (r, t) =
@@ -572,7 +572,7 @@ fun finalizePriorities () = P.check ()
 
 fun interruptHandler (p, k) =
     let (* val _ = log 4 (fn _ => "interrupt on " ^ (Int.toString p) ^ "\n") *)
-        val d = A.sub (depth, p) 
+        val d = A.sub (depth, p)
         val _ = incrementCounter (newThreadCounter, p)
     in
       T.prepare (T.new (schedule p), SOME (Task.Thread k, d))

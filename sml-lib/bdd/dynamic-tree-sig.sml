@@ -17,38 +17,38 @@ sig
   type 'a dynamic_tree
 
   val dynamic_tree : unit -> 'a dynamic_tree
-  
+
   (* Create a proxy. Provide a tight fitting AABB and user data. *)
   val aabb_proxy : 'a dynamic_tree * BDDTypes.aabb * 'a -> 'a aabb_proxy
 
   val eq_proxy : 'a aabb_proxy * 'a aabb_proxy -> bool
   val cmp_proxy : 'a aabb_proxy * 'a aabb_proxy -> order
 
-  (* Remove the proxy from the tree. It must be a leaf in this tree. *)  
+  (* Remove the proxy from the tree. It must be a leaf in this tree. *)
   val remove_proxy : 'a dynamic_tree * 'a aabb_proxy -> unit
-  
+
   (* move_proxy tree proxy aabb displacement
      Move a proxy with a swepted AABB. If the proxy has moved outside of
      its fattened AABB, then the proxy is removed from the tree and
      re-inserted. Otherwise the function returns immediately. Returns
      true if the proxy was re-inserted. *)
-  val move_proxy : 'a dynamic_tree * 'a aabb_proxy * 
-                   BDDTypes.aabb * BDDMath.vec2 -> 
+  val move_proxy : 'a dynamic_tree * 'a aabb_proxy *
+                   BDDTypes.aabb * BDDMath.vec2 ->
                    bool
 
   (* rebalance tree iterations
      Perform some iterations to re-balance the tree. *)
   val rebalance : 'a dynamic_tree * int -> unit
-  
+
   (* Get proxy user data. *)
   val user_data : 'a aabb_proxy -> 'a
 
   (* Get the fat AABB for a proxy. *)
   val fat_aabb : 'a aabb_proxy -> BDDTypes.aabb
-  
+
   (* Compute the height of the tree. *)
   val compute_height : 'a dynamic_tree -> int
-  
+
   (* query tree callback aabb
      Query the tree for proxies that overlap the aabb. The callback
      is applied to each proxy that overlaps the supplied aabb,
@@ -67,7 +67,7 @@ sig
      The input ray extends from p1 to p1 + maxFraction * (p2 - p1).
      The callback is called for each proxy that is hit by the ray. A
      return value of 0.0 means to stop. *)
-  val ray_cast : 'a dynamic_tree * 
+  val ray_cast : 'a dynamic_tree *
                  (BDDTypes.ray_cast_input * 'a aabb_proxy -> real) *
                  BDDTypes.ray_cast_input -> unit
 

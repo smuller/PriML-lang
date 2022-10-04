@@ -56,7 +56,7 @@ struct
    * Requires: depth(e) >= depth(e') for any e' in the queue already *)
   fun push ({data, len, weight, maxd, back}, e) =
     back := e :: !back
-    
+
 
   fun fromSet es =
     let val q = empty ()

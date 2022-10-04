@@ -1,5 +1,5 @@
 
-(* RFC-1321 (MD5) compliant hashing function. 
+(* RFC-1321 (MD5) compliant hashing function.
    By Tom 7, 2001: Code placed in the Public Domain.
 *)
 
@@ -29,7 +29,7 @@ struct
 
   fun wc hi lo = (hi << 0w16) orb lo
 
-  fun w2b w = map chr 
+  fun w2b w = map chr
     [Word32.toInt (mkbyte w),
      Word32.toInt (mkbyte (w >> 0w8)),
      Word32.toInt (mkbyte (w >> 0w16)),
@@ -146,7 +146,7 @@ struct
     (Word32.fromInt (ord a)) +
     (Word32.fromInt (ord b) << 0w8)  +
     (Word32.fromInt (ord c) << 0w16) +
-    (Word32.fromInt (ord d) << 0w24)   
+    (Word32.fromInt (ord d) << 0w24)
 
   fun md5_advanced {iv = (a, b, c, d), msg} =
     let

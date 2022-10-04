@@ -5,8 +5,8 @@ fun e1 seq e2 = e2;
 fun check b = if b then "OK" else "WRONG";
 fun check' f = (if f () then "OK" else "WRONG") handle _ => "EXN";
 
-fun range (from, to) p = 
-    let open Int 
+fun range (from, to) p =
+    let open Int
     in
         (from > to) orelse (p from) andalso (range (from+1, to) p)
     end;
@@ -17,9 +17,9 @@ fun tst0 s s' = print (s ^ "    \t" ^ s' ^ "\n");
 fun tst  s b = tst0 s (check  b);
 fun tst' s f = tst0 s (check' f);
 
-fun tstrange s bounds = (tst s) o range bounds  
+fun tstrange s bounds = (tst s) o range bounds
 
-(* test/vector.sml -- some test cases for Vector 
+(* test/vector.sml -- some test cases for Vector
    PS 1994-12-10, 1995-06-14, 1997-03-07 *)
 
 (*KILL 05/11/1997 11:04. tho.:
@@ -32,7 +32,7 @@ local
     open Vector;
     infix 9 sub;
     fun extract (vec, s, l) = VectorSlice.vector (VectorSlice.slice (vec, s, l))
-    fun mapi f (vec, s, l) = 
+    fun mapi f (vec, s, l) =
       VectorSlice.mapi (fn (i,x) => f (i+s,x)) (VectorSlice.slice (vec, s, l))
 in
 
@@ -74,27 +74,27 @@ val f = extract (e, 100, SOME 3);
 
 val test9 = check'(fn _ => f = b);
 val _ = prtest("test9", test9);
-val test9a = check'(fn _ => e = extract(e, 0, SOME (length e)) 
+val test9a = check'(fn _ => e = extract(e, 0, SOME (length e))
                     andalso e = extract(e, 0, NONE));
 val _ = prtest("test9a", test9a);
 val test9b = check'(fn _ => fromList [] = extract(e, 100, SOME 0));
 val _ = prtest("test9b", test9b);
-val test9c = (extract(e, ~1, SOME (length e))  seq "WRONG") 
+val test9c = (extract(e, ~1, SOME (length e))  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9c", test9c);
-val test9d = (extract(e, length e + 1, SOME 0)  seq "WRONG") 
+val test9d = (extract(e, length e + 1, SOME 0)  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9d", test9d);
-val test9e = (extract(e, 0, SOME (length e+1)) seq "WRONG") 
+val test9e = (extract(e, 0, SOME (length e+1)) seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9e", test9e);
-val test9f = (extract(e, 20, SOME ~1)        seq "WRONG") 
+val test9f = (extract(e, 20, SOME ~1)        seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9f", test9f);
-val test9g = (extract(e, ~1, NONE)  seq "WRONG") 
+val test9g = (extract(e, ~1, NONE)  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9g", test9g);
-val test9h = (extract(e, length e + 1, NONE)  seq "WRONG") 
+val test9h = (extract(e, length e + 1, NONE)  seq "WRONG")
              handle Subscript => "OK" | _ => "WRONG"
 val _ = prtest("test9h", test9h);
 val test9i = check'(fn _ => fromList [] = extract(e, length e, SOME 0)
@@ -112,38 +112,38 @@ fun chkiteri iter f vec reslast =
                val res = iter (fn (i, x) => (last := i; f x)) vec
            in (res, !last) = reslast end)
 
-val test10a = 
+val test10a =
     chkiter map (fn x => 2*x) b (fromList [88,110,132], 66)
 val _ = prtest("test10a", test10a);
-val test11a = 
+val test11a =
     chkiteri mapi (fn x => 2*x) (b, 0, NONE) (fromList [88,110,132], 2)
 val _ = prtest("test11a", test11a);
-val test11b = 
+val test11b =
     chkiteri mapi (fn x => 2*x) (b, 1, NONE) (fromList [110,132], 2)
 val _ = prtest("test11b", test11b);
-val test11c = 
+val test11c =
     chkiteri mapi (fn x => 2*x) (b, 1, SOME 0) (fromList [], ~1)
 val _ = prtest("test11c", test11c);
-val test11d = 
+val test11d =
     chkiteri mapi (fn x => 2*x) (b, 1, SOME 1) (fromList [110], 1)
 val _ = prtest("test11d", test11d);
-val test11e = 
+val test11e =
     chkiteri mapi (fn x => 2*x) (b, 3, NONE) (fromList [], ~1)
 val _ = prtest("test11e", test11e);
 val test11f =
-    (mapi #2 (b, 0, SOME 4) seq "WRONG") 
+    (mapi #2 (b, 0, SOME 4) seq "WRONG")
     handle Subscript => "OK" | _ => "WRONG";
 val _ = prtest("test11f", test11f);
 val test11g =
-    (mapi #2 (b, 3, SOME 1) seq "WRONG") 
+    (mapi #2 (b, 3, SOME 1) seq "WRONG")
     handle Subscript => "OK" | _ => "WRONG";
 val _ = prtest("test11g", test11g);
 val test11h =
-    (mapi #2 (b, 4, SOME 0) seq "WRONG") 
+    (mapi #2 (b, 4, SOME 0) seq "WRONG")
     handle Subscript => "OK" | _ => "WRONG";
 val _ = prtest("test11h", test11h);
 val test11i =
-    (mapi #2 (b, 4, NONE) seq "WRONG") 
+    (mapi #2 (b, 4, NONE) seq "WRONG")
     handle Subscript => "OK" | _ => "WRONG";
 val _ = prtest("test11i", test11i);
 end;

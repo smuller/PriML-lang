@@ -6,7 +6,7 @@ struct
     val showbinds = Params.flag false
         (SOME ("-showilbinds",
                "When ")) "showilbinds"
-        
+
     structure S = StringMap
     structure SU = StringMapUtil
     structure SS = StringSet
@@ -26,7 +26,7 @@ struct
         new_evar := f
 
     fun absent what s =
-        let in 
+        let in
 (*
               print "(Unbound in context: ";
               print s;
@@ -95,7 +95,7 @@ struct
       | get_greater _ _ =
         raise (Context "prio not constant or variable")
 
-    datatype context = 
+    datatype context =
         C of { vars : (IL.typ IL.poly * Variable.var * IL.idstatus) S.map,
                cons : (IL.kind * IL.con * IL.tystatus) S.map,
                prios : Variable.var S.map,
@@ -130,7 +130,7 @@ struct
                      %[%[$s, $"==", $(Variable.tostring v), $":"],
                        L.indent 2 (%[ILPrint.ptol ILPrint.ttol tp])]) vars),
              $"XXX mobiles, cons, plabs"])]
-          
+
       end
 
     (* for type evars. these can only appear in the types of vars. *)
@@ -140,12 +140,12 @@ struct
           fun has tt =
               (case tt of
                    TVar _ => false
-                 | TRec ltl => List.exists (fn (_, t) => 
+                 | TRec ltl => List.exists (fn (_, t) =>
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
                        List.exists has tl
-                 | Sum ltl => List.exists 
+                 | Sum ltl => List.exists
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
                  | Mu (_, vtl) => List.exists (fn (_, t) => has t) vtl
@@ -167,7 +167,7 @@ struct
                  | TThread (t, _) => has t
                  | TForall (_, _, t) => has t)
       in
-        SU.exists (fn (Poly({prios, tys}, t), _, _) => has t) vars 
+        SU.exists (fn (Poly({prios, tys}, t), _, _) => has t) vars
       end
 
     (* for world evars. Again, these can only appear in the types of bound vars;
@@ -185,12 +185,12 @@ struct
           and has tt =
               (case tt of
                    TVar _ => false
-                 | TRec ltl => List.exists (fn (_, t) => 
+                 | TRec ltl => List.exists (fn (_, t) =>
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
                        List.exists has tl
-                 | Sum ltl => List.exists 
+                 | Sum ltl => List.exists
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
                  | Mu (_, vtl) => List.exists (fn (_, t) => has t) vtl
@@ -272,8 +272,8 @@ struct
             dbs = dbs }
 
     fun bindex (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles }) sym typ var stat =
-      let 
-        val sym = (case sym of NONE => 
+      let
+        val sym = (case sym of NONE =>
                      ML5pghUtil.newstr "bindex" | SOME s => s)
       in
         if !showbinds
@@ -283,7 +283,7 @@ struct
           print "\n"
              end
         else ();
-        C { vars = S.insert (vars, 
+        C { vars = S.insert (vars,
                              sym,
                              (typ, var, stat)),
             cons = cons,
@@ -359,9 +359,9 @@ struct
     fun plabs (C { plabs, ... }) = SSU.tolist plabs
     fun pcons (C { pcons, ... }) = pcons
 
-    val empty = C { prios = S.empty, 
-                    vars = S.empty, 
-                    cons = S.empty, 
+    val empty = C { prios = S.empty,
+                    vars = S.empty,
+                    cons = S.empty,
                     mobiles = VS.empty,
                     plabs = SS.empty,
                     pcons = [],

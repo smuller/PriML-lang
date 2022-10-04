@@ -1,5 +1,5 @@
 functor MLtonParallelFuture (structure V : MLTON_PARALLEL_SYNCVAR
-                             structure B : sig 
+                             structure B : sig
                                type void
                                val add : (unit -> void) -> unit
                                val start : unit -> unit
@@ -19,7 +19,7 @@ struct
   type 'a t = 'a result V.t
 
   fun future f =
-    let 
+    let
       val v = V.empty ()
       val _ = B.add (fn () => (B.start ();
                                V.write (v, Finished (f ())
@@ -35,7 +35,7 @@ struct
         val (susp, a) = V.read v
         val () = if susp then incr suspends else ()
       in
-        case a of 
+        case a of
           Finished v => v
         | Raised e => raise e
       end
@@ -73,22 +73,22 @@ struct
   fun stop () = Array.update (inFuture, processorNumber (), false)
 end
 in
-structure MLtonParallelFutureSuspend = 
+structure MLtonParallelFutureSuspend =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarSuspend
                        structure B = NoDelay)
-structure MLtonParallelFutureSuspendDelay = 
+structure MLtonParallelFutureSuspendDelay =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarSuspend
                        structure B = Delay)
-structure MLtonParallelFutureSuspendMaybeDelay = 
+structure MLtonParallelFutureSuspendMaybeDelay =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarSuspend
                        structure B = MaybeDelay)
-structure MLtonParallelFutureCapture = 
+structure MLtonParallelFutureCapture =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarCapture
                        structure B = NoDelay)
-structure MLtonParallelFutureCaptureDelay = 
+structure MLtonParallelFutureCaptureDelay =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarCapture
                        structure B = Delay)
-structure MLtonParallelFutureCaptureMaybeDelay = 
+structure MLtonParallelFutureCaptureMaybeDelay =
   MLtonParallelFuture (structure V = MLtonParallelSyncVarCapture
                        structure B = MaybeDelay)
 end

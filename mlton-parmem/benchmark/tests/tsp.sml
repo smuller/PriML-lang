@@ -259,7 +259,7 @@ signature RAND =
     val norm : rand -> real
       (* Map values in the range [randMin,randMax] to (0.0,1.0) *)
 
-    val range : (int * int) -> rand -> int 
+    val range : (int * int) -> rand -> int
       (* Map v, randMin <= v <= randMax, to integer range [i,j]
        * Exception -
        *   Fail if j < i
@@ -273,7 +273,7 @@ signature RAND =
  * COPYRIGHT (c) 1998 by AT&T Laboratories.  See COPYRIGHT file for details
  *
  * Random number generator taken from Paulson, pp. 170-171.
- * Recommended by Stephen K. Park and Keith W. Miller, 
+ * Recommended by Stephen K. Park and Keith W. Miller,
  * Random number generators: good ones are hard to find,
  * CACM 31 (1988), 1192-1201
  * Updated to include the new preferred multiplier of 48271
@@ -305,7 +305,7 @@ structure Rand : RAND =
       | chk 0wx7fffffff = m_1
       | chk seed = extToInt seed
 
-    fun random' seed = let 
+    fun random' seed = let
           val hi = seed div q
           val lo = seed mod q
           val test = a * lo - r * hi
@@ -324,11 +324,11 @@ structure Rand : RAND =
     val real_m = Real.fromInt m
     fun norm s = (Real.fromInt (Word.toInt s)) / real_m
 
-    fun range (i,j) = 
-          if j < i 
+    fun range (i,j) =
+          if j < i
             then raise Fail "Random.range: hi < lo"
           else if j = i then fn _ => i
-          else let 
+          else let
             val R = Int.fromInt j - Int.fromInt i
             val cvt = Word.toIntX o Word.fromInt
             in
@@ -461,7 +461,7 @@ structure Main : sig
 
     fun mkTree n = BuildTree.buildTree {
             n=n, dir=BuildTree.X_AXIS,
-            min_x=0.0, max_x=1.0, 
+            min_x=0.0, max_x=1.0,
             min_y=0.0, max_y=1.0
           }
 

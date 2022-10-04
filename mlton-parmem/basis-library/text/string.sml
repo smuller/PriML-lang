@@ -14,29 +14,29 @@ signature STRING_ARG =
       sharing type Char.string = CharVector.vector
    end
 
-functor StringFn(Arg : STRING_ARG) 
+functor StringFn(Arg : STRING_ARG)
         :> STRING_EXTRA
              where type char   = Arg.CharVector.elem
-             where type string = Arg.CharVector.vector 
+             where type string = Arg.CharVector.vector
              where type array  = Arg.CharVector.array =
    struct
       open Arg
       open CharVector
       structure CharVectorSlice = MonoVectorSlice
-      
+
       type char = elem
       type string = vector
-      
+
       val new = vector
       fun str c = new (1, c)
-      
+
       val maxSize = maxLen
       val size = length
       val op ^ = append
       val implode = fromList
       val explode = toList
-      
-      fun extract (s, start, len) = 
+
+      fun extract (s, start, len) =
          CharVectorSlice.vector (CharVectorSlice.slice (s, start, len))
       fun substring (s, start, len) = extract (s, start, SOME len)
 
@@ -56,7 +56,7 @@ functor StringFn(Arg : STRING_ARG)
       in
          open S
       end
-      
+
       fun Stranslate f = String.fromPoly o Vector.translate f o toPoly
 
       val toString = Stranslate Char.toString

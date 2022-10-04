@@ -10,13 +10,13 @@ struct
   fun hookXml(a,_) = (print "hookXML\n"; a)
   fun hookFinish a = (print "hookFinish\n"; a)
 
-  fun hookError(a, (_, err)) = 
-      (print "hookError:\n"; 
+  fun hookError(a, (_, err)) =
+      (print "hookError:\n";
        app (fn x => print (" .. " ^ x ^ "\n")) (ErrorMessage.errorMessage err);
        a)
 
-  fun hookWarning(a, (_, err)) = 
-      (print "hookWarning:\n"; 
+  fun hookWarning(a, (_, err)) =
+      (print "hookWarning:\n";
        app (fn x => print (" .. " ^ x ^ "\n")) (ErrorMessage.warningMessage err);
        a)
 

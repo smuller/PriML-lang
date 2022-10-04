@@ -33,13 +33,13 @@ structure Channel : CHANNEL_EXTRA =
       datatype trans_id_state = datatype TransID.trans_id_state
 
 
-      datatype 'a chan = 
+      datatype 'a chan =
          CHAN of {prio : int ref,
                   inQ  : (trans_id * 'a S.thread) Q.t,
                   outQ : (trans_id * 'a S.thread S.thread) Q.t}
 
       (*
-      fun resetChan (CHAN {prio, inQ, outQ}) = 
+      fun resetChan (CHAN {prio, inQ, outQ}) =
          (prio := 1
           ; Q.reset inQ
           ; Q.reset outQ)
@@ -57,7 +57,7 @@ structure Channel : CHANNEL_EXTRA =
 
       (* functions to clean channel input and output queues *)
       local
-         fun cleaner (TXID txst, _) = 
+         fun cleaner (TXID txst, _) =
             case !txst of CANCEL => true | _ => false
       in
          fun cleanAndChk (prio, q) : int =
@@ -71,7 +71,7 @@ structure Channel : CHANNEL_EXTRA =
             Q.enqueAndClean (q, item, cleaner)
       end
 
-      fun send (CHAN {prio, inQ, outQ}, msg) = 
+      fun send (CHAN {prio, inQ, outQ}, msg) =
          let
             val () = Assert.assertNonAtomic' "Channel.send"
             val () = debug' "Chennel.send(1)" (* NonAtomic *)
@@ -79,9 +79,9 @@ structure Channel : CHANNEL_EXTRA =
             val () = S.atomicBegin ()
             val () = debug' "Channel.send(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Channel.send(2)", SOME 1)
-            val () = 
-               case cleanAndDeque inQ of 
-                  SOME (rtxid, rt) => 
+            val () =
+               case cleanAndDeque inQ of
+                  SOME (rtxid, rt) =>
                      let
                         val () = debug' "Channel.send(3.1.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.send(3.1.1)", SOME 1)
@@ -96,11 +96,11 @@ structure Channel : CHANNEL_EXTRA =
                      in
                         ()
                      end
-                | NONE => 
+                | NONE =>
                      let
                         val () = debug' "Channel.send(3.2.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.send(3.2.1)", SOME 1)
-                        val rt = 
+                        val rt =
                            S.atomicSwitchToNext
                            (fn st => Q.enque (outQ, (TransID.mkTxId (), st)))
                         val () = debug' "Channel.send(3.2.2)" (* Atomic 1 *)
@@ -119,7 +119,7 @@ structure Channel : CHANNEL_EXTRA =
 
       fun sendEvt (CHAN {prio, inQ, outQ}, msg) =
          let
-            fun doitFn () = 
+            fun doitFn () =
                let
                   val () = Assert.assertAtomic' ("Channel.sendEvt.doitFn", NONE)
                   val (rtxid, rt) = valOf (Q.deque inQ)
@@ -136,12 +136,12 @@ structure Channel : CHANNEL_EXTRA =
                in
                   ()
                end
-            fun blockFn {transId, cleanUp, next} = 
+            fun blockFn {transId, cleanUp, next} =
                let
                   val () = Assert.assertAtomic' ("Channel.sendEvt.blockFn", NONE)
                   val () = debug' "Channel.sendEvt(3.2.1)" (* Atomic 1 *)
                   val () = Assert.assertAtomic' ("Channel.sendEvt(3.2.1)", SOME 1)
-                  val rt = 
+                  val rt =
                      S.atomicSwitch
                      (fn st =>
                       (enqueAndClean (outQ, (transId, st))
@@ -155,7 +155,7 @@ structure Channel : CHANNEL_EXTRA =
                in
                   ()
                end
-          fun pollFn () = 
+          fun pollFn () =
              let
                 val () = Assert.assertAtomic' ("Channel.sendEvt.pollFn", NONE)
                 val () = debug' "Channel.sendEvt(2)" (* Atomic 1 *)
@@ -169,7 +169,7 @@ structure Channel : CHANNEL_EXTRA =
             E.bevt pollFn
          end
 
-      fun sendPoll (CHAN {prio, inQ, ...}, msg) = 
+      fun sendPoll (CHAN {prio, inQ, ...}, msg) =
          let
             val () = Assert.assertNonAtomic' "Channel.sendPoll"
             val () = debug' "Channel.sendPoll(1)" (* NonAtomic *)
@@ -177,9 +177,9 @@ structure Channel : CHANNEL_EXTRA =
             val () = S.atomicBegin ()
             val () = debug' "Channel.sendPoll(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Channel.sendPoll(1)", SOME 1)
-            val b = 
-               case cleanAndDeque inQ of 
-                  SOME (rtxid, rt) => 
+            val b =
+               case cleanAndDeque inQ of
+                  SOME (rtxid, rt) =>
                      let
                         val () = debug' "Channel.sendPoll(3.1.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.sendPoll(3.1.1)", SOME 1)
@@ -195,7 +195,7 @@ structure Channel : CHANNEL_EXTRA =
                      in
                         b
                      end
-                | NONE => 
+                | NONE =>
                      let
                         val () = debug' "Channel.sendPoll(3.2.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.sendPoll(3.2.1)", SOME 1)
@@ -222,9 +222,9 @@ structure Channel : CHANNEL_EXTRA =
             val () = S.atomicBegin ()
             val () = debug' "Channel.recv(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Channel.recv(2)", SOME 1)
-            val msg = 
+            val msg =
                case cleanAndDeque outQ of
-                  SOME (stxid, st) =>   
+                  SOME (stxid, st) =>
                      let
                         val () = debug' "Channel.recv(3.1.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.recv(3.1.1)", SOME 1)
@@ -260,9 +260,9 @@ structure Channel : CHANNEL_EXTRA =
             msg
          end
 
-      fun recvEvt (CHAN {prio, inQ, outQ}) = 
+      fun recvEvt (CHAN {prio, inQ, outQ}) =
          let
-            fun doitFn () = 
+            fun doitFn () =
                let
                   val () = Assert.assertAtomic' ("Channel.recvEvt.doitFn", NONE)
                   val (stxid, st) = valOf (Q.deque outQ)
@@ -279,7 +279,7 @@ structure Channel : CHANNEL_EXTRA =
                in
                   msg
                end
-            fun blockFn {transId, cleanUp, next} = 
+            fun blockFn {transId, cleanUp, next} =
                let
                   val () = Assert.assertAtomic' ("Channel.recvEvt.blockFn", NONE)
                   val () = debug' "Channel.recvEvt(3.2.1)" (* Atomic 1 *)
@@ -298,13 +298,13 @@ structure Channel : CHANNEL_EXTRA =
                in
                   msg
                end
-            fun pollFn () = 
+            fun pollFn () =
                let
                   val () = Assert.assertAtomic' ("Channel.recvEvt.pollFn", NONE)
                   val () = debug' "Channel.recvEvt(2)" (* Atomic 1 *)
                   val () = Assert.assertAtomic' ("Channel.recvEvt(2)", SOME 1)
                in
-                  case cleanAndChk (prio, outQ) of 
+                  case cleanAndChk (prio, outQ) of
                      0 => E.blocked blockFn
                    | prio => E.enabled {prio = prio, doitFn = doitFn}
                end
@@ -312,7 +312,7 @@ structure Channel : CHANNEL_EXTRA =
             E.bevt pollFn
          end
 
-      fun recvPoll (CHAN {prio, outQ, ...}) = 
+      fun recvPoll (CHAN {prio, outQ, ...}) =
          let
             val () = Assert.assertNonAtomic' "Channel.recvPoll"
             val () = debug' "Channel.recvPoll(1)" (* NonAtomic *)
@@ -321,8 +321,8 @@ structure Channel : CHANNEL_EXTRA =
             val () = debug' "Channel.recvPoll(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Channel.recvPoll(2)", SOME 1)
             val msg =
-               case cleanAndDeque outQ of 
-                  SOME (stxid, st) => 
+               case cleanAndDeque outQ of
+                  SOME (stxid, st) =>
                      let
                         val () = debug' "Channel.recvPoll(3.1.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.recvPoll(3.1.1)", SOME 1)
@@ -338,7 +338,7 @@ structure Channel : CHANNEL_EXTRA =
                      in
                         msg
                      end
-                | NONE => 
+                | NONE =>
                      let
                         val () = debug' "Channel.recv(3.2.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Channel.recv(3.2.1)", SOME 1)

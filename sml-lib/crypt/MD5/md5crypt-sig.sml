@@ -10,21 +10,21 @@
    I did not invent this crazy algorithm!
    This interface and its implementation are in the public domain.
       - Tom 7                13 Jun 2001
-*)   
-   
+*)
+
 
 signature MD5CRYPT =
 sig
 
   exception Error of string
-  
+
   (* $1$salt$hash to (salt, hash).
      Verifies that it is in the proper format. *)
   val getfields : string -> string * string
 
-  (* crypt salt password 
+  (* crypt salt password
 
-     returns the MD5 hashed password using the given 
+     returns the MD5 hashed password using the given
      salt (typically 8 chars). *)
 
   val crypt : string -> string -> string

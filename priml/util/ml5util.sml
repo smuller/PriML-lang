@@ -7,7 +7,7 @@ struct
 
     local val ctr = ref 0
     in
-        fun newstring sep s = 
+        fun newstring sep s =
             let in
                 ctr := (!ctr + 1);
                 s ^ sep ^ itos ` !ctr
@@ -16,7 +16,7 @@ struct
         val newstr = newstring "_"
     end
 
-    (* any legal comparison that puts ints (encoded in ascii) 
+    (* any legal comparison that puts ints (encoded in ascii)
        in the correct order *)
     fun labelcompare (l1, l2) =
         (case (Int.fromString l1, Int.fromString l2) of
@@ -33,7 +33,7 @@ struct
         Util.lex_order (Util.option_compare String.compare)
                        String.compare (a, b)
 
-    local 
+    local
         (* DES gives a pretty good source of randomness *)
         val r = ref (0wxBEEFDEAD : Word32.word)
         val k = DES.key (0wxABCD1234, 0wxe707f312)

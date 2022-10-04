@@ -51,10 +51,10 @@ structure CMemAccess : CMEMACCESS = struct
        val double_size = Word.fromInt (Double.f div 8)
     end
 
-    local 
+    local
        fun get g addr =
           g (addr, 0)
-       structure IntNArg = 
+       structure IntNArg =
           struct
              type 'a t = Ptr.t * int -> 'a
              val fInt8 = Ptr.getInt8
@@ -62,13 +62,13 @@ structure CMemAccess : CMEMACCESS = struct
              val fInt32 = Ptr.getInt32
              val fInt64 = Ptr.getInt64
           end
-       structure RealNArg = 
+       structure RealNArg =
           struct
              type 'a t = Ptr.t * int -> 'a
              val fReal32 = Ptr.getReal32
              val fReal64 = Ptr.getReal64
           end
-       structure WordNArg = 
+       structure WordNArg =
           struct
              type 'a t = Ptr.t * int -> 'a
              val fWord8 = Ptr.getWord8
@@ -107,7 +107,7 @@ structure CMemAccess : CMEMACCESS = struct
     local
        fun set s (addr, x) =
           s (addr, 0, x)
-       structure IntNArg = 
+       structure IntNArg =
           struct
              type 'a t = Ptr.t * int * 'a -> unit
              val fInt8 = Ptr.setInt8
@@ -115,13 +115,13 @@ structure CMemAccess : CMEMACCESS = struct
              val fInt32 = Ptr.setInt32
              val fInt64 = Ptr.setInt64
           end
-       structure RealNArg = 
+       structure RealNArg =
           struct
              type 'a t = Ptr.t * int * 'a -> unit
              val fReal32 = Ptr.setReal32
              val fReal64 = Ptr.setReal64
           end
-       structure WordNArg = 
+       structure WordNArg =
           struct
              type 'a t = Ptr.t * int * 'a -> unit
              val fWord8 = Ptr.setWord8
@@ -210,8 +210,8 @@ structure CMemAccess : CMEMACCESS = struct
     fun unwrap_float (x : cc_float) = x : MLRep.Float.real
     fun unwrap_double (x : cc_double) = x : MLRep.Double.real
 
-    fun p2i (x : addr) : MLRep.Long.Unsigned.word = 
+    fun p2i (x : addr) : MLRep.Long.Unsigned.word =
        C_ULong.fromLarge (Word.toLarge (Ptr.diff (x, null)))
-    fun i2p (x : MLRep.Long.Unsigned.word) : addr = 
+    fun i2p (x : MLRep.Long.Unsigned.word) : addr =
        Ptr.add (null, Word.fromLarge (C_ULong.toLarge x))
 end

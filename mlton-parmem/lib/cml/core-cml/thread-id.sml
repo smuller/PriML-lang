@@ -41,7 +41,7 @@ structure ThreadID : THREAD_ID_EXTRA =
          val tidCounter = ref 0
       in
          fun new () =
-            let 
+            let
                val _ = Assert.assertAtomic' ("ThreadID.newTid", NONE)
                val n = !tidCounter
                val _ = tidCounter := n + 1
@@ -57,10 +57,10 @@ structure ThreadID : THREAD_ID_EXTRA =
          in new' n
          end
 
-      fun mark (TID{done_comm, ...}) = 
+      fun mark (TID{done_comm, ...}) =
          (Assert.assertAtomic' ("ThreadID.mark", NONE)
           ; done_comm := true)
-      fun unmark (TID{done_comm, ...}) = 
+      fun unmark (TID{done_comm, ...}) =
          (Assert.assertAtomic' ("ThreadID.unmark", NONE)
           ; done_comm := false)
       fun isMarked (TID{done_comm, ...}) = !done_comm

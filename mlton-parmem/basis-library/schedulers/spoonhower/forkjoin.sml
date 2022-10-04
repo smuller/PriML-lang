@@ -1,17 +1,17 @@
-structure MLtonParallelForkJoin :> MLTON_PARALLEL_FORKJOIN = 
+structure MLtonParallelForkJoin :> MLTON_PARALLEL_FORKJOIN =
 struct
 
   structure B = MLtonParallelBasic
   structure V = MLtonParallelSyncVarCapture
 
-  datatype 'a result = 
+  datatype 'a result =
      Finished of 'a
    | Raised of exn
 
   fun fork (f, g) =
       let
         (* Used to hold the result of the right-hand side in the case where
-          that code is executed in parallel. *) 
+          that code is executed in parallel. *)
         val var = V.empty ()
         (* Closure used to run the right-hand side... but only in the case
           where that code is run in parallel. *)

@@ -3,15 +3,15 @@
 
 
 
-signature UtilError = 
+signature UtilError =
    sig
       exception InternalError of string * string * string
       exception NoSuchFile of string * string
 
-      val formatMessage : int * int -> string list -> string 
+      val formatMessage : int * int -> string list -> string
    end
 
-structure UtilError : UtilError = 
+structure UtilError : UtilError =
    struct
       open UtilString
 
@@ -19,18 +19,18 @@ structure UtilError : UtilError =
       exception NoSuchFile of string * string
 
       fun formatMessage (indentWidth,lineWidth) strs =
-	 let 
+	 let
 	    val indent = nBlanks indentWidth
 	    val nl = "\n"^indent
 	    val blank = " "
-	    val dot = "." 
+	    val dot = "."
 
 	    fun isSep c = #" "=c orelse #"\n"=c orelse #"\t"=c
 
 	    fun go (w,yet) nil = List.rev ("\n"::yet)
-	      | go (w,yet) (x::xs) = 
-	       let 
-		  val y = if null xs then x^dot else x 
+	      | go (w,yet) (x::xs) =
+	       let
+		  val y = if null xs then x^dot else x
 		  val l = String.size y
 		  val w1 = w+l
 		  val (w2,yet2) = if w1<=lineWidth then (w1,y::yet)
@@ -40,10 +40,10 @@ structure UtilError : UtilError =
 					else (indentWidth,nl::yet2))
 	       in go (w3,yet3) xs
 	       end
-	    
+
 	    val tokens = List.concat (map (String.tokens isSep) strs)
 	    val fragments = go (0,nil) tokens
-	 in 
+	 in
 	    String.concat fragments
 	 end
    end

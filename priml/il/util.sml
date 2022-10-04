@@ -10,11 +10,11 @@ struct
 
     fun mappoly f (Poly (p, x)) = Poly (p, f x)
 
-    (* XXX this should be several pointwise functions for the different syntactic classes, 
+    (* XXX this should be several pointwise functions for the different syntactic classes,
        like in CPS. *)
     (* run f on all immediate subexpressions of exp,
        then rebuild it *)
-    fun pointwise f exp = 
+    fun pointwise f exp =
         (case exp of
              Value v => Value (pwv f v)
            | Jointext el => Jointext (map f el)
@@ -46,14 +46,14 @@ struct
            | Letcc (v, t, e) => Letcc (v, t, f e)
            | Let(Do e1, e2) => pointwise f (Seq(e1, e2))
            | Let(Tagtype v, e) => Let(Tagtype v, f e)
-           | Let(Letsham vtvp, rest) => 
+           | Let(Letsham vtvp, rest) =>
                Let(Letsham
                    (mappoly (fn (v, t, va) => (v, t, pwv f va)) vtvp),
                     f rest)
            | Let(Newtag(v, t, vv), e) => Let(Newtag (v, t, vv), f e)
            | Let(Bind (b, vtep), rest) => Let(Bind
                                               (b, mappoly (fn (v, t, e) =>
-                                                           (v, t, f e)) vtep), 
+                                                           (v, t, f e)) vtep),
                                               f rest)
                     )
     and pwv f v =
@@ -74,16 +74,16 @@ struct
     (* nb. does not handle capture/shadowing. *)
 (*  unused, wrong
     fun tsubste s exp =
-        let 
+        let
             val self = tsubste s
             fun sub t = Subst.tsubst s t
 
             fun tsubstv v =
               (case v of
                  (* anything that has a t in it *)
-                 Polyvar({worlds, tys, var}) => 
+                 Polyvar({worlds, tys, var}) =>
                    Polyvar({worlds=worlds, tys = map sub tys, var=var})
-              | Fns l => 
+              | Fns l =>
                    Fns `
                    map (fn {name, arg, dom,
                             cod, body, inline,

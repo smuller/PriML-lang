@@ -41,4 +41,4 @@ val _ =
 val _ =
    fn 1 => "foo"
     | 2 => true
-      
+

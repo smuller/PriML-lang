@@ -24,7 +24,7 @@ structure Regexp =
       val SP = char #" "
       val HT = char #"\t"
       val CRLF = string "\r\n"
-      (* #"\n" is not in the spec for CRLF, but Netscape generates it. *)        
+      (* #"\n" is not in the spec for CRLF, but Netscape generates it. *)
       val CRLF = or [CRLF, char #"\n"]
       val LWS = seq [optional CRLF, oneOrMore (or [SP, HT])]
       val TEXT = isNotChar Char.isCntrl
@@ -376,7 +376,7 @@ structure Header =
                else let open Regexp
                     in case Compiled.matchLong (messageheader (), s, i) of
                        NONE => no
-                     | SOME m => 
+                     | SOME m =>
                           let
                              val {lookup, ...} = Match.stringFuns m
                              val fieldname = String.toLower (lookup fieldname')
@@ -402,7 +402,7 @@ structure Header =
             fun loop (headers: string list): string list =
                case In.inputLine ins of
                   NONE => headers
-                | SOME l => 
+                | SOME l =>
                      if l = "\r\n"
                         then headers
                      else loop (l :: headers)
@@ -840,13 +840,13 @@ structure Response =
       fun input (ins: In.t): t Result.t =
          case In.inputLine ins of
             NONE => Result.No ""
-          | SOME l => 
-               let 
+          | SOME l =>
+               let
                   open Regexp
                in
                   case Compiled.matchAll (responseLine (), l) of
                      NONE => Result.No l
-                   | SOME m => 
+                   | SOME m =>
                         let
                            val {lookup, ...} = Match.stringFuns m
                            val version = Version.extract m

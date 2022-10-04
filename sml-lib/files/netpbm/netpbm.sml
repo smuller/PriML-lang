@@ -9,16 +9,16 @@ struct
     exception NetPBM of string
     structure R = Reader
 
-    type ('radix, 'radixrange) graphic = 
+    type ('radix, 'radixrange) graphic =
         { width : int,
           height : int,
           max : 'radixrange,
           data : 'radix Array.array }
 
-    val trim = StringUtil.losespecl StringUtil.whitespec o 
+    val trim = StringUtil.losespecl StringUtil.whitespec o
                StringUtil.losespecr StringUtil.whitespec
 
-    fun tok r = 
+    fun tok r =
         case R.token StringUtil.whitespec r of
             SOME "#" =>
             let in
@@ -35,7 +35,7 @@ struct
 
     fun readpgm r =
         case tok r of
-            SOME "P5" => 
+            SOME "P5" =>
                 (* would be easy, but I'm not using it now *)
                 raise NetPBM "Sorry, P5 not implemented yet"
           | SOME "P2" =>

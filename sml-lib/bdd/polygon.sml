@@ -354,7 +354,7 @@ struct
           val area = ref 0.0
           val i = ref 0.0
 
-          (* Port note: A lot of this function is the same as a compute_centroid. 
+          (* Port note: A lot of this function is the same as a compute_centroid.
              I didn't try to merge them, to better mimic Box2D organization. *)
           (* ppef is the reference point for forming triangles.
              Its location doesn't change the result (except for rounding error). *)
@@ -384,12 +384,12 @@ struct
                val intx2 = inv3 * (0.25 * (ex1 * ex1 +
                                            ex2 * ex1 +
                                            ex2 * ex2) +
-                                   (px * ex1 + 
+                                   (px * ex1 +
                                     px * ex2)) + 0.5 * px * px
                val inty2 = inv3 * (0.25 * (ey1 * ey1 +
                                            ey2 * ey1 +
                                            ey2 * ey2) +
-                                   (py * ey1 + 
+                                   (py * ey1 +
                                     py * ey2)) + 0.5 * py * py
            in
                area := !area + triangle_area;
@@ -397,10 +397,10 @@ struct
                center := !center :+: ((triangle_area * inv3) *: (p1 :+: p2 :+: p3));
                i := !i + d * (intx2 + inty2)
            end) vertices
-          
+
           (* Total mass *)
           val mass = density * !area
-          
+
           (* Center of mass *)
           val center =
               if !area < epsilon

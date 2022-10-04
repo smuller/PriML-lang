@@ -2,10 +2,10 @@
    variables in order to speed up substitution and
    free variable checks. *)
 
-(* TODO: 
+(* TODO:
          use vectors instead of lists?
          hash cons?
-         hash for quick equality tests 
+         hash for quick equality tests
 *)
 
 (* Tried:
@@ -26,7 +26,7 @@
 *)
 
 (*
-     could support something like 
+     could support something like
      guard : (var -> bool) -> ast -> ast
      which wraps an AST with a function
      that indicates whether the variable
@@ -70,7 +70,7 @@ struct
   (* exception AST of string *)
   val AST = Exn
 
-  (* First attempt. Just counting free vars. 
+  (* First attempt. Just counting free vars.
      invariant: the integer is strictly positive
      *)
   type 'obj objf =
@@ -86,13 +86,13 @@ struct
   local
     infixr 9 `
     fun a ` b = a b
-      
+
     structure L = Layout
-    
+
     val & = L.str
     val % = L.mayAlign
     val itos = Int.toString
-      
+
     fun mtol f m =
       L.listex "[" "]" "," ` map (fn (x, a) => %[&(var_tostring x), &"->", f a]) ` VM.listItemsi m
 
@@ -152,7 +152,7 @@ struct
   fun freevars (A { s, b = O { m, ... }, ... }) =
     (* D and C are the domain and codomain of s;
        then the freevars of the ast are
-          union of 
+          union of
              foreach x | x in m
                if x in D then FV(C)
                else x
@@ -161,7 +161,7 @@ struct
       (* for free vars in m *)
       fun folder (x, count, FV) =
         case VM.find (s, x) of
-          NONE => 
+          NONE =>
             (* not substituted away. *)
             (* sum since replacements might introduce
                more occurrences. *)
@@ -189,14 +189,14 @@ struct
   fun count ast v =
     (case VM.find(freevars ast, v) of
        NONE => 0
-     | SOME n => 
-         let in 
+     | SOME n =>
+         let in
            (* print (Int.toString n ^ "\n"); *)
            n
          end)
 
   fun oisfree (O { m, ... }) v =
-    case VM.find (m, v) of 
+    case VM.find (m, v) of
       NONE => false
     | SOME 0 => raise Exn "oops, 0 in map"
     | SOME n => true
@@ -215,7 +215,7 @@ struct
        the term, and do an empty test. we pay for substitutions that
        are too large *)
     (* PERF could be n lg n, not n^2 *)
-    let 
+    let
       (* restrict substitution to those vars that are actually free *)
       val s = VM.intersectWith #1 (s, m)
 
@@ -238,7 +238,7 @@ struct
           (case VM.find (s : obj VM.map, v) of
              NONE => V v
            (* subst goes away; it is simultaneous *)
-           | SOME (rep : obj) => 
+           | SOME (rep : obj) =>
                let in
 (*
                  print ("Replacing " ^ var_tostring v ^ " with\n");
@@ -248,19 +248,19 @@ struct
                  substy orename self (A{ s = ident, b = rep })
                end)
 
-        | v \ a => 
+        | v \ a =>
            let
              (* if substituting for this same var, we should just remove it from
                 the substitution. *)
-             val dorename = 
+             val dorename =
                (case VM.find (s, v) of
                   (* or, if it appears in cod of substitution *)
                   NONE => VMU.existsi (fn (_, obj) => oisfree obj v) s
                 | SOME _ => true)
            in
              if dorename
-             then 
-               let 
+             then
+               let
                  val v' = var_vary v
                  val a = orename [(v, v')] a
                in
@@ -270,9 +270,9 @@ struct
              else v \ self(A { s = s, b = a })
            end
 
-        | B (vl, a) => 
+        | B (vl, a) =>
            let
-             val dorename = 
+             val dorename =
                List.exists (fn v =>
                             (case VM.find (s, v) of
                                (* or, if it appears in cod of substitution *)
@@ -281,7 +281,7 @@ struct
            in
              if dorename
              then
-               let 
+               let
                  val vl' = ListUtil.mapto var_vary vl
                  val a = orename vl' a
                in
@@ -290,7 +290,7 @@ struct
                end
              else B (vl, self(A { s = s, b = a }))
            end
-      else 
+      else
         (* push in identity subst. *)
         case f of
           $l => $l
@@ -309,7 +309,7 @@ struct
   fun VV v = A { b = VVV v,
                  s = ident }
 
-  fun obj_same_fast (O { f = V x, ... }, 
+  fun obj_same_fast (O { f = V x, ... },
                     O { f = V y, ... }) = var_eq (x, y)
     | obj_same_fast _ = false
 
@@ -320,7 +320,7 @@ struct
      One way to do this is to make S be the
      identity by carrying out S1 and S2 on M1 and M2.
      But we can also sometimes merge substitutions.
-     
+
      *)
   exception NotDisjoint
   fun substs_disjoint al =
@@ -332,7 +332,7 @@ struct
           val (left, middle, right) = VMU.venn (s, subst)
         in
           (* intersection must agree. *)
-          VM.app (fn objs => 
+          VM.app (fn objs =>
                   (* do we really want to do a full compare here?
                      We can conservatively say 'no'.
                      if we start seeing binders, we should just give up.
@@ -352,7 +352,7 @@ struct
                    case VM.find (m, v) of
                      NONE => ()
                    | SOME _ => raise NotDisjoint) right;
-          
+
           (* mergeable. the substitution is just the union; we
              can choose either the left or right because they are agree. *)
           (VM.unionWith #1 (s, subst),
@@ -369,14 +369,14 @@ struct
 
   and SS al =
     case substs_disjoint al of
-      SOME (subst, fvs) => 
+      SOME (subst, fvs) =>
         let in
           A { s = subst,
               b = O { f = S (map getobj al),
                       m = fvs } }
         end
     | NONE =>
-        let 
+        let
           val ol = map apply_subst al
         in
           A { b = SSS ol,
@@ -398,19 +398,19 @@ struct
           s = ident }
     end
 
-  (* \x.[S]M 
+  (* \x.[S]M
      can become
      [S]\x.m
 
      when x does not appear in the domain
-     nor codomain of S. 
+     nor codomain of S.
      (PERF: implement this)
 
      special case: if S is of the form
      [x/y; S'] where y does not appear
-     in the codomain of S', 
+     in the codomain of S',
      then we can produce
-     
+
      [S']\y.m
 
      e.g.
@@ -431,7 +431,7 @@ struct
      with cost only proportional to the size
      of the variable sets. *)
   and x \\ (a as A { s, b }) =
-    let 
+    let
       val cod_matches = VM.filter (fn (O { m, ... }) =>
                                    Option.isSome (VM.find (m, x))) s
 
@@ -447,16 +447,16 @@ struct
       case VM.numItems cod_matches of
         1 =>
           (case hd (VM.listItemsi cod_matches) of
-             (y, O { f = V _, ... }) => 
+             (y, O { f = V _, ... }) =>
              (* we have [x/y; S'] obj.
-                so we can use the lambda to bind z. 
-                
+                so we can use the lambda to bind z.
+
                 but, be careful: x must not appear
                 elsewhere in obj, or we'd capture.
                 *)
                (case VM.find (getmap b, x) of
                   SOME _ => general ()
-                | NONE => 
+                | NONE =>
                     let
                     in
                       (* print "lambda-invert!\n"; *)
@@ -464,7 +464,7 @@ struct
                           s = #1 (VM.remove (s, y)),
                           b = y \\\ b }
                     end)
-           | _ => 
+           | _ =>
              (* not a variable. can't invert *)
              general ())
       | 0 => (* PERF not free -- could hoist *)
@@ -488,7 +488,7 @@ struct
          invert the substitution and do so.
          Otherwise, return the general case. *)
       fun getsubst (nil, acc, s) =
-        let 
+        let
           val acc = rev acc
         in
           A { s = s,
@@ -505,7 +505,7 @@ struct
             1 =>
               (* it must be var/var *)
               (case hd (VM.listItemsi cod_matches) of
-                 (y, O { f = V _, ... }) => 
+                 (y, O { f = V _, ... }) =>
                    (* and it must not appear anywhere else *)
                    (case VM.find (getmap b, x) of
                       SOME _ => general ()
@@ -521,18 +521,18 @@ struct
   and hide ($ l) = $$ l
     | hide (V v) = VV v
     | hide (S al) = SS al
-    | hide (a1 / a2) = a1 // a2 
+    | hide (a1 / a2) = a1 // a2
     | hide (v \ a) = v \\ a
     | hide (B (vl, a)) = BB (vl, a)
 
   and osub thing v (A { s, b }) =
-    let 
+    let
       (* in case v appears in the domain of the existing substitution *)
       val s = VM.map (fn obj => apply_subst (A { s = VM.insert(VM.empty, v, thing), b = obj })) s
     in
       if oisfree b v
       then
-        let val news = 
+        let val news =
           (* already being substituted? If so, we should not replace it. *)
           case VM.find (s, v) of
             NONE => VM.insert (s, v, thing)
@@ -543,10 +543,10 @@ struct
       else A { s = s, b = b }
     end
 
-  and sub thing v a = 
+  and sub thing v a =
     let in
       (* print "(ext) subst\n"; *)
-      osub (apply_subst thing) v a 
+      osub (apply_subst thing) v a
     end
 
   (* Assumes that 's' is already simultaneous (just a renaming to new distinct variables) *)
@@ -562,11 +562,11 @@ struct
       apply_subst (A { s = s, b = obj })
     end
 
-  and apply_subst (a as A { s, b }) = 
-    if VM.isempty s 
+  and apply_subst (a as A { s, b }) =
+    if VM.isempty s
     then b
     else
-      let 
+      let
 (*
         val () = print "apply_subst "
         val () = Layout.print(layout a, print)
@@ -582,8 +582,8 @@ struct
       end
 
   (* try to succeed fast if they are they exact same object. *)
-  and obj_cmp (a, b) = 
-    if fast_eq (a, b) 
+  and obj_cmp (a, b) =
+    if fast_eq (a, b)
     then EQUAL
     else obj_cmp' (a, b)
 
@@ -605,13 +605,13 @@ struct
     | obj_cmp' (_, O{ f = S _, ...}) = GREATER
     | obj_cmp' (O{ f = v1 \ a1, ...}, O { f = v2 \ a2, ... }) =
        if var_eq (v1, v2)
-       then 
+       then
          let in
            (* print "lam no rename\n"; *)
            obj_cmp (a1, a2)
          end
        else
-         let 
+         let
            val v' = var_vary v1
            (*
            val () = print ("cmp " ^ var_tostring v1 ^ "," ^ var_tostring v2 ^ " -> " ^
@@ -669,8 +669,8 @@ struct
         | EQUAL => objl_cmp (t1, t2))
 
   (* PERF shouldn't be so eager to substitute *)
-  fun ast_cmp (a1, a2) = 
-    if fast_eq (a1, a2) 
+  fun ast_cmp (a1, a2) =
+    if fast_eq (a1, a2)
     then EQUAL
     else obj_cmp (apply_subst a1, apply_subst a2)
 
@@ -681,15 +681,15 @@ struct
     | V v => V v
     | a1 / a2 => self a1 / self a2
     | S al => S (map self al)
-    | v \ a => 
-      let 
+    | v \ a =>
+      let
         val v' = var_vary v
         val a = rename [(v, v')] a
       in
         v' \ self a
       end
-    | B (vl, a) => 
-      let 
+    | B (vl, a) =>
+      let
         val vl' = ListUtil.mapto var_vary vl
         val a = rename vl' a
       in

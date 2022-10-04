@@ -9,7 +9,7 @@ signature ErrorUtil =
       val isWellFormedError : ErrorData.Error -> bool
    end
 
-structure ErrorUtil : ErrorUtil = 
+structure ErrorUtil : ErrorUtil =
    struct
       open ErrorData
 
@@ -18,7 +18,7 @@ structure ErrorUtil : ErrorUtil =
 	   of ERR_DECODE_ERROR _ => true
 	    | _                  => false
 
-      fun isSyntaxError err = 
+      fun isSyntaxError err =
 	 case err
 	   of ERR_EMPTY _           => true
 	    | ERR_ENDED_BY_EE _     => true
@@ -41,15 +41,15 @@ structure ErrorUtil : ErrorUtil =
 	    | ERR_MULTIPLE_DTD       => true
 	    | ERR_MULT_ATT_SPEC _    => true
 	    | ERR_RECURSIVE_ENTITY _ => true
-	    | ERR_UNDEC_ENTITY _     => true 
-	    | _ => isSyntaxError err 
+	    | ERR_UNDEC_ENTITY _     => true
+	    | _ => isSyntaxError err
 
       fun isFatalError err =
 	 case err
 	   of ERR_NO_SUCH_FILE _ => true
-	    | _ => isWellFormedError err 
+	    | _ => isWellFormedError err
 
-      fun isValidityError err = 
+      fun isValidityError err =
 	 case err
 	   of ERR_AT_LEAST_ONE _      => true
 	    | ERR_AT_MOST_ONE _	      => true

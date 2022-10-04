@@ -6,10 +6,10 @@ sig
 
     val force : 'a stream -> 'a front
     val delay : (unit -> 'a front) -> 'a stream
-      
+
     val map : ('a -> 'b) -> 'a stream -> 'b stream
     val app : ('a -> 'b) -> 'a stream -> unit
-      
+
     val filter : ('a -> bool) -> 'a stream -> 'a stream
     val append : 'a stream -> 'a stream -> 'a stream
 
@@ -32,10 +32,10 @@ sig
     (* Stream containing just this element, eager. *)
     val singleton : 'a -> 'a stream
 
-    (* Merge sorted streams so that the result is sorted. 
+    (* Merge sorted streams so that the result is sorted.
        The argument is a list of streams because it must
        be finite in order to know the next largest element. *)
-    val merge_sorted : ('a * 'a -> order) -> 
+    val merge_sorted : ('a * 'a -> order) ->
                        'a stream list -> 'a stream
 
     exception Empty

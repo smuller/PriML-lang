@@ -10,7 +10,7 @@ fun hd (x::l) = x
 fun mklist 0 = []
   | mklist n = n :: mklist(n-1)
 
-fun cycle(p as (m,f)) = 
+fun cycle(p as (m,f)) =
   if m=0 then p
   else cycle(m-1, let val x = [(m, mklist 2000)]
                   in fn () => #1(hd x) + f()

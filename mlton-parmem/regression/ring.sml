@@ -8,7 +8,7 @@ signature RING =
                   + : 'a * 'a -> 'a,
                   * : 'a * 'a -> 'a} -> {ring : ring,
                                          valOf : elt -> 'a}
-         
+
       val zero : ring -> elt
       val one : ring -> elt
       val ringOf : elt -> ring
@@ -42,7 +42,7 @@ structure Ring : RING =
       end
 
       exception TypeError
-      
+
       fun 'a make{zero, one, +, * = op *} =
          let
             val r : 'a option ref = ref NONE
@@ -52,7 +52,7 @@ structure Ring : RING =
                 case !r of
                    NONE => raise TypeError
                  | SOME x => (x before r := NONE))
-                      
+
             fun ring() = {zero = elt zero,
                           one = elt one,
                           + = binary(op +),
@@ -62,7 +62,7 @@ structure Ring : RING =
                              {ring = Ring ring}))
             and binary (f : 'a * 'a -> 'a) (x : elt, y : elt) =
                elt(f(valOf x, valOf y))
-               
+
          in
             {ring = Ring ring,
              valOf = valOf}

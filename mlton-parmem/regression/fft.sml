@@ -53,7 +53,7 @@ fun fft ([(a,b)], 1)  = [(a+0.0,b+0.0)]
 
 local val a = 16807.0 and m = 2147483678.0
 in
-   fun nextrand seed = 
+   fun nextrand seed =
          let val t = a*seed
          in t - m * real(floor (t/m)) end
 end

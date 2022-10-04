@@ -54,7 +54,7 @@ struct
 
   (* For each (possible) state, we keep an array containing the accumulated
      weight of each possible next symbol, as well as the total weight. *)
-  (* PERF: Could make this ragged, on the hypothesis that many states are never reached? 
+  (* PERF: Could make this ragged, on the hypothesis that many states are never reached?
      But we already have a sparse version in nmarkov-cmp-sig.sml *)
   type chain = { (* Size modulus * radix *)
                  weights : real Array.array,
@@ -78,7 +78,7 @@ struct
     let
         val start_state = stateonly (toint begin_symbol, n)
         fun eat state (sym :: rest) =
-            let 
+            let
             in
                 observe_weighted weight chain (state, sym);
                 eat (advance_state (state, sym)) rest
@@ -138,17 +138,17 @@ struct
      XXX decided to make lower bound an argument!
 
      *)
-  fun most_probable_paths { lower_bound : real, 
-                            chain = chain as { totals, weights } : chain, 
+  fun most_probable_paths { lower_bound : real,
+                            chain = chain as { totals, weights } : chain,
                             state : state, end_symbol : symbol }
          : { string : symbol list, p : real } Stream.stream =
     let
-      val esi = toint end_symbol 
+      val esi = toint end_symbol
       val total = Array.sub (totals, state)
       fun nexts i =
         if i = radix
         then nil
-        else 
+        else
           let val sym = fromint i
               (* XXX this can be strength reduced. Don't know if compiler does it. *)
               val r = Array.sub(weights, weight_index (state, sym))
@@ -161,7 +161,7 @@ struct
                    then (* If it's the end symbol, then there is just one result
                            which is the empty path. *)
                        S.singleton { string = nil, p = p } :: nexts (i + 1)
-                   else 
+                   else
                      (* Otherwise, we have to recurse. Our
                         current lower bound lb will no longer
                         suffice, because whatever the probability
@@ -188,7 +188,7 @@ struct
       (* PERF could be less eager *)
       val streams = nexts 0
       (* Comparison to sort by descending probability *)
-      fun bysecond_real_descending ({p, string = _}, 
+      fun bysecond_real_descending ({p, string = _},
                                     {p = pp, string = _}) = Real.compare (pp, p)
     in
         S.merge_sorted bysecond_real_descending streams

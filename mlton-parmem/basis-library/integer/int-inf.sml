@@ -89,25 +89,25 @@ structure IntInf: INT_INF_EXTRA =
          in
             fun octDig (ch: char): W.word option =
                if #"0" <= ch andalso ch <= #"7"
-                  then SOME (W.fromInt (Int.- (Char.ord ch, 
+                  then SOME (W.fromInt (Int.- (Char.ord ch,
                                                Char.ord #"0")))
                else NONE
 
             fun decDig (ch: char): W.word option =
                if #"0" <= ch andalso ch <= #"9"
-                  then SOME (W.fromInt (Int.- (Char.ord ch, 
+                  then SOME (W.fromInt (Int.- (Char.ord ch,
                                                Char.ord #"0")))
                else NONE
 
             fun hexDig (ch: char): W.word option =
                if #"0" <= ch andalso ch <= #"9"
-                  then SOME (W.fromInt (Int.- (Char.ord ch, 
+                  then SOME (W.fromInt (Int.- (Char.ord ch,
                                                Char.ord #"0")))
                else if #"a" <= ch andalso ch <= #"f"
-                  then SOME (W.fromInt (Int.- (Char.ord ch, 
+                  then SOME (W.fromInt (Int.- (Char.ord ch,
                                                Int.- (Char.ord #"a", 0xa))))
                else if #"A" <= ch andalso ch <= #"F"
-                  then SOME (W.fromInt (Int.- (Char.ord ch, 
+                  then SOME (W.fromInt (Int.- (Char.ord ch,
                                                Int.- (Char.ord #"A", 0xA))))
                else NONE
          end
@@ -137,13 +137,13 @@ structure IntInf: INT_INF_EXTRA =
                        shift: W.word,
                        chunk: W.word}
          (*
-          * Given the base and a digit reader, 
+          * Given the base and a digit reader,
           * return a chunk reader.
           *)
          fun toChunkR (base: W.word,
                        dread: (W.word, 'a) reader)
                       : (chunk, 'a) reader =
-            let 
+            let
                fun loop {left: Int32.int,
                          shift: W.word,
                          chunk: W.word,
@@ -185,7 +185,7 @@ structure IntInf: INT_INF_EXTRA =
                                     shift = base,
                                     chunk = dig,
                                     s = next})
-            in 
+            in
                reader
             end
 
@@ -193,7 +193,7 @@ structure IntInf: INT_INF_EXTRA =
           * Given a chunk reader, return an unsigned reader.
           *)
          fun toUnsR (ckread: (chunk, 'a) reader): (int, 'a) reader =
-            let 
+            let
                fun loop (more: bool, acc: int, s: 'a) =
                   if more
                      then case ckread s of
@@ -211,7 +211,7 @@ structure IntInf: INT_INF_EXTRA =
                         SOME (loop (more,
                                     W.toLargeInt chunk,
                                     s'))
-            in 
+            in
                reader
             end
 
@@ -228,7 +228,7 @@ structure IntInf: INT_INF_EXTRA =
                         NONE => SOME (zero, s1)
                       | SOME (c2, s2) =>
                            if c2 = #"x" orelse c2 = #"X" then
-                              case uread s2 of 
+                              case uread s2 of
                                  NONE => SOME (zero, s1)
                                | SOME x => SOME x
                               else uread s
@@ -254,7 +254,7 @@ structure IntInf: INT_INF_EXTRA =
                               | #"~" => (true, s')
                               | _ => (false, s)
                        in
-                          if isNeg 
+                          if isNeg
                              then case uread s'' of
                                      NONE => NONE
                                    | SOME (abs, s''') => SOME (~ abs, s''')
@@ -273,13 +273,13 @@ structure IntInf: INT_INF_EXTRA =
             fun reader (base, dig)
                        (cread: (char, 'a) reader)
                        : (int, 'a) reader =
-               let 
+               let
                   val dread = toDigR (dig, cread)
                   val ckread = toChunkR (base, dread)
                   val uread = toUnsR ckread
                   val hread = if base = 0w16 then toHexR (cread, uread) else uread
                   val reader = toSign (cread, hread)
-               in 
+               in
                   reader
                end
          in
@@ -287,7 +287,7 @@ structure IntInf: INT_INF_EXTRA =
             fun octReader z = reader (0w8, octDig) z
             fun decReader z = reader (0w10, decDig) z
             fun hexReader z = reader (0w16, hexDig) z
-         end     
+         end
       in
          fun scan radix =
             case radix of
@@ -323,12 +323,12 @@ structure IntInf: INT_INF_EXTRA =
                      (* evenPow (j) returns (i ^ j), assuming j is even *)
                      and evenPow (j: Int.int): int =
                         square (pow (Int.div (j, 2)))
-                  in 
+                  in
                      pow j
                   end
       end
 
-      val log2 = 
+      val log2 =
          mkLog2 {fromSmall = fn {smallLog2} => Int32.toInt smallLog2,
                  fromLarge = fn {numLimbsMinusOne, mostSigLimbLog2} =>
                  Int.+ (Int.* (MPLimb.wordSize, SeqIndex.toInt numLimbsMinusOne),

@@ -190,7 +190,7 @@ open S
 
 val bytesPerElem = Int.div (realSize, 8)
 
-fun offset (i, n) = 
+fun offset (i, n) =
    let
       val i' = Int.* (bytesPerElem, i)
       val () =

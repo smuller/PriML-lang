@@ -28,25 +28,25 @@ structure CMemAlloc : CMEMALLOC = struct
     val malloc_h = main's "malloc"
     val free_h = main's "free"
 
-    fun sys_malloc (n : C_Size.word) = 
+    fun sys_malloc (n : C_Size.word) =
         let val w_p = _import * : MLton.Pointer.t -> C_Size.word -> addr;
             val a = w_p (DL.addr malloc_h) n
         in if a = Ptr.null then raise OutOfMemory else a
         end
 
-    fun sys_free (a : addr) = 
+    fun sys_free (a : addr) =
         let val p_u = _import * : MLton.Pointer.t -> addr -> unit;
         in p_u (DL.addr free_h) a
         end
 *)
 
-    fun sys_malloc (n : C_Size.word) = 
+    fun sys_malloc (n : C_Size.word) =
         let val w_p = _import "malloc" : C_Size.word -> addr;
             val a = w_p n
         in if a = Ptr.null then raise OutOfMemory else a
         end
 
-    fun sys_free (a : addr) = 
+    fun sys_free (a : addr) =
         let val p_u = _import "free" : addr -> unit;
         in p_u a
         end

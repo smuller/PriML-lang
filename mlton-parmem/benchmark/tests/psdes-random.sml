@@ -2,7 +2,7 @@
 (*
  * Random number generator based on page 302 of Numerical Recipes in C.
  *)
-fun once () =      
+fun once () =
    let
    fun natFold (start, stop, ac, f) =
       let
@@ -33,7 +33,7 @@ fun once () =
        in (irword,
            xorb (lword, itmpl * itmph + xorb (c2 i, reverse ib)))
        end)
-   val zero: word = 0wx13 
+   val zero: word = 0wx13
    val lword: word ref = ref 0w13
    val irword: word ref = ref 0w14
    val needTo = ref true

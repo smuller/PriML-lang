@@ -27,24 +27,24 @@ structure Net : NET =
 
       structure Int32 =
          struct
-            val hton = 
-               Primitive.IntWordConv.idFromWord32ToInt32 
-               o Word32.hton 
+            val hton =
+               Primitive.IntWordConv.idFromWord32ToInt32
+               o Word32.hton
                o Primitive.IntWordConv.idFromInt32ToWord32
-            val ntoh = 
-               Primitive.IntWordConv.idFromWord32ToInt32 
-               o Word32.ntoh 
+            val ntoh =
+               Primitive.IntWordConv.idFromWord32ToInt32
+               o Word32.ntoh
                o Primitive.IntWordConv.idFromInt32ToWord32
          end
       structure Int16 =
          struct
-            val hton = 
-               Primitive.IntWordConv.idFromWord16ToInt16 
-               o Word16.hton 
+            val hton =
+               Primitive.IntWordConv.idFromWord16ToInt16
+               o Word16.hton
                o Primitive.IntWordConv.idFromInt16ToWord16
-            val ntoh = 
-               Primitive.IntWordConv.idFromWord16ToInt16 
-               o Word16.ntoh 
+            val ntoh =
+               Primitive.IntWordConv.idFromWord16ToInt16
+               o Word16.ntoh
                o Primitive.IntWordConv.idFromInt16ToWord16
          end
 

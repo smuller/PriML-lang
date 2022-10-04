@@ -27,7 +27,7 @@
 (*   IdInfo2String     : none                                               *)
 (*   ParEntity2String  : none                                               *)
 (*--------------------------------------------------------------------------*)
-signature BaseString = 
+signature BaseString =
    sig
       val ExternalId2String   : BaseData.ExternalId -> string
       val NotationInfo2String : BaseData.NotationInfo -> string
@@ -35,23 +35,23 @@ signature BaseString =
       val GenEntity2xString : (int -> string) -> BaseData.GenEntity -> string
       val ParEntity2String  : BaseData.ParEntity -> string
 
-      val ElemInfo2xString  : (int -> string) * (int -> string) * (int -> string) 
+      val ElemInfo2xString  : (int -> string) * (int -> string) * (int -> string)
 	 * (int -> string) * (int -> string) -> BaseData.ElemInfo -> string
 
       val IdInfo2String     : BaseData.IdInfo -> string
    end
 
-structure BaseString : BaseString = 
+structure BaseString : BaseString =
    struct
-      open 
+      open
 	 UtilString Uri
 	 Errors UniChar DfaString
-	 BaseData 
+	 BaseData
 
       val THIS_MODULE = "BaseString"
 
-      fun ExternalId2String (EXTID id) = 
-	 case id 
+      fun ExternalId2String (EXTID id) =
+	 case id
 	   of (SOME(p,pq),SOME(rel,s,sq)) => String.concat
 	      ["PUBLIC ",quoteUni pq p,
 	       " ",quoteUni sq (Uri2String rel),
@@ -62,12 +62,12 @@ structure BaseString : BaseString =
 	      ["SYSTEM ",quoteUni sq (Uri2String rel),
 	       " @ ",quoteUni sq (Uri2String s)]
 	    | (NONE,NONE) => "<none>"
-      fun NotationInfo2String not = 
-	 case not 
+      fun NotationInfo2String not =
+	 case not
 	   of NONE => "undeclared"
 	    | SOME extId => ExternalId2String extId
 
-      fun GenEntity2xString NotIdx2String ge = 
+      fun GenEntity2xString NotIdx2String ge =
 	 case ge
 	   of GE_NULL => "NULL"
 	    | GE_INTERN(lit,cv) => let val quote = Vector.sub(lit,0)
@@ -77,7 +77,7 @@ structure BaseString : BaseString =
 	    | GE_EXTERN id => "EXTERN "^ExternalId2String id
 	    | GE_UNPARSED(id,not,_) => "UNPARSED "^ExternalId2String id^" "^NotIdx2String not
 
-      fun ParEntity2String pe = 
+      fun ParEntity2String pe =
 	 case pe
 	   of PE_NULL => "NULL"
 	    | PE_INTERN(lit,cv) => let val quote = Vector.sub(lit,0)
@@ -92,8 +92,8 @@ structure BaseString : BaseString =
 	    | CT_EMPTY => "EMPTY"
 	    | CT_MIXED is => List2xString ("MIXED (","|",")") Elem2String is
 	    | CT_ELEMENT(cm,_) => "ELEMENT "^ContentModel2String Elem2String cm
-	 
-      fun AttValue2xString (Att2String,Ent2String,Id2String,Not2String) quote av = 
+
+      fun AttValue2xString (Att2String,Ent2String,Id2String,Not2String) quote av =
 	 quoteUni quote (case av
 			   of AV_CDATA buf => Vector2String buf
 			    | AV_NMTOKEN cs => Data2String cs
@@ -106,23 +106,23 @@ structure BaseString : BaseString =
 			    | AV_GROUP(_,idx) => Att2String idx
 			    | AV_NOTATION(_,idx) => Not2String idx)
 
-      fun AttDefault2xString funs ad = 
-         case ad 
-	   of AD_DEFAULT ((lit,cv,av),_) => 
+      fun AttDefault2xString funs ad =
+         case ad
+	   of AD_DEFAULT ((lit,cv,av),_) =>
 	      let val quote = Vector.sub(lit,0)
 	      in String.concat [quoteVector quote cv," ",
 				Option2String0 (AttValue2xString funs quote) av]
 	      end
-	    | AD_FIXED ((lit,cv,av),_) => 
+	    | AD_FIXED ((lit,cv,av),_) =>
 	      let val quote = Vector.sub(lit,0)
 	      in String.concat ["#FIXED ",quoteVector quote cv," ",
 				Option2String0 (AttValue2xString funs quote) av]
 	      end
 	    | AD_IMPLIED => "#IMPLIED"
 	    | AD_REQUIRED => "#REQUIRED"
-	  
-      fun AttType2xString (Att2String,Not2String) at = 
-	 case at 
+
+      fun AttType2xString (Att2String,Not2String) at =
+	 case at
 	   of AT_CDATA => "CDATA"
 	    | AT_NMTOKEN => "NMTOKEN"
 	    | AT_NMTOKENS => "NMTOKENS"
@@ -134,19 +134,19 @@ structure BaseString : BaseString =
 	    | AT_GROUP idxs => List2xString ("(","|",")") Att2String idxs
 	    | AT_NOTATION idxs => List2xString ("NOTATION(","|",")") Not2String idxs
 
-      fun AttDef2xString (funs  as (Att2String,_,_,Not2String)) (idx,attType,default,ext) = 
+      fun AttDef2xString (funs  as (Att2String,_,_,Not2String)) (idx,attType,default,ext) =
 	 String.concat [Att2String idx," ",
 			AttType2xString (Att2String,Not2String) attType," ",
 			AttDefault2xString funs default,
 			Bool2xString ("[external]","") ext]
-			
+
       fun AttDefList2xString funs adl = List2xString ("",",","") (AttDef2xString funs) adl
 
       fun ElemInfo2xString (Att2String,Elem2String,Ent2String,Id2String,Not2String)
 	 ({decl,atts,...}:ElemInfo) =
 	 let val dec = case decl
 			 of NONE => "elem undeclared"
-			  | SOME(cont,ext) => String.concat 
+			  | SOME(cont,ext) => String.concat
 			    ["elem declared ",if ext then "ex" else "in","ternally: ",
 			     ContentSpec2String Elem2String cont]
 	     val att = case atts
@@ -157,7 +157,7 @@ structure BaseString : BaseString =
 	 in dec^att
 	 end
 
-      fun IdInfo2String (decl,refs) = 
+      fun IdInfo2String (decl,refs) =
 	 Bool2xString ("declared","undeclared") decl^"/"^
 	 (if null refs then "no references"
 	  else List2xString ("references: ",", ","") Position2String refs)

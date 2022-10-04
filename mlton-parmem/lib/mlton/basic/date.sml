@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Date: DATE = 
+structure Date: DATE =
 struct
 
 structure Date = Pervasive.Date

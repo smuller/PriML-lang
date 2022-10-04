@@ -79,7 +79,7 @@ fun startStop {name, action, log, thunk, usage} =
       fun stop () =
          case getProc () of
             NONE => print (concat [name, " is not running\n"])
-          | SOME {pgrp, ...} => 
+          | SOME {pgrp, ...} =>
                wrap (fn () =>
                      (print (concat ["Shutting down ", name, ":"])
                       ; Process.signalGroup (pgrp, Posix.Signal.term)))

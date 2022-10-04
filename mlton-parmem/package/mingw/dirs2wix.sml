@@ -14,7 +14,7 @@ val suffix = "\
  * They must also be alphanumeric and less than 78 bytes.
  *   => We convert non-alnums to _
  *   => We trim the filename to the last 40 bytes.
- * 
+ *
  * The contents of the installer cab are sorted by the identifier we choose.
  * Similar files compress better when they are near each other.
  *   => Use: rev(filename).hash as the identifier
@@ -25,7 +25,7 @@ fun slashes c = if c = #"\\" then #"/" else c
 fun hash (c, w) = w * 0w5746711073709751657 + Word64.fromInt (Char.ord (slashes c))
 fun alnum c = if Char.isAlphaNum c orelse c = #"." then c else #"_"
 fun trim s = if String.size s > 40 then String.substring (s, 0, 40) else s
-fun rev s = 
+fun rev s =
    let val len = CharVector.length s in
    CharVector.tabulate (len, fn i => CharVector.sub (s, len-1-i)) end
 fun escape s =

@@ -30,7 +30,7 @@ struct
 
   fun push (q, e) =
     q := e :: !q
-  
+
   fun insert (q, e) =
     let
       val es = !q
@@ -50,7 +50,7 @@ struct
     case es of
       e :: es' => (q := es'; SOME e)
     | [] => NONE
-  
+
   fun split (q as ref es) =
     let
       val maxDepth = case es of [] => 0 | e :: _ => Elem.depth e
@@ -77,7 +77,7 @@ struct
         [] => NONE
       | _ => SOME (ref toSend)
     end
-  
+
   (*
   fun split q =
     let

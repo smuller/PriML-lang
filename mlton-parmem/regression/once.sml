@@ -3,7 +3,7 @@ open SMLofNJ.Cont
 val r: unit cont option ref = ref NONE
 
 val a = ref 13
-   
+
 val () = callcc(fn k => r := SOME k)
 
 val b = ref 13

@@ -5,7 +5,7 @@ val () = r := !r + 1
 val () = print (concat [Int.toString (!r), "\n"])
 val () = r := !r + 1
 val () = print (concat [Int.toString (!r), "\n"])
-   
+
 val x = let exception E of 'a in () end
 
 val 'a x = let exception E of 'a in () end

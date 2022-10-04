@@ -18,7 +18,7 @@ local
 in
   fun int_to_string n = if n < 0 then "~" ^ string' (~n) else string' n
 end
-  
+
 local val r = ref 0
 in
 fun etst s e1 e2 =
@@ -78,7 +78,7 @@ val () = etst "-" ("abd" <> "abc") true;
 
 (*& nu hele molevitten igen bare med meget lange strenge.
  Det er godt nok strenge...*)
-  
+
 fun repeat 0 s = ""
   | repeat n s = s ^ repeat (n-1) s
 val long = repeat  50 "Der laa den Ridder i Graesset og drev.\n\

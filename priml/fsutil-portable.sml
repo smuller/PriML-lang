@@ -12,7 +12,7 @@ struct
             (case rev arcs of
                  nil => raise FSUtil "no file in chdir_excursion"
                (* don't need to move *)
-               | [file] => 
+               | [file] =>
                      let in
                          (* print ("just: " ^  file ^ "\n"); *)
                          f file
@@ -20,7 +20,7 @@ struct
                (* move to dir and come back *)
                | (file::rest) =>
                  let
-                     val new = OS.Path.toString 
+                     val new = OS.Path.toString
                                 {arcs = rev rest, isAbs=isAbs, vol=vol}
                      val old = OS.FileSys.getDir ()
                  in

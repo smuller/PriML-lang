@@ -14,7 +14,7 @@
    style of the others, since there doesn't seem to be any advantage
    to irregularity.
 
-   Corresponding to dynamics/b2world.h, dynamics/b2body.h, 
+   Corresponding to dynamics/b2world.h, dynamics/b2body.h,
    dynamics/b2fixture.h. *)
 
 (* The world is defined as a functor over the type of data associated
@@ -49,7 +49,7 @@ sig
   type contactedge
   type jointedge
 
-  structure Body : BDDBODY 
+  structure Body : BDDBODY
     where type body = body
       and type fixture = fixture
       and type joint = joint
@@ -62,7 +62,7 @@ sig
       and type body_data = body_data
       and type joint_data = joint_data
 
-  structure Fixture : BDDFIXTURE 
+  structure Fixture : BDDFIXTURE
     where type body = body
       and type fixture = fixture
       and type joint = joint
@@ -142,7 +142,7 @@ sig
            characters. *)
         fixed_rotation : bool,
 
-        (* Is this a fast moving body that should be prevented from 
+        (* Is this a fast moving body that should be prevented from
            tunneling through other moving bodies? Note that all bodies
            are prevented from tunneling through kinematic and static
            bodies. This setting is only considered on dynamic bodies.
@@ -168,7 +168,7 @@ sig
     (* Create a joint to constrain bodies together. No reference to the
        definition is retained. This may cause the connected bodies to
        cease colliding. This function may not be used during
-       callbacks. 
+       callbacks.
        Port note: This argument was the structure b2JointDef, but this
        is the only place it's used.
        *)
@@ -200,8 +200,8 @@ sig
        each call to step, unless you are performing sub-steps. *)
     val clear_forces : world -> unit
 
-    (* Query the world for all fixtures that potentially overlap the 
-       provided axis-aligned bounding box. 
+    (* Query the world for all fixtures that potentially overlap the
+       provided axis-aligned bounding box.
        The callback is called for each fixture found; if it returns
        false then the query is terminated.
        *)
@@ -216,7 +216,7 @@ sig
       | Clip of real
       | Don'tClip
 
-    val ray_cast : world * 
+    val ray_cast : world *
                    ({ fixture : fixture, point : BDDMath.vec2,
                       normal : BDDMath.vec2, fraction : real } -> raycast_action) *
                    BDDMath.vec2 * BDDMath.vec2 -> unit
@@ -251,7 +251,7 @@ sig
     (* Number of contacts. Each may have 0 or more contact points. *)
     val get_contact_count : world -> int
 
-    (* Change the global gravity vector. 
+    (* Change the global gravity vector.
        XXX twm: Is the magnitude in m/s^2?
        *)
     val set_gravity : world * BDDMath.vec2 -> unit
@@ -275,14 +275,14 @@ sig
 
     (* Set a contact filter to provide fine-grained control over which
        objects should be allowed to collide.
-       
+
        The filter should return true if contact calculations should be
        performed between these two shapes. For performance reasons
        this is only called when the AABBs begin to overlap. *)
     val set_should_collide_filter : world * (fixture * fixture -> bool) -> unit
 
-    (* Contact impulses for reporting. Impulses are used instead of 
-       forces because sub-step forces may approach infinity for rigid 
+    (* Contact impulses for reporting. Impulses are used instead of
+       forces because sub-step forces may approach infinity for rigid
        body collisions. These match up one-to-one with the contact points
        in b2Manifold. *)
     (* Each array has up to BDDSettings.max_manifold_points elements *)

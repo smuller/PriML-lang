@@ -9,11 +9,11 @@
 functor StringComparisons (type t
                            val compare: t * t -> order) =
    struct
-      fun < (x, y) = 
+      fun < (x, y) =
          (case compare (x, y) of
              LESS => true
            | _ => false)
-      fun <= (x, y) = 
+      fun <= (x, y) =
          (case compare (x, y) of
              GREATER => false
            | _ => true)
@@ -21,7 +21,7 @@ functor StringComparisons (type t
          (case compare (x, y) of
              GREATER => true
            | _ => false)
-      fun >= (x, y) = 
+      fun >= (x, y) =
          (case compare (x, y) of
              LESS => false
            | _ => true)

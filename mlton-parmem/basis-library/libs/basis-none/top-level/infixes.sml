@@ -6,4 +6,4 @@
  * See the file MLton-LICENSE for details.
  *)
 
-infix  4 = 
+infix  4 =

@@ -38,7 +38,7 @@ fun e i = eval (s i) ;
 
    l 8 10 ;
 
-   u 8 11 ;   
+   u 8 11 ;
 
 
 open DisjointCollection ;

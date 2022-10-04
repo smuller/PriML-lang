@@ -2,9 +2,9 @@ fun statusToString status =
    case status of
       Posix.Process.W_EXITED => "W_EXITED"
     | Posix.Process.W_EXITSTATUS w => concat ["W_EXITSTATUS ", Word8.toString w]
-    | Posix.Process.W_SIGNALED s => 
+    | Posix.Process.W_SIGNALED s =>
          concat ["W_SIGNALED ", SysWord.toString (Posix.Signal.toWord s)]
-    | Posix.Process.W_STOPPED s => 
+    | Posix.Process.W_STOPPED s =>
          concat ["W_STOPPED ", SysWord.toString (Posix.Signal.toWord s)]
 
 val cmd = CommandLine.name ()

@@ -29,7 +29,7 @@ structure Array2 : ARRAY2 =
                        cols: SeqIndex.int}
 
       fun dimensions' ({rows, cols, ...}: 'a array) = (rows, cols)
-      fun dimensions ({rows, cols, ...}: 'a array) = 
+      fun dimensions ({rows, cols, ...}: 'a array) =
          (SeqIndex.toIntUnsafe rows, SeqIndex.toIntUnsafe cols)
       fun nRows' ({rows, ...}: 'a array) = rows
       fun nRows ({rows, ...}: 'a array) = SeqIndex.toIntUnsafe rows
@@ -49,7 +49,7 @@ structure Array2 : ARRAY2 =
             case num of
                NONE => if Primitive.Controls.safe
                           then let
-                                  val start = 
+                                  val start =
                                      (SeqIndex.fromInt start)
                                      handle Overflow => raise Subscript
                                in
@@ -60,7 +60,7 @@ structure Array2 : ARRAY2 =
                           else (SeqIndex.fromIntUnsafe start, max)
              | SOME num => if Primitive.Controls.safe
                               then let
-                                      val start = 
+                                      val start =
                                          (SeqIndex.fromInt start)
                                          handle Overflow => raise Subscript
                                    in
@@ -69,10 +69,10 @@ structure Array2 : ARRAY2 =
                                          then raise Subscript
                                          else (start, start +? num)
                                    end
-                              else (SeqIndex.fromIntUnsafe start, 
+                              else (SeqIndex.fromIntUnsafe start,
                                     SeqIndex.fromIntUnsafe start +? num)
-         fun checkSliceMax (start: int, 
-                            num: int option, 
+         fun checkSliceMax (start: int,
+                            num: int option,
                             max: SeqIndex.int): SeqIndex.int * SeqIndex.int =
             if Primitive.Controls.safe
                then (checkSliceMax' (start, Option.map SeqIndex.fromInt num, max))
@@ -80,20 +80,20 @@ structure Array2 : ARRAY2 =
                else checkSliceMax' (start, Option.map SeqIndex.fromIntUnsafe num, max)
       in
          fun checkRegion' {base, row, col, nrows, ncols} =
-            let 
+            let
                val (rows, cols) = dimensions' base
                val (startRow, stopRow) = checkSliceMax' (row, nrows, rows)
                val (startCol, stopCol) = checkSliceMax' (col, ncols, cols)
-            in 
+            in
                {startRow = startRow, stopRow = stopRow,
                 startCol = startCol, stopCol = stopCol}
             end
          fun checkRegion {base, row, col, nrows, ncols} =
-            let 
+            let
                val (rows, cols) = dimensions' base
                val (startRow, stopRow) = checkSliceMax (row, nrows, rows)
                val (startCol, stopCol) = checkSliceMax (col, ncols, cols)
-            in 
+            in
                {startRow = startRow, stopRow = stopRow,
                 startCol = startCol, stopCol = stopCol}
             end
@@ -106,7 +106,7 @@ structure Array2 : ARRAY2 =
 
       local
          fun make (rows, cols, doit) =
-            if Primitive.Controls.safe 
+            if Primitive.Controls.safe
                andalso (rows < 0 orelse cols < 0)
                then raise Size
             else {array = doit (rows * cols handle Overflow => raise Size),
@@ -122,10 +122,10 @@ structure Array2 : ARRAY2 =
          fun make (rows, cols, doit) =
             if Primitive.Controls.safe
                then let
-                       val rows = 
+                       val rows =
                           (SeqIndex.fromInt rows)
                           handle Overflow => raise Size
-                       val cols = 
+                       val cols =
                           (SeqIndex.fromInt cols)
                           handle Overflow => raise Size
                     in
@@ -148,7 +148,7 @@ structure Array2 : ARRAY2 =
       fun unsafeSpot' ({cols, ...}: 'a array, r, c) =
          r *? cols +? c
       fun spot' (a as {rows, cols, ...}: 'a array, r, c) =
-         if Primitive.Controls.safe 
+         if Primitive.Controls.safe
             andalso (geu (r, rows) orelse geu (c, cols))
             then raise Subscript
             else unsafeSpot' (a, r, c)
@@ -166,10 +166,10 @@ structure Array2 : ARRAY2 =
          fun make (r, c, doit) =
             if Primitive.Controls.safe
                then let
-                       val r = 
+                       val r =
                           (SeqIndex.fromInt r)
                           handle Overflow => raise Subscript
-                       val c = 
+                       val c =
                           (SeqIndex.fromInt c)
                           handle Overflow => raise Subscript
                     in
@@ -190,7 +190,7 @@ structure Array2 : ARRAY2 =
           | row1 :: _ =>
                let
                   val cols = length row1
-                  val a as {array, cols = cols', ...} = 
+                  val a as {array, cols = cols', ...} =
                      arrayUninit (length rows, cols)
                   val _ =
                      List.foldl
@@ -221,7 +221,7 @@ structure Array2 : ARRAY2 =
       fun row (a, r) =
          if Primitive.Controls.safe
             then let
-                    val r = 
+                    val r =
                        (SeqIndex.fromInt r)
                        handle Overflow => raise Subscript
                  in
@@ -236,7 +236,7 @@ structure Array2 : ARRAY2 =
       fun column (a, c) =
          if Primitive.Controls.safe
             then let
-                    val c = 
+                    val c =
                        (SeqIndex.fromInt c)
                        handle Overflow => raise Subscript
                  in
@@ -280,9 +280,9 @@ structure Array2 : ARRAY2 =
          end
 
       fun foldi trv f b a =
-         foldi' trv (fn (r, c, x, b) => 
-                     f (SeqIndex.toIntUnsafe r, 
-                        SeqIndex.toIntUnsafe c, 
+         foldi' trv (fn (r, c, x, b) =>
+                     f (SeqIndex.toIntUnsafe r,
+                        SeqIndex.toIntUnsafe c,
                         x, b)) b a
       fun fold trv f b a =
           foldi trv (fn (_, _, x, b) => f (x, b)) b (wholeRegion a)
@@ -298,10 +298,10 @@ structure Array2 : ARRAY2 =
       fun modify trv f a = modifyi trv (f o #3) (wholeRegion a)
 
       fun tabulate trv (rows, cols, f) =
-         let 
+         let
             val a = arrayUninit (rows, cols)
             val () = modifyi trv (fn (r, c, _) => f (r, c)) (wholeRegion a)
-         in 
+         in
             a
          end
 
@@ -311,9 +311,9 @@ structure Array2 : ARRAY2 =
             val {startRow, stopRow, startCol, stopCol} = checkRegion src
             val nrows = stopRow -? startRow
             val ncols = stopCol -? startCol
-            val {startRow = dst_row, startCol = dst_col, ...} = 
+            val {startRow = dst_row, startCol = dst_col, ...} =
                checkRegion' {base = dst, row = dst_row, col = dst_col,
-                             nrows = SOME nrows, 
+                             nrows = SOME nrows,
                              ncols = SOME ncols}
             fun forUp (start, stop, f: SeqIndex.int -> unit) =
                let

@@ -2,7 +2,7 @@
 structure Tokens =
 struct
 
-    (* print[hello [b[world]]!] 
+    (* print[hello [b[world]]!]
 
        lexes as
 

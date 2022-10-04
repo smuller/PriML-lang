@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Buffer: BUFFER = 
+structure Buffer: BUFFER =
 struct
 
 datatype 'a t = T of {dummy: 'a,

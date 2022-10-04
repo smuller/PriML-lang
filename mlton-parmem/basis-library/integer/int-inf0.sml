@@ -73,7 +73,7 @@ signature PRIM_INT_INF =
       val xorb: int * int -> int
 
       val mkCvt: ({base: Primitive.Int32.int,
-                   smallCvt: ObjptrInt.int -> Primitive.String8.string} 
+                   smallCvt: ObjptrInt.int -> Primitive.String8.string}
                   -> int -> Primitive.String8.string)
       val mkLog2: ({fromSmall: {smallLog2: Primitive.Int32.int} -> 'a,
                     fromLarge: {mostSigLimbLog2: Primitive.Int32.int,
@@ -382,7 +382,7 @@ structure IntInf =
       structure W = ObjptrWord
       structure I = ObjptrInt
       structure MPLimb = C_MPLimb
-      structure Sz = struct 
+      structure Sz = struct
                         open C_Size
                         local
                            structure S =
@@ -413,7 +413,7 @@ structure IntInf =
 
       (* Return the number of `limbs' in a bigInt. *)
       fun bigNumLimbs i = S.- (V.length (Prim.toVector i), 1)
-      fun numLimbs i = 
+      fun numLimbs i =
          if isSmall i
             then 1
             else bigNumLimbs i
@@ -529,16 +529,16 @@ structure IntInf =
                        fun loop (w, i, acc) =
                           if (#eq other) (w, (#zero other))
                              then (i, acc)
-                             else 
+                             else
                                 let
                                    val limb = zextdToMPLimb w
-                                   val w = 
-                                      (#rshift other) 
+                                   val w =
+                                      (#rshift other)
                                       (w, MPLimb.sizeInBitsWord)
                                 in
                                    loop (w, S.+ (i, 1), (i, limb) :: acc)
                                 end
-                       val (n, acc) = 
+                       val (n, acc) =
                           if sextd andalso (#isNeg other) w
                              then loop ((#neg other) w, 1, [(0,0w1)])
                              else loop (w, 1, [(0,0w0)])
@@ -685,7 +685,7 @@ structure IntInf =
                        val n = V.length v
                        val isneg = V.subUnsafe (v, 0) <> 0w0
                     in
-                       if Int32.>= (MPLimb.sizeInBits, #sizeInBits other) 
+                       if Int32.>= (MPLimb.sizeInBits, #sizeInBits other)
                           then let
                                   val limbsPer : S.t = 1
                                   val limb = V.subUnsafe (v, 1)
@@ -709,9 +709,9 @@ structure IntInf =
                                            if S.> (i, 0)
                                               then let
                                                       val limb = V.subUnsafe (v, i)
-                                                      val ans = 
-                                                         (#orb other) 
-                                                         ((#lshift other) 
+                                                      val ans =
+                                                         (#orb other)
+                                                         ((#lshift other)
                                                           (ans, MPLimb.sizeInBitsWord),
                                                           zextdFromMPLimb limb)
                                                    in
@@ -748,14 +748,14 @@ structure IntInf =
             else
             case chckToWord8Aux i of
                Small w => ObjptrWord.schckToWord8 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if extra
                      then raise Overflow
                   else if isneg
                      then let
                              val ans = Word8.~ ans
                              val ans' = IntWordConv.idFromWord8ToInt8 ans
-                          in 
+                          in
                              if Int8.> (ans', 0)
                                 then raise Overflow
                                 else ans
@@ -774,7 +774,7 @@ structure IntInf =
             else
             case chckToWord8Aux i of
                Small w => ObjptrWord.schckToWord8 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if isneg orelse extra
                      then raise Overflow
                   else ans
@@ -802,14 +802,14 @@ structure IntInf =
             else
             case chckToWord16Aux i of
                Small w => ObjptrWord.schckToWord16 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if extra
                      then raise Overflow
                   else if isneg
                      then let
                              val ans = Word16.~ ans
                              val ans' = IntWordConv.idFromWord16ToInt16 ans
-                          in 
+                          in
                              if Int16.> (ans', 0)
                                 then raise Overflow
                                 else ans
@@ -828,7 +828,7 @@ structure IntInf =
             else
             case chckToWord16Aux i of
                Small w => ObjptrWord.schckToWord16 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if isneg orelse extra
                      then raise Overflow
                   else ans
@@ -856,14 +856,14 @@ structure IntInf =
             else
             case chckToWord32Aux i of
                Small w => ObjptrWord.schckToWord32 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if extra
                      then raise Overflow
                   else if isneg
                      then let
                              val ans = Word32.~ ans
                              val ans' = IntWordConv.idFromWord32ToInt32 ans
-                          in 
+                          in
                              if Int32.> (ans', 0)
                                 then raise Overflow
                                 else ans
@@ -882,7 +882,7 @@ structure IntInf =
             else
             case chckToWord32Aux i of
                Small w => ObjptrWord.schckToWord32 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if isneg orelse extra
                      then raise Overflow
                   else ans
@@ -910,14 +910,14 @@ structure IntInf =
             else
             case chckToWord64Aux i of
                Small w => ObjptrWord.schckToWord64 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if extra
                      then raise Overflow
                   else if isneg
                      then let
                              val ans = Word64.~ ans
                              val ans' = IntWordConv.idFromWord64ToInt64 ans
-                          in 
+                          in
                              if Int64.> (ans', 0)
                                 then raise Overflow
                                 else ans
@@ -936,7 +936,7 @@ structure IntInf =
             else
             case chckToWord64Aux i of
                Small w => ObjptrWord.schckToWord64 w
-             | Big (isneg, extra, ans) => 
+             | Big (isneg, extra, ans) =>
                   if isneg orelse extra
                      then raise Overflow
                   else ans
@@ -956,8 +956,8 @@ structure IntInf =
          val bytesPerNormalMetaData = Sz.zextdFromInt32 MetaDataSize.bytes
       in
          val bytesPerArrayMetaData =
-            Sz.+ (bytesPerCounter, 
-            Sz.+ (bytesPerLength, 
+            Sz.+ (bytesPerCounter,
+            Sz.+ (bytesPerLength,
                   bytesPerNormalMetaData
             ))
          (* Reserve heap space for a large IntInf.int with room for num + extra
@@ -975,8 +975,8 @@ structure IntInf =
             ))))
       end
 
-      (* badObjptr{Int,Word}{,Tagged} is the fixnum IntInf.int whose 
-       * negation and absolute values are not fixnums. 
+      (* badObjptr{Int,Word}{,Tagged} is the fixnum IntInf.int whose
+       * negation and absolute values are not fixnums.
        * negBadIntInf is the negation (and absolute value) of that IntInf.int.
        *)
       val badObjptrInt: I.int = I.~>>? (I.minInt', 0w1)
@@ -1017,7 +1017,7 @@ structure IntInf =
                      else NONE
             in
                case res of
-                  NONE => bigOp (lhs, rhs, 
+                  NONE => bigOp (lhs, rhs,
                                  reserve (limbsFn (numLimbs lhs, numLimbs rhs), extra))
                 | SOME i => i
             end
@@ -1029,13 +1029,13 @@ structure IntInf =
 
       fun bigNeg (arg: bigInt): bigInt =
          if isSmall arg
-            then let 
+            then let
                     val argw = Prim.toWord arg
-                 in 
+                 in
                     if argw = badObjptrWordTagged
                        then negBadIntInf
                        else Prim.fromWord (W.- (0w2, argw))
-                 end 
+                 end
             else Prim.~ (arg, reserve (numLimbs arg, 1))
 
 
@@ -1047,14 +1047,14 @@ structure IntInf =
                     val denw = dropTagCoerce den
                     val deni = W.idToObjptrInt denw
                  in
-                    if numw = badObjptrWord 
+                    if numw = badObjptrWord
                        andalso deni = ~1
                        then negBadIntInf
                        else let
                                val ansi = I.quot (numi, deni)
                                val answ = W.idFromObjptrInt ansi
                                val ans = addTag answ
-                            in 
+                            in
                                Prim.fromWord ans
                             end
                  end
@@ -1066,13 +1066,13 @@ structure IntInf =
                        then zero
                        else if den = zero
                                then raise Div
-                               else Prim.quot (num, den, 
+                               else Prim.quot (num, den,
                                                reserve (S.- (nlimbs, dlimbs), 2))
                  end
 
       fun bigRem (num: bigInt, den: bigInt): bigInt =
          if areSmall (num, den)
-            then let 
+            then let
                     val numw = dropTagCoerce num
                     val numi = W.idToObjptrInt numw
                     val denw = dropTagCoerce den
@@ -1080,18 +1080,18 @@ structure IntInf =
                     val ansi = I.rem (numi, deni)
                     val answ = W.idFromObjptrInt ansi
                     val ans = addTag answ
-                 in 
+                 in
                     Prim.fromWord ans
                  end
-            else let 
+            else let
                     val nlimbs = numLimbs num
                     val dlimbs = numLimbs den
-                 in 
+                 in
                     if S.< (nlimbs, dlimbs)
                        then num
                        else if den = zero
                                then raise Div
-                               else Prim.rem (num, den, 
+                               else Prim.rem (num, den,
                                               reserve (dlimbs, 1))
                  end
 
@@ -1134,16 +1134,16 @@ structure IntInf =
       in
          fun bigGcd (lhs: bigInt, rhs: bigInt): bigInt =
             if areSmall (lhs, rhs)
-               then addTagCoerceInt 
+               then addTagCoerceInt
                     (smallGcd (I.abs (dropTagCoerceInt lhs),
                                I.abs (dropTagCoerceInt rhs),
                                1))
-               else Prim.gcd 
+               else Prim.gcd
                     (lhs, rhs, reserve (S.max (numLimbs lhs, numLimbs rhs), 0))
       end
 
       local
-         fun make (smallTest: I.int * I.int -> 'a, 
+         fun make (smallTest: I.int * I.int -> 'a,
                    int32Test: Int32.int * Int32.int -> 'a)
                   (lhs: bigInt, rhs: bigInt): 'a =
             if areSmall (lhs, rhs)
@@ -1160,9 +1160,9 @@ structure IntInf =
 
       fun bigAbs (arg: bigInt): bigInt =
          if isSmall arg
-            then let 
+            then let
                     val argw = Prim.toWord arg
-                 in 
+                 in
                     if argw = badObjptrWordTagged
                        then negBadIntInf
                        else if I.< (W.idToObjptrInt argw, 0)
@@ -1241,7 +1241,7 @@ structure IntInf =
       end
 
       local
-         fun make (smallOp, bigOp) 
+         fun make (smallOp, bigOp)
                   (lhs: bigInt, rhs: bigInt) =
             if areSmall (lhs, rhs)
                then
@@ -1251,7 +1251,7 @@ structure IntInf =
                   in
                      ans
                   end
-               else bigOp (lhs, rhs, 
+               else bigOp (lhs, rhs,
                            reserve (S.max (numLimbs lhs, numLimbs rhs), 0))
       in
          val bigAndb = make (W.andb, Prim.andb)
@@ -1271,7 +1271,7 @@ structure IntInf =
          fun bigLshift (arg: bigInt, shift: Word32.word): bigInt =
             if shift = 0wx0
                then arg
-               else Prim.<< (arg, shift, 
+               else Prim.<< (arg, shift,
                              reserve (S.+ (numLimbs arg, shiftSize shift), 1))
          fun bigRashift (arg: bigInt, shift: Word32.word): bigInt =
             if shift = 0wx0
@@ -1299,7 +1299,7 @@ structure IntInf =
                                    case MLton.Align.align of (* alignment *)
                                       MLton.Align.Align4 => 0w3
                                     | MLton.Align.Align8 => 0w7)),
-                             Sz.* (Sz.zextdFromInt32 dpl, 
+                             Sz.* (Sz.zextdFromInt32 dpl,
                                    Sz.zextdFromSeqIndex (numLimbs arg)))
                  in
                     Prim.toString (arg, base, bytes)

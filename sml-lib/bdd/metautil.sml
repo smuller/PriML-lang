@@ -87,13 +87,13 @@ fun contact cc = ("C", "Contact", "contact", "CONTACT",
    nodes, one for each attached body. *)
 fun contactedge cc = ("E", "ContactEdge", "contactedge", "CONTACTEDGE",
                    [
-                    (* provides quick access to the other body attached. 
-                       PERF: Do these really need to be optional? 
+                    (* provides quick access to the other body attached.
+                       PERF: Do these really need to be optional?
                        See World.ContactManager.add_pair. Could pass them
                        to 'new' or do initialization in that function. *)
                     ("other", cc "body" ^ " option"),
                     ("contact", cc "contact" ^ " option"),
-                    (* the previous and next contact edge in the 
+                    (* the previous and next contact edge in the
                        body's contact list *)
                     ("prev", cc "contactedge" ^ " option"),
                     ("next", cc "contactedge" ^ " option")])
@@ -104,7 +104,7 @@ fun joint cc = ("J", "Joint", "joint", "JOINT",
                  in Box2D. *)
               ("flags", "Word8.word"),
               ("typ", "BDDDynamicsTypes.joint_type"),
-              (* the previous and next joints in the world joint list. 
+              (* the previous and next joints in the world joint list.
                  the body joint lists are stored in joint edges. *)
               ("prev", cc "joint" ^ " option"),
               ("next", cc "joint" ^ " option"),
@@ -136,7 +136,7 @@ fun jointedge cc = ("G", "JointEdge", "jointedge", "JOINTEDGE",
                      joint list. *)
                   ("prev", cc "jointedge" ^ " option"),
                   ("next", cc "jointedge" ^ " option")])
-                    
+
 fun world cc = ("W", "World", "world", "WORLD",
              [("flags", "Word32.word"),
               ("body_list", cc "body" ^ " option"),
@@ -159,7 +159,7 @@ fun world cc = ("W", "World", "world", "WORLD",
               ("continuous_physics", "bool"),
               (* Port Note: Folded the "contact manager" object into the world
                  object. *)
-              (* The broad phase uses the userdata to point back to the 
+              (* The broad phase uses the userdata to point back to the
                  fixture cell. *)
               ("broad_phase", cc "fixture" ^ " BDDBroadPhase.broadphase"),
               ("contact_list", cc "contact" ^ " option"),
@@ -214,31 +214,31 @@ fun genstructtype mode (_, _, typen, _, _) =
 
 fun getter FUNCTIONAL (shortn, structn, typen, sign, fields) (field, typ) =
     let in
-        "    fun get_" ^ field ^ " (ref (" ^ shortn ^ " { " ^ 
+        "    fun get_" ^ field ^ " (ref (" ^ shortn ^ " { " ^
         field ^ ", ... })) = " ^ field ^ "\n"
     end
   | getter REF (shortn, structn, typen, sign, fields) (field, typ) =
     let in
-        "    fun get_" ^ field ^ " (" ^ shortn ^ " { " ^ 
+        "    fun get_" ^ field ^ " (" ^ shortn ^ " { " ^
         field ^ ", ... }) = !" ^ field ^ "\n"
     end
 
 (* Not that good, but better than 300 character lines *)
-fun wraplines indent str = 
+fun wraplines indent str =
     let val i = CharVector.tabulate (indent, fn _ => #" ")
     in String.concat (map (fn s => i ^ s ^ "\n") (StringUtil.wrapto (79 - indent) str))
     end
 
 fun setter FUNCTIONAL (shortn, structn, typen, sign, fields) (field, typ) =
     let
-        val assign = 
+        val assign =
             wraplines 6
             (tmp ^ " := " ^ shortn ^ " { " ^
             (StringUtil.delimit ", " (map (fn (f, _) => f ^ " = " ^ f) fields) ^
              " }"))
     in
         wraplines 4
-        ("fun set_" ^ field ^ " (" ^ tmp ^ " as ref (" ^ 
+        ("fun set_" ^ field ^ " (" ^ tmp ^ " as ref (" ^
          shortn ^ " { " ^
          StringUtil.delimit ", " ((map (fn (f, _) =>
                                         f ^ (if f = field
@@ -249,13 +249,13 @@ fun setter FUNCTIONAL (shortn, structn, typen, sign, fields) (field, typ) =
     end
   | setter REF (shortn, structn, typen, sign, fields) (field, typ) =
     let in
-        "    fun set_" ^ field ^ " (" ^ shortn ^ " { " ^ 
+        "    fun set_" ^ field ^ " (" ^ shortn ^ " { " ^
         field ^ ", ... }, v) = " ^ field ^ " := v\n"
     end
 
 fun newer FUNCTIONAL (shortn, structn, typen, sign, fields) =
     let
-        val record = 
+        val record =
             wraplines 6
             ("ref (" ^ shortn ^ " { " ^
             (StringUtil.delimit ", " (map (fn (f, _) => f ^ " = " ^ f) fields) ^
@@ -268,7 +268,7 @@ fun newer FUNCTIONAL (shortn, structn, typen, sign, fields) =
     end
   | newer REF (shortn, structn, typen, sign, fields) =
     let
-        val record = 
+        val record =
             wraplines 6
             (shortn ^ " { " ^
             (StringUtil.delimit ", " (map (fn (f, _) => f ^ " = ref " ^ f) fields) ^
@@ -286,7 +286,7 @@ fun eqer FUNCTIONAL _ = "    val eq = op=\n"
        can just use any one of the fields as the identity of the value. *)
     (case fields of
          (f, _) :: _ =>
-             ("    fun eq (" ^ shortn ^ " { " ^ f ^ ", ... }, " ^ 
+             ("    fun eq (" ^ shortn ^ " { " ^ f ^ ", ... }, " ^
                                shortn ^ " { " ^ f ^ " = " ^ tmp ^ ", ... }) =\n" ^
               "        " ^ f ^ " = " ^ tmp ^ "\n")
              (* Could just return true, but this is probably a bug if
@@ -320,7 +320,7 @@ fun genstructdecl mode ((mstruct, msig), typs) =
 
 (*
    The single output signature is:
-   
+
    1. abstract type definitions for each of the types (in terms of the cell type)
    2. signatures for the structures containing the get and set functions
 *)
@@ -336,7 +336,7 @@ fun gensigtype (_, _, typen, _, _) =
 (* Generate the structure : signature decl for an individual type,
    within the master signature. *)
 fun genonestructsig (shortn, structn, typen, sign, fields) =
-    let 
+    let
         fun sig_getter (name, typ) =
             "    val get_" ^ name ^ " : ('b, 'f, 'j) " ^ typen ^ " -> (" ^
             typ ^ ")\n"
@@ -375,7 +375,7 @@ fun gensigdecl ((mstruct, msig), typs) =
         String.concat (map genonestructsig typs) ^
         "end\n"
     end
-    
+
 
 (* XXX from commandlines? *)
 (*
@@ -416,9 +416,9 @@ val joint = ("J",
 (*
 fun printl s = (print s; print "\n")
 fun make_get (ctor, fields) =
-    let 
+    let
         fun one field =
-            "fun get_" ^ field ^ " (ref (" ^ ctor ^ "{ " ^ 
+            "fun get_" ^ field ^ " (ref (" ^ ctor ^ "{ " ^
             field ^ ", ... })) = " ^ field
     in
         app (printl o one) fields
@@ -429,15 +429,15 @@ fun make_set (ctor, fields) =
         val assign = "r := " ^ ctor ^ " { " ^
             StringUtil.delimit ", " (map (fn f => f ^ " = " ^ f) fields) ^
             "}"
-            
+
         fun one field =
             "fun set_" ^ field ^ " (r as ref (" ^ ctor ^ "{ " ^
-            StringUtil.delimit ", " ((map (fn f => 
+            StringUtil.delimit ", " ((map (fn f =>
                                            f ^ (if f = field
                                                 then " = _"
                                                 else ""))) fields) ^
             " }), " ^ field ^ ") = " ^ assign
-            
+
     in
         app (printl o one) fields
     end

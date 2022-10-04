@@ -9,7 +9,7 @@ struct
   let
       val _ = GA.length (GA.empty()) = 0 orelse raise Nope
       val _ = (GA.sub (GA.empty()) 0; raise Nope) handle Subscript => ()
-          
+
       val a : int GA.growarray = GA.empty ()
       val _ = 0 = GA.update_next a 5 orelse raise Nope
       val _ = 1 = GA.length a orelse raise Nope

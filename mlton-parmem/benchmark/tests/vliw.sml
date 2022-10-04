@@ -1,7 +1,7 @@
 (* From the SML/NJ benchmark suite. *)
 
 fun print _ = ()
-   
+
 signature BMARK =
   sig
     val doit : int -> unit
@@ -15,7 +15,7 @@ fun fold f x y = List.foldr f y x
 fun revfold f x y = List.foldl f y x
 val makestring = Int.toString
 
-local 
+local
 open Real
 in
 val realEq = ==
@@ -23,7 +23,7 @@ val realNe = !=
 end
 
 exception NotAChar
-fun fromStr x = 
+fun fromStr x =
   (case Char.fromString x
     of SOME c => c
      | NONE => raise NotAChar)
@@ -52,19 +52,19 @@ fun outputc f x = TextIO.output(f, x)
 
 exception NotAReal
 
-fun strToReal s = 
+fun strToReal s =
   (case Real.fromString s
     of SOME r => r
      | _ => raise NotAReal)
 
-fun intToReal x = 
+fun intToReal x =
   (strToReal ((Int.toString x) ^ ".0"))
 
-structure Bits = 
+structure Bits =
 struct
 
 fun wrap (f : Word.word * Word.word -> Word.word)
-  = (fn (x : int, y : int) => 
+  = (fn (x : int, y : int) =>
        Word.toInt(f(Word.fromInt x, Word.fromInt y)))
 
 val orb  = wrap Word.orb
@@ -74,12 +74,12 @@ val lshift = wrap Word.<<
 val rshift = wrap Word.>>
 
 end
-structure Ref = 
+structure Ref =
 struct
   val inc = fn x => (x := !x + 1)
   val dec = fn x => (x := !x - 1)
 end
- 
+
 (* stringmap.sml *)
 
 signature STRINGMAP =
@@ -106,8 +106,8 @@ struct
   fun hash(str: string) : int =
       let val nchars = String.size str
 
-          fun loop(i,n,r) = 
-            if i < n then 
+          fun loop(i,n,r) =
+            if i < n then
              loop(i+1,n,(hashFactor * r + ordof(str,i)) mod tableSize)
             else r
 
@@ -123,13 +123,13 @@ struct
   fun new (): 'a stringmap = array(tableSize,nil)
 
   (* add a mapping pair s +-> x to the stringmap a *)
-  fun add a (s,x) = 
+  fun add a (s,x) =
     let val index = hash s
      in update(a,index,(s,x)::(a sub index))
     end
 
   (* apply the stringmap a to the index string s *)
-  fun map a s = 
+  fun map a s =
     let fun find ((s',x)::r) = if s=s' then x else find r
           | find nil = raise Stringmap
      in find (a sub (hash s))
@@ -141,7 +141,7 @@ struct
        handle Stringmap => false)
 
   (* remove all pairs mapping string s from stringmap a *)
-  fun rm a s = let fun f ((b as (s',j))::r) = 
+  fun rm a s = let fun f ((b as (s',j))::r) =
                                 if s=s' then f r else b :: f r
                       | f nil = nil
                     val index = hash s
@@ -176,7 +176,7 @@ end  (* Stringmap *)
 structure StrPak :
     sig
         val stringListString : string list -> string
-    end = 
+    end =
 
 struct
 
@@ -187,7 +187,7 @@ fun sl nil = "]"
 fun stringListString l = "[" ^ sl l
 
 end
-signature SortObjSig = 
+signature SortObjSig =
     sig
         type obj
         val gt : obj * obj -> bool
@@ -197,14 +197,14 @@ functor Sort ( objfun : SortObjSig ) :
     sig
         type obj
         val sort : obj list -> obj list
-    end = 
+    end =
 
 struct
 
 open objfun
 
 type obj = objfun.obj
-        
+
 fun sort l =
     let fun m2 (nil, b) = b
           | m2 (a, nil) = a
@@ -226,7 +226,7 @@ structure IntImp =
         type obj = int
         fun gt(a:obj, b:obj) = a > b
     end
-                           
+
 
 structure INTSort = Sort ( IntImp )
 
@@ -250,7 +250,7 @@ structure Set :
         val set : 'a set -> 'a list
         val mag : 'a set -> int
         val empty : 'a set -> bool
-    end = 
+    end =
 struct
 datatype 'a set = S of ('a*'a->bool) * 'a list
 
@@ -325,14 +325,14 @@ struct
       INT of int
     | REAL of real
     | LABVAL of int * int
-        
-  datatype arithop = imul | iadd | isub | idiv 
+
+  datatype arithop = imul | iadd | isub | idiv
                   | orb | andb | xorb | rshift | lshift
                    | fadd | fdiv | fmul | fsub
                   | real | floor | logb
 
   datatype comparison = ilt | ieq | igt | ile | ige | ine
-                      | flt | feq | fgt | fle | fge | fne 
+                      | flt | feq | fgt | fle | fge | fne
                       | inrange | outofrange
   datatype opcode =
       FETCH of {immutable: bool, offset: int, ptr: reg, dst: reg}
@@ -346,7 +346,7 @@ struct
     | ARITH of {oper: arithop, src1: reg, src2: reg, dst: reg}
     | ARITHI of {oper: arithop, src1: reg, src2: int, dst: reg}
     | MOVE of {src: reg, dst: reg}
-    | BRANCH of {test: comparison, src1: reg, src2: reg, dst: label, 
+    | BRANCH of {test: comparison, src1: reg, src2: reg, dst: label,
                  live: reg list}
     | JUMP of {dst: reg, live: reg list}
     | LABEL of {lab:label, live: reg list}
@@ -408,7 +408,7 @@ fun resources_ok(ops, c) = (List.length ops) <= 4 andalso (List.length c) <= 1
 
 fun allocptr r = reg r = 1
 
-fun write_o i = 
+fun write_o i =
     let open Set
         open AbsMach
         val f =
@@ -431,7 +431,7 @@ fun write_o i =
 fun write_c c = Set.listToSet [flowControl]
 
 val std_reg_list = [(1, ""), (2, ""), (3, ""), (4, ""), (5, "")]
-                   
+
 fun read i =
     let open Set
         open AbsMach
@@ -511,7 +511,7 @@ exception ReadError
 
 fun readline(i,f) =
 let
-    
+
     fun error s = (print("Error in line "^makestring i^": "^s^"\n");
                    raise ReadError)
 
@@ -553,7 +553,7 @@ val com =
    | "o"::"u"::"t"::"o"::"f"::"r"::"a"::"n"::"g"::"e"::l => (outofrange,l)
    | _ => error "illegal comparison operator"
 
-fun immut("i"::l) = (true,l) | immut("m"::l) = (false,l) 
+fun immut("i"::l) = (true,l) | immut("m"::l) = (false,l)
   | immut _ = error "i or m required"
 
 fun int l =
@@ -576,13 +576,13 @@ fun string l =
   end
 
   fun realc s =
-    let val (sign,s) = case explode s of "~"::rest => (~1.0,rest) 
+    let val (sign,s) = case explode s of "~"::rest => (~1.0,rest)
                                        | s => (1.0,s)
         fun j(exp,d::dl,mant) = j(exp,dl,mant * 0.1 + intToReal(d))
           | j(0,nil,mant) = mant*sign
           | j(exp,nil,mant) = if exp>0 then j(exp-1,nil,mant*10.0)
                                        else j(exp+1,nil,mant*0.1)
-        fun h(esign,wholedigits,diglist,exp,nil) = 
+        fun h(esign,wholedigits,diglist,exp,nil) =
                           j(esign*exp+wholedigits-1,diglist,0.0)
           | h(es,fd,dl,exp,d::s) = h(es,fd,dl,exp*10+(ord d - ord "0"),s)
         fun g(i,r,"E"::"~"::s)=h(~1,i,r,0,s)
@@ -622,7 +622,7 @@ fun live l =
   in f(b(require(["("],l)))
  end
 
-val opcode = 
+val opcode =
  fn "F"::"E"::"T"::"C"::"H"::l =>
         let val (imm,l) = immut(b l)
             val (dst,l) = reg(b l)
@@ -715,12 +715,12 @@ open AbsMach
 
 fun xstr prog =
 
-let 
+let
 
 val outstr = ref ""
 fun pr s = outstr := !outstr ^ s
 
-val aop = 
+val aop =
  fn imul => "imul"
   | iadd => "iadd"
   | isub => "isub"
@@ -783,7 +783,7 @@ val p =
    | ARITH{oper,src1,src2,dst} =>
       (pr "ARITH   "; reg dst;
        pr " := "; reg src1;
-       pr " "; pr(aop oper); pr " "; 
+       pr " "; pr(aop oper); pr " ";
        reg src2;
        pr "\n")
    | ARITHI{oper,src1,src2,dst} =>
@@ -831,8 +831,8 @@ val p =
           pr ") := (";
           List.app (fn r => (reg r; pr " ")) reads;
           pr ")\n")
-  
-                         
+
+
 in (List.app p prog; !outstr)
 end
 
@@ -849,13 +849,13 @@ fun show out prog =
     in
         f prog
     end
-    
+
 end
 
 
 structure HM = AbsMachImp
 structure BreakInst :
-    sig 
+    sig
         val breaki : AbsMach.opcode list -> AbsMach.opcode list
     end =
 struct
@@ -929,7 +929,7 @@ fun breaki l =
 
 end
 structure OutFilter :
-    sig 
+    sig
         val remnops : AbsMach.opcode list -> AbsMach.opcode list
     end =
 struct
@@ -1041,7 +1041,7 @@ fun b_idem (n, r, w) =
         if null nr then nil
         else b_idemx(n, nr, w)
     end
-        
+
 fun b_assx (0, r) = nil
   | b_assx (1, r) = BOGUS{reads=[bogus_reg(r, 1)], writes=[r]} :: nil
   | b_assx (n, r) =
@@ -1069,7 +1069,7 @@ fun b_brx (n, rl) =
     in
         BOGUS{reads=map br rl, writes=rl} :: b_brxx(n-1, rl)
     end
-    
+
 fun b_br (b, n, rl) = rev (b :: b_brx(n, rl))
 
 fun is_flow i =
@@ -1079,7 +1079,7 @@ fun is_flow i =
     in
         f (classify i)
     end
-    
+
 fun add_delay il =
     let fun idem (r, w) = b_idem (!idempotency, r, w)
         fun g i =
@@ -1139,7 +1139,7 @@ fun rm_bogus il =
                           src2=unbogus_reg src2,
                           dst=dst, live=live
                           } :: g t
-             | BOGUS _ => g t   
+             | BOGUS _ => g t
              | _  =>  i :: g t
         in
             f i
@@ -1174,7 +1174,7 @@ structure Ntypes :
 
         val toaeq : test_or_assign * test_or_assign -> bool
 
-    end = 
+    end =
 
 struct
 
@@ -1244,12 +1244,12 @@ structure Dag :
                       Ntypes.name Set.set)
             -> dag
         val dagToString : dag -> string
-    end = 
+    end =
 struct
 
 open Ntypes;
-        
-    
+
+
 exception DAGnotfound
 exception DAG
 
@@ -1269,7 +1269,7 @@ fun sep (a, b) = a ^ ", " ^ b
 fun dagToString (D(t, sel, rt, s)) =
     "D([" ^ PrintAbs.str (Set.set t) ^ "]" ^
     "fn, " ^ (tonToString rt) ^ ", " ^ (fold sep (Set.set s) ")")
-    
+
 val make = D(Set.makeEQ teq, fn x => raise DAGnotfound, NEITHER, Set.make)
 
 fun newdag x = D x
@@ -1279,7 +1279,7 @@ fun sel_of(D (b, sel, r, h)) = sel
 fun root_of(D (b, sel, r, h)) = r
 fun succ_of(D (b, sel, r, h)) = h
 
-fun attach (t, D dt, D df) = 
+fun attach (t, D dt, D df) =
     let open Set
         val (b1, sel1, r1, h1) = dt
         val (b2, sel2, r2, h2) = df
@@ -1292,7 +1292,7 @@ fun attach (t, D dt, D df) =
           union(h1,h2)
           )
     end
-       
+
 fun reach (D d, tn) =
     let open Set
         val (b, sel, r, h) = d
@@ -1391,7 +1391,7 @@ structure Node :
         val updateNode : program * node -> program
         val addNode : program * node -> program
         val rmNode : program * node -> program
-    end = 
+    end =
 struct
 
 open Ntypes
@@ -1476,7 +1476,7 @@ fun addNode(P as (ns, n0, F), new_node) =
         val foo = p_n_debug
             (fn () =>
              ("addNode n=" ^ nodeToString new_node ^
-              "=>" ^ 
+              "=>" ^
                   (if !prog_node_debug_verbose then progToString answer
                    else "(program)")))
     in
@@ -1490,7 +1490,7 @@ fun rmNode(P as (ns, n0, F), node) =
         val foo = p_n_debug
             (fn () =>
              ("rmNode n=" ^ nodeToString node ^
-              "=>" ^ 
+              "=>" ^
                   (if !prog_node_debug_verbose then progToString answer
                    else "(program)")))
     in
@@ -1571,7 +1571,7 @@ fun read_write_debug (f:debug_fun) =
     else ()
 
 fun readNode n =
-    let open Set 
+    let open Set
         val answer =
             union
             (listUnion (make::(map (read o ASS) ((set o assignment_of) n))),
@@ -1586,7 +1586,7 @@ fun readNode n =
     end
 
 fun writeNode n =
-    let open Set 
+    let open Set
         val answer =
             union
             (listUnion (make::(map (write o ASS) ((set o assignment_of) n))),
@@ -1687,7 +1687,7 @@ fun delete (P as (ns, n0, F), n) =
     in
         if (em orelse un) andalso not (eqn(n, F)) then
             if not un then
-                let 
+                let
                     val foo = del_debug (fn () => "complex deletion")
                     val s0 = Set.set (succ(P, n))
                     val nprime = if List.length s0 = 1 then hd s0
@@ -1728,7 +1728,7 @@ fun mop_debug (f:debug_fun) =
         (dead_set_debug := true;
          print ("mop:" ^ f() ^ "\n"))
     else dead_set_debug := false
-       
+
 
 fun can_move_op1(P as (ns, n0, F), x, move_set, m) =
     let open Set
@@ -1772,7 +1772,7 @@ fun can_move_op(P, x, move_set, m) =
 
 fun move_op (P as (ns, n0, F), x, move_set, m) =
     let val foo = cpsi("move_op enter", P)
-        val foo = 
+        val foo =
         mop_debug (fn () =>
                    "move_op(x=" ^
                    PrintAbs.str [x] ^
@@ -1787,7 +1787,7 @@ fun move_op (P as (ns, n0, F), x, move_set, m) =
             exception NOTFOUND
             val primed_pairs = ref nil
             fun pnf nm =
-                let fun f nil = 
+                let fun f nil =
                     let val nn = prime_name nm
                     in
                         (primed_pairs := (nm, nn) :: !primed_pairs;
@@ -1884,7 +1884,7 @@ fun move_test (P as (ns, n0, F):program, x:test, n:node, m:node) =
                             if toneq(v, TEST x) then sel_n(x, true)
                             else v
                         end
-                    val nC = 
+                    val nC =
                         if TEST x = rt_n then
                             reach(updt_sel(d_n, nsel), sel_n(x, true))
                         else
@@ -1934,7 +1934,7 @@ fun move_test (P as (ns, n0, F):program, x:test, n:node, m:node) =
                 fold updtl ([rmPredNode(n, name_of m), new_m] @ upt @ upf) P
             val answer = np
             val foo = mt_debug (fn () => "mtst done")
-            val foo = cpsi("move_test leave", answer)           
+            val foo = cpsi("move_test leave", answer)
         in
             answer
         end
@@ -2005,7 +2005,7 @@ fun programs(P as (ns, n0, F):program) =
 structure ns =
     struct
         type obj = node
-            
+
         fun int l =
             let val z = ord "0"
                 fun f(n, nil) = n
@@ -2041,7 +2041,7 @@ structure Compress :
 
         val dbg_p : Node.program ref
 
-    end = 
+    end =
 
 struct
 
@@ -2066,7 +2066,7 @@ type debug_fun = unit -> string
 fun debug (f:debug_fun) =
     if !compress_debug then print (f() ^ "\n")
     else ()
-        
+
 exception FILTERSUCC
 
 fun filterSucc(P, nm, fence_set) =
@@ -2219,7 +2219,7 @@ exception CPRESS4
 exception CPRESS5
 fun cpress(window, P, fence_set, everin_fence_set) =
     let open Set
-        fun nxt(nm, p:program) = 
+        fun nxt(nm, p:program) =
             ((* dbg_p := p; *)
              move_things_window(p, window, nm, fence_set))
             handle MOVETHINGSWINDOW => raise CPRESS1
@@ -2257,7 +2257,7 @@ fun clean_up (P as (ns, n0, F):program) =
     in
         answer
     end
-    
+
 fun compress(window, P as (ns, n0, F)) =
     let open Set
         val fence = n0
@@ -2269,7 +2269,7 @@ fun compress(window, P as (ns, n0, F)) =
         debug (fn () => "compress");
         cu
     end
-        
+
 
 
 end
@@ -2277,7 +2277,7 @@ structure ReadI :
     sig
         val readI :
             HM.operation list -> (HM.operation list * Node.program list)
-            
+
         val writeI :
             (HM.operation list * Node.program list) -> HM.operation list
 
@@ -2286,7 +2286,7 @@ structure ReadI :
         val read_debug : bool ref
         val write_debug : bool ref
         val live_debug : bool ref
-    end = 
+    end =
 
 struct
 
@@ -2297,13 +2297,13 @@ val live_debug = ref false
 fun read_dbg f =
     if !read_debug then print ("readI.read:" ^ f() ^ "\n")
     else ()
-        
+
 fun write_dbg f =
     if !write_debug then print ("writeI.read:" ^ f() ^ "\n")
     else ()
 
 fun write_dbg_s s = write_dbg (fn () => s)
-    
+
 exception BTARGET
 
 fun btarget (nil, n) = (fn x => raise BTARGET)
@@ -2362,7 +2362,7 @@ fun buildNodes l =
     in
         prog
     end
-            
+
 exception READI
 exception READI_NTN
 fun readI ol =
@@ -2425,7 +2425,7 @@ fun build_live_tab(P as (ns, n0, F): Node.program) =
         val finset = listToSet [0, 1, 2, 3, 4, 5]
         fun flive f n =
             if Stringmap.isin lt (name_of n) then Stringmap.map lt (name_of n)
-            else f n 
+            else f n
         fun dfs cur =
             let fun fl n = flive dfs n
                 val nm = name_of cur
@@ -2443,7 +2443,7 @@ fun build_live_tab(P as (ns, n0, F): Node.program) =
             end
     in
         dfs n0;
-        (fn nm => 
+        (fn nm =>
          let val ans = Stringmap.map lt nm
              val foo = live_dbg (fn () => nm ^ "=>" ^
                                  StrPak.stringListString
@@ -2520,7 +2520,7 @@ fun writeP (entry_map,  lbl_fun, P as (ns, n0, F):Node.program) =
                     val foo = write_dbg_s "doing"
                     val node = nameToNode(P, nm)
                         handle NAMETONODE => raise WRITEP_NTN
-                    val needlabel = 
+                    val needlabel =
                         let val pd = set (pred (P, node))
                             val foo = write_dbg
                                 (fn () => ("needlabel pd=" ^
@@ -2660,7 +2660,7 @@ fun writeI(j:AbsMach.opcode list, p:Node.program list) =
     in
         i @ j
     end
-            
+
 
 end
 
@@ -2693,7 +2693,7 @@ signature SIMLABS =
     val init : AbsMach.opcode list -> unit
     val mcell : int -> AbsMach.values
     val pc : unit -> AbsMach.opcode list
-    val pinit : int * (AbsMach.arithop -> int) * int * AbsMach.opcode list 
+    val pinit : int * (AbsMach.arithop -> int) * int * AbsMach.opcode list
                 -> unit
     val pptr : unit -> int
     val prun : unit -> unit
@@ -2719,7 +2719,7 @@ structure SetEnv : SIMLABS=
 struct
 
   open AbsMach;
-  
+
   val codes : (opcode list ref)=ref nil;
 
   val RegN=ref 0 and LabN=ref 0 and memorysize=ref 10000;
@@ -2777,8 +2777,8 @@ struct
    *)
   fun scan(nil)=() |
       scan(h::t)=(count_number(h);scan(t));
-  
-  (* setlabels is used to set the label array, of which each item is a 
+
+  (* setlabels is used to set the label array, of which each item is a
      pair (label, codep), codep points to the codes containing the LABEL
      statement and afterwards codes.
    *)
@@ -2786,7 +2786,7 @@ struct
       setlabels(codel as ((LABEL {lab=(l,_),...})::t),k)=
       (update((!Lab_Array),k,(l,ref codel)); setlabels(t,k+1) ) |
       setlabels(h::t,k)=setlabels(t,k) ;
-  
+
   (* initializing the enviroment of the simulation.
    *)
   fun init(l)=(RegN:=0; LabN:=0; IP:=l; codes:=l;
@@ -2794,7 +2794,7 @@ struct
               Reg:=array( (!RegN), inivalue ) ;
               Memory:=array( (!memorysize), inivalue ) ;
               Lab_Array:=array( (!LabN), (0,IP));
-              setlabels(!IP,0) 
+              setlabels(!IP,0)
               );
 
 
@@ -2809,7 +2809,7 @@ struct
   exception no_address_in_register;
   exception no_memory_address_in_register;
 
-  (* getresult gives the results of arithmtic operations      
+  (* getresult gives the results of arithmtic operations
    *)
   fun getresult(iadd,INT (n1:int),INT (n2:int))=INT (n1+n2) |
       getresult(isub,INT (n1:int),INT (n2:int))=INT (n1-n2) |
@@ -2852,21 +2852,21 @@ struct
       compare(outofrange,REAL a,REAL b)=(a<0.0) orelse (a>b) |
       compare(_)=raise type_mismatch_in_comparison ;
 
-  (* findjmp_place returns the pointer to the codes corresponding to the 
+  (* findjmp_place returns the pointer to the codes corresponding to the
      given label (the codes containing the LABEL statement itself).
    *)
   fun findjmp_place lab =
       let val ipp=ref (ref nil) and i=ref 0 and flag=ref true;
           val none=(while ( (!i < !LabN) andalso (!flag) ) do
-                       (  let val (l,p)=((!Lab_Array) sub (!i)) in 
+                       (  let val (l,p)=((!Lab_Array) sub (!i)) in
                           if (l=lab) then (ipp:=p;flag:=false)
                                      else Ref.inc(i)
                           end
                           )
                      )
       in if (!flag) then raise wrong_label
-                   else (!ipp)           
-      end; 
+                   else (!ipp)
+      end;
 
   (* findjmp_word returns the content of the k th labword in a code stream.
    *)
@@ -2887,16 +2887,16 @@ struct
                                    f(1,WORD{value=n}::t)=INT n      |
                                    f(k,LABWORD{...}::t)=f(k-1,t)    |
                                    f(k,WORD{...}::t)=f(k-1,t)       |
-                                   f(_)=raise 
-                                          runtime_error_in_words_or_labwords   
+                                   f(_)=raise
+                                          runtime_error_in_words_or_labwords
                            in f(k,(!ip))
                            end;
-                
+
 
   (* execjmp changes IP, makes it point to the codes of the given label.
    *)
   fun execjmp(LABVAL (l,0))= (IP:= !(findjmp_place l) ) |
-      execjmp(LABVAL (l,k))= (IP:= 
+      execjmp(LABVAL (l,k))= (IP:=
                               ! (findjmp_place
                                    (findjmp_word(k,findjmp_place(l) ) ) )
                                  )                      |
@@ -2925,33 +2925,33 @@ struct
         update((!Reg),d,(REAL (strToReal v)))                  |
       exec(MOVE{src=(s,_),dst=(d,_)})=
         update((!Reg),d, (!Reg) sub s )                        |
-      exec(LABEL {...})= 
+      exec(LABEL {...})=
         ()                                                     |
-      exec(LABWORD {...}) = 
+      exec(LABWORD {...}) =
         ()                                                     |
       exec(WORD{...})=
         ()                                                     |
       exec(JUMP {dst=(d,_),...})=
         execjmp((!Reg) sub d)                                  |
-      exec(ARITH {oper=opn,src1=(s1,_),src2=(s2,_),dst=(d,_)})= 
+      exec(ARITH {oper=opn,src1=(s1,_),src2=(s2,_),dst=(d,_)})=
         update((!Reg),d,getresult(opn,(!Reg) sub s1,(!Reg) sub s2) )   |
       exec(ARITHI {oper=opn,src1=(s1,_),src2=n1,dst=(d,_)})=
         update((!Reg),d,getresult(opn,(!Reg) sub s1,(INT n1) ) )       |
       exec(BRANCH{test=comp,src1=(s1,_),src2=(s2,_),dst=(labnum,_),...})=
-        if compare(comp,(!Reg) sub s1,(!Reg) sub s2) 
+        if compare(comp,(!Reg) sub s1,(!Reg) sub s2)
         then (IP:= !(findjmp_place(labnum) ) )
         else ()                                                        |
       exec(NOP)= () |
       exec(BOGUS _)= raise Match
-            
+
       ;
 
 
 
   exception End_of_Program;
 
-  fun step () =let 
-                 val Instruction=(hd(!IP) handle Hd=> raise End_of_Program) 
+  fun step () =let
+                 val Instruction=(hd(!IP) handle Hd=> raise End_of_Program)
                in
                (IP:=tl(!IP) handle Tl=>raise End_of_Program;
                 exec(Instruction) )
@@ -2962,10 +2962,10 @@ struct
   (* bms, ims, rms are simply abbreviations.
    *)
   val bms : bool -> string = Bool.toString
-  and ims : int -> string = Int.toString 
+  and ims : int -> string = Int.toString
   and rms : real -> string = Real.toString
 
-  (* dispv shows the content of a register, dispm shows the content of a 
+  (* dispv shows the content of a register, dispm shows the content of a
      memory word.
    *)
   fun dispv(n,INT k)=output(std_out,"Register "^ims(n)^": "^
@@ -3007,11 +3007,11 @@ struct
       cms(flt)="flt" | cms(fgt)="fgt" | cms(feq)="feq" |
       cms(fle)="fle" | cms(fge)="fge" | cms(fne)="fne" |
       cms(outofrange)="outofrange" | cms(inrange)="inrange" ;
-  
+
   (* lms gives the string of the live register list.
    *)
-  fun lms(nil)="" | 
-      lms((h,s)::nil)="("^ims(h)^","^s^")" | 
+  fun lms(nil)="" |
+      lms((h,s)::nil)="("^ims(h)^","^s^")" |
       lms((h,s)::t)="("^ims(h)^","^s^"),"^lms(t);
 
   (* disp gives the string for the instruction.
@@ -3046,9 +3046,9 @@ struct
       "BRANCH{test="^cms(comp)^",src1=("^ims(s1)^","^ss1^"),src2=("^ims(s2)
       ^","^ss2^"),dst=("^ims(labnum)^","^ss3^"),live=["^lms(lt)^"]}\n"     |
 
-      disp(JUMP{dst=(d,ds),live=lt}) = 
+      disp(JUMP{dst=(d,ds),live=lt}) =
       "JUMP{dst=("^ims(d)^","^ds^"),live=["^lms(lt)^"]}\n"                 |
-                
+
       disp(LABWORD{lab=(l,s)})="LABWORD{lab=("^ims(l)^","^s^")}\n"         |
 
       disp(LABEL{lab=(l,s),live=lt})=
@@ -3088,7 +3088,7 @@ struct
 (* This part for the VLIW mode execution.                                  *)
 
 
-  val runcount=ref 0 and sizen=ref 0 and flag=ref true; 
+  val runcount=ref 0 and sizen=ref 0 and flag=ref true;
   exception Simulator_error_1;
   exception Simulator_error_2;
   exception Data_dependency_checked;
@@ -3101,7 +3101,7 @@ struct
    *)
   fun hvcom(nil,l)=false |
       hvcom(h::t,l)=member(h,l) orelse hvcom(t,l);
-  
+
   (* gset returns the list of registers refered in a instruction.
      gwset returns the list of the register being written in a instruction.
    *)
@@ -3122,15 +3122,15 @@ struct
       gwset(ARITHI{dst=(d,_),...})=[d] |
       gwset(MOVE{dst=(d,_),...})=[d] |
       gwset(_)=nil ;
-  
-  (* fetchcode returns the instruction word which contains the next k 
+
+  (* fetchcode returns the instruction word which contains the next k
      instruction.  fetchcode3 is used in version 3 of VLIW mode, in which case
      labels within instruction words are OK.
    *)
   fun fetchcode(0)=nil |
       fetchcode(k)=let val h=hd(!IP) in
-                     (IP:=tl(!IP); 
-                      if hvnop(h) 
+                     (IP:=tl(!IP);
+                      if hvnop(h)
                       then (output(std_out,
                             "Warning: labels within the instruction word\n");
                             fetchcode(k)
@@ -3139,7 +3139,7 @@ struct
                    end handle Hd=>nil;
   fun fetchcode3(0)=nil |
       fetchcode3(k)=let val h=hd(!IP) in
-                     (IP:=tl(!IP); 
+                     (IP:=tl(!IP);
                       if hvnop(h) then fetchcode3(k)
                                   else h::fetchcode3(k-1) )
                    end handle Hd=>nil;
@@ -3150,7 +3150,7 @@ struct
       allnop(NOP::t)=allnop(t) |
       allnop(_)=false;
 
-  (* nopcut cut the instruction stream in a way that the first half are all 
+  (* nopcut cut the instruction stream in a way that the first half are all
      NOP instruction.
    *)
   fun nopcut(nil)=(nil,nil) |
@@ -3171,14 +3171,14 @@ struct
   (* crdd test the data dependency on registers.
    *)
   fun crdd(_,nil)=false |
-      crdd(wset,h::t)=if hvcom(gset(h),wset) then true 
+      crdd(wset,h::t)=if hvcom(gset(h),wset) then true
                       else crdd(gwset(h)@wset,t) ;
 
   (* check_dd checks whether there is data dependency in instruction stream l.
    *)
-  fun check_dd(l)= crdd(nil,l) orelse cmdd(nil,l); 
+  fun check_dd(l)= crdd(nil,l) orelse cmdd(nil,l);
 
-  (* rddcut seperate the longest part of the instruction stream that have no 
+  (* rddcut seperate the longest part of the instruction stream that have no
      data dependency on registers , from the left.
    *)
   fun rddcut(_,nil)= (nil,nil)                                   |
@@ -3195,18 +3195,18 @@ struct
         let val (l1,l2)=mddcut(addrplus((!Reg) sub p,ofst)::wset,t)
         in (h::l1,l2) end                                        |
       mddcut(wset,(h as FETCH{ptr=(p,_),offset=ofst,...})::t)=
-        if member(addrplus((!Reg) sub p,ofst),wset) 
-        then (nil,h::t) 
+        if member(addrplus((!Reg) sub p,ofst),wset)
+        then (nil,h::t)
         else let val (l1,l2)=mddcut(wset,t) in (h::l1,l2) end    |
       mddcut(wset,(h as BRANCH{...})::t)=
         let val (l1,l2)=nopcut(t) in (h::l1,l2) end              |
       mddcut(wset,(h as JUMP{...})::t)=
         let val (l1,l2)=nopcut(t) in (h::l1,l2) end              |
       mddcut(wset,h::t)=
-        let val (l1,l2)=mddcut(wset,t) in (h::l1,l2) end    
+        let val (l1,l2)=mddcut(wset,t) in (h::l1,l2) end
       ;
-  
-  (* calcult returns the necessary value list corresponding to a instruction 
+
+  (* calcult returns the necessary value list corresponding to a instruction
      stream.  And change the IP when necessary.
    *)
   fun calcult(nil)=nil                                                    |
@@ -3249,10 +3249,10 @@ struct
         (execjmp(vh); flag:=false; dowr(t,vt) )                           |
       dowr(BRANCH{test=comp,src1=(s1,_),src2=(s2,_),
                      dst=(labnum,_),...}::t,vt)=
-        if compare(comp,(!Reg) sub s1,(!Reg) sub s2) 
+        if compare(comp,(!Reg) sub s1,(!Reg) sub s2)
         then (IP:= !(findjmp_place(labnum)); flag:=false; dowr(t,vt) )
         else dowr(t,vt)                                                   |
-      dowr(h::t,vt)=dowr(t,vt)                                            
+      dowr(h::t,vt)=dowr(t,vt)
       ;
 
   (* vv3 executes an instruction word in version 3 mode.
@@ -3268,16 +3268,16 @@ struct
 
   fun vstep1()=let val f=(while hvnop(hd(!IP)) do IP:=tl(!IP))
                          handle Hd=>raise End_of_Program;
-                   val codel=fetchcode(!sizen) 
+                   val codel=fetchcode(!sizen)
                in
-                 (dowr(codel,calcult(codel)); Ref.inc(runcount) ) 
+                 (dowr(codel,calcult(codel)); Ref.inc(runcount) )
                end;
 
   fun vstep2()=let val f=(while hvnop(hd(!IP)) do IP:=tl(!IP))
                          handle Hd=>raise End_of_Program;
-                   val codel=fetchcode(!sizen) 
+                   val codel=fetchcode(!sizen)
                in
-                 if check_dd(codel) 
+                 if check_dd(codel)
                  then (output(std_out,"Data dependency checked in:\n");
                        let fun f(nil)=() |
                                f(h::t)=(output(std_out,":"^disp(h)); f(t))
@@ -3286,16 +3286,16 @@ struct
                        )
                  else (dowr(codel,calcult(codel)); Ref.inc(runcount) )
                end;
-                  
+
   fun vstep3()=let val f=if (!IP)=nil then raise End_of_Program else ();
-                   val codel=fetchcode3(!sizen) 
+                   val codel=fetchcode3(!sizen)
                in vv3(codel) end;
 
-  fun vrun1()=(vstep1();vrun1()) 
+  fun vrun1()=(vstep1();vrun1())
               handle End_of_Program =>
                      output(std_out,"End of program.\nTotal runtime: "
                                     ^ims(!runcount)^" steps.\n");
-  fun vrun2()=(vstep2(); vrun2()) 
+  fun vrun2()=(vstep2(); vrun2())
               handle End_of_Program =>
                      output(std_out,"End of program.\nTotal runtime: "
                                     ^ims(!runcount)^" steps.\n")|
@@ -3314,7 +3314,7 @@ struct
                                   if hvnop(h) then f(k,l)
                                   else f(k-1,l) )
             in f((!sizen),codel) end;
-                
+
 
 (*  This part for Pipeline mode                                 *)
 
@@ -3326,18 +3326,18 @@ struct
   exception illegal_word_within_branchdelay;
   (* Rdelay points to the timing array of registers.
    *)
-  val Rdelay=ref ( array(0,0) ); 
+  val Rdelay=ref ( array(0,0) );
   (* clock records run time.  withindelay is a flag used in BRANCH and JUMP delays.
    *)
   val clock=ref 0 and withindelay=ref false;
-  val fdelay=ref 1 and ardelay: ((arithop->int) ref)=ref (fn k=>1) 
+  val fdelay=ref 1 and ardelay: ((arithop->int) ref)=ref (fn k=>1)
       and jdelay=ref 1;
 
-  (* pexec executes one instruction, increasing the clock when necessary, which 
+  (* pexec executes one instruction, increasing the clock when necessary, which
      corresponding to the holding down of instruction streams.
    *)
   fun pexec(FETCH{immutable=_,offset=ofst,ptr=(p,_),dst=(d,_)})=
-        (let val t=(!Rdelay) sub p in 
+        (let val t=(!Rdelay) sub p in
            if (!clock)<t then clock:=t else ()
          end;
          update((!Reg),d,content((!Reg) sub p,ofst) );
@@ -3386,13 +3386,13 @@ struct
          )                                                             |
       pexec(JUMP {dst=(d,_),...})=
         if (!withindelay) then raise illegal_jump_within_branchdelay
-        else 
+        else
         (let val t=((!Rdelay) sub d) in
            if (!clock)<t then clock:=t else ()
          end;
          Ref.inc(clock); withindelay:=true;
          let val i=ref 0 in
-           while ((!i)<(!jdelay)) do 
+           while ((!i)<(!jdelay)) do
              (let val h=hd(!IP) in
                 ( pexec(h); Ref.inc(i) )
               end handle Hd=> (i:=(!jdelay) ) ;
@@ -3403,44 +3403,44 @@ struct
          )                                                             |
       pexec(BRANCH{test=comp,src1=(s1,_),src2=(s2,_),dst=(labnum,_),...})=
         if (!withindelay) then raise illegal_branch_within_branchdelay
-        else 
+        else
         (let val t1=((!Rdelay) sub s1) and t2=((!Rdelay) sub s2);
              val t=Int.max(t1,t2) in
            if (!clock)<t then clock:=t else ()
          end;
          Ref.inc(clock); withindelay:=true;
          let val i=ref 0 in
-           while ((!i)<(!jdelay)) do 
+           while ((!i)<(!jdelay)) do
              (let val h=hd(!IP) in
                 ( pexec(h); Ref.inc(i) )
               end handle Hd=> (i:=(!jdelay) ) ;
               (IP:=tl(!IP)) handle Tl=>()
               )
          end;
-         if compare(comp,(!Reg) sub s1,(!Reg) sub s2) 
+         if compare(comp,(!Reg) sub s1,(!Reg) sub s2)
          then (IP:= !(findjmp_place(labnum) ) )
          else ()
          )                                                             |
       pexec(NOP)=Ref.inc(clock)                                        |
-      pexec(LABEL{...})=if (!withindelay) 
-                        then raise illegal_label_within_branchdelay 
+      pexec(LABEL{...})=if (!withindelay)
+                        then raise illegal_label_within_branchdelay
                         else ()                                        |
-      pexec(LABWORD{...})=if (!withindelay) 
-                          then raise illegal_labword_within_branchdelay 
+      pexec(LABWORD{...})=if (!withindelay)
+                          then raise illegal_labword_within_branchdelay
                           else ()                                      |
-      pexec(WORD{...})=if (!withindelay) 
-                       then raise illegal_word_within_branchdelay 
-                       else ()    
+      pexec(WORD{...})=if (!withindelay)
+                       then raise illegal_word_within_branchdelay
+                       else ()
       ;
-       
+
   fun pinit(fetchdelay,arithdelay,jumpdelay,l)=
        (init(l);
-        Rdelay:=array((!RegN),0); 
-        clock:=0; fdelay:=fetchdelay; 
+        Rdelay:=array((!RegN),0);
+        clock:=0; fdelay:=fetchdelay;
         ardelay:=arithdelay; jdelay:=jumpdelay );
 
   fun pstep()=
-    let 
+    let
       val Instruction=(hd(!IP) handle Hd=>raise End_of_Program)
     in (IP:=tl(!IP) handle Tl=>raise End_of_Program;
         withindelay:=false; pexec(Instruction) )
@@ -3488,7 +3488,7 @@ fun srun () = let open SetEnv in d_pc(); step(); srun() end;
 fun memsave () = !SetEnv.Memory
 
 
-fun memcmp(a:AbsMach.values array, b:AbsMach.values array) = 
+fun memcmp(a:AbsMach.values array, b:AbsMach.values array) =
     let open AbsMach
         fun cmp (INT a, INT b) = a = b
           | cmp (REAL a, REAL b) = realEq(a, b)
@@ -3523,21 +3523,21 @@ in
         "LABVAL(" ^ makestring i ^ ", " ^ makestring j ^ ")"
 end
 
-fun runf f = 
+fun runf f =
     ((init f;
       run ();
       raise PROG_NO_END))
     handle End_of_Program => (print "eop\n";
                               SetEnv.regc 4)
-                               
-    
+
+
 fun cmprog(f1, f2) =
     let open AbsMach
         fun intof (INT i) = i
         fun ptsat p = SetEnv.mcell (intof p)
         val p1 = runf f1
         (* val foo = print ("cmprog1:" ^ vstring p1 ^ "\n") *)
-        val v1 = ptsat p1 
+        val v1 = ptsat p1
         val r1 = !runcount
         val p2 = runf f2
         (* val foo = print ("cmprog2:" ^ vstring p2 ^ "\n") *)
@@ -3546,7 +3546,7 @@ fun cmprog(f1, f2) =
 
     in
         (f1 ^ " ct " ^ makestring r1 ^ " ptr " ^ vstring p1 ^
-          " val " ^ vstring v1 ^ 
+          " val " ^ vstring v1 ^
          f2 ^ " ct " ^ makestring r2 ^ " ptr " ^ vstring p2 ^
          " val " ^ vstring v2 ^  "\n")
     end
@@ -3574,7 +3574,7 @@ fun writeprog(file, j, p) =
     in
         close_out ot
     end;
-   
+
 fun wp(file, prog) =
     let val ot = (open_out file)
         val filp = Delay.rm_bogus prog
@@ -3582,9 +3582,9 @@ fun wp(file, prog) =
     in
         close_out ot
     end;
-     
+
 fun dodelay i = (Delay.init i; Delay.add_delay i);
-    
+
 val _ = (
 Node.move_test_debug := false;
 Node.move_op_debug := false;
@@ -3600,10 +3600,10 @@ ReadI.read_debug := false;
 ReadI.write_debug := false;
 ReadI.live_debug := false
 )
-    
+
 fun pm pl = print (StrPak.stringListString (map ReadI.progMap pl));
 fun pp pl = print (StrPak.stringListString (map PrintAbs.str pl));
-    
+
 fun ndnm nil = raise Node.NAMETONODE
 | ndnm(h::t) = (fn (nm) => Node.nameToNode(h, nm)
                 handle Node.NAMETONODE => ndnm t nm);
@@ -3674,13 +3674,13 @@ fun main(s:string list, env:string list) =
 
 val s = OS.FileSys.getDir()
 
-fun doit() = main(["foobar", "-ws9", 
-                   s^"/DATA/ndotprod.s", 
-                   s^"/DATA/tmp.s", 
-                   s^"/DATA/cmp.s"], 
+fun doit() = main(["foobar", "-ws9",
+                   s^"/DATA/ndotprod.s",
+                   s^"/DATA/tmp.s",
+                   s^"/DATA/cmp.s"],
                   nil)
 fun testit _ = ()
-end 
+end
 
 structure Main : BMARK =
    struct

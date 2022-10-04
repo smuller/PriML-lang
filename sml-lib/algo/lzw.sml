@@ -20,15 +20,15 @@ end
 
 (* Most likely you want to compress strings of 8-bit characters. *)
 structure LZWCharArg =
-struct 
-    type ch = char 
-    val itoc = chr 
-    val ctoi = ord 
-    val radix = 256 
-end 
+struct
+    type ch = char
+    val itoc = chr
+    val ctoi = ord
+    val radix = 256
+end
 
 functor LZWFn(structure C : LZWARG
-              (* LZW has a "special case" (where code = sz + radix) 
+              (* LZW has a "special case" (where code = sz + radix)
                  that improves compression ratios at the expense of
                  complexity in the decoder. If this is false, disable
                  that special case when encoding (producing a slightly
@@ -36,7 +36,7 @@ functor LZWFn(structure C : LZWARG
                  decoding. *)
               val allow_special : bool
               (* which must be at least C.radix *)
-              val tablesize : int option) :> 
+              val tablesize : int option) :>
               LZW where type ch = C.ch =
 struct
 
@@ -45,7 +45,7 @@ struct
   exception LZW of string
 
   (* XXX *)
-  val () = case tablesize of NONE => () 
+  val () = case tablesize of NONE => ()
           | _ => raise LZW "table limits not yet supported"
 
   datatype output =
@@ -59,7 +59,7 @@ struct
   (* imperative streams *)
   type 'a stream = unit -> 'a option
   (* but we want to implement them in a more efficient way *)
-  datatype 'a prestream = 
+  datatype 'a prestream =
       PS of unit -> ('a * 'a prestream) option
 
   fun ps_to_stream (PS ps) =
@@ -67,7 +67,7 @@ struct
           val r = ref ps
           fun next () =
               (case (!r) () of
-                   NONE => 
+                   NONE =>
                        let in
                            r := (fn _ => NONE);
                            NONE
@@ -91,13 +91,13 @@ struct
     in
       l 2 1
     end
-  
+
   (* dictionary for compression/decompression *)
-  structure D :> 
+  structure D :>
   sig
     (* imperative dictionaries *)
     type dict
-      
+
     (* functional cursor into dictionary,
        representing the lookup of a prefix *)
     type cursor
@@ -130,7 +130,7 @@ struct
   struct
 
     (* trees *)
-    datatype 'a tree = 
+    datatype 'a tree =
       EMPTY
     | NODE of 'a tree ref * int * 'a * 'a tree ref
 
@@ -155,22 +155,22 @@ struct
 
     fun c_find lastcode c i =
       (case c of
-         (ref EMPTY) => 
+         (ref EMPTY) =>
            NOTFOUND (fn a =>
                      c := NODE(ref EMPTY, i, a, ref EMPTY))
-       | (ref (NODE (l, j, a as (N{ code, children = _ }), r))) => 
+       | (ref (NODE (l, j, a as (N{ code, children = _ }), r))) =>
            case Int.compare (i, j) of
-             EQUAL => 
+             EQUAL =>
                (* avoid generating the very last code we inserted. *)
                if allow_special
                   orelse code <> (lastcode - 1)
                then
                  let in
-                   (* print ("(lastcode = " ^ Int.toString lastcode ^ 
+                   (* print ("(lastcode = " ^ Int.toString lastcode ^
                           ") found code " ^ Int.toString code ^ "\n"); *)
                    FOUND a
                  end
-               else 
+               else
                  let in
                    (* print ("AVOIDED SPECIAL for code "
                           ^ Int.toString (lastcode) ^ "\n"); *)
@@ -186,7 +186,7 @@ struct
     (* store the nextcode so we can generate
        it, and then just point to the node
        at this prefix. *)
-    type cursor = int ref * node 
+    type cursor = int ref * node
 
     datatype res =
       Found of cursor
@@ -194,18 +194,18 @@ struct
 
     (* this always succeeds by invariant *)
     fun cursor { nextcode, roots } ch =
-      (nextcode, 
+      (nextcode,
        Array.sub(roots, C.ctoi ch))
 
     fun now (_, N { code, ...}) = code
 
     fun add (nc, N{ code, children }) ch =
       case c_find (!nc) children (C.ctoi ch) of
-        FOUND n => 
+        FOUND n =>
           let in
             Found (nc, n)
           end
-      | NOTFOUND inserter => 
+      | NOTFOUND inserter =>
           (inserter (N { code = !nc,
                          children = c_empty () });
            nc := !nc + 1;
@@ -213,24 +213,24 @@ struct
 
     fun size { nextcode=ref n, roots=_ } = n
 
-    fun reset { nextcode, roots } = 
+    fun reset { nextcode, roots } =
       let
       in
         nextcode := C.radix;
         util_for 0 (C.radix - 1)
         (fn i =>
-         Array.update(roots, i, 
-                      (N { code = i, 
+         Array.update(roots, i,
+                      (N { code = i,
                            children = c_empty () })))
       end
 
     fun initial () =
       let
-        val d = { nextcode = ref 0, 
-                  roots = Array.array(C.radix, 
+        val d = { nextcode = ref 0,
+                  roots = Array.array(C.radix,
                                       (* XX dummy, will be
                                          overwritten. *)
-                                      N { code = 0, 
+                                      N { code = 0,
                                           children = c_empty ()}) }
       in
         reset d;
@@ -246,13 +246,13 @@ struct
     let
       val d = D.initial ()
 
-        
+
       (* XXX limit table size *)
 
       (* encode with existing cursor *)
-      fun enc cu () = 
+      fun enc cu () =
         case s () of
-          NONE => 
+          NONE =>
             (* stream ends. emit cursor *)
             SOME(CODE (D.now cu, D.bits d),
                  PS (fn () => NONE))
@@ -269,7 +269,7 @@ struct
         case s () of
           NONE => NONE
         | SOME c => enc_c c
-            
+
     in
 
       ps_to_stream (PS enc_ni)
@@ -277,7 +277,7 @@ struct
 
 
   fun stol f =
-    (case f () of 
+    (case f () of
        NONE => nil
      | SOME c => c :: stol f)
 
@@ -285,7 +285,7 @@ struct
     let
       val i = ref 0
 
-      val s = 
+      val s =
         compress
         (fn () =>
          if !i >= Array.length a
@@ -307,7 +307,7 @@ struct
 
   fun decompressex s =
     let
-     
+
       val no = (~1, 0)
 
       val sz = ref 0
@@ -319,7 +319,7 @@ struct
           (* print ("(" ^ Int.toString pos ^ "," ^ Int.toString len ^ ")"); *)
 
         if !sz < (Array.length(!d) - 1)
-        then 
+        then
           let in
             (* print ("code: " ^ (Int.toString (!sz)) ^
                       " is " ^ (Int.toString pos) ^ ", " ^
@@ -356,12 +356,12 @@ struct
              end
 
       (* add char to output *)
-      fun emit c = 
+      fun emit c =
         let in
           (* print (implode [chr (C.ctoi c)]); *)
 
         if !os < (Array.length(!out) - 1)
-        then 
+        then
           let in
             (* print ("emit: " ^ implode [chr (C.ctoi c)] ^ "\n"); *)
             Array.update(!out, !os, c);
@@ -381,30 +381,30 @@ struct
       fun getcodewithbits b s =
         case s () of
           NONE => NONE
-        | SOME f => 
+        | SOME f =>
             case f b of
               ICODE i => SOME i
             | IRESET => raise LZW "table reset not implemented"
 
-        
+
       fun getcode s = getcodewithbits (needbits (C.radix + !sz + 1)) s
 
       (* call with the start position and length of the
          code we emitted last *)
       fun dec oldstart oldlen =
-        case getcode s of 
+        case getcode s of
           NONE => (* done, and nothing to output *) NONE
-        | SOME code => 
+        | SOME code =>
             if code < !sz + C.radix
-            then 
-              let 
+            then
+              let
                 val sl = getstring code
               in
                 (* emit the string *)
                 AS.app emit sl;
                 (* add the last string we
-                   emitted previously, 
-                   plus the first char of 
+                   emitted previously,
+                   plus the first char of
                    the new string *)
                 add (oldstart, oldlen + 1);
                 dec (oldstart + oldlen) (AS.length sl)
@@ -413,8 +413,8 @@ struct
               if allow_special
               then
               (* "special" case; could check that
-                 code is exactly !sz + C.radix *) 
-              let 
+                 code is exactly !sz + C.radix *)
+              let
                 val sl = AS.slice(!out, oldstart, SOME oldlen)
                 val c = Array.sub(!out, oldstart)
                 val here = !os
@@ -429,7 +429,7 @@ struct
       and start () =
         case getcodewithbits (needbits C.radix) s of
           NONE => (* empty input *) NONE
-        | SOME code => 
+        | SOME code =>
             let in
               (* by invt, is 0..radix-1 *)
               emit (C.itoc code);
@@ -438,7 +438,7 @@ struct
             end
     in
       start ();
-      Array.tabulate(!os, 
+      Array.tabulate(!os,
                      (fn x => Array.sub(!out, x)))
     end
 

@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Stream: STREAM = 
+structure Stream: STREAM =
 struct
 
 datatype 'a t = T of ('a * 'a t) option Promise.t
@@ -68,7 +68,7 @@ fun last (s) =
 fun isEmpty (s) =
    case force (s) of
       NONE => true
-    | SOME _ => false    
+    | SOME _ => false
 
 fun layout f s = List.layout f (toList s)
 

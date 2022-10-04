@@ -16,17 +16,17 @@ structure UnixSock : UNIX_SOCK =
       type sock_addr = unix Socket.sock_addr
       val unixAF = Net.AddrFamily.fromRep PrimitiveFFI.Socket.AF.UNIX
 
-      fun toAddr s = 
+      fun toAddr s =
         let
           val (sa, salen, finish) = Socket.newSockAddr ()
-          val _ = Prim.toAddr (NullString.nullTerm s, 
-                               C_Size.fromInt (String.size s), 
+          val _ = Prim.toAddr (NullString.nullTerm s,
+                               C_Size.fromInt (String.size s),
                                sa, salen)
-        in 
+        in
           finish ()
         end
 
-      fun fromAddr sa = 
+      fun fromAddr sa =
         let
           val sa = Socket.unpackSockAddr sa
           val len = Prim.pathLen sa
@@ -34,7 +34,7 @@ structure UnixSock : UNIX_SOCK =
           val _ = Prim.fromAddr (sa, CharArray.toPoly a, len)
         in
            CharArraySlice.vector (CharArraySlice.slice (a, 0, SOME (C_Size.toInt len)))
-        end 
+        end
 
       structure Strm =
          struct

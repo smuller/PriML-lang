@@ -37,7 +37,7 @@ structure PosixSysDB: POSIX_SYS_DB =
                                  gid = GId.fromRep (Passwd.getGId ()),
                                  home = CUtil.C_String.toString (Passwd.getDir ()),
                                  shell = CUtil.C_String.toString (Passwd.getShell ())},
-                 handlers = [(Error.cleared, fn () => 
+                 handlers = [(Error.cleared, fn () =>
                               raise Error.SysErr (concat ["Posix.SysDB.",
                                                           fname,
                                                           ": no group with ",
@@ -47,15 +47,15 @@ structure PosixSysDB: POSIX_SYS_DB =
             val uid: passwd -> uid = #uid
             val gid: passwd -> gid = #gid
             val home: passwd -> string = #home
-            val shell: passwd -> string = #shell 
+            val shell: passwd -> string = #shell
          end
 
-      fun getpwnam name = 
+      fun getpwnam name =
          let val name = NullString.nullTerm name
          in Passwd.fromC (fn () => Prim.getpwnam name, "getpwnam", "name")
          end
 
-      fun getpwuid uid = 
+      fun getpwuid uid =
          let val uid = UId.toRep uid
          in Passwd.fromC (fn () => Prim.getpwuid uid, "getpwuid", "user id")
          end
@@ -75,7 +75,7 @@ structure PosixSysDB: POSIX_SYS_DB =
                  post = fn _ => {name = CUtil.C_String.toString (Group.getName ()),
                                  gid = GId.fromRep (Group.getGId ()),
                                  members = CUtil.C_StringArray.toList (Group.getMem ())},
-                 handlers = [(Error.cleared, fn () => 
+                 handlers = [(Error.cleared, fn () =>
                               raise Error.SysErr (concat ["Posix.SysDB.",
                                                           fname,
                                                           ": no group with ",
@@ -86,12 +86,12 @@ structure PosixSysDB: POSIX_SYS_DB =
             val members: group -> string list = #members
          end
 
-      fun getgrnam name = 
+      fun getgrnam name =
          let val name = NullString.nullTerm name
          in Group.fromC (fn () => Prim.getgrnam name, "getgrnam", "name")
          end
 
-      fun getgrgid gid = 
+      fun getgrgid gid =
          let val gid = GId.toRep gid
          in Group.fromC (fn () => Prim.getgrgid gid, "getgrgid", "group id")
          end

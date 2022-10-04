@@ -10,9 +10,9 @@ struct
          val ch = channel ()
          fun count i = (send(ch, i)
                         ; count(i+1))
-         val _ = spawn (fn () => 
-                        (print (concat ["makeNatStream: ", 
-                                        tidToString (getTid ()), 
+         val _ = spawn (fn () =>
+                        (print (concat ["makeNatStream: ",
+                                        tidToString (getTid ()),
                                         "\n"])
                          ; count c))
       in
@@ -26,7 +26,7 @@ struct
             let
                val i = sync (recvEvt inCh)
             in
-               if ((i mod p) <> 0) 
+               if ((i mod p) <> 0)
                   then sync (sendEvt (outCh, i))
                   else ()
                ; loop ()
@@ -45,9 +45,9 @@ struct
                send(primes, p)
                ; head (makeFilter (p, ch))
             end
-         val _ = spawn (fn () => 
-                        (print (concat ["makePrimes: ", 
-                                        tidToString (getTid ()), 
+         val _ = spawn (fn () =>
+                        (print (concat ["makePrimes: ",
+                                        tidToString (getTid ()),
                                         "\n"])
                          ; head (makeNatStream 2)))
       in
@@ -69,9 +69,9 @@ struct
                        loop' m
                        ; loop (i + 1)
                     end
-         val _ = spawn (fn () => 
-                        (print (concat ["makeNatPrinter: ", 
-                                        tidToString (getTid ()), 
+         val _ = spawn (fn () =>
+                        (print (concat ["makeNatPrinter: ",
+                                        tidToString (getTid ()),
                                         "\n"])
                          ; loop 0))
       in

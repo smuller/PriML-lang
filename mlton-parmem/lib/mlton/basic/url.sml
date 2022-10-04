@@ -50,10 +50,10 @@ fun unescape (s: string): string =
                  else loop (i + 1, c :: cs)
               end
    in loop (0, [])
-   end   
+   end
 
 val shouldEscape: char -> bool =
-   Char.memoize (fn c => 
+   Char.memoize (fn c =>
                 not (Char.isGraph c)
                 orelse c = Char.dquote
                 orelse String.contains ("?<>#% {}|\\^ []`", c))
@@ -128,7 +128,7 @@ structure Authority =
  * Assume p1 is already canonicalized.
  *)
 fun canonicalizePath (p1: string list, p2: string list, f: string) =
-   let 
+   let
       fun loop (r, ac) =
          case r of
             [] =>
@@ -224,7 +224,7 @@ fun toString url =
    case url of
       T {scheme, authority, path, query, fragment} =>
          concat [mo (scheme, fn s => concat [Scheme.toString s, ":"]),
-                 mo (authority, fn {user, host, port} => 
+                 mo (authority, fn {user, host, port} =>
                     concat ["//",
                            mo (user, fn u => concat [escape u, "@"]),
                            host,
@@ -342,7 +342,7 @@ structure Regexp =
       val hierPart = seq [or [netPath, absPath],
                           optional (seq [char #"?", query])]
       (* netPath occurs before absPath in the following regexp because
-       * you want urls like //foo.com/z to be a netPath with host foo.com and 
+       * you want urls like //foo.com/z to be a netPath with host foo.com and
        * not as an absPath.  Fortunately, the regexp library returns the
        * first matching choice in an or.
        *)

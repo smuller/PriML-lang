@@ -19,7 +19,7 @@ local
 in
    val x foo y bar z = 13
 end
-   
+
 val x _ = 13
 
 val x : int as NONE = NONE

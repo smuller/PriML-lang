@@ -6,7 +6,7 @@ sig
 
     (* pointwise f e
        applies f to every immediate subexpression of e
-       and then rebuilds e. 
+       and then rebuilds e.
 
        ie. pointwise f (Pair(e1, e2)) = Pair(f e1, f e2)
 
@@ -17,7 +17,7 @@ sig
     val pointwise : (IL.exp -> IL.exp) -> IL.exp -> IL.exp
     (* copy a term *)
     val duplicate : IL.exp -> IL.exp
- 
+
     val mappoly : ('a -> 'b) -> 'a IL.poly -> 'b IL.poly
 
 (*    val tsubste : IL.typ Variable.Map.map -> IL.exp -> IL.exp *)

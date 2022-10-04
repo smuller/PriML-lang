@@ -34,7 +34,7 @@ struct
              | IL.Free _ => r := IL.Bound Initial.bot) (!all_wevars)
       end
 
-    fun new_evar ()  = 
+    fun new_evar ()  =
       let val e = Unify.new_ebind ()
       in
         all_evars := e :: !all_evars;
@@ -61,8 +61,8 @@ struct
     (* unify context location message actual expected *)
     fun unify ctx loc msg t1 t2 =
             Unify.unify ctx t1 t2
-            handle Unify.Unify s => 
-                let 
+            handle Unify.Unify s =>
+                let
                     val $ = Layout.str
                     val % = Layout.mayAlign
                 in
@@ -80,8 +80,8 @@ struct
     (* unify context location message actual expected *)
     fun unifyp ctx loc msg w1 w2 =
             Unify.unifyp ctx w1 w2
-            handle Unify.Unify s => 
-                let 
+            handle Unify.Unify s =>
+                let
                     val $ = Layout.str
                     val % = Layout.mayAlign
                 in
@@ -101,7 +101,7 @@ struct
         if Context.checkcons ctx p1 p2 then
             ()
         else
-            let 
+            let
                 val $ = Layout.str
                 val % = Layout.mayAlign
             in
@@ -131,7 +131,7 @@ struct
 (*
     local open JSImports
     in
-      fun jtoil G JS_EVENT = 
+      fun jtoil G JS_EVENT =
         (case Context.con G Initial.eventname of
            (0, IL.Typ t, IL.Regular) => t
          | _ => raise Elaborate "event is wrongly declared??")
@@ -145,14 +145,14 @@ struct
 
     (* This uses the outer context to figure out which evariables can be generalized. *)
     fun polygen ctx (ty : IL.typ) (* (atworld : IL.prio) *) =
-        let 
+        let
             val acct = ref nil
             val accw = ref nil
 
 (*
             val occurs_in_atworld =
               (* path compress first *)
-              let 
+              let
                 fun mkfun w =
                   case w of
                     IL.PEvar er =>
@@ -169,7 +169,7 @@ struct
                  IL.PEvar er =>
                    (case !er of
                       IL.Bound ww => gow ww
-                    | IL.Free n => 
+                    | IL.Free n =>
                         if Context.has_wevar ctx n orelse occurs_in_atworld n
                         then w
                         else
@@ -189,7 +189,7 @@ struct
                    | IL.TVec tt => IL.TVec ` got tt
                    | IL.Sum ltl => IL.Sum ` ListUtil.mapsecond (IL.arminfo_map got) ltl
                    | IL.Arrow (b, tl, tt) => IL.Arrow(b, map got tl, got tt)
-                   | IL.Arrows al => IL.Arrows ` map (fn (b, tl, tt) => 
+                   | IL.Arrows al => IL.Arrows ` map (fn (b, tl, tt) =>
                                                       (b, map got tl, got tt)) al
                    | IL.TRec ltl => IL.TRec ` ListUtil.mapsecond got ltl
                    | IL.TVar v => t
@@ -210,7 +210,7 @@ struct
                                   if Context.has_evar ctx n
                                   then t
                                   else
-                                      let 
+                                      let
                                           val tv = V.namedvar (Nonce.nonce ())
                                       in
                                           acct := tv :: !acct;
@@ -240,12 +240,12 @@ struct
                    SOME wv
                end
        | IL.Bound w => polywgen ctx w)
-      | polywgen ctx (w as IL.PConst s) = 
+      | polywgen ctx (w as IL.PConst s) =
          let in
            (* print "no polywgen: const\n"; *)
            NONE
          end
-      | polywgen _   (w as IL.PVar v) = 
+      | polywgen _   (w as IL.PVar v) =
          let in
            print ("no polywgen: var " ^ V.tostring v ^ "\n");
            NONE
@@ -278,7 +278,7 @@ struct
           (map ((* wsu o *) tsu) mt, ws, ts)
         end
 
-    fun evarize (IL.Poly({prios, tys}, mt)) = 
+    fun evarize (IL.Poly({prios, tys}, mt)) =
       case evarizes ` IL.Poly({prios=prios, tys=tys}, [mt]) of
         ([m], ws, ts) => (m, ws, ts)
       | _ => raise Elaborate "impossible"
@@ -317,7 +317,7 @@ struct
        if force is true, then unset evars are set to unit
        to force mobility.
        if force is false and evars are seen, then defer this type for later *)
-                    
+
     fun emobile G pos s force t =
       let
 
@@ -325,9 +325,9 @@ struct
         fun em G t =
           case t of
             IL.Evar (ref (IL.Bound t)) => em G t
-          | IL.Evar (ev as ref (IL.Free _)) => 
+          | IL.Evar (ev as ref (IL.Free _)) =>
               if force
-              then 
+              then
                 let in
                   warn pos (s ^ ": unset evar in mobile check; setting to unit");
                   ev := IL.Bound (IL.TRec nil);
@@ -340,22 +340,22 @@ struct
           | IL.TRec ltl => ListUtil.allsecond (em G) ltl
           | IL.Arrow _ => false
           | IL.Arrows _ => false
-          | IL.Sum ltl => List.all (fn (_, IL.NonCarrier) => true 
+          | IL.Sum ltl => List.all (fn (_, IL.NonCarrier) => true
                                      | (_, IL.Carrier { carried = t, ...}) => em G t) ltl
 
           (* no matter which projection this is, all types have to be mobile *)
-          | IL.Mu (i, vtl) => 
+          | IL.Mu (i, vtl) =>
               let val G = foldr (fn (v, G) => Context.bindmobile G v) G ` map #1 vtl
               in ListUtil.allsecond (em G) vtl
               end
 
-          (* assuming immutable. 
+          (* assuming immutable.
              there should be a separate array type *)
           | IL.TVec t => em G t
           (* continuations aren't mobile. They could do anything. *)
           | IL.TCont t => false
           | IL.TRef _ => false
-          (* the representation of a tag is always portable, but the 
+          (* the representation of a tag is always portable, but the
              tag type is only mobile if its body is mobile. This is
              because a tag is permission to possibly use an extensible
              type at that type. *)
@@ -369,7 +369,7 @@ struct
 
 
     fun notmobile ctx loc msg t =
-      let 
+      let
         val $ = Layout.str
         val % = Layout.mayAlign
       in
@@ -388,13 +388,13 @@ struct
 
     fun check_mobile () =
       let in
-        List.app (fn (ctx, pos, msg, t) => 
+        List.app (fn (ctx, pos, msg, t) =>
                   if emobile ctx pos msg true t
-                  then () 
+                  then ()
                   else notmobile Context.empty pos msg t) (!mobiles);
         clear_mobile ()
       end
- 
+
     fun require_mobile ctx loc msg t =
         if emobile ctx loc msg false t
         then ()

@@ -27,7 +27,7 @@ struct
               fun g i =
                   let val { pos, len } = MatchTree.nth (tree, i)
                   in Substring.string (Substring.slice (pos, 0, SOME len))
-                  end handle Subscript => raise RE ("match " ^ Int.toString i ^ 
+                  end handle Subscript => raise RE ("match " ^ Int.toString i ^
                                                     "  out of bounds")
             in
               SOME g
@@ -40,8 +40,8 @@ struct
     let
       val re = compile x
       val re_find : substring ->
-          ({ len: int, 
-             pos: substring } MatchTree.match_tree * 
+          ({ len: int,
+             pos: substring } MatchTree.match_tree *
            substring) option = R.find re Substring.getc
 
       fun fall (s : substring) =
@@ -52,7 +52,7 @@ struct
               fun g i =
                   let val { pos : substring, len } = MatchTree.nth (tree, i)
                   in Substring.string (Substring.slice (pos, 0, SOME len))
-                  end handle Subscript => raise RE ("match " ^ Int.toString i ^ 
+                  end handle Subscript => raise RE ("match " ^ Int.toString i ^
                                                     "  out of bounds")
             in
                 g :: fall rest

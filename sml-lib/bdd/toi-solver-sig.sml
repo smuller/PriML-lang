@@ -13,7 +13,7 @@ sig
      function in Box2D. *)
   val solver : ('b, 'f, 'j) BDDDynamics.contact list *
       ('b, 'f, 'j) BDDDynamics.body -> ('b, 'f, 'j) solver
-    
+
   (* solve (solver, baumgarte)
      Perform one solver iteration. Returns true if converged. *)
   val solve : ('b, 'f, 'j) solver * real -> bool

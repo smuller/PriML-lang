@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure IntermediateComputation: INTERMEDIATE_COMPUTATION = 
+structure IntermediateComputation: INTERMEDIATE_COMPUTATION =
 struct
 
 structure In = In0
@@ -225,7 +225,7 @@ structure Computation =
               | Result.Return _ => ()
              ; inspectCr cr)
       in val inspect = fn c => inspect c handle Quit => ()
-      end      
+      end
 
    end
 

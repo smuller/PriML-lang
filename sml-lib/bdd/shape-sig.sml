@@ -13,7 +13,7 @@ sig
 
   val clone : shape -> shape
 
-      
+
   (* test_point (shape, xf, p)
      Test a point p for containment in this shape, under the
      world transform xf. This only works for convex shapes. *)
@@ -21,7 +21,7 @@ sig
 
   (* ray_cast (shape, input, transform)
      Cast a ray against this shape, under the transform. *)
-  val ray_cast : shape * BDDMath.transform * BDDTypes.ray_cast_input -> 
+  val ray_cast : shape * BDDMath.transform * BDDTypes.ray_cast_input ->
                  BDDTypes.ray_cast_output option
 
   (* compute_aabb (shape, transform)
@@ -36,7 +36,7 @@ sig
      The inertia tensor is computed about the local origin. *)
   val compute_mass : shape * real -> BDDTypes.mass_data
 
-  (* Returns the radius of the shape. 
+  (* Returns the radius of the shape.
 
      Port note: This is implemented as a member access in Box2D. *)
   val get_radius : shape -> real

@@ -15,7 +15,7 @@ signature Decode =
       exception DecEof of DecFile
       exception DecError of DecFile * bool * Error.DecodeError
 
-      val decUri       : DecFile -> Uri.Uri 
+      val decUri       : DecFile -> Uri.Uri
       val decName      : DecFile -> string
       val decEncoding  : DecFile -> Encoding.Encoding
 
@@ -30,15 +30,15 @@ signature Decode =
       val decGetArray  : DecFile -> UniChar.Char array -> int * DecFile * Error.DecodeError option
    end
 
-structure Decode : Decode = 
+structure Decode : Decode =
    struct
       structure Error = DecodeError
       open
-         UniChar Encoding Error 
-         DecodeFile DecodeMisc DecodeUcs2 DecodeUcs4 
+         UniChar Encoding Error
+         DecodeFile DecodeMisc DecodeUcs2 DecodeUcs4
          DecodeUtf16 DecodeUtf8 DecodeUtil
 
-      type DecFile = Encoding * File 
+      type DecFile = Encoding * File
       exception DecEof of DecFile
       exception DecError of DecFile * bool * DecodeError
 
@@ -62,7 +62,7 @@ structure Decode : Decode =
       (*--------------------------------------------------------------------*)
       (* commit the auto-detected encoding.                                 *)
       (*--------------------------------------------------------------------*)
-      fun decCommit (enc,f) = 
+      fun decCommit (enc,f) =
          case enc
            of UTF8 => ()
             | UTF16B => ()
@@ -75,19 +75,19 @@ structure Decode : Decode =
       fun decSwitch ((enc,f),decl) =
          let
             val decEnc = isEncoding decl
-            val _ = if decEnc<>NOENC then () 
+            val _ = if decEnc<>NOENC then ()
                     else raise DecError((enc,f),false,ERR_UNSUPPORTED_ENC decl)
             val newEnc = switchEncoding(enc,decEnc)
-            val _ = if decEnc<>NOENC orelse enc=NOENC then () 
+            val _ = if decEnc<>NOENC orelse enc=NOENC then ()
                     else raise DecError((enc,f),false,ERR_INCOMPATIBLE_ENC(encodingName enc,decl))
          in (newEnc,f)
          end
-      
+
       (*--------------------------------------------------------------------*)
       (* get a character from an encoded entity.                            *)
       (*--------------------------------------------------------------------*)
       fun decGetChar (enc,f) =
-         let val (c,f1) = 
+         let val (c,f1) =
             case enc
               of NOENC  => raise EndOfFile f
                | ASCII  => getCharAscii f
@@ -110,42 +110,42 @@ structure Decode : Decode =
       (*--------------------------------------------------------------------*)
       (* Load new characters, depending on the current entity's encoding.   *)
       (*--------------------------------------------------------------------*)
-      fun decGetArray (enc,f) arr = 
-         let 
+      fun decGetArray (enc,f) arr =
+         let
             (*--------------------------------------------------------------*)
             (* Load the buffer with len new characters, or until the entity *)
             (* end is reached. Close the current file in that case.         *)
             (* Local exception Ended is needed in order to preserve tail    *)
             (* recursion.                                                   *)
             (*--------------------------------------------------------------*)
-            fun loadArray getChar = 
-               let 
+            fun loadArray getChar =
+               let
                   val ende = Array.length arr
                   exception Error of int * exn
-                  fun doit (idx,f) = 
+                  fun doit (idx,f) =
                      if idx=ende then (ende,(enc,f),NONE)
                      else let val (c,f1) = getChar f handle exn => raise Error (idx,exn)
                               val _ = Array.update(arr,idx,c)
                           in doit (idx+1,f1)
                           end
-               in doit (0,f) handle Error(idx,exn) 
-                  => case exn 
+               in doit (0,f) handle Error(idx,exn)
+                  => case exn
                        of EndOfFile f => (idx,(NOENC,f),NONE)
                         | DecodeError (f,_,err) => (idx,(enc,f),SOME err)
                         | _ => raise exn
                end
          in case enc
               of NOENC  => (0,(NOENC,f),NONE)
-               | ASCII  => loadArray getCharAscii 
+               | ASCII  => loadArray getCharAscii
                | EBCDIC => loadArray getCharEbcdic
                | LATIN1 => loadArray getCharLatin1
-               | UCS2B  => loadArray getCharUcs2b 
-               | UCS2L  => loadArray getCharUcs2l 
-               | UCS4B  => loadArray getCharUcs4b 
-               | UCS4L  => loadArray getCharUcs4l 
+               | UCS2B  => loadArray getCharUcs2b
+               | UCS2L  => loadArray getCharUcs2l
+               | UCS4B  => loadArray getCharUcs4b
+               | UCS4L  => loadArray getCharUcs4l
                | UCS4SB => loadArray getCharUcs4sb
                | UCS4SL => loadArray getCharUcs4sl
-               | UTF8   => loadArray getCharUtf8 
+               | UTF8   => loadArray getCharUtf8
                | UTF16B => loadArray getCharUtf16b
                | UTF16L => loadArray getCharUtf16l
          end
@@ -178,7 +178,7 @@ structure Decode : Decode =
       (* 00 00 FE FF: UCS-4, big-endian machine (1234 order)                    *)
       (* FF FE 00 00: UCS-4, little-endian machine (4321 order)                 *)
       (* FE FF 00 ##:  UTF-16, big-endian                                       *)
-      (* FF FE ## 00:  UTF-16, little-endian                                    *) 
+      (* FF FE ## 00:  UTF-16, little-endian                                    *)
       (* EF BB BF: UTF-8                                                        *)
       (* Without a Byte Order Mark:                                             *)
       (* 00 00 00 3C: UCS-4, big-endian machine (1234 order)                    *)
@@ -217,22 +217,22 @@ structure Decode : Decode =
 
 
 
-      fun decOpenXml uri = 
-         let 
-            fun get4Bytes (n,f) = 
+      fun decOpenXml uri =
+         let
+            fun get4Bytes (n,f) =
                if n=4 then (nil,f)
                else let val (b,f1) = getByte f
                         val (bs,f2) = get4Bytes (n+1,f1)
                     in (b::bs,f2)
                     end
                  handle EndOfFile f => (nil,f)
-                    
-            fun detect bs = 
-              case bs 
+
+            fun detect bs =
+              case bs
                 of
                   [0wx0,0wx0,0wxFE,0wxFF] => (UCS4B,nil)
                 | [0wxFF,0wxFE,0wx0,0wx0] => (UCS4L,nil)
-                | [0wxFE,0wxFF,0wx0,b4] => 
+                | [0wxFE,0wxFF,0wx0,b4] =>
                     if b4 <> 0wx0 then (UTF16B,[0wx0,b4])
                     else (UTF8,bs)
                 | [0wxFF,0wxFE,b3,0wx0] =>
@@ -244,12 +244,12 @@ structure Decode : Decode =
                 | [0wx0,0wx0,0wx3C,0wx0] => (UCS4SB,bs)
                 | [0wx0,0wx3C,0wx0,0wx0] => (UCS4SL,bs)
                 | [0wx0,b2,b3,b4] =>
-                    if (b2=0wx3C orelse b2=0wx25 orelse b2=0wx20 
+                    if (b2=0wx3C orelse b2=0wx25 orelse b2=0wx20
                         orelse b2=0wx09 orelse b2=0wx0D orelse b2=0wx0A)
                       andalso (b3<>0wx0 orelse b4<>0wx0) then (UTF16B,bs)
                     else (UTF8,bs)
                 | [b1,0wx0,b3,b4] =>
-                    if (b1=0wx3C orelse b1=0wx25 orelse b1=0wx20 
+                    if (b1=0wx3C orelse b1=0wx25 orelse b1=0wx20
                         orelse b1=0wx09 orelse b1=0wx0D orelse b1=0wx0A)
                       andalso (b3<>0wx0 orelse b4<>0wx0) then (UTF16L,bs)
                     else (UTF8,bs)
@@ -270,14 +270,14 @@ structure Decode : Decode =
       (* return the encoded file, a list of bytes looked ahead and the      *)
       (* encoding.                                                          *)
       (*--------------------------------------------------------------------*)
-      fun decOpenUni (uri,default) = 
+      fun decOpenUni (uri,default) =
          let
-            fun def(f,bs) = 
+            fun def(f,bs) =
                (default,ungetBytes(f,bs))
-            fun detect f = 
-               let val (b1,f1) = getByte f 
+            fun detect f =
+               let val (b1,f1) = getByte f
                in case b1
-                    of 0wxFE => (let val (b2,f2) = getByte f1 
+                    of 0wxFE => (let val (b2,f2) = getByte f1
                                  in if b2 = 0wxFF then (UTF16B,f2)
                                     else def(f2,[b1,b2])
                                  end handle EndOfFile f => def(f,[b1]))
@@ -288,7 +288,7 @@ structure Decode : Decode =
                      | _ => def(f1,[b1])
                end handle EndOfFile f => def(f,nil)
             val f = openFile uri
-            val (enc,f1) = detect f 
+            val (enc,f1) = detect f
          in (enc,f1)
          end
    end

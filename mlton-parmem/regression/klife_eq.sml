@@ -6,7 +6,7 @@ val _ =
 let
 
 (*
-structure Main : BMARK = 
+structure Main : BMARK =
   struct
 *)
 
@@ -22,9 +22,9 @@ structure Main : BMARK =
     fun accumulate f a [] = a   (* this now has no escaping regions, although still an escaping arrow effect*)
       | accumulate f a (b::x) = accumulate f (f a b) x
 
-    fun filter p l= 
+    fun filter p l=
       rev (accumulate (fn x => fn a => if p a then a::x else x) [] l)
-             (*builds an intermediate list; the regions of this list 
+             (*builds an intermediate list; the regions of this list
                are now made local (unlike in escape.sml) *)
 
     fun member x [] = false
@@ -42,7 +42,7 @@ structure Main : BMARK =
     fun repeat f = let (* rptf moved into inner let *)
                        fun check n = if n<0 then error "repeat<0" else n
                     in fn x => fn y => let fun rptf n x = if n=0 then x else rptf(n-1)(f x)
-                                       in rptf (check x) y 
+                                       in rptf (check x) y
                                        end
                    end
 
@@ -50,7 +50,7 @@ structure Main : BMARK =
 
     fun spaces n = implode (copy n #" ")
 (*mads
-    local 
+    local
 mads*)
       fun copy_list[] = []
         | copy_list((x,y)::rest) = (x,y):: copy_list rest
@@ -58,7 +58,7 @@ mads*)
       fun lexordset [] = []
         | lexordset (a::x) = lexordset (filter (lexless a) x) @ [a] @
                              lexordset (filter (lexgreater a) x)
-      and lexless(a1:int,b1:int)(a2,b2) = 
+      and lexless(a1:int,b1:int)(a2,b2) =
            if a2<a1 then true else if a2=a1 then b2<b1 else false
       and lexgreater pr1 pr2 = lexless pr2 pr1
 
@@ -68,19 +68,19 @@ mads*)
               in accumf [] list        (* note: this worked without changes!*)
              end
 
-      fun occurs3 x = 
+      fun occurs3 x =
           (* finds coords which occur exactly 3 times in coordlist x *)
           let
             fun diff x y = filter (fn x => not(member x y)) x  (* unfolded o *)
             fun f xover x3 x2 x1 [] = diff x3 xover
-                | f xover x3 x2 x1 (a::x) = 
+                | f xover x3 x2 x1 (a::x) =
                    if member a xover then f xover x3 x2 x1 x else
                    if member a x3 then f (a::xover) x3 x2 x1 x else
                    if member a x2 then f xover (a::x3) x2 x1 x else
                    if member a x1 then f xover x3 (a::x2) x1 x else
                                        f xover x3 x2 (a::x1) x
            in f [] [] [] [] x end
-(*     in 
+(*     in
 *)
 
 
@@ -90,12 +90,12 @@ mads*)
 
 
       abstype generation = GEN of (int*int) list
-        with 
+        with
           fun copy (GEN l) = GEN( copy_list l)
           fun alive (GEN livecoords) = livecoords
           and mkgen coordlist = GEN (lexordset coordlist)
           and mk_nextgen_fn neighbours gen =
-              if true then 
+              if true then
               let val living = alive gen
                   fun isalive x = copy_bool(member x living) (* eta *)
                   fun liveneighbours x = length( filter isalive ( neighbours x)) (*eta*)
@@ -124,13 +124,13 @@ mads*)
                       str :: plotfrom(x+1,ystart)""((x1,y1)::more)
             | plotfrom (x,y) str [] = [str]
            fun good (x,y) = x>=xstart andalso y>=ystart
-     in  fun plot coordlist = map_rec(copy_string,(plotfrom(xstart,ystart) "" 
+     in  fun plot coordlist = map_rec(copy_string,(plotfrom(xstart,ystart) ""
                                  (copy_list(filter good coordlist))))
     end
 
 
     infix 6 at
-    fun coordlist at (x:int,y:int) = let fun move(a,b) = (a+x,b+y) 
+    fun coordlist at (x:int,y:int) = let fun move(a,b) = (a+x,b+y)
                                       in map move coordlist end
     fun rotate x = map (fn (x:int,y:int) => (y,~x)) x  (* eta converted*)
 
@@ -147,7 +147,7 @@ mads*)
 
     fun copy_whole_arg (p, g) = (p, copy g)
 
-    fun nthgen'(p as(0,g)) = p 
+    fun nthgen'(p as(0,g)) = p
       | nthgen'(p as(i,g)) = (print ".\n";
                               nthgen' (copy_whole_arg(copy_whole_arg(i-1,mk_nextgen_fn neighbours g))))
 
@@ -171,7 +171,7 @@ mads*)
 
 (*    fun doit () = show((fn _ => ()), (iter 50))           (* inserted call of iter *)*)
 
-      
+
     fun testit _ = show(iter 50)    (* inserted call of iter *)
 
 (*

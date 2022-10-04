@@ -113,7 +113,7 @@ structure Target =
                                 endianShift = EndianBig.shift}
           | (PowerPC, _) => SOME {name = toString t, sizes = SizesPPC.sizes,
                                   endianShift = EndianLittle.shift}
-          | (PowerPC64, _) => SOME {name = toString t, 
+          | (PowerPC64, _) => SOME {name = toString t,
                                     sizes = SizesPowerPC64.sizes,
                                     endianShift = EndianLittle.shift}
           | (X86, _) => SOME {name = toString t, sizes = SizesX86.sizes,

@@ -2,7 +2,7 @@
 
 (* Convenience operators. Use with the infix declaration
    in the comment below, because Standard ML cannot export
-   fixity. 
+   fixity.
    No corresponding source in Box2d.
    *)
 
@@ -14,15 +14,15 @@ struct
      math operation like * for times. Its left and right
      parts are single-character mnemonics for the type of
      argument:
-     
+
      : is a 2d vector (glyph has two parts)
      % is a 3d vector (three)
      + is a 2x2 matrix (glyph has four compartments)
      # is a 3x3 matrix (nine)
-     
+
      (empty string) is a scalar, so that * is scalar
      times scalar.
-     
+
      @ is a transform (rotation ideograph) *)
 
   val op :-: = BDDMath.vec2sub

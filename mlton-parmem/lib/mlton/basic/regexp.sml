@@ -23,7 +23,7 @@ local
    local
       val validCharsString =
          "\n\t@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ()[]<>!?-&#;'/=\"$.\\"
-   in    
+   in
       val validChars =
          Vector.tabulate (numChars, fn i =>
                           String.contains (validCharsString, Char.fromInt i))
@@ -217,7 +217,7 @@ local
             end
 
          fun funs (T {matches, ...}) =
-            let  
+            let
                fun peek (s: Save.t): Substring.t option =
                   Option.map (Array.peek (matches, fn (s', _) =>
                                           Save.equals (s, s')),
@@ -337,7 +337,7 @@ local
                          last: (int * Actions.t) option)
                   : (int * Actions.t) option =
                   let
-                     val last = 
+                     val last =
                         case (Stack.peekMap
                               (current, fn (s, a) =>
                                case Array.sub (final, s) of
@@ -363,7 +363,7 @@ local
                               Stack.foreach
                               (current, fn (s, a) =>
                                Array.foreach
-                               (Array2.sub (next, s, c), 
+                               (Array2.sub (next, s, c),
                                 fn (s', v) =>
                                 if Array.sub (seen, s')
                                    then ()
@@ -422,7 +422,7 @@ local
                local
                   (* Sets of positions represented as vectors of length numPos.
                    *)
-                  datatype t = T of MatchAction.t vector option vector 
+                  datatype t = T of MatchAction.t vector option vector
                in
                   type set = t
                   fun lookup (T v, s) = Vector.sub (v, s)
@@ -541,7 +541,7 @@ local
                                   NONE => l'
                                 | SOME v => union (l', addActions (l, v))
                          in
-                            {first = first, 
+                            {first = first,
                              last = last,
                              nullable = (case (n, n') of
                                             (SOME v, SOME v') =>
@@ -584,7 +584,7 @@ local
                    (0, numStates, fn i =>
                     case Array2.sub (follow, i, j) of
                        NONE => ()
-                     | SOME a => 
+                     | SOME a =>
                           Array.update (final, i, SOME {actions = a,
                                                         requireFinish = true})))
                (* The positions in last are all final. *)
@@ -612,7 +612,7 @@ local
                          (0, numPos, fn j =>
                           case Array2.sub (follow, i, j) of
                              NONE => ()
-                           | SOME a => 
+                           | SOME a =>
                                 if Array2.sub (posChars, j, c)
                                    then Array.update (tmp, j, SOME a)
                                 else ())
@@ -639,10 +639,10 @@ local
                val repCounter = ref ~1
                val reps = ref [] (* representative of each char class *)
                val charClass = Array.new (numChars, ~1)
-               val _ = 
+               val _ =
                   Int.for (0, numChars, fn c =>
                            let
-                              val rep = 
+                              val rep =
                                  case List.peek (!reps, fn {char, ...} =>
                                                  charEquiv (c, char)) of
                                     NONE =>
@@ -706,7 +706,7 @@ local
                   Int.for
                   (0, numStates, fn src =>
                    let
-                      val shape = 
+                      val shape =
                          case (isSome (Array.sub (final, src)),
                                Vector.exists (anchorStarts, fn (s, _) =>
                                               s = src)) of
@@ -719,7 +719,7 @@ local
                                              in [Shape shape]
                                              end)
                       val dsts = Array.new (numStates, [])
-                      val _ = 
+                      val _ =
                          Int.forDown
                          (0, numChars, fn c =>
                           if Vector.sub (validChars, c)
@@ -747,9 +747,9 @@ local
                              end)
                    end)
             in
-               Graph.layoutDot (g, fn {nodeName} => 
+               Graph.layoutDot (g, fn {nodeName} =>
                                 {title = title,
-                                 options = 
+                                 options =
                                  let open GraphOption
                                  in [
                                      RankDir LeftToRight,
@@ -953,7 +953,7 @@ local
                       | SOME {state, ...} => state
                   end
                val statesToState =
-                  Trace.trace ("Regexp.DFA.fromNFA.statesToState", 
+                  Trace.trace ("Regexp.DFA.fromNFA.statesToState",
                                Array.layout NFA.State.layout,
                                State.layout)
                   statesToState
@@ -965,7 +965,7 @@ local
                      (numCharClasses, fn c =>
                       let
                          val _ = Array.modify (seen, fn _ => NONE)
-                         val _ = 
+                         val _ =
                             Array.foreachi
                             (states, fn (fromSlot: slot,
                                          fromState: NFA.State.t) =>
@@ -983,7 +983,7 @@ local
                                | SOME _ => ()))
                          val toStates = Array.keepAllMap (seen, fn opt => opt)
                          val edgeActions = ref []
-                         val toStates = 
+                         val toStates =
                             Array.mapi
                             (toStates, fn (toSlot: slot,
                                            {fromSlot, fromState, toState,
@@ -1138,7 +1138,7 @@ local
                   if anchorStart
                      then (ancSt, anchorStartStack)
                   else (start, startStack)
-               val _ = 
+               val _ =
                   Vector.foreachi
                   (initStack, fn (slot, v) =>
                    Array.update (stack1, slot,
@@ -1190,7 +1190,7 @@ local
                   Int.for
                   (0, numStates, fn src =>
                    let
-                      val shape = 
+                      val shape =
                          case (isSome (Array.sub (final, src)),
                                src = anchorStart) of
                             (false, false) => Ellipse
@@ -1202,7 +1202,7 @@ local
                                              in [Shape shape]
                                              end)
                       val dsts = Array.new (numStates, Env.empty ())
-                      val _ = 
+                      val _ =
                          Int.forDown
                          (0, numChars, fn c =>
                           if Vector.sub (validChars, c)
@@ -1236,7 +1236,7 @@ local
                               val label =
                                  concat [edgeLabel cs,
                                          " -- ",
-                                         Layout.toString 
+                                         Layout.toString
                                          (Vector.layout (Layout.str o
                                                          EdgeAction.toString)
                                           v)]
@@ -1245,9 +1245,9 @@ local
                            end))
                    end)
             in
-               Graph.layoutDot (g, fn {nodeName} => 
+               Graph.layoutDot (g, fn {nodeName} =>
                                 {title = title,
-                                 options = 
+                                 options =
                                  let open GraphOption
                                  in [
                                      RankDir LeftToRight,
@@ -1297,7 +1297,7 @@ local
  *                                   (case ac of
  *                                       [] => [{class = [state],
  *                                               old = state}]
- *                                     | _ => 
+ *                                     | _ =>
  *                                          let
  *                                             val s = newRep ()
  *                                             val _ = Array.update (r, state, s)
@@ -1634,12 +1634,12 @@ in
          val compileNFA =
             Trace.trace ("Regexp.compileNFA", layout, Compiled.layout) compileNFA
 
-         (* POSIX 1003.2 regular expressions 
+         (* POSIX 1003.2 regular expressions
           *  caveats: does not support back references '\N'
           *           does not support unmatched ')'
           *           does not support '[=' style coallating elements
           *           does not support coallating elements as range endpoints
-          * 
+          *
           * grammar:
           *    S ::= Re
           *   Re ::= Br Re0
@@ -1683,7 +1683,7 @@ in
                     | _ => raise (X "S"))
             and Re (s: char list,
                     k: char list * t * Save.t vector -> res) =
-               Br (s, fn (s, re, saves) => 
+               Br (s, fn (s, re, saves) =>
                    Re0 (s, [re], [saves], k))
             and Re0 (s: char list, res: t list, savess: Save.t vector list,
                      k: char list * t * Save.t vector -> res) =
@@ -1700,10 +1700,10 @@ in
                end
             and Br (s: char list,
                     k: char list * t * Save.t vector -> res) =
-               P (s, fn (s, re, saves) => 
+               P (s, fn (s, re, saves) =>
                   Br0 (s, [re], [saves], k))
             and Br0 (s: char list, res: t list, savess: Save.t vector list,
-                     k: char list * t * Save.t vector -> res) = 
+                     k: char list * t * Save.t vector -> res) =
                let
                   fun finish s =
                      k (s, seq (List.rev res), Vector.concat (List.rev savess))
@@ -1712,19 +1712,19 @@ in
                      [] => finish s
                    | #")"::_ => finish s
                    | #"|"::_ => finish s
-                   | _ => P (s, fn (s, re, saves) => 
+                   | _ => P (s, fn (s, re, saves) =>
                              Br0 (s, re::res, saves::savess, k))
                end
             and P (s: char list,
                    k: char list * t * Save.t vector -> res) =
                A (s, fn (s, re, saves) => P0 (s, re, saves, [], [], k))
-            and P0 (s: char list, 
+            and P0 (s: char list,
                     re: t, saves: Save.t vector,
                     res: t list, savess: Save.t vector list,
                     k: char list * t * Save.t vector -> res) =
                let
                   fun finish (s, re) =
-                     k (s, seq (List.rev (re::res)), 
+                     k (s, seq (List.rev (re::res)),
                         Vector.concat (List.rev (saves::savess)))
                   fun default () =
                      let
@@ -1735,7 +1735,7 @@ in
                            P0 (s, re, saves, res, savess, k))
                      end
                in
-                  case s of 
+                  case s of
                      [] => finish (s, re)
                    | #")"::_ => finish (s, re)
                    | #"|"::_ => finish (s, re)
@@ -1752,7 +1752,7 @@ in
                      k: char list * (t -> t) -> res) =
                N (s, fn (s, n) =>
                   Bnd0 (s, n, fn (s, f) =>
-                        case s of 
+                        case s of
                            #"}"::s => k (s, f)
                          | _ => raise (X "Bnd")))
             and Bnd0 (s: char list, n: int,
@@ -1765,12 +1765,12 @@ in
                    | #","::s => Bnd1 (s, n, k)
                    | _ => raise (X "Bnd0")
                end
-            and Bnd1 (s: char list, n: int, 
+            and Bnd1 (s: char list, n: int,
                       k: char list * (t -> t) -> res) =
                let
                   fun finish (s, f) = k (s, f)
                in
-                  case s of 
+                  case s of
                      #"}"::_ => finish (s, fn re => lower (re, n))
                    | _ => N (s, fn (s, m) =>
                              if m < n
@@ -1811,7 +1811,7 @@ in
                   fun finishC (s, c) =
                      finishR (s, char c)
                in
-                  case s of 
+                  case s of
                      #"("::(#")"::s) => finishN s
                    | #"("::s => let
                                    val save' = Save.new ()
@@ -1825,7 +1825,7 @@ in
                                 end
                    | #"["::s => let
                                 in
-                                   Be (s, fn (s, re) => 
+                                   Be (s, fn (s, re) =>
                                        case s of
                                           #"]"::s => finishR (s, re)
                                         | _ => raise (X "A"))
@@ -1854,7 +1854,7 @@ in
                      k: char list * t -> res) =
                let
                in
-                  case s of 
+                  case s of
                      #"]"::s => Be2 (s, inv, [#"]"], k)
                    | _ => Be2 (s, inv, [], k)
                end
@@ -1862,7 +1862,7 @@ in
                      k: char list * t -> res) =
                let
                in
-                  case s of 
+                  case s of
                      #"-"::s => Be3 (s, inv, #"-"::cs, [], [], k)
                    | _ => Be3 (s, inv, cs, [], [], k)
                end
@@ -1900,7 +1900,7 @@ in
                    | #"-"::s => (case s of
                                     #"]"::_ => finish (s, #"-"::cs, cps, ces)
                                   | _ => raise (X "Be3"))
-                   | c1::(#"-"::(c2::s)) => 
+                   | c1::(#"-"::(c2::s)) =>
                         let
                            val r1 = Char.ord c1
                            val r2 = Char.ord c2
@@ -1908,7 +1908,7 @@ in
                                     let val r = Char.ord c
                                     in r1 <= r andalso r <= r2
                                     end
-                        in 
+                        in
                            Be3 (s, inv, cs, cp::cps, ces, k)
                         end
                    | #"["::(#"."::s) =>
@@ -1940,29 +1940,29 @@ in
                let
                in
                  case s of
-                    #"a"::(#"l"::(#"n"::(#"u"::(#"m"::s)))) => 
+                    #"a"::(#"l"::(#"n"::(#"u"::(#"m"::s)))) =>
                        k (s, Char.isAlphaNum)
-                  | #"a"::(#"l"::(#"p"::(#"h"::(#"a"::s)))) => 
+                  | #"a"::(#"l"::(#"p"::(#"h"::(#"a"::s)))) =>
                        k (s, Char.isAlpha)
-                  | #"b"::(#"l"::(#"a"::(#"n"::(#"k"::_)))) => 
+                  | #"b"::(#"l"::(#"a"::(#"n"::(#"k"::_)))) =>
                        raise (X "Cl:blank")
-                  | #"c"::(#"n"::(#"t"::(#"r"::(#"l"::s)))) => 
+                  | #"c"::(#"n"::(#"t"::(#"r"::(#"l"::s)))) =>
                        k (s, Char.isCntrl)
-                  | #"d"::(#"i"::(#"g"::(#"i"::(#"t"::s)))) => 
+                  | #"d"::(#"i"::(#"g"::(#"i"::(#"t"::s)))) =>
                        k (s, Char.isDigit)
-                  | #"g"::(#"r"::(#"a"::(#"p"::(#"h"::s)))) => 
+                  | #"g"::(#"r"::(#"a"::(#"p"::(#"h"::s)))) =>
                        k (s, Char.isGraph)
-                  | #"l"::(#"o"::(#"w"::(#"e"::(#"r"::s)))) => 
+                  | #"l"::(#"o"::(#"w"::(#"e"::(#"r"::s)))) =>
                        k (s, Char.isLower)
-                  | #"p"::(#"r"::(#"i"::(#"n"::(#"t"::s)))) => 
+                  | #"p"::(#"r"::(#"i"::(#"n"::(#"t"::s)))) =>
                        k (s, Char.isPrint)
-                  | #"p"::(#"u"::(#"n"::(#"c"::(#"t"::_)))) => 
+                  | #"p"::(#"u"::(#"n"::(#"c"::(#"t"::_)))) =>
                        raise (X "Cl:punct")
-                  | #"s"::(#"p"::(#"a"::(#"c"::(#"e"::s)))) => 
+                  | #"s"::(#"p"::(#"a"::(#"c"::(#"e"::s)))) =>
                        k (s, Char.isSpace)
-                  | #"u"::(#"p"::(#"p"::(#"e"::(#"r"::s)))) => 
+                  | #"u"::(#"p"::(#"p"::(#"e"::(#"r"::s)))) =>
                        k (s, Char.isUpper)
-                  | #"x"::(#"d"::(#"i"::(#"g"::(#"i"::(#"t"::s))))) => 
+                  | #"x"::(#"d"::(#"i"::(#"g"::(#"i"::(#"t"::s))))) =>
                        k (s, Char.isHexDigit)
                   | _ => raise (X "Cl")
                end
@@ -2014,7 +2014,7 @@ in
  *            oneOf " -",
  *            d, d, d, d,
  *            or [eol, nonDigit]]
- * 
+ *
  *       fun doit (name, lay) =
  *       let
  *          val dot = concat ["/tmp/", name, ".dot"]

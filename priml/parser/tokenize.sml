@@ -24,7 +24,7 @@ struct
   (* Report an error with its position. *)
   (* XXX should raise exception? *)
   fun error s pos = print (Pos.toString pos ^ ": " ^ s ^ "\n")
-  fun warn pos s  = print ("Warning: " ^ Pos.toString pos ^ 
+  fun warn pos s  = print ("Warning: " ^ Pos.toString pos ^
                            ": " ^ s ^ "\n")
 
   (* Succeeds if p succeeds at the current point, but doesn't
@@ -56,12 +56,12 @@ struct
       (literal #"\\" && (repeat (literal #" " ||
                                  literal #"\t")) && literal #"\n" return nil)
 
-  (* probably should have \r, \t, \x05, etc. 
-     allows [brackets] because it is also used for text 
+  (* probably should have \r, \t, \x05, etc.
+     allows [brackets] because it is also used for text
      also allows an escaped literal newline to act as
      no character at all, for multi-line string constants
      with no extra spaces *)
-  val escapechar = 
+  val escapechar =
     ((literal #"\\" >> literal quotc) ||
      (literal #"\\" >> literal #"[") ||
      (literal #"\\" >> literal #"]") ||
@@ -80,11 +80,11 @@ struct
 
   (* XXX overflows *)
   (* XXX get from IntConst *)
-  val decimal = 
+  val decimal =
     (repeat1 (satisfy Char.isDigit))
     wth (Word32.fromInt o Option.valOf o Int.fromString o implode)
 
-  val integer = 
+  val integer =
     alt [literal #"0" >> literal #"x" >>
          (repeat1 (satisfy Char.isHexDigit))
          wth (fromhex 0w0),
@@ -92,9 +92,9 @@ struct
 
   val insidechars = (repeat getchar) wth (implode o List.concat)
 
-  val stringlit = 
+  val stringlit =
     (literal quotc) >>
-    ((insidechars << (literal quotc)) 
+    ((insidechars << (literal quotc))
       guard error "Unclosed string or bad escape.")
 
   val char = ((literal #"?" >> (satisfy (fn x => x <> #"\\"))) ||
@@ -104,12 +104,12 @@ struct
                (literal #".")) &&
                   (repeat1 (satisfy Char.isDigit))
                   wth (fn (a, b) =>
-                       (Option.valOf (Real.fromString 
+                       (Option.valOf (Real.fromString
                                       ("0." ^ (implode b)))) +
-                       (case a of 
+                       (case a of
                             nil => 0.0
-                          | _ => Real.fromInt 
-                                (Option.valOf (Int.fromString 
+                          | _ => Real.fromInt
+                                (Option.valOf (Int.fromString
                                                (implode a)))))
 
   val number = integer || (literal #"~" >> decimal) wth op~
@@ -222,10 +222,10 @@ struct
           id keywords
       end
 
-  val letters = (satisfy Char.isAlpha || literal #"'") && 
+  val letters = (satisfy Char.isAlpha || literal #"'") &&
                 repeat (satisfy identchar) wth op::
 
-  val word = 
+  val word =
       alt [letters wth implode,
            (satisfy isSep) wth Char.toString,
            repeat1 (satisfy isSymbolic) wth implode]
@@ -235,7 +235,7 @@ struct
                                        number wth INT,
                                        stringlit wth (fn s => STR s),
                                        word wth ident,
-                                       (* XXX why isn't this 
+                                       (* XXX why isn't this
                                           covered by ident above? *)
                                        literal #"_" return UNDERSCORE
                                        ])
@@ -267,16 +267,16 @@ struct
          (* if we see newline, include it but start over. *)
          $text_line_ender && $(skipwhites orig orig) wth op@,
          (* tab characters are bad news; XXX use parameter
-            to define their size? (and then don't warn?) 
+            to define their size? (and then don't warn?)
             nb. have to agree with Pos's idea of tab length *)
          literal #"\t" -- (fn _ =>
-                           get 
+                           get
                            (fn pos =>
                             let in
                               warn pos "tab character in text indentation";
                               if (n >= 8)
                               then $(skipwhites orig (n - 8))
-                              else succeed (List.tabulate(8 - n, 
+                              else succeed (List.tabulate(8 - n,
                                                           fn _ => #" "))
                             end)),
          get (fn pos =>
@@ -286,7 +286,7 @@ struct
               end)]
     end
 
-  val token = 
+  val token =
       alt [$goodtoken,
            !! (space >> any wth BAD)]
 

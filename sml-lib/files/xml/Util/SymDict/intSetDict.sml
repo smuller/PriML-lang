@@ -5,7 +5,7 @@
 
 
 
-structure KeyIntSet : Key = 
+structure KeyIntSet : Key =
    struct
       open IntSets UtilString
 
@@ -17,7 +17,7 @@ structure KeyIntSet : Key =
       val toString = (List2xString ("{",",","}") Int2String) o IntSet2List
    end
 
-structure IntSetDict = Dict (structure Key = KeyIntSet) 
-structure IntSetSymTab = SymTable (structure Key = KeyIntSet) 
+structure IntSetDict = Dict (structure Key = KeyIntSet)
+structure IntSetSymTab = SymTable (structure Key = KeyIntSet)
 
 

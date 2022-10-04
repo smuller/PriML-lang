@@ -90,17 +90,17 @@ structure AwkSyntax : REGEXP_PARSER =
                 end
           fun getHexChar (c,cs) = (case (getc cs)
                  of NONE => returnVal (SC.HEX,[c],cs)
-                  | SOME (c',cs') => 
+                  | SOME (c',cs') =>
                      if not (C.isHexDigit c') then returnVal (SC.HEX,[c],cs)
                      else returnVal (SC.HEX,[c,c'],cs')
                 (* end case *))
           fun getOctalChar (c,cs) = (case (getc cs)
                  of NONE => returnVal (SC.OCT,[c],cs)
-                  | SOME(c',cs') => 
+                  | SOME(c',cs') =>
                       if not (isOctDigit c') then returnVal (SC.OCT,[c],cs)
                       else (case (getc cs')
                         of NONE => returnVal (SC.OCT,[c,c'],cs')
-                         | SOME (c'',cs'') => 
+                         | SOME (c'',cs'') =>
                              if not (isOctDigit c'') then returnVal (SC.OCT,[c,c'],cs')
                              else returnVal (SC.OCT,[c,c',c''],cs'')))
           fun getEscapeChar cs = (case (getc' cs)
@@ -223,7 +223,7 @@ structure AwkSyntax : REGEXP_PARSER =
                         case (getc' cs)
                          of (#"-", cs) =>
                               scanRange1(R.CharSet.add(R.CharSet.empty, #"-"), cs)
-                          | (#"]", cs) => 
+                          | (#"]", cs) =>
                               scanRange2(R.CharSet.empty, #"]", cs)  (* as per bwk test suite *)
                           | _ => scanRange1(R.CharSet.empty, cs)
                         (* end case *)

@@ -27,7 +27,7 @@ val _ = TextIO.closeOut out
 val _ = print "before saves\n"
 
 val original = ref true
-   
+
 val _ = (case save w1 of
             Clone => original := false
           | Original => ())

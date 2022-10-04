@@ -130,7 +130,7 @@ struct
 
     fun encode the_str : string =
     let
-        (*  Grab groups of 3 chars. 
+        (*  Grab groups of 3 chars.
             n is the number of chars to add to a group.
         *)
 
@@ -140,14 +140,14 @@ struct
           | loop ss n acc rslt =
             (* add to a group, n=1,2,3 *)
             case SS.getc ss of
-              NONE => 
+              NONE =>
                 let
                     (* no more chars, pad the group *)
                     val final =
                         if n = 3    (* group is empty *)
                         then rslt
                         else
-                            let 
+                            let
                                 (* flush the group, n=1,2 *)
                                 val acc' = padz acc n
                             in

@@ -34,17 +34,17 @@ signature DecodeFile =
 structure DecodeFile : DecodeFile =
    struct
       open
-         UniChar Uri UtilError 
-         
+         UniChar Uri UtilError
+
       structure Bytes = Word8
       type Byte = Bytes.word
 
       fun Byte2Char b = Chars.fromLargeWord(Bytes.toLargeWord b)
-      fun Byte2Hex b = 
+      fun Byte2Hex b =
          "0x"^UtilString.toUpperString(StringCvt.padLeft #"0" 2 (Bytes.toString b))
       fun Char2Byte c = Bytes.fromLargeWord(Chars.toLargeWord c)
 
-      type instream = TextIO.instream 
+      type instream = TextIO.instream
       val closeIn   = TextIO.closeIn
       val input     = TextIO.input
       val input1    = TextIO.input1
@@ -69,38 +69,38 @@ structure DecodeFile : DecodeFile =
       (* return the uri of a file.                                          *)
       (*--------------------------------------------------------------------*)
       fun fileUri ((typ,_,_),_,_,_) =
-         case typ 
+         case typ
            of STD => emptyUri
             | FNAME(uri,_,_,_) => uri
       (*--------------------------------------------------------------------*)
       (* return the uri string name of a file.                              *)
       (*--------------------------------------------------------------------*)
       fun fileName ((typ,_,_),_,_,_) =
-         case typ 
+         case typ
            of STD => "<stdin>"
             | FNAME(_,str,_,_) => str
       (*--------------------------------------------------------------------*)
       (* return the uri string and the position in the the file.            *)
       (*--------------------------------------------------------------------*)
       fun filePos ((typ,_,p),_,s,i) =
-         case typ 
+         case typ
            of STD => ("<stdin>",p+i-s)
             | FNAME(_,str,_,_) => (str,p+i-s)
 
       (*--------------------------------------------------------------------*)
       (* open a file; report IO errors by raising NoSuchFile.               *)
       (*--------------------------------------------------------------------*)
-      fun openFile uriOpt = 
-         let val (typ,stream) = 
-            case uriOpt 
+      fun openFile uriOpt =
+         let val (typ,stream) =
+            case uriOpt
               of NONE => (STD,stdIn)
-               | SOME uri => let val { uri = str, 
-                                       filename = fname, 
+               | SOME uri => let val { uri = str,
+                                       filename = fname,
                                        tmp,
                                        instream } = retrieveUriStream uri
                              in (FNAME(uri,str,fname,tmp), instream)
                              end
-                          handle IO.Io {name,cause,...} 
+                          handle IO.Io {name,cause,...}
                           => raise NoSuchFile(name,exnMessage cause)
 
          in ((typ,stream,0),nullVec,0,0)
@@ -112,19 +112,19 @@ structure DecodeFile : DecodeFile =
       fun closeStream (typ,stream,_) =
          case typ
            of STD => ()
-            | FNAME(_,uri,fname,tmp) 
+            | FNAME(_,uri,fname,tmp)
               => let val _ = closeIn stream handle IO.Io _ => ()
-                     val _ = (if tmp andalso OS.FileSys.access(fname,nil) 
+                     val _ = (if tmp andalso OS.FileSys.access(fname,nil)
                                  then OS.FileSys.remove fname else ())
                         handle exn as OS.SysErr _ =>
                            TextIO.output(TextIO.stdErr,String.concat
                                          ["Error removing temporary file ",fname,"for URI",uri,
                                           "(",exnMessage exn,")\n"])
-                             
+
                  in ()
                  end
       fun closeFile (tsp,_,_,_) = closeStream tsp
-                                         
+
       (*--------------------------------------------------------------------*)
       (* read a byte from the file; if at the end of buffer, reload it.     *)
       (* if a reload fails or returns an IO error, raise EndOfFile. --------*)

@@ -39,7 +39,7 @@ structure Domain =
          let
             exception E of 'a
             val contains = fn E _ => true | _ => false
-            val toString = fn E x => toString x 
+            val toString = fn E x => toString x
                             | _ => Error.bug "RDB.Domain.new.toString"
             val compare =
                fn (E x, E y) => compare (x, y)

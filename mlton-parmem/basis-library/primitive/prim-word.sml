@@ -106,7 +106,7 @@ structure Word8 =
       open Word8
 
       val sizeInBits: Int32.int = 8
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
 
       val + = _prim "Word8_add": word * word -> word;
@@ -197,7 +197,7 @@ structure Word16 =
       open Word16
 
       val sizeInBits: Int32.int = 16
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
 
       val + = _prim "Word16_add": word * word -> word;
@@ -352,7 +352,7 @@ structure Word32 =
       open Word32
 
       val sizeInBits: Int32.int = 32
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
 
       val + = _prim "Word32_add": word * word -> word;
@@ -387,7 +387,7 @@ structure Word64 =
       open Word64
 
       val sizeInBits: Int32.int = 64
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
 
       val + = _prim "Word64_add": word * word -> word;

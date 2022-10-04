@@ -20,7 +20,7 @@ fun generate(f: ('a -> unit) -> unit): unit -> 'a option =
    in fn () => Thread.switch(fn t => (paused := SOME t
                                       ; Thread.prepare (valOf(!gen), ())))
    end
-   
+
 datatype 'a tree =
     L of 'a
   | N of 'a tree * 'a tree
@@ -58,5 +58,5 @@ val _ =
    if sameFringe(t1, t2, op =)
       then print "success\n"
    else print "failure\n"
-         
+
 end

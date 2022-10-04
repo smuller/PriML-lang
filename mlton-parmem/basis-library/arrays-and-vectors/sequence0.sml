@@ -9,10 +9,10 @@
  *)
 
 functor PrimSequence (S: sig
-                        type 'a sequence 
+                        type 'a sequence
                         type 'a elt
                         (* fromArray should be constant time. *)
-                        val fromArray: 'a elt array -> 'a sequence 
+                        val fromArray: 'a elt array -> 'a sequence
                         val isMutable: bool
                         val length: 'a sequence -> SeqIndex.int
                         val subUnsafe: 'a sequence * SeqIndex.int -> 'a elt
@@ -20,7 +20,7 @@ functor PrimSequence (S: sig
                   ): PRIM_SEQUENCE =
    struct
       structure Array = Primitive.Array
-      
+
       val op +? = SeqIndex.+?
       val op + = SeqIndex.+
       val op -? = SeqIndex.-?
@@ -32,19 +32,19 @@ functor PrimSequence (S: sig
       val geu = SeqIndex.geu
       val ! = Primitive.Ref.deref
       val op := = Primitive.Ref.assign
-      fun (f o g) x = f (g x) 
+      fun (f o g) x = f (g x)
 
       type 'a sequence = 'a S.sequence
       type 'a elt = 'a S.elt
 
       local
          fun valOf x: Primitive.Int32.int = case x of SOME y => y | NONE => 0
-         fun doit (precision, fromInt, maxInt') = 
+         fun doit (precision, fromInt, maxInt') =
             if Primitive.Int32.>= (valOf SeqIndex.precision, precision)
                then fromInt maxInt'
             else SeqIndex.maxInt'
-         structure S = 
-            Int_ChooseInt 
+         structure S =
+            Int_ChooseInt
             (type 'a t = SeqIndex.int
              val fInt8 = doit (valOf Primitive.Int8.precision,
                                SeqIndex.schckFromInt8,
@@ -59,7 +59,7 @@ functor PrimSequence (S: sig
                                 SeqIndex.schckFromInt64,
                                 Primitive.Int64.maxInt')
              val fIntInf = SeqIndex.maxInt')
-      in 
+      in
          val maxLen = S.f
       end
 
@@ -135,17 +135,17 @@ functor PrimSequence (S: sig
 
       fun tabulate (n, f) =
          #1 (unfoldi (n, (), fn (i, ()) => (f i, ())))
-            
+
       fun new (n, x) = tabulate (n, fn _ => x)
-      
+
       structure Slice =
          struct
             type 'a sequence = 'a sequence
             type 'a elt = 'a elt
-            datatype 'a t = T of {seq: 'a sequence, 
+            datatype 'a t = T of {seq: 'a sequence,
                                   start: SeqIndex.int, len: SeqIndex.int}
             type 'a slice = 'a t
-            
+
             fun length (T {len, ...}) = len
             fun unsafeSub (T {seq, start, ...}, i) =
                S.subUnsafe (seq, start +? i)
@@ -159,10 +159,10 @@ functor PrimSequence (S: sig
                if Primitive.Controls.safe andalso geu (i, len)
                   then raise Subscript
                else (unsafeUpdateMk updateUnsafe) (sl, i, x)
-            fun full (seq: 'a sequence) : 'a slice = 
+            fun full (seq: 'a sequence) : 'a slice =
                T {seq = seq, start = 0, len = S.length seq}
-            fun unsafeSubslice (T {seq, start, len}, start', len') = 
-               T {seq = seq, 
+            fun unsafeSubslice (T {seq, start, len}, start', len') =
+               T {seq = seq,
                   start = start +? start',
                   len = (case len' of
                             NONE => len -? start'
@@ -171,14 +171,14 @@ functor PrimSequence (S: sig
                unsafeSubslice (full seq, start, len)
             fun subslice (T {seq, start, len}, start', len') =
                case len' of
-                  NONE => 
-                     if Primitive.Controls.safe 
+                  NONE =>
+                     if Primitive.Controls.safe
                         andalso gtu (start', len)
                         then raise Subscript
                         else T {seq = seq,
                                 start = start +? start',
                                 len = len -? start'}
-                | SOME len' => 
+                | SOME len' =>
                      if Primitive.Controls.safe
                         andalso (gtu (start', len)
                                  orelse gtu (len', len -? start'))
@@ -188,15 +188,15 @@ functor PrimSequence (S: sig
                                 len = len'}
             fun slice (seq: 'a sequence, start, len) =
                subslice (full seq, start, len)
-            fun base (T {seq, start, len}) = 
+            fun base (T {seq, start, len}) =
                (seq, start, len)
             fun isEmpty sl = length sl = 0
             fun getItem (sl as T {seq, start, len}) =
                if isEmpty sl
                   then NONE
-               else SOME (S.subUnsafe (seq, start), 
-                          T {seq = seq, 
-                             start = start +? 1, 
+               else SOME (S.subUnsafe (seq, start),
+                          T {seq = seq,
+                             start = start +? 1,
                              len = len -? 1})
             fun foldli f b (T {seq, start, len}) =
                let
@@ -225,11 +225,11 @@ functor PrimSequence (S: sig
                fun foldr f = make foldri f
             end
             fun appi f sl = foldli (fn (i, x, ()) => f (i, x)) () sl
-            fun app f sl = appi (f o #2) sl 
-            fun mapi f (T {seq, start, len}) = 
+            fun app f sl = appi (f o #2) sl
+            fun mapi f (T {seq, start, len}) =
                tabulate (len, fn i => f (i, S.subUnsafe (seq, start +? i)))
             fun map f sl = mapi (f o #2) sl
-            fun findi p (T {seq, start, len}) = 
+            fun findi p (T {seq, start, len}) =
                let
                   val min = start
                   val len = len -? 1
@@ -244,11 +244,11 @@ functor PrimSequence (S: sig
                           end
                in loop min
                end
-            fun find p sl = 
+            fun find p sl =
                case findi (p o #2) sl of
                   NONE => NONE
-                | SOME (_, x) => SOME x 
-            fun existsi p sl = 
+                | SOME (_, x) => SOME x
+            fun existsi p sl =
                case findi p sl of
                   NONE => false
                 | SOME _ => true
@@ -267,8 +267,8 @@ functor PrimSequence (S: sig
                         (true, true) => EQUAL
                       | (true, false) => LESS
                       | (false, true) => GREATER
-                      | (false, false) => 
-                           (case cmp (S.subUnsafe (seq1, i), 
+                      | (false, false) =>
+                           (case cmp (S.subUnsafe (seq1, i),
                                       S.subUnsafe (seq2, j)) of
                               EQUAL => loop (i +? 1, j +? 1)
                             | ans => ans)
@@ -344,7 +344,7 @@ functor PrimSequence (S: sig
                              fun loop' j =
                                 if j >= len'
                                    then i
-                                else if eq (S.subUnsafe (seq, i +? j), 
+                                else if eq (S.subUnsafe (seq, i +? j),
                                             S.subUnsafe (seq', j))
                                         then loop' (j +? 1)
                                      else loop (i +? 1)
@@ -355,7 +355,7 @@ functor PrimSequence (S: sig
             fun span (eq: 'a sequence * 'a sequence -> bool)
                      (T {seq, start, ...},
                       T {seq = seq', start = start', len = len'}) =
-               if Primitive.Controls.safe andalso 
+               if Primitive.Controls.safe andalso
                   (not (eq (seq, seq')) orelse start' +? len' < start)
                   then raise Span
                else unsafeSlice (seq, start, SOME ((start' +? len') -? start))
@@ -407,17 +407,17 @@ structure Vector =
       in
          open P
          open Vector
-         fun update (v, i, x) = 
+         fun update (v, i, x) =
             if Primitive.Controls.safe andalso SeqIndex.geu (i, length v)
                then raise Subscript
-            else tabulate (length v, 
+            else tabulate (length v,
                            fn j => if i = j then x else unsafeSub (v, j))
       end
    end
 
-structure Array = 
-   struct 
-      local 
+structure Array =
+   struct
+      local
          structure P = PrimSequence (type 'a sequence = 'a array
                                      type 'a elt = 'a
                                      val fromArray = fn a => a
@@ -427,50 +427,50 @@ structure Array =
       in
          open P
          open Array
-         structure Slice = 
+         structure Slice =
             struct
                open Slice
                fun update arg = updateMk Array.updateUnsafe arg
                fun unsafeUpdate arg = unsafeUpdateMk Array.updateUnsafe arg
-               fun vector sl = 
+               fun vector sl =
                   Vector.tabulate (length sl, fn i => unsafeSub (sl, i))
                fun modifyi f sl =
                   appi (fn (i, x) => unsafeUpdate (sl, i, f (i, x))) sl
                fun modify f sl = modifyi (fn (_, x) => f x) sl
-               local 
-                  fun make (foldFn, lengthFn, unsafeSubFn) {src, dst, di} = 
-                     let 
+               local
+                  fun make (foldFn, lengthFn, unsafeSubFn) {src, dst, di} =
+                     let
                         val sl = slice (dst, di, SOME (lengthFn src))
-                        fun transfer (i, _, _) = 
+                        fun transfer (i, _, _) =
                            unsafeUpdate (sl, i, unsafeSubFn (src, i))
                      in
                         foldFn transfer () sl
                      end
-               in 
-                  fun copy (arg as {src, dst, di}) = 
-                     let 
+               in
+                  fun copy (arg as {src, dst, di}) =
+                     let
                         val (src', si', len') = base src
-                     in 
-                        if src' = dst 
-                           andalso SeqIndex.< (si', di) 
+                     in
+                        if src' = dst
+                           andalso SeqIndex.< (si', di)
                            andalso SeqIndex.<= (di, SeqIndex.+? (si', len'))
                            then make (foldri, length, unsafeSub) arg
                         else make (foldli, length, unsafeSub) arg
                      end
-                  fun copyVec arg = 
-                     make (foldli, Vector.Slice.length, Vector.Slice.unsafeSub) 
+                  fun copyVec arg =
+                     make (foldli, Vector.Slice.length, Vector.Slice.unsafeSub)
                           arg
                end
             end
          fun update arg = updateMk Array.updateUnsafe arg
          val unsafeUpdate = Array.updateUnsafe
          fun vector s = Vector.tabulate (length s, fn i => unsafeSub (s, i))
-         fun copy {src, dst, di} = 
-            Slice.copy {src = Slice.full src, dst = dst, di = di} 
-         fun copyVec {src, dst, di} = 
+         fun copy {src, dst, di} =
+            Slice.copy {src = Slice.full src, dst = dst, di = di}
+         fun copyVec {src, dst, di} =
             Slice.copyVec {src = Vector.Slice.full src, dst = dst, di = di}
          fun modifyi f s = Slice.modifyi f (Slice.full s)
-         fun modify f s = Slice.modify f (Slice.full s) 
+         fun modify f s = Slice.modify f (Slice.full s)
       end
    end
 

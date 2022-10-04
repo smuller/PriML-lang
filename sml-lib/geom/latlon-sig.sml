@@ -6,7 +6,7 @@ sig
     exception LatLon of string
 
     (* latitude measured in degrees. Positive is north and negative is south.
-       longitude measured in degrees. Positive is east and negative is west. 
+       longitude measured in degrees. Positive is east and negative is west.
 
        The inputs are treated modularly, so that +100 latitude is the
        same as -80. *)
@@ -26,7 +26,7 @@ sig
        pole. *)
     val angle : pos * pos -> real option
 
-        
+
     (* Great circle distances between positions. *)
     val dist_meters : pos * pos -> real
     val dist_feet : pos * pos -> real
@@ -71,7 +71,7 @@ sig
 
     (* XXX: Other useful projections:
        transverse mercator (uses parallel rather than meridian)
-       
+
        Actually it would be useful to be able to set a reference point
        and then behave as though that is 0,0 in projections.
        *)

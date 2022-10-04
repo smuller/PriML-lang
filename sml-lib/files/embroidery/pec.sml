@@ -15,12 +15,12 @@ struct
   exception PEC of string
   open Reader
   structure GA = GrowArray
-      
+
   type stitchblock =
       { colorindex : int,
         stitches : (int * int) vector }
 
-  type pecfile = 
+  type pecfile =
       (* Could parse the name too, which comes in a fixed-length field right
          after the magic. But I can't figure out what the deal is with
          that part of the format: If the name is long, it appears that
@@ -121,7 +121,7 @@ struct
       val blocks = GA.empty()
       fun addblock (stitches, colornum) =
           let
-              val colorindex = 
+              val colorindex =
                   Vector.sub(colorlist, colornum)
                   handle _ => raise PEC ("more stitch blocks than " ^
                                          "colors in header!")
@@ -137,14 +137,14 @@ struct
 
             fun word7_tointx w =
                 let val w = Word8.toInt w
-                in if w > 63 
+                in if w > 63
                    then w - 128
                    else w
                 end
 
             fun word12_tointx (hi, lo) =
                 let val w =
-                    Word32.fromInt (Word8.toInt 
+                    Word32.fromInt (Word8.toInt
                                     (Word8.andb (hi, 0w15))) * 0w256 +
                     Word32.fromInt (Word8.toInt lo)
                 in
@@ -156,7 +156,7 @@ struct
           in
             case (byte r, byte r) of
                 (* end of stitches *)
-                (0w255, 0w0) => 
+                (0w255, 0w0) =>
                 let
                 in
                     addblock (GA.vector stitches, colornum);
@@ -193,7 +193,7 @@ struct
                     val (deltax, deltay) =
                         if (Word8.andb (val1, 0w128) = 0w128)
                         then (* jump stitch. need another byte *)
-                            (word12_tointx (val1, val2), 
+                            (word12_tointx (val1, val2),
                              getdeltay (byte r))
                         else (* normal *)
                             (word7_tointx val1, getdeltay val2)
@@ -207,11 +207,11 @@ struct
                 end
           end
 
-      val _ = 
+      val _ =
           readblock { prevx = 0, prevy = 0, colornum = 0 }
-          handle Bounds => 
+          handle Bounds =>
               raise PEC ("file ended while reading stitches after " ^
-                         Int.toString (GA.length blocks) ^ 
+                         Int.toString (GA.length blocks) ^
                          " complete blocks and " ^
                          Int.toString (GA.length stitches) ^
                          " stitches in the current one.")
@@ -221,7 +221,7 @@ struct
 
   fun readpec (r : reader) : pecfile =
     let
-      val magic = #vec r 8 
+      val magic = #vec r 8
           handle Bounds => raise PEC "not a PEC file (<8 bytes)"
       val _ = StringUtil.matchhead "#PEC" magic
           orelse raise PEC "not a PEC file (bad magic)"
@@ -237,30 +237,30 @@ struct
 
         val f = Writer.fromfile filename
 
-        (* There are two kinds of stitches: "normal" and "jump". For 
-           deltas of -64 to +63, we use 7 signed bits; a normal stitch. 
+        (* There are two kinds of stitches: "normal" and "jump". For
+           deltas of -64 to +63, we use 7 signed bits; a normal stitch.
            For deltas of -2048 to +2047 we set the high bit of the first
            word, then use its lowest 4 bits plus all 8 bits of the
            next byte to represent a signed 12-bit number. For longer
            stitches (i.e. over two meters!) we fail. *)
         fun encode n =
             if n <= 63 andalso n >= ~64
-            then 
+            then
                 (if n < 0
                  then #byte f (Word8.fromInt (n + 128))
                  else #byte f (Word8.fromInt n))
             else
             if n <= 2047 andalso n >= ~2048
             then
-                (let val twoc = 
+                (let val twoc =
                      if n < 0
                      then n + 4096
                      else n
                  in
-                     TextIO.output(TextIO.stdErr, 
+                     TextIO.output(TextIO.stdErr,
                                    Int.toString n ^ " becomes " ^
                                    Int.toString twoc ^ "\n");
-                     #byte f (Word8.orb 
+                     #byte f (Word8.orb
                               (0w128, Word8.fromInt (twoc div 256)));
                      #byte f (Word8.fromInt (twoc mod 256))
                  end)
@@ -277,7 +277,7 @@ struct
                   if sidx = Vector.length stitches
                   then (prevx, prevy)
                   else
-                    let 
+                    let
                         val (thisx, thisy) = Vector.sub(stitches, sidx)
                         val (deltax, deltay) = (thisx - prevx, thisy - prevy)
                     in

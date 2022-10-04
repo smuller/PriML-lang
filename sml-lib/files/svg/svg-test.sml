@@ -7,7 +7,7 @@ struct
   open SVG
 
   val () =
-  let 
+  let
       val () = case parsepathstring "" of
           NONE => raise Nope
         | SOME nil => ()

@@ -17,7 +17,7 @@ struct
       NonCarrier
     | Carrier of { definitely_allocated : bool,
                    carried : 'typ }
-      
+
     fun arminfo_map f NonCarrier = NonCarrier
       | arminfo_map f (Carrier { definitely_allocated, carried }) =
       Carrier { definitely_allocated = definitely_allocated,
@@ -35,7 +35,7 @@ struct
     and typ =
         TVar of var
       | TRec of (label * typ) list
-      (* bool true => total 
+      (* bool true => total
          functions are n-ary.
          *)
       | Arrow of bool * typ list * typ
@@ -85,7 +85,7 @@ struct
     and 'a poly = Poly of { prios : var list,
                             tys    : var list } * 'a
 
-    and value = 
+    and value =
         Polyvar  of { tys : typ list, prios : prio list, var : var }
       | Polyuvar of { tys : typ list, prios : prio list, var : var }
       | MLVal of string
@@ -95,7 +95,7 @@ struct
       | VRoll of typ * value
       | VInject of typ * label * value option
 
-      | Fns of 
+      | Fns of
         { name : var,
           arg  : var list,
           dom  : typ list,
@@ -120,7 +120,7 @@ struct
 
     and exp =
         Value of value
-      
+
       (* application is n-ary *)
       | App of exp * exp list
 
@@ -149,7 +149,7 @@ struct
       (* apply a primitive to some expressions and types *)
       | Primapp of Primop.primop * exp list * typ list
 
-      (* sum type, object, var (for all arms but not default), 
+      (* sum type, object, var (for all arms but not default),
          branches, default.
          the label/exp list need not be exhaustive.
          *)
@@ -195,7 +195,7 @@ struct
     (* now a derived form *)
     fun Var v = Polyvar { tys = nil, prios = nil, var = v }
     (* expand to linear search *)
-    fun Tagcase (t, obj, bound, vel, def) = 
+    fun Tagcase (t, obj, bound, vel, def) =
       let
         val vo = Variable.namedvar "tagcase"
         fun go nil = def
@@ -218,9 +218,9 @@ struct
       | pr_eq _ = false
 
     datatype tystatus = Regular | Extensible
-    datatype idstatus = 
-        Normal 
-      | Constructor 
+    datatype idstatus =
+        Normal
+      | Constructor
       (* the value is the tag, in scope, that should be used
          to deconstruct this tagged expression *)
       | Tagger of value

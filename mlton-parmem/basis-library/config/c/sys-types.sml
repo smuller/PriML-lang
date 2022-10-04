@@ -24,7 +24,7 @@ structure C_DirP : C_SYSTYPE = C_DirP
 
 (* from <poll.h> *)
 structure C_NFds : sig
-                      include C_SYSTYPE 
+                      include C_SYSTYPE
                       val fromInt: Int.int -> t
                    end = C_NFds
 
@@ -46,8 +46,8 @@ structure C_NLink : sig
                        val toInt: t -> int
                     end = C_NLink
 structure C_Off = C_Off
-structure C_PId : sig 
-                     include C_SYSTYPE 
+structure C_PId : sig
+                     include C_SYSTYPE
                      val castFromFixedInt: FixedInt.int -> t
                      val ~ : t -> t
                   end = C_PId
@@ -57,13 +57,13 @@ structure C_SSize : sig
                        val toInt: t -> Int.int
                     end = C_SSize
 structure C_SUSeconds : sig
-                           include C_SYSTYPE 
+                           include C_SYSTYPE
                            val castFromFixedInt: FixedInt.int -> t
                            val fromLargeInt: LargeInt.int -> t
                            val toLargeInt: t -> LargeInt.int
                         end = C_SUSeconds
 structure C_Time : sig
-                      include C_SYSTYPE 
+                      include C_SYSTYPE
                       val castFromFixedInt: FixedInt.int -> t
                       val fromInt: Int.int -> t
                       val fromLargeInt: LargeInt.int -> t

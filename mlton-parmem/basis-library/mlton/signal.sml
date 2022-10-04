@@ -128,7 +128,7 @@ fun handled () =
    Mask.some
    (Array.foldri
     (fn (s, h, sigs) =>
-     case h of 
+     case h of
         Handler _ => (fromInt s)::sigs
       | _ => sigs) [] handlers)
 
@@ -171,10 +171,10 @@ structure Handler =
                 let
                    val mask = Mask.getBlocked ()
                    val () = Mask.block (handled ())
-                   val fs = 
+                   val fs =
                       case !gcHandler of
-                         Handler f => if Prim.isPendingGC () <> C_Int.zero 
-                                         then [f] 
+                         Handler f => if Prim.isPendingGC () <> C_Int.zero
+                                         then [f]
                                          else []
                        | _ => []
                    val fs =
@@ -183,7 +183,7 @@ structure Handler =
                        case h of
                           Handler f =>
                              if Prim.isPending (repFromInt s) <> C_Int.zero
-                                then f::fs 
+                                then f::fs
                                 else fs
                         | _ => fs) fs handlers
                    val () = Prim.resetPending ()
@@ -203,7 +203,7 @@ val setHandler = fn (s, h) =>
       (InvalidSignal, _) => raiseInval ()
     | (_, InvalidSignal) => raiseInval ()
     | (Default, Default) => ()
-    | (_, Default) => 
+    | (_, Default) =>
          (setHandler (s, Default)
           ; SysCall.simpleRestart (fn () => Prim.default (toRep s)))
     | (Handler _, Handler _) =>
@@ -212,7 +212,7 @@ val setHandler = fn (s, h) =>
          (setHandler (s, h)
           ; SysCall.simpleRestart (fn () => Prim.handlee (toRep s)))
     | (Ignore, Ignore) => ()
-    | (_, Ignore) => 
+    | (_, Ignore) =>
          (setHandler (s, Ignore)
           ; SysCall.simpleRestart (fn () => Prim.ignore (toRep s)))
 

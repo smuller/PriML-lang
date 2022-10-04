@@ -13,12 +13,12 @@ signature CHOOSE_STRINGN_ARG =
       val fString32: String32.string t
    end
 
-functor ChooseStringN_String8 (A : CHOOSE_STRINGN_ARG) : 
-   sig val f : String8.string A.t end = 
+functor ChooseStringN_String8 (A : CHOOSE_STRINGN_ARG) :
+   sig val f : String8.string A.t end =
    struct val f = A.fString8 end
-functor ChooseStringN_String16 (A : CHOOSE_STRINGN_ARG) : 
-   sig val f : String16.string A.t end = 
+functor ChooseStringN_String16 (A : CHOOSE_STRINGN_ARG) :
+   sig val f : String16.string A.t end =
    struct val f = A.fString16 end
-functor ChooseStringN_String32 (A : CHOOSE_STRINGN_ARG) : 
-   sig val f : String32.string A.t end = 
+functor ChooseStringN_String32 (A : CHOOSE_STRINGN_ARG) :
+   sig val f : String32.string A.t end =
    struct val f = A.fString32 end

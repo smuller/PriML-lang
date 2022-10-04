@@ -31,13 +31,13 @@ fun app f [] = ()
     fun accumulate' (f, a, []) = a
       | accumulate' (f, a, b::x) = accumulate'(f, f(a,b), x)
 
-    fun filter p l= 
+    fun filter p l=
       rev (accumulate (fn x => fn a => if p a then a::x else x) [] l)
-             (*builds an intermediate list; the regions of this list 
+             (*builds an intermediate list; the regions of this list
                are now made local (unlike in escape.sml) *)
 
 
-    fun equal a b = a=b 
+    fun equal a b = a=b
 
     fun exists p [] = false
       | exists p (a::x) =  if p a then true else exists p x
@@ -63,7 +63,7 @@ fun app f [] = ()
     fun repeat f = let (* rptf moved into inner let *)
                        fun check n = if n<0 then error "repeat<0" else n
                     in fn x => fn y => let fun rptf n x = if n=0 then x else rptf(n-1)(f x)
-                                       in rptf (check x) y 
+                                       in rptf (check x) y
                                        end
                    end
 
@@ -75,17 +75,17 @@ fun app f [] = ()
         | copy_list((x,y)::rest) = (x+0,y+0):: copy_list rest
 
 
-      fun lexless(a2,b2)(a1:int,b1:int) = 
+      fun lexless(a2,b2)(a1:int,b1:int) =
            if a2<a1 then true else if a2=a1 then b2<b1 else false
 
 
 
 fun length l = case l of
-  [] => 0 
+  [] => 0
 | x::xs => 1 + length xs
 fun copy [] = []
   | copy (x::xs) = x :: copy xs
-fun take(i,l) = 
+fun take(i,l) =
     case l of [] => []
      |  x::xs=> if i>0 then x::take(i-1,xs) else nil
 fun drop(i,l) = case l of [] => []
@@ -101,7 +101,7 @@ fun merge(lp as (left, right)) =
 
 fun tmergesort l =
   case l of [] => []
-  | x::xs => (case xs of []=> l 
+  | x::xs => (case xs of []=> l
               | _ => let val k = length l div 2
                    in merge(copy (tmergesort(take(k,l))),
                             copy (tmergesort(drop(k,l))))
@@ -118,7 +118,7 @@ fun lexordset x = tmergesort x
               in accumf [] list        (* note: this worked without changes!*)
              end
 
-      fun occurs3 x = 
+      fun occurs3 x =
           (* finds coords which occur exactly 3 times in coordlist x *)
           let fun f (q) =
                 case q of (_,_,_,_,[]) => q
@@ -142,12 +142,12 @@ fun lexordset x = tmergesort x
 
 
       abstype generation = GEN of (int*int) list
-        with 
+        with
           fun copy (GEN l) = GEN( copy_list l)
           fun alive (GEN livecoords) = livecoords
           and mkgen coordlist = GEN (lexordset coordlist)
           and mk_nextgen_fn gen =
-              if true then 
+              if true then
               let val living = alive gen
                   fun isalive x = copy_bool(member eq_int_pair_curry living x) (* eta *)
                   fun liveneighbours x = length( filter isalive ( neighbours x)) (*eta*)
@@ -172,13 +172,13 @@ fun lexordset x = tmergesort x
                       str :: plotfrom(x+1,ystart)""((x1,y1)::more)
             | plotfrom (x,y) str [] = [str]
            fun good (x,y) = x>=xstart andalso y>=ystart
-     in  fun plot coordlist = map_rec(copy_string,(plotfrom(xstart,ystart) "" 
+     in  fun plot coordlist = map_rec(copy_string,(plotfrom(xstart,ystart) ""
                                  (copy_list(filter good coordlist))))
     end
 
 
     infix 6 at
-    fun coordlist at (x:int,y:int) = let fun move(a,b) = (a+x,b+y) 
+    fun coordlist at (x:int,y:int) = let fun move(a,b) = (a+x,b+y)
                                       in map move coordlist end
     fun rotate x = map (fn (x:int,y:int) => (y,~x)) x  (* eta converted*)
 
@@ -195,7 +195,7 @@ fun lexordset x = tmergesort x
 
     fun copy_whole_arg (p, g) = (copy_int p, copy g)
 
-    fun nthgen'(p as(0,g)) = p 
+    fun nthgen'(p as(0,g)) = p
       | nthgen'(p as(i,g)) = (print ".\n";
                               nthgen' (copy_whole_arg(let val arg = (i-1,mk_nextgen_fn  g)
                                                           val arg' = copy_whole_arg arg
@@ -220,11 +220,11 @@ fun lexordset x = tmergesort x
                        ()
                       )  (* had to uncurry show, as iter 50 gave attop
                             also made it return a different unit *)
-      
+
     fun testit _ = show(iter 250)    (* inserted call of iter *)
-    
+
     val _ = testit ()
 in
     val done = "done";
 end
- 
+

@@ -9,21 +9,21 @@ struct
 
     (* Int16 is not standard. Use Int instead. *)
     structure Int16 = Int
-    
+
     datatype frames =
         (* eight-bit is unsigned samples *)
-        Bit8 of Word8.word Vector.vector channels 
+        Bit8 of Word8.word Vector.vector channels
         (* but anything else is signed *)
       | Bit16 of Int16.int Vector.vector channels
       | Bit32 of Int32.int Vector.vector channels
 
-    type wave = 
+    type wave =
         { frames : frames,
           samplespersec : Word32.word }
 
     fun info { frames, samplespersec } =
         let
-            val (nchannels, nframes, bits) = 
+            val (nchannels, nframes, bits) =
                 case frames of
                     Bit8  v => (Vector.length v, Vector.length (Vector.sub(v, 0)), 8)
                   | Bit16 v => (Vector.length v, Vector.length (Vector.sub(v, 0)), 16)
@@ -74,7 +74,7 @@ struct
                             wb (Word8.fromInt (ord d))
                         end
                   | _ => raise Wave "bad id??"
-                        
+
             fun w16 (w : Int16.int) =
                 (* LSB order *)
                 let in
@@ -128,7 +128,7 @@ struct
                      Bit8  _ => 8
                    | Bit16 _ => 16
                    | Bit32 _ => 32);
-            
+
             (* w16 0; *) (* no extra format bytes *)
 
             (* Data chunk *)
@@ -170,8 +170,8 @@ struct
 
     fun tofile w f =
         let
-            val f = BinIO.openOut f handle e => 
-                raise Wave ("could not open " ^ f ^ 
+            val f = BinIO.openOut f handle e =>
+                raise Wave ("could not open " ^ f ^
                             " for output: " ^ exnMessage e)
         in
             toany (fn b => BinIO.output1 (f, b)) w;
@@ -205,7 +205,7 @@ struct
                 if Reader.eof r
                 then nil
                 else
-                    let 
+                    let
                         val name = #vec r 4
                         val csize = Reader.rl32 r
                         (* Need to skip 1 zero byte at the end if the size is odd *)
@@ -229,7 +229,7 @@ struct
                 case alist_find op= chunks "fmt " of
                     NONE => raise Wave "No format chunk"
                   | SOME r =>
-                        let 
+                        let
                             val ccode = Reader.rl16 r
                             val channels = Reader.rl16 r
                             (* Samples per second *)
@@ -249,11 +249,11 @@ struct
                                      then raise Wave "Channels is non-positive!"
                                      else ()
 
-                            fun 'sample readsamples 
+                            fun 'sample readsamples
                                  (wrap : 'sample vector channels -> frames)
                                  (* Just used to initialize array *)
                                  (example : 'sample)
-                                 (read : Reader.reader -> 'sample) 
+                                 (read : Reader.reader -> 'sample)
                                  (* Number of bytes in one sample *)
                                  (sz : int) =
                                 case alist_find op= chunks "data" of
@@ -266,7 +266,7 @@ struct
                                               then raise Wave "Data size is not multiple of channels*bytes"
                                               else ()
                                      val samps = databytes div (channels * sz)
-                                     val frames = 
+                                     val frames =
                                          Array.tabulate (channels,
                                                          (fn _ =>
                                                           Array.array(samps, example)))

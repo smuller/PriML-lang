@@ -38,7 +38,7 @@ structure MLRep = struct
           (* word-style bit-operations on integers... *)
           structure SignedBitops = IntBitOps(structure I = Signed
                                              structure W = Unsigned)
-       end  
+       end
     structure Long =
        struct
           structure Signed = C_SLong

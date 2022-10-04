@@ -58,7 +58,7 @@ struct
                 local_points =
                 Array.tabulate (Array.length (#points manifold),
                                 fn j =>
-                                #local_point 
+                                #local_point
                                 (Array.sub(#points manifold, j))) }
             end
      in
@@ -68,19 +68,19 @@ struct
      end
 
   (* Port note: A class in Box2D; it's just a function that
-     returns multiple values. 
+     returns multiple values.
 
      Note, this is almost the same function as in contact-solver.
-     (Redundancy is present in Box2D too.) *) 
+     (Redundancy is present in Box2D too.) *)
   fun toi_solver_manifold (cc : ('b, 'f, 'j) constraint, index : int) :
       { normal : vec2, point : vec2, separation : real } =
     case #typ cc of
         E_Circles =>
           let
-              val point_a : vec2 = 
+              val point_a : vec2 =
                   D.B.get_world_point (#body_a cc,
                                        #local_point cc)
-              val point_b : vec2 = 
+              val point_b : vec2 =
                   D.B.get_world_point (#body_b cc,
                                        Array.sub (#local_points cc, 0))
 
@@ -127,8 +127,8 @@ struct
                 point = clip_point }
           end
 
-  (* Push out the TOI body to provide clearance for further 
-     simulation. 
+  (* Push out the TOI body to provide clearance for further
+     simulation.
 
      Port note: This is nearly identical to the code in
      contact-solver, so if you change something here, it probably
@@ -136,7 +136,7 @@ struct
      Obviously it would be better to factor out this common routine. *)
   fun solve (solver : ('b, 'f, 'j) solver, baumgarte : real) : bool =
     let
-      val () = dprint (fn () => "* toi solve " ^ 
+      val () = dprint (fn () => "* toi solve " ^
                        itos (Array.length (#constraints solver)) ^ "\n")
       val min_separation = ref 0.0
       fun oneconstraint (c : ('b, 'f, 'j) constraint) =
@@ -174,14 +174,14 @@ struct
                           else ()
 
                  (* Prevent large corrections and allow slop. *)
-                 val capital_c : real = 
+                 val capital_c : real =
                      clampr (baumgarte * (separation + linear_slop),
                              ~max_linear_correction,
                              0.0)
                  (* Compute the effective mass. *)
                  val rn_a : real = cross2vv (r_a, normal)
                  val rn_b : real = cross2vv (r_b, normal)
-                 val k : real = inv_mass_a + inv_mass_b + 
+                 val k : real = inv_mass_a + inv_mass_b +
                      inv_i_a * rn_a * rn_a +
                      inv_i_b * rn_b * rn_b
 
@@ -193,7 +193,7 @@ struct
                  fun update_sweep (body, inv_mass, inv_i, r) =
                    let val sweep : sweep = D.B.get_sweep body
                    in
-                     sweep_set_a (sweep, sweepa sweep - 
+                     sweep_set_a (sweep, sweepa sweep -
                                   (inv_i * cross2vv (r, p)));
                      sweep_set_c (sweep, sweepc sweep :-: (inv_mass *: p));
                      D.B.synchronize_transform body

@@ -6,7 +6,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Time: TIME = 
+structure Time: TIME =
 struct
 
 open Pervasive.LargeInt
@@ -37,7 +37,7 @@ val zero = fromReal 0.0
 
 val equals = op =
 
-val seconds = fromSeconds   
+val seconds = fromSeconds
 
 fun minutes m = seconds (m * fromInt 60)
 

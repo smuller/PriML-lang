@@ -1,10 +1,10 @@
 val () = print "libm4 starting up\n"
-val () = OS.Process.atExit 
+val () = OS.Process.atExit
          (fn () => (_import "m3_close" public : unit -> unit; ()
                    ; print "libm4 exits\n"))
 
 (* Prepare libm3 *)
-val () = _import "m3_open" public : int * string vector -> unit; 
+val () = _import "m3_open" public : int * string vector -> unit;
          (1, Vector.fromList ["libm3"])
 
 type p = MLton.Pointer.t

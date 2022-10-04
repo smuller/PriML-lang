@@ -6,7 +6,7 @@ struct
     (* Currenty implemented as two lists,
        where both history and future are stored
        so that the element at the head is
-       closest to the cursor in time. 
+       closest to the cursor in time.
 
        PERF: This makes truncation linear time.
        We just need to use a deque for that. *)
@@ -39,7 +39,7 @@ struct
             history := a :: !history
         end
 
-    fun undo (U { history_size = ref 0, 
+    fun undo (U { history_size = ref 0,
                   history = ref nil, ... }) = NONE
       | undo (U { history_size, future_size,
                   history = history as (ref (a :: h)), future }) =
@@ -53,7 +53,7 @@ struct
         end
       | undo _ = raise UndoState "impossible"
 
-    fun redo (U { future_size = ref 0, 
+    fun redo (U { future_size = ref 0,
                   future = ref nil, ... }) = NONE
       | redo (U { history_size, future_size,
                   history, future = future as (ref (a :: f)) }) =
@@ -67,13 +67,13 @@ struct
         end
       | redo _ = raise UndoState "impossible"
 
-    fun peek (U { history_size = ref 0, 
+    fun peek (U { history_size = ref 0,
                   history = ref nil, ... }) = NONE
       | peek (U { history = ref (a :: _), ... }) = SOME a
       | peek _ = raise UndoState "impossible"
 
     fun clear (U { history_size, future_size,
-                   history, future }) = 
+                   history, future }) =
         let in
             history_size := 0;
             future_size := 0;

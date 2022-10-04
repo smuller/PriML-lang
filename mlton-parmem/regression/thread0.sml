@@ -10,7 +10,7 @@ val _ =
                       prepare (new(fn () => switch(fn _ => prepare (t, 12))), ()))
       then print "2 succeeded\n"
    else ()
-      
+
 val _ =
    if 13 = switch(fn t => prepare (prepend(t, fn n => n + 1), 12))
       then print "3 succeeded\n"

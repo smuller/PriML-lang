@@ -8,7 +8,7 @@ struct
     fun is a b = a = b
     val compare = Int.compare
 
-    local 
+    local
         val ctr = ref 0
     in
         fun new () =

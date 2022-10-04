@@ -38,9 +38,9 @@ struct
     if A.length a >= (n + 1)
     then ()
     else
-      let 
-        fun nextpower x = 
-          if x >= (n + 1) 
+      let
+        fun nextpower x =
+          if x >= (n + 1)
           then x
           else nextpower (x * 2)
         val ns = nextpower (A.length a)
@@ -48,7 +48,7 @@ struct
 
         fun copy i =
           if i < l
-          then 
+          then
             let in
               A.update(na, i, A.sub(a, i));
               copy (i + 1)
@@ -60,7 +60,7 @@ struct
       end
 
   fun update r n x =
-    let 
+    let
       val (l, a) = !r
     in
       A.update(a, n, x)
@@ -81,7 +81,7 @@ struct
     else r := (x, a)
 
   fun finalize (ga as (ref (n, a))) =
-      let 
+      let
           (* PERF: If we had A.truncate, or if n = A.length a, then
              we can avoid copying here. *)
           val ret = A.tabulate (n, (fn x => A.sub(a, x)))
@@ -94,10 +94,10 @@ end
 
 (* when there is no corresponding array in Unsafe *)
 functor GrowMonoArrayFn_Safe(structure A : MONO_ARRAY
-                             val default : A.elem) 
+                             val default : A.elem)
                              :> GROWMONOARRAY where type elem = A.elem
                                                 and type monoarray = A.array =
-struct 
+struct
   structure Z = GrowMonoArrayFn(structure A = A
                                 structure U =
                                 struct

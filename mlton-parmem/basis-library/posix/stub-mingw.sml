@@ -9,9 +9,9 @@
 local
    structure Error = PosixError
    val stub: string * ('a -> 'b) -> ('a -> 'b) =
-      fn (msg, f) => 
+      fn (msg, f) =>
       if let open Primitive.MLton.Platform.OS in MinGW = host end
-         then fn _ => (if true 
+         then fn _ => (if true
                           then ()
                           else (PrimitiveFFI.Stdio.print msg
                                 ; PrimitiveFFI.Stdio.print "\n")

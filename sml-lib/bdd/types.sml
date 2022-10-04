@@ -9,23 +9,23 @@ struct
   exception Unimplemented of string
 
   (* Mass data computed for a shape. *)
-  type mass_data = 
+  type mass_data =
       { (* Mass of the shape, usually in kilograms. *)
-        mass : real, 
-        (* Position of the shape's centroid relative to the 
+        mass : real,
+        (* Position of the shape's centroid relative to the
            shape's origin. *)
-        center : BDDMath.vec2, 
+        center : BDDMath.vec2,
         (* The rotational intertia of the shape about the
            local origin. *)
         i : real }
-      
-  (* Ray-cast input data. 
+
+  (* Ray-cast input data.
      The ray extends from p1 to p1 + maxFraction * (p2 - p1). *)
   type ray_cast_input =
       { p1 : BDDMath.vec2, p2 : BDDMath.vec2,
         max_fraction : real }
 
-  (* Ray-cast output data. 
+  (* Ray-cast output data.
      The ray hits at p1 + fraction * (p2 - p1), where p1 and p2
      come from b2RayCastInput. *)
   type ray_cast_output =
@@ -36,7 +36,7 @@ struct
      reference_edge
      incident_edge
      incident_vertex
-     flip 
+     flip
      Accessors in BDDCollision.
 
      Port note: In Box2D this is a union with a field "key",
@@ -89,7 +89,7 @@ struct
         (* the points of contact.
            up to BDDSettings.max_manifold_points *)
         points : manifold_point array,
-        (* not used for Type::e_points (? is this an out of date 
+        (* not used for Type::e_points (? is this an out of date
            comment? -tom7) *)
         local_normal : BDDMath.vec2,
         (* usage depends on manifold type *)
@@ -128,7 +128,7 @@ struct
                 upperbound : BDDMath.vec2 }
 
   (* Abstract proxy for GJK distance algorithm. *)
-  type distance_proxy = 
+  type distance_proxy =
       { (* Get the supporting vertex index in the given direction. *)
         support : BDDMath.vec2 -> int,
         (* Get the supporting vertex in the given direction. *)
@@ -140,7 +140,7 @@ struct
         radius : real }
 
   (* Used to "warm start" the distance function. This is
-     used by the GJK algorithm as it refines its approximation. 
+     used by the GJK algorithm as it refines its approximation.
      BDDDistance contains the cold start initial value. *)
   type simplex_cache = { (* Length or area *)
                          metric : real ref,

@@ -44,14 +44,14 @@ structure Mailbox : MAILBOX_EXTRA =
       fun sameMailbox (MB s1, MB s2) = (s1 = s2)
 
       local
-         fun cleaner (TXID txst, _) = 
+         fun cleaner (TXID txst, _) =
             case !txst of CANCEL => true | _ => false
       in
          fun cleanAndDeque q =
             Q.cleanAndDeque (q, cleaner)
       end
 
-      fun send (MB state, x) = 
+      fun send (MB state, x) =
          let
             val () = Assert.assertNonAtomic' "Mailbox.send"
             val () = debug' "Mailbox.send(1)" (* NonAtomic *)
@@ -59,15 +59,15 @@ structure Mailbox : MAILBOX_EXTRA =
             val () = S.atomicBegin ()
             val () = debug' "Mailbox.send(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Mailbox.send(2)", SOME 1)
-            val () = 
-               case !state of 
-                  EMPTY q => 
+            val () =
+               case !state of
+                  EMPTY q =>
                      let
                         val () = debug' "Mailbox.send(3.1.1)" (* Atomic 1 *)
                         val () = Assert.assertAtomic' ("Mailbox.send(3.1.1)", SOME 1)
                      in
                         case (cleanAndDeque q) of
-                           (NONE, _) => 
+                           (NONE, _) =>
                               (let val q = Q.new ()
                                in state := NONEMPTY (1, Q.enque (q, x))
                                end
@@ -79,8 +79,8 @@ structure Mailbox : MAILBOX_EXTRA =
                                 ; TransID.force transId'
                                 ; S.prepVal (t', x)))
                      end
-                | NONEMPTY (p, q) => 
-                     (* we force a context switch here to prevent 
+                | NONEMPTY (p, q) =>
+                     (* we force a context switch here to prevent
                       * a producer from outrunning a consumer.
                       *)
                      S.atomicReadyAndSwitchToNext
@@ -91,9 +91,9 @@ structure Mailbox : MAILBOX_EXTRA =
             ()
          end
 
-      fun getMsg (state, q) = 
+      fun getMsg (state, q) =
          let
-            val (msg, q') = 
+            val (msg, q') =
                case Q.deque q of
                   SOME (msg, q') => (msg, q')
                 | NONE => raise Fail "Mailbox:getMsg"
@@ -105,7 +105,7 @@ structure Mailbox : MAILBOX_EXTRA =
             msg
          end
 
-      fun recv (MB state) = 
+      fun recv (MB state) =
          let
             val () = Assert.assertNonAtomic' "Mailbox.recv"
             val () = debug' "Mailbox.recv(1)" (* NonAtomic *)
@@ -114,10 +114,10 @@ structure Mailbox : MAILBOX_EXTRA =
             val () = debug' "Mailbox.recv(2)" (* Atomic 1 *)
             val () = Assert.assertAtomic' ("Mailbox.recv(2)", SOME 1)
             val msg =
-               case !state of 
-                  EMPTY q => 
+               case !state of
+                  EMPTY q =>
                      let
-                        val msg = 
+                        val msg =
                            S.atomicSwitchToNext
                            (fn t => state := EMPTY (Q.enque (q, (TransID.mkTxId (), t))))
                      in
@@ -131,15 +131,15 @@ structure Mailbox : MAILBOX_EXTRA =
             msg
          end
 
-      fun recvEvt (MB state) = 
+      fun recvEvt (MB state) =
          let
-            fun blockFn {transId, cleanUp: unit -> unit, next} = 
+            fun blockFn {transId, cleanUp: unit -> unit, next} =
                let
-                  val q = 
+                  val q =
                      case !state of
                         EMPTY q => q
                       | _ => raise Fail "Mailbox:recvEvt:blockFn"
-                  val msg = 
+                  val msg =
                      S.atomicSwitch
                      (fn t => (state := EMPTY (Q.enque (q, (transId, t)))
                                ; next ()))
@@ -148,18 +148,18 @@ structure Mailbox : MAILBOX_EXTRA =
                   ; S.atomicEnd()
                   ; msg
                end
-            fun pollFn () = 
+            fun pollFn () =
                case !state of
                   EMPTY _ => E.blocked blockFn
-                | NONEMPTY (prio, q) => 
+                | NONEMPTY (prio, q) =>
                      (state := NONEMPTY (prio + 1, q)
-                      ; E.enabled {prio = prio, 
+                      ; E.enabled {prio = prio,
                                    doitFn = fn () => getMsg (state, q)})
          in
             E.bevt pollFn
          end
 
-      fun recvPoll (MB state) = 
+      fun recvPoll (MB state) =
          (S.atomicBegin()
           ; case !state of
                EMPTY _ => (S.atomicEnd(); NONE)

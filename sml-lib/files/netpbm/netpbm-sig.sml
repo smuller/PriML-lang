@@ -3,7 +3,7 @@ sig
 
     exception NetPBM of string
 
-    type ('radix, 'radixrange) graphic = 
+    type ('radix, 'radixrange) graphic =
         { width : int,
           height : int,
           max : 'radixrange,

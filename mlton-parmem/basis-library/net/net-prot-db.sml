@@ -23,7 +23,7 @@ structure NetProtDB: NET_PROT_DB =
 
       local
         fun get (i: C_Int.t): entry option =
-          if i <> C_Int.zero 
+          if i <> C_Int.zero
             then let
                    val name = CUtil.C_String.toString (Prim.getEntryName ())
                    val numAliases = Prim.getEntryAliasesNum ()
@@ -44,9 +44,9 @@ structure NetProtDB: NET_PROT_DB =
                  end
             else NONE
       in
-        fun getByName name = 
+        fun getByName name =
           get (Prim.getByName (NullString.nullTerm name))
-        fun getByNumber proto = 
+        fun getByNumber proto =
           get (Prim.getByNumber (C_Int.fromInt proto))
       end
    end

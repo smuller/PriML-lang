@@ -20,7 +20,7 @@ signature PRIM_INTEGER =
       val +! : int * int -> int
       val +? : int * int -> int
       val + : int * int -> int
-      val *! : int * int -> int 
+      val *! : int * int -> int
       val *? : int * int -> int
       val * : int * int -> int
       val ~! : int -> int
@@ -106,7 +106,7 @@ structure Int8 =
       open Int8
 
       val sizeInBits: Int32.int = 8
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
       val precision = SOME sizeInBits
 
@@ -123,7 +123,7 @@ structure Int8 =
             then *!
             else *?
       val ~! = Exn.wrapOverflow (_prim "Word8_negCheck": int -> int;)
-      val ~? = _prim "Word8_neg": int -> int; 
+      val ~? = _prim "Word8_neg": int -> int;
       val ~ =
          if Controls.detectOverflow
             then ~!
@@ -209,7 +209,7 @@ structure Int16 =
       open Int16
 
       val sizeInBits: Int32.int = 16
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
       val precision = SOME sizeInBits
 
@@ -226,7 +226,7 @@ structure Int16 =
             then *!
             else *?
       val ~! = Exn.wrapOverflow (_prim "Word16_negCheck": int -> int;)
-      val ~? = _prim "Word16_neg": int -> int; 
+      val ~? = _prim "Word16_neg": int -> int;
       val ~ =
          if Controls.detectOverflow
             then ~!
@@ -376,7 +376,7 @@ structure Int32 =
       open Int32
 
       val sizeInBits: Int32.int = 32
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
       val precision = SOME sizeInBits
 
@@ -393,7 +393,7 @@ structure Int32 =
             then *!
             else *?
       val ~! = Exn.wrapOverflow (_prim "Word32_negCheck": int -> int;)
-      val ~? = _prim "Word32_neg": int -> int; 
+      val ~? = _prim "Word32_neg": int -> int;
       val ~ =
          if Controls.detectOverflow
             then ~!
@@ -423,7 +423,7 @@ structure Int64 =
       open Int64
 
       val sizeInBits: Int32.int = 64
-      val sizeInBitsWord: Word32.word = 
+      val sizeInBitsWord: Word32.word =
          IntWordConv.zextdFromInt32ToWord32 sizeInBits
       val precision = SOME sizeInBits
 
@@ -440,7 +440,7 @@ structure Int64 =
             then *!
             else *?
       val ~! = Exn.wrapOverflow (_prim "Word64_negCheck": int -> int;)
-      val ~? = _prim "Word64_neg": int -> int; 
+      val ~? = _prim "Word64_neg": int -> int;
       val ~ =
          if Controls.detectOverflow
             then ~!

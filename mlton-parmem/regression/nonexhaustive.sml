@@ -4,7 +4,7 @@ val _ =
    case 2 of
       2 => 3
     | 3 => 4
-         
+
 val _ =
    case [] of
       [] => 1
@@ -47,7 +47,7 @@ fun f 1 2 = 3
 fun f "" = ()
 
 fun f #"a" = 13
-   
+
 fun f (0w0: Word8.word) = 13
 
 (* Checks for non-exhaustive pattern matches (compiler should warn). *)

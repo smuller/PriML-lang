@@ -43,30 +43,30 @@ struct
       | potype PStringReplace =
           mono ([PT_STRING, PT_STRING, PT_STRING], PT_STRING)
 
-      | potype PUpdate = 
+      | potype PUpdate =
           let val a = Variable.namedvar "a"
-          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a), PT_INT, PT_VAR a], 
+          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a), PT_INT, PT_VAR a],
                cod = PT_UNIT }
           end
-      | potype PSub = 
+      | potype PSub =
           let val a = Variable.namedvar "a"
-          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a), PT_INT], 
+          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a), PT_INT],
                cod = PT_VAR a }
           end
-      | potype PArraylength = 
+      | potype PArraylength =
           let val a = Variable.namedvar "a"
-          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a)], 
+          in { worlds = nil, tys = [a], dom = [PT_ARRAY (PT_VAR a)],
                cod = PT_INT }
           end
-      | potype PArray = 
+      | potype PArray =
           let val a = Variable.namedvar "a"
           in { worlds = nil, tys = [a], dom = [PT_INT, PT_VAR a],
                cod = PT_ARRAY (PT_VAR a) }
           end
 
-      | potype PSet = 
+      | potype PSet =
           let val a = Variable.namedvar "a"
-          in { worlds = nil, tys = [a], dom = [PT_REF (PT_VAR a), PT_VAR a], 
+          in { worlds = nil, tys = [a], dom = [PT_REF (PT_VAR a), PT_VAR a],
                cod = PT_UNIT }
           end
 

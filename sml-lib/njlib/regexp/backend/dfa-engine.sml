@@ -2,12 +2,12 @@
  *
  * COPYRIGHT (c) 2008 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
- * 
+ *
  * Implements a matcher engine based on deterministic finite
  * automata.
  *)
 
-structure DfaEngine : REGEXP_ENGINE = 
+structure DfaEngine : REGEXP_ENGINE =
   struct
 
     structure D = Dfa
@@ -24,12 +24,12 @@ structure DfaEngine : REGEXP_ENGINE =
      * it returns NONE if it fails
      * it returns SOME (pattern#,Match,rest of stream) upon success
      *)
-    fun scan (regexp,getc,p,stream) = 
+    fun scan (regexp,getc,p,stream) =
 	let val move = D.move regexp
 	    val accepting = D.accepting regexp
-	    val canStart = D.canStart regexp  
+	    val canStart = D.canStart regexp
 	    fun loop (state, p, inits, lastAccepting) = (
-		 case (getc (inits)) 
+		 case (getc (inits))
 		   of NONE => lastAccepting
 		    | SOME (c,s') => (
 			case move (state,c)
@@ -63,7 +63,7 @@ structure DfaEngine : REGEXP_ENGINE =
 				      of NONE => NONE
 				       | SOME (n,m,cs) => SOME (m,cs)
 
-    fun find regexp getc stream = 
+    fun find regexp getc stream =
 	let fun loop (p,s) = (case (scan (regexp,getc,p,s))
 				of NONE => (case (getc (s))
 					      of SOME (_,s') => loop (p+1,s')
@@ -74,7 +74,7 @@ structure DfaEngine : REGEXP_ENGINE =
 	end
 
     fun match [] = (fn getc => fn stream => NONE)
-      | match l = 
+      | match l =
 	let val dfa = D.buildPattern (map #1 l)
 	    val a = Vector.fromList (map (fn (a,b) => b) l)
 	in

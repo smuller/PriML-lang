@@ -9,7 +9,7 @@ struct
             val r = ref state
             fun f () =
                 let val (state', sample) = next (!r)
-                in 
+                in
                     r := state';
                     sample
                 end
@@ -23,8 +23,8 @@ struct
        "draw" at y mod 2, giving us an alternating square waveform.
 
        We want to calculate the slope m from the sample rate s and
-       frequency f, which are given. 
-       
+       frequency f, which are given.
+
        f = (s * m) / 2, so
        m = (2 * f) / s.
 
@@ -49,12 +49,12 @@ struct
 
                 val deltax = x
                 val deltay = y
-                
+
                 val error = deltax div 2
             in
                 { error = error, y = y, deltax = deltax, deltay = deltay, volume = volume }
             end
-            
+
         fun next { error, y, deltax, deltay, volume } =
             let
                 val sample = if y mod 2 <> 0 then volume else 0
@@ -84,5 +84,5 @@ struct
         in
             f
         end
-        
+
 end

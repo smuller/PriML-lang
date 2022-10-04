@@ -5,7 +5,7 @@
  * See the file MLton-LICENSE for details.
  *)
 
-structure Sexp: SEXP = 
+structure Sexp: SEXP =
 struct
 
 datatype t =
@@ -14,7 +14,7 @@ datatype t =
  | String of string
 
 fun layout sexp =
-   let 
+   let
       open Layout
    in
       case sexp of
@@ -100,7 +100,7 @@ fun parse (peekChar: unit -> char option,
                  | _ =>
                       if Char.isSpace c
                          then finishList elts
-                      else 
+                      else
                          case sexpChar c of
                             NONE => error "unmatched ("
                           | SOME s => finishList (s :: elts))

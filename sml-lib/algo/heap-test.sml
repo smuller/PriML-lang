@@ -45,7 +45,7 @@ fun test x =
   let
     val h = H.empty () : int H.heap
 
-    (* all of these functions maintain the invariant that the 
+    (* all of these functions maintain the invariant that the
        heap has elements equal to their priority *)
 
     (* straight-up insertions *)
@@ -57,7 +57,7 @@ fun test x =
         ignore (H.insert h n n)
         (* H.printheap Int.toString Int.toString h *)
       end
-      
+
     (* insert and delete *)
     fun del () =
       let
@@ -76,7 +76,7 @@ fun test x =
 
     (* get min *)
     fun min () = ignore (H.min h)
-    
+
     (* insert, adjust *)
     fun adj () =
       let
@@ -85,7 +85,7 @@ fun test x =
 
         (*
         val _ =
-          print ("insert pri=" ^ Int.toString m ^ " val=" ^ 
+          print ("insert pri=" ^ Int.toString m ^ " val=" ^
                  Int.toString n ^ "\n")
           *)
         val hand = H.insert h m n
@@ -122,7 +122,7 @@ fun test x =
         fun build () =
           case H.min h of
             NONE => nil
-          | SOME (p,a) => 
+          | SOME (p,a) =>
               let in
                 (* print ("\n\n### got min: " ^ Int.toString p ^ "\n");
                 H.printheap Int.toString Int.toString h; *)
@@ -132,7 +132,7 @@ fun test x =
               end
 
         (* val _ = print "CHECK TIME!\n" *)
-        
+
         val l = build ()
 
       in
@@ -150,7 +150,7 @@ fun test x =
       let in
         (case randint () mod 25 of
            0 => if randint () mod 4 = 0
-                then 
+                then
                   let in
                     check ()
                     (* didn't fail... reset *)

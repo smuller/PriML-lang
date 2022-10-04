@@ -10,9 +10,9 @@ structure MD5Crypt :> MD5CRYPT =
 struct
 
   exception Error of string
-  
-  fun itoa64 i = 
-    str 
+
+  fun itoa64 i =
+    str
     (CharVector.sub
      ("./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", i))
 
@@ -46,9 +46,9 @@ struct
         let
           val s1 = realpass ^ "$1$" ^ salt
           val final = MD5.md5 (realpass ^ salt ^ realpass)
-            
+
           val s1 = s1 ^ (repc (final, size final, size realpass))
-          val s1 = s1 ^ really_weird (String.substring(realpass, 0, 1), 
+          val s1 = s1 ^ really_weird (String.substring(realpass, 0, 1),
                                       size realpass)
           val final = MD5.md5 s1
 
@@ -81,5 +81,5 @@ struct
                                (3,  9, 15),
                                (4, 10,  5)])
         end
-        
+
 end

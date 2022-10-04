@@ -125,7 +125,7 @@ structure TraceCML : TRACE_CML =
     fun setTraceFile'  t = traceDst := t
 
 (** NOTE: there are bookkeeping bugs, when changing the trace destination
- ** from TraceToStream to something else (where the original destination 
+ ** from TraceToStream to something else (where the original destination
  ** was TraceToFile).
  **)
     fun tracePrint s = let

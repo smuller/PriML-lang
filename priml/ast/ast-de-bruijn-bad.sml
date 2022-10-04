@@ -1,6 +1,6 @@
 (* This version of the AST uses de Bruijn indices
    to represent bound variables. Free variables are
-   still represented by name. 
+   still represented by name.
 
    We bias the representation to make 'looking' at
    a term more efficient than creating a term. *)
@@ -8,7 +8,7 @@
 (* TODO: de Bruijn
          use vectors instead of lists?
          hash cons?
-         hash for quick equality tests 
+         hash for quick equality tests
          delayed substitutions
 
          compliance suite for this; it is surprisingly easy
@@ -127,8 +127,8 @@ struct
      | Agg (b, v) => Agg' (b, Vector.map (bind depth vars) v)
      | Lam (b, vs, a) => Lam' (b, vs, bind (depth + Vector.length vs) vars a)
 (* simpler to just push the substitution,
-   especially since we are doing a linear traversal. 
-     | Subst ({ r, up, skip }, t) => 
+   especially since we are doing a linear traversal.
+     | Subst ({ r, up, skip }, t) =>
          Subst ({ (* still at the same scope -- right? *)
                   r = Vector.map (bind depth vars) tv,
                   up = up,
@@ -155,7 +155,7 @@ struct
   (* apply the substitution s to t one level. *)
   and push' (s as { r, up, skip }) (term : term) =
     (case term of
-       Subst (ss, tt) => 
+       Subst (ss, tt) =>
          let in
            (* PERF the whole point of doing it this
               way is that we can compose substitutions!
@@ -176,7 +176,7 @@ struct
      | Agg (b, v) => Agg' (b, Vector.map (fn tm => Subst'(s, tm)) v)
      (* shifts the substitution up in the body of the lambda, as
         well as within the substituted terms. *)
-     | Lam (b, vs, t) => 
+     | Lam (b, vs, t) =>
          let
          in
            (* HERE we should collect only the vars that are actually bound.
@@ -186,7 +186,7 @@ struct
               of an AGG doesn't mean that it's free in all branches (obviously)
               so once we push a subst past an agg, it becomes inaccurate again.
               *)
-           Lam' (b, vs, 
+           Lam' (b, vs,
                  Subst'( { (* increment the codomain *)
                            r = Vector.map (fn tm =>
                                            Subst' ({ r = Vector.fromList nil,
@@ -216,7 +216,7 @@ struct
      | Var v => V v
      | Index _ => raise Exn "bug: looked at index!"
      | Lam (b, vs, t) =>
-         let 
+         let
            val vs = Vector.map var_vary vs
            val vsub = vrev (Vector.map Var' vs)
          in
@@ -241,8 +241,8 @@ struct
     | ast_cmp' (Var v1, Var v2) = var_cmp (v1, v2)
     | ast_cmp' (Var _, _) = LESS
     | ast_cmp' (_, Var _) = GREATER
-    | ast_cmp' (Agg (b1, l1), Agg (b2, l2)) = 
-    (case Util.bool_compare (b1, b2) of 
+    | ast_cmp' (Agg (b1, l1), Agg (b2, l2)) =
+    (case Util.bool_compare (b1, b2) of
        (* PERF make astv_cmp *)
        EQUAL => astl_cmp (vtol l1, vtol l2)
      | order => order)
@@ -261,7 +261,7 @@ struct
 
   and ast_cmp (A { f = Subst (s, t), ... }, a) = ast_cmp (push s t, a)
     | ast_cmp (a, A { f = Subst (s, t), ... }) = ast_cmp (a, push s t)
-    | ast_cmp (A { f = a, ...}, 
+    | ast_cmp (A { f = a, ...},
                A { f = b, ...}) = ast_cmp' (a, b)
 
   and astl_cmp (nil, nil) = EQUAL
@@ -296,7 +296,7 @@ struct
      representations *)
   fun rename nil ast = ast
     | rename ((v,v') :: t) ast =
-    let 
+    let
       val ast = rename t ast
       val ast = sub (hide (V v')) v ast
     in ast
@@ -305,7 +305,7 @@ struct
   and sub (obj : ast) (v : var) (ast : ast) =
     if isfree ast v
     then
-      let 
+      let
       in
         case look ast of
           $l => ast
@@ -313,7 +313,7 @@ struct
                   then obj
                   else ast
         | a1 / a2 => sub obj v a1 // sub obj v a2
-        | v' \ a => let 
+        | v' \ a => let
                       val v'' = var_vary v'
                       val a = rename [(v', v'')] a
                     in

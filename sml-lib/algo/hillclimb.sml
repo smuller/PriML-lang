@@ -41,7 +41,7 @@ struct
 		    | ss (ConvergedWithin r :: t) = ss t (* why "delta" (delta <= r) orelse ss t *)
 		    | ss (TimeSpent ms :: t) =
 		      why "time"
-		      (Time.> (Time.- (Time.now (), starttime), 
+		      (Time.> (Time.- (Time.now (), starttime),
 			       Time.fromMilliseconds (IntInf.fromInt ms)))
 		      orelse ss t
 		    | ss (Condition f :: t) = why "cond" (f a) orelse ss t
@@ -50,8 +50,8 @@ struct
 	      end
 
 	  (*
-	  val objective = 
-	      (fn arg => 
+	  val objective =
+	      (fn arg =>
 	       let
 		   val () = print "obj:\n"
 		   val r = objective arg
@@ -68,11 +68,11 @@ struct
 		      let
 			  val pplus = p ++ dp
 			  val pminus = p -- dp
-			  val (obplus, aplus) = 
+			  val (obplus, aplus) =
 			      if pplus == p
 			      then (ob, a)
 			      else objective pplus
-			  val (obminus, aminus) = 
+			  val (obminus, aminus) =
 			      if pminus == p
 			      then (ob, a)
 			      else objective pminus
@@ -89,7 +89,7 @@ struct
 
 		  val (start_ob, start_a) = objective p
 		  val (newp, ob, a, newdps) = incrs dps p (start_ob, start_a) []
-		  (* XXX this isn't really right. even if there's no change in 
+		  (* XXX this isn't really right. even if there's no change in
 		     score we might be growing or shrinking *)
 		  val delta = Real.abs (start_ob - ob)
 	      in
@@ -109,5 +109,5 @@ struct
       in
 	  (* print "\ngone.\n"; *)
 	  res
-      end     
+      end
 end

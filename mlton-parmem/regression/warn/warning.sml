@@ -1,5 +1,5 @@
 (* No warning according to page 28 of defn *)
-val x::l = [] 
+val x::l = []
 
 structure S =
    struct

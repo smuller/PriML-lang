@@ -12,7 +12,7 @@ struct
       val _ = StringUtil.whitespec #"\n" orelse raise Nope
       val _ = StringUtil.whitespec #"z" andalso raise Nope
       val _ = StringUtil.whitespec #"." andalso raise Nope
-          
+
       val _ = "a.bb.ccc" = StringUtil.delimit "." ["a", "bb", "ccc"] orelse raise Nope
       val _ = "" = StringUtil.delimit "-" nil orelse raise Nope
       val _ = StringUtil.charspec "a-z" #"s" orelse raise Nope

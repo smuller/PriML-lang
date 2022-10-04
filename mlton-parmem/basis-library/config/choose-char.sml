@@ -14,12 +14,12 @@ signature CHOOSE_CHARN_ARG =
       val fChar32: Char32.char t
    end
 
-functor ChooseCharN_Char8 (A : CHOOSE_CHARN_ARG) : 
-   sig val f : Char8.char A.t end = 
+functor ChooseCharN_Char8 (A : CHOOSE_CHARN_ARG) :
+   sig val f : Char8.char A.t end =
    struct val f = A.fChar8 val _ = A.fChar16 val _ = A.fChar32 end
-functor ChooseCharN_Char16 (A : CHOOSE_CHARN_ARG) : 
-   sig val f : Char16.char A.t end = 
+functor ChooseCharN_Char16 (A : CHOOSE_CHARN_ARG) :
+   sig val f : Char16.char A.t end =
    struct val _ = A.fChar8 val f = A.fChar16 val _ = A.fChar32 end
-functor ChooseCharN_Char32 (A : CHOOSE_CHARN_ARG) : 
-   sig val f : Char32.char A.t end = 
+functor ChooseCharN_Char32 (A : CHOOSE_CHARN_ARG) :
+   sig val f : Char32.char A.t end =
    struct val _ = A.fChar8 val _ = A.fChar16 val f = A.fChar32 end

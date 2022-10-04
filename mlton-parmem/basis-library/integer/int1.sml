@@ -298,41 +298,41 @@ functor IntFromTo(I: INT_FROM_TO_ARG): INT_FROM_TO_RES where type int = I.int =
 structure Primitive = struct
 open Primitive
 
-structure Int8 = struct 
+structure Int8 = struct
                     open Int8
-                    local 
+                    local
                        structure S = IntFromTo (Primitive.Int8)
                     in
                        open S
                     end
                  end
-structure Int16 = struct 
+structure Int16 = struct
                      open Int16
-                     local 
+                     local
                         structure S = IntFromTo (Primitive.Int16)
                      in
                         open S
                      end
                   end
-structure Int32 = struct 
+structure Int32 = struct
                      open Int32
-                     local 
+                     local
                         structure S = IntFromTo (Primitive.Int32)
                      in
                         open S
                      end
                   end
-structure Int64 = struct 
+structure Int64 = struct
                      open Int64
-                     local 
+                     local
                         structure S = IntFromTo (Primitive.Int64)
                      in
                         open S
                      end
                   end
-structure IntInf = struct 
+structure IntInf = struct
                       open IntInf
-                      local 
+                      local
                          structure S = IntFromTo (Primitive.IntInf)
                       in
                          open S

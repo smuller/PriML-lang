@@ -57,7 +57,7 @@ fun testimager(destSurf : SDL_Surface, srcSurf : SDL_Surface,
 fun SDL_InitDefault() : int =
       prim("@mlSDL_InitDefault", "@mlSDL_InitDefault", ())
 
-fun SDL_Quit () : unit = 
+fun SDL_Quit () : unit =
       prim ("@mlSDL_Quit", "@mlSDL_Quit", ())
 
 (* SDL constants that we will need for SDL_SetVideoMode... *)

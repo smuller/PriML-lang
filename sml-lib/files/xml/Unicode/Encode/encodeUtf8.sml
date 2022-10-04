@@ -1,4 +1,4 @@
-(* Encodes UTF8. 
+(* Encodes UTF8.
 
    I pulled this out so it can be used in the simple XML interface
    without forcing the output to go to a file.   - Tom 7
@@ -26,12 +26,12 @@ struct
    (*---------------------------------------------------------------------*)
    (* UTF-8                                                               *)
    (*---------------------------------------------------------------------*)
-   fun writeCharUtf8 writeByte (c,f) = 
+   fun writeCharUtf8 writeByte (c,f) =
       if c<0wx80 then writeByte(f,Char2Byte c)
-      else if c<0wx800 
+      else if c<0wx800
               then let val f1 = writeByte(f,0wxC0 || Char2Byte(c >> 0w6))
                        val f2 = writeByte(f1,0wx80 || Char2Byte(c && 0wx3F))
-                   in f2 
+                   in f2
                    end
       else if c<0wx10000
               then let val f1 = writeByte(f, 0wxE0 || Char2Byte(c >> 0w12))

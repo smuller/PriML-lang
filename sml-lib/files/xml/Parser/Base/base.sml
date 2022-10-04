@@ -3,7 +3,7 @@
 
 structure Base =
    struct
-      open 
+      open
 	 BaseData
 	 BaseString
    end

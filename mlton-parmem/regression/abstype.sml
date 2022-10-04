@@ -45,8 +45,8 @@ structure S =
     end
   end
 
-signature F = 
-  sig 
+signature F =
+  sig
     val b : S.s
   end
 

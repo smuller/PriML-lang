@@ -16,8 +16,8 @@ type real = Real.real
 
 structure In = In0
 
-structure R = 
-   OrderedRing (structure R = 
+structure R =
+   OrderedRing (structure R =
                    RingWithIdentity (structure R =
                                         Ring (type t = real
                                               open Real
@@ -33,7 +33,7 @@ structure F = OrderedField (open R Real
 open F Real
 open Math
 
-exception Input 
+exception Input
 fun input i =
    case fromString (In.inputToSpace i) of
       SOME x => x

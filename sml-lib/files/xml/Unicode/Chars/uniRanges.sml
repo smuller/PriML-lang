@@ -2,7 +2,7 @@
 
 
 
-structure UniRanges = 
+structure UniRanges =
    struct
       val digitRange = [(0wx0030,0wx0039),
 			(0wx0660,0wx0669),
@@ -241,7 +241,7 @@ structure UniRanges =
 		       (0wx3041,0wx3094),
 		       (0wx30A1,0wx30FA),
 		       (0wx3105,0wx312C),
-                       (0wxAC00,0wxD7A3) 
+                       (0wxAC00,0wxD7A3)
 		       ] : CharClasses.CharRange
 
       val ideoRange = [(0wx3007,0wx3007),
@@ -359,12 +359,12 @@ structure UniRanges =
 		      (0wx30FC,0wx30FE)
 		      ] : CharClasses.CharRange
 
-      val nmsRange = List.concat 
+      val nmsRange = List.concat
 	 [[(0wx3A,0wx3A),(0wx5F,0wx5F)](* :_ *),
 	  baseRange,
 	  ideoRange]
 
-      val nameRange = List.concat 
+      val nameRange = List.concat
 	 [[(0wx2D,0wx2D),(0wx2E,0wx2E)](* -. *),
 	  digitRange,
 	  combRange,
@@ -375,9 +375,9 @@ structure UniRanges =
 	 [map (fn c => (c,c)) [0wx0A,0wx0D,0wx20], (* space,cr,lf *)
 	  map (fn c => (c,c)) (UniChar.String2Data "-'()+,./:=?;!*#@$_%"),
 	  [(0wx0030,0wx0039),(0wx0041,0wx005A),(0wx0061,0wx007A)] (* [0-9A-Za-z] *)
-	  ] : CharClasses.CharRange 
+	  ] : CharClasses.CharRange
 
-      val encRange =       
+      val encRange =
       	 [(0wx002D,0wx002E), (* -.  *)
 	  (0wx0030,0wx0039), (* 0-9 *)
 	  (0wx0041,0wx005A), (* A-Z *)
@@ -397,22 +397,22 @@ structure UniRanges =
 (*                          [#x0300-#x036F] | [#x203F-#x2040]               *)
 (****************************************************************************)
 
-      val nameStartCharRange = 
+      val nameStartCharRange =
          [(0wx3A,0wx3A),(* : *)
 	  (0wx0041,0wx005A), (* A-Z *)
 	  (0wx005F,0wx005F), (* _   *)
 	  (0wx0061,0wx007A), (* a-z *)
           (0wxC0,0wxD6),
-          (0wxD8,0wxF6), 
-          (0wxF8,0wx2FF), 
-          (0wx370,0wx37D), 
-          (0wx37F,0wx1FFF), 
-          (0wx200C,0wx200D), 
-          (0wx2070,0wx218F), 
-          (0wx2C00,0wx2FEF), 
-          (0wx3001,0wxD7FF), 
-          (0wxF900,0wxFDCF), 
-          (0wxFDF0,0wxFFFD), 
+          (0wxD8,0wxF6),
+          (0wxF8,0wx2FF),
+          (0wx370,0wx37D),
+          (0wx37F,0wx1FFF),
+          (0wx200C,0wx200D),
+          (0wx2070,0wx218F),
+          (0wx2C00,0wx2FEF),
+          (0wx3001,0wxD7FF),
+          (0wxF900,0wxFDCF),
+          (0wxFDF0,0wxFFFD),
           (0wx10000,0wxEFFFF)
 	  ] : CharClasses.CharRange
 

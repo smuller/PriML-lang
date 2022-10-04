@@ -32,7 +32,7 @@ structure System: SYSTEM =
                            then
                               case ss of
                                  [] => rev (concat (rev line') :: lines)
-                               | _ => 
+                               | _ =>
                                     if pos + 2 <= width
                                        then loop (ss, pos, line', lines)
                                     else newLine ()

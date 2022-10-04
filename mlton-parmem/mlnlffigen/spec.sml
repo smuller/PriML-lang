@@ -17,9 +17,9 @@ structure Spec = struct
     type tag = string
 
     datatype basic_ctype =
-        SCHAR | UCHAR 
-      | SSHORT | USHORT 
-      | SINT | UINT 
+        SCHAR | UCHAR
+      | SSHORT | USHORT
+      | SINT | UINT
       | SLONG | ULONG
       | SLONGLONG | ULONGLONG
       | FLOAT | DOUBLE
@@ -48,16 +48,16 @@ structure Spec = struct
 
     type s =
          { src: string,
-           tag: tag, 
-           anon: bool, 
-           size: word, 
+           tag: tag,
+           anon: bool,
+           size: word,
            fields: field list,
            exclude: bool }
     type u =
          { src: string,
-           tag: tag, 
-           anon: bool, 
-           size: word, 
+           tag: tag,
+           anon: bool,
+           size: word,
            all: field list,
            exclude: bool }
 
@@ -66,16 +66,16 @@ structure Spec = struct
     type gvar = { src: string, name: string, spec: cobj }
 
     type gfun = { src: string,
-                  name: string, 
-                  spec: cft, 
+                  name: string,
+                  spec: cft,
                   argnames: string list option }
 
     type enumval = { name: string, spec: LargeInt.int }
 
     type enum = { src: string,
-                  tag: tag, 
-                  anon: bool, 
-                  descr: string, 
+                  tag: tag,
+                  anon: bool,
+                  descr: string,
                   spec: enumval list,
                   exclude: bool }
 
@@ -105,10 +105,10 @@ structure Spec = struct
           enums = uniq #tag (#enums x, #enums y) } : spec
     end
 
-    val empty : spec = { structs = [], 
-                         unions = [], 
-                         gtys = [], 
+    val empty : spec = { structs = [],
+                         unions = [],
+                         gtys = [],
                          gvars = [],
-                         gfuns = [], 
+                         gfuns = [],
                          enums = [] }
 end

@@ -26,13 +26,13 @@ val fdToSock = Sock.fromRep o PrePosix.FileDesc.toRep
 type pre_sock_addr = Word8.word array
 datatype sock_addr = SA of Word8.word vector
 fun unpackSockAddr (SA sa) = sa
-fun newSockAddr (): (pre_sock_addr * C_Socklen.t ref * (unit -> sock_addr)) = 
+fun newSockAddr (): (pre_sock_addr * C_Socklen.t ref * (unit -> sock_addr)) =
    let
       val salen = C_Size.toInt Prim.sockAddrStorageLen
       val sa = Array.array (salen, 0wx0: Word8.word)
       val salenRef = ref (C_Socklen.fromInt salen)
-      fun finish () = 
-         SA (ArraySlice.vector 
+      fun finish () =
+         SA (ArraySlice.vector
              (ArraySlice.slice (sa, 0, SOME (C_Socklen.toInt (!salenRef)))))
    in
       (sa, salenRef, finish)
@@ -46,7 +46,7 @@ structure AddrFamily = Net.AddrFamily
 structure AF =
    struct
       type addr_family = AddrFamily.t
-      val names : (string * addr_family) list = 
+      val names : (string * addr_family) list =
          ("UNIX", AddrFamily.fromRep Prim.AF.UNIX) ::
          ("INET", AddrFamily.fromRep Prim.AF.INET) ::
          ("INET6", AddrFamily.fromRep Prim.AF.INET6) ::
@@ -71,7 +71,7 @@ structure SOCK =
       val fromRep = SockType.fromRep
       val stream = SockType.fromRep Prim.SOCK.STREAM
       val dgram = SockType.fromRep Prim.SOCK.DGRAM
-      val names : (string * sock_type) list = 
+      val names : (string * sock_type) list =
          ("STREAM", stream) ::
          ("DGRAM", dgram) ::
          nil
@@ -217,13 +217,13 @@ fun familyOfAddr (SA sa) = AddrFamily.fromRep (Prim.familyOfAddr sa)
 fun bind (s, SA sa) =
    Syscall.simple (fn () => Prim.bind (Sock.toRep s, sa, C_Socklen.fromInt (Vector.length sa)))
 
-fun listen (s, n) = 
+fun listen (s, n) =
    Syscall.simple (fn () => Prim.listen (Sock.toRep s, C_Int.fromInt n))
 
 fun nonBlock' ({restart: bool},
                errVal : ''a, f : unit -> ''a C_Errno.t, post : ''a -> 'b, again, no : 'b) =
    Syscall.syscallErr
-   ({clear = false, restart = restart, errVal = errVal}, fn () => 
+   ({clear = false, restart = restart, errVal = errVal}, fn () =>
     {return = f (),
      post = post,
      handlers = [(again, fn () => no)]})
@@ -235,15 +235,15 @@ local
    structure PIO = PrimitiveFFI.Posix.IO
    structure OS = Primitive.MLton.Platform.OS
    structure MinGW = PrimitiveFFI.MinGW
-   
+
    fun withNonBlockNormal (s, f: unit -> 'a) =
       let
          val fd = Sock.toRep s
-         val flags = 
+         val flags =
             Syscall.simpleResultRestart (fn () => PIO.fcntl2 (fd, PIO.F_GETFL))
          val () =
             Syscall.simpleRestart
-            (fn () => 
+            (fn () =>
              PIO.fcntl3 (fd, PIO.F_SETFL,
                          C_Int.orb (flags, PrimitiveFFI.Posix.FileSys.O.NONBLOCK)))
       in
@@ -251,7 +251,7 @@ local
          (f, fn () =>
           Syscall.simpleRestart (fn () => PIO.fcntl3 (fd, PIO.F_SETFL, flags)))
       end
-   
+
    fun withNonBlockMinGW (s, f: unit -> 'a) =
       let
          val fd = Sock.toRep s
@@ -272,7 +272,7 @@ fun connect (s, SA sa) =
 
 fun connectNB (s, SA sa) =
    nonBlock'
-   ({restart = false}, C_Int.fromInt ~1, fn () => 
+   ({restart = false}, C_Int.fromInt ~1, fn () =>
     withNonBlock (s, fn () => Prim.connect (Sock.toRep s, sa, C_Socklen.fromInt (Vector.length sa))),
     fn _ => true,
     Error.inprogress, false)
@@ -290,7 +290,7 @@ fun acceptNB s =
       val (sa, salen, finish) = newSockAddr ()
    in
       nonBlock
-      (C_Int.fromInt ~1, 
+      (C_Int.fromInt ~1,
        fn () => withNonBlock (s, fn () => Prim.accept (Sock.toRep s, sa, salen)),
        fn s => SOME (Sock.fromRep s, finish ()),
        NONE)
@@ -317,9 +317,9 @@ fun sockDesc sock = sockToFD sock
 
 fun sameDesc (desc1, desc2) = desc1 = desc2
 
-fun select {rds: sock_desc list, 
-            wrs: sock_desc list, 
-            exs: sock_desc list, 
+fun select {rds: sock_desc list,
+            wrs: sock_desc list,
+            exs: sock_desc list,
             timeout: Time.time option} =
    let
       local
@@ -335,10 +335,10 @@ fun select {rds: sock_desc list,
          val (write_vec, write_arr) = mk wrs
          val (except_vec, except_arr) = mk exs
       end
-      val setTimeout = 
+      val setTimeout =
          case timeout of
             NONE => Prim.setTimeoutNull
-          | SOME t => 
+          | SOME t =>
                if Time.< (t, Time.zeroTime)
                   then Error.raiseSys Error.inval
                else let
@@ -349,8 +349,8 @@ fun select {rds: sock_desc list,
                     in
                        fn () => Prim.setTimeout (q, r)
                     end handle Overflow => Error.raiseSys Error.inval
-      val res = 
-         Syscall.simpleResult 
+      val res =
+         Syscall.simpleResult
          (fn () =>
           (setTimeout ()
            ; Prim.select (read_vec, write_vec, except_vec,
@@ -358,9 +358,9 @@ fun select {rds: sock_desc list,
       val (rds, wrs, exs) =
          if res = 0
             then ([],[],[])
-         else 
+         else
             let
-               fun mk (l, arr) = 
+               fun mk (l, arr) =
                   (List.rev o #1)
                   (List.foldl (fn (sd, (l, i)) =>
                                (if Array.sub (arr, i) <> (0: C_Int.t) then sd::l else l, i + 1))
@@ -399,8 +399,8 @@ local
                val (buf, i, sz) = base sl
             in
                (C_SSize.toInt o Syscall.simpleResultRestart')
-               ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
-                primSend (Sock.toRep s, buf, C_Int.fromInt i, C_Size.fromInt sz, 
+               ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
+                primSend (Sock.toRep s, buf, C_Int.fromInt i, C_Size.fromInt sz,
                           mk_out_flags out_flags))
             end
          fun send (sock, buf) = send' (sock, buf, no_out_flags)
@@ -413,7 +413,7 @@ local
                 fn () =>
                 primSend (Sock.toRep s, buf, C_Int.fromInt i, C_Size.fromInt sz,
                           C_Int.orb (Prim.MSG_DONTWAIT, mk_out_flags out_flags)),
-                SOME o C_SSize.toInt, 
+                SOME o C_SSize.toInt,
                 NONE)
             end
          fun sendNB (sock, sl) = sendNB' (sock, sl, no_out_flags)
@@ -422,9 +422,9 @@ local
                val (buf, i, sz) = base sl
             in
                Syscall.simpleRestart'
-               ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+               ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
                 primSendTo (Sock.toRep s, buf, C_Int.fromInt i, C_Size.fromInt sz,
-                            mk_out_flags out_flags, 
+                            mk_out_flags out_flags,
                             sa, C_Socklen.fromInt (Vector.length sa)))
             end
          fun sendTo (sock, sock_addr, sl) =
@@ -433,7 +433,7 @@ local
             let
                val (buf, i, sz) = base sl
             in
-               nonBlock 
+               nonBlock
                (C_SSize.castFromFixedInt ~1,
                 fn () =>
                 primSendTo (Sock.toRep s, buf, C_Int.fromInt i, C_Size.fromInt sz,
@@ -470,8 +470,8 @@ fun recvArr' (s, sl, in_flags) =
       val (buf, i, sz) = Word8ArraySlice.base sl
    in
       (C_SSize.toInt o Syscall.simpleResultRestart')
-      ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
-       Prim.recv (Sock.toRep s, Word8Array.toPoly buf, C_Int.fromInt i, C_Size.fromInt sz, 
+      ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
+       Prim.recv (Sock.toRep s, Word8Array.toPoly buf, C_Int.fromInt i, C_Size.fromInt sz,
                   mk_in_flags in_flags))
    end
 
@@ -499,9 +499,9 @@ fun recvArrFrom' (s, sl, in_flags) =
       val (sa, salen, finish) = newSockAddr ()
       val n =
          (C_SSize.toInt o Syscall.simpleResultRestart')
-         ({errVal = C_SSize.castFromFixedInt ~1}, fn () => 
+         ({errVal = C_SSize.castFromFixedInt ~1}, fn () =>
           Prim.recvFrom (Sock.toRep s, Word8Array.toPoly buf, C_Int.fromInt i, C_Size.fromInt sz,
-                         mk_in_flags in_flags, 
+                         mk_in_flags in_flags,
                          sa, salen))
    in
       (n, finish ())
@@ -530,7 +530,7 @@ fun recvArrNB' (s, sl, in_flags) =
       (C_SSize.castFromFixedInt ~1,
        fn () => Prim.recv (Sock.toRep s, Word8Array.toPoly buf, C_Int.fromInt i, C_Size.fromInt sz,
                            mk_in_flagsNB in_flags),
-       SOME o C_SSize.toInt, 
+       SOME o C_SSize.toInt,
        NONE)
    end
 

@@ -31,7 +31,7 @@ struct
                 stamp : int,
                 (* Port note: Box2D has a possibility for
                    a 'next' pointer here, but it's just
-                   so that the structure can be stored 
+                   so that the structure can be stored
                    in freelists for its custom allocator. *)
                 parent : 'a tree_node ref,
                 left : 'a tree_node ref,
@@ -42,7 +42,7 @@ struct
   (* Port note: The representation is that leaf nodes are the
      "real" nodes (and have user data) whereas internal nodes just
      union up leaves to arrange them hierarchically, and are expendable.
-     It is probably worth having both Interior and Leaf arms rather 
+     It is probably worth having both Interior and Leaf arms rather
      than Node and Empty. *)
   (* Represent the whole thing as a ref so that we don't confuse the
      updateable root pointer with the identity of the node contained
@@ -59,8 +59,8 @@ struct
             | checkpar which (Node { parent, ... }) =
               if parent = r
               then ()
-              else raise BDDDynamicTree 
-                  ("checkstructure " ^ s ^ ": node's " ^ 
+              else raise BDDDynamicTree
+                  ("checkstructure " ^ s ^ ": node's " ^
                    which ^ " child's parent isn't node")
       in
           checkpar "left" (!left);
@@ -77,7 +77,7 @@ struct
       let
           fun indent 0 = ()
             | indent n = (dprint (fn () => " "); indent (n - 1))
-          fun pr (depth, Empty) = 
+          fun pr (depth, Empty) =
               let in
                   indent depth;
                   dprint (fn () => "Empty\n")
@@ -120,7 +120,7 @@ struct
 
   fun eq_proxy p = EQUAL = cmp_proxy p
 
-  local 
+  local
       val next_stamp_ = ref 0
   in
       fun next_stamp () = (next_stamp_ := !next_stamp_ + 1;
@@ -144,14 +144,14 @@ struct
   fun set_parent (r as ref (Node { aabb, data, parent = _, left, right,
                                    stamp }),
                   parent) =
-      r := Node { aabb = aabb, data = data, parent = parent, 
+      r := Node { aabb = aabb, data = data, parent = parent,
                   left = left, right = right, stamp = stamp }
     | set_parent _ = raise BDDDynamicTree "expected node; got empty"
 
   fun set_left (r as ref (Node { aabb, data, parent, left = _, right,
                                  stamp }),
                 left) =
-      r := Node { aabb = aabb, data = data, parent = parent, 
+      r := Node { aabb = aabb, data = data, parent = parent,
                   left = left, right = right,
                   stamp = stamp }
     | set_left _ = raise BDDDynamicTree "expected node; got empty"
@@ -159,14 +159,14 @@ struct
   fun set_right (r as ref (Node { aabb, data, parent, left, right = _,
                                   stamp }),
                  right) =
-      r := Node { aabb = aabb, data = data, parent = parent, 
+      r := Node { aabb = aabb, data = data, parent = parent,
                   left = left, right = right, stamp = stamp }
     | set_right _ = raise BDDDynamicTree "expected node; got empty"
 
   fun !! (ref (Node x)) = x
     | !! _ = raise BDDDynamicTree "expected node; got empty"
 
-  fun user_data n = 
+  fun user_data n =
       case #data (!! n) of
           NONE => raise BDDDynamicTree "data only present for leaves"
         | SOME a => a
@@ -188,16 +188,16 @@ struct
       in ch (!root)
       end
 
-  fun dynamic_tree () : 'a dynamic_tree = 
+  fun dynamic_tree () : 'a dynamic_tree =
       ref { node_count = 0, root = ref Empty, path = 0w0 }
 
   (* Derive the AABB for an interior node, based on its children
      (which must have accurate AABBs. Set it and return it. *)
-  fun set_derived_aabb (r as ref (Node { aabb = _, data, parent, 
+  fun set_derived_aabb (r as ref (Node { aabb = _, data, parent,
                                          left, right, stamp })) =
       let val new_aabb =
           BDDCollision.aabb_combine (#aabb (!!left), #aabb (!!right))
-      in r := Node { aabb = new_aabb, data = data, parent = parent, 
+      in r := Node { aabb = new_aabb, data = data, parent = parent,
                      left = left, right = right, stamp = stamp };
           new_aabb
       end
@@ -211,7 +211,7 @@ struct
   fun adjust_aabbs ancestor =
       case !ancestor of
           Empty => ()
-        | Node { parent, aabb = old_aabb, ... } => 
+        | Node { parent, aabb = old_aabb, ... } =>
            let val new_aabb = set_derived_aabb ancestor
            in if BDDCollision.aabb_contains (old_aabb, new_aabb)
               then ()
@@ -219,10 +219,10 @@ struct
            end
 
   fun insert_leaf (tree as ref { root, ... } : 'a dynamic_tree,
-                   leaf as ref (Node { aabb, data = _, parent = _, 
+                   leaf as ref (Node { aabb, data = _, parent = _,
                                        left = _, right = _, stamp = _ })) =
       (case !root of
-           Empty => 
+           Empty =>
                let in
                    (* PERF should always be the case already? *)
                    set_parent (leaf, ref Empty);
@@ -230,7 +230,7 @@ struct
                end
          | _ =>
             (* Find the best sibling for this leaf. *)
-            let 
+            let
                 val center : vec2 = BDDCollision.aabb_center aabb
                 fun find sibling =
                   if is_leaf sibling
@@ -239,7 +239,7 @@ struct
                     let
                       val left = #left (!!sibling)
                       val right = #right (!!sibling)
-                      val ldelta : vec2 = 
+                      val ldelta : vec2 =
                         vec2abs (BDDCollision.aabb_center (#aabb (!!left)) :-: center)
                       val rdelta : vec2 =
                         vec2abs (BDDCollision.aabb_center (#aabb (!!right)) :-: center)
@@ -254,7 +254,7 @@ struct
                 val parent = #parent (!!sibling)
                 val new = ref (Node { parent = parent,
                                       data = NONE,
-                                      aabb = BDDCollision.aabb_combine 
+                                      aabb = BDDCollision.aabb_combine
                                           (#aabb (!!leaf),
                                            #aabb (!!sibling)),
                                       (* PERF: Probably don't need stamps for
@@ -269,15 +269,15 @@ struct
 
                 case !parent of
                   Empty => set_root (tree, new)
-                | _ => 
-                  let 
-                      
+                | _ =>
+                  let
+
                   in
                       if #left (!!parent) = sibling
                       then set_left (parent, new)
                       else set_right (parent, new);
 
-                      (* Port note: This expansion routine is not exactly 
+                      (* Port note: This expansion routine is not exactly
                          the same as the one in the code, but I believe
                          it has equivalent effect. *)
                       adjust_aabbs parent
@@ -286,12 +286,12 @@ struct
     | insert_leaf _ = raise BDDDynamicTree "can't insert empty"
 
   (* Assumes the proxy is a leaf. *)
-  fun remove_leaf (tree : 'a dynamic_tree, 
+  fun remove_leaf (tree : 'a dynamic_tree,
                    proxy : 'a aabb_proxy) =
     let val { parent, ... } = !!proxy
     in
       checktreestructure "remove_leaf before" tree;
-      (* If it's the root, we just make the tree empty. 
+      (* If it's the root, we just make the tree empty.
          Port note: Throughout this code, Box2D uses equality
          on proxy IDs (integers); I ref equality. *)
       (case !parent of
@@ -299,7 +299,7 @@ struct
         | Node { left, right, parent = grandparent, ... } =>
             let
                 (* Get the other child of our parent. *)
-                val sibling = if left = proxy 
+                val sibling = if left = proxy
                               then right
                               else left
             in
@@ -307,8 +307,8 @@ struct
                   (* Note: discards parent. *)
                   Empty => (set_parent (sibling, ref Empty);
                             set_root (tree, sibling))
-                | Node { left = g_left, ... } => 
-                      let 
+                | Node { left = g_left, ... } =>
+                      let
                       in
                           (* Destroy parent and connect grandparent
                              to sibling. *)
@@ -340,8 +340,8 @@ struct
           (fn _ =>
            let fun loop (node, bit) =
                if is_leaf node
-               then (path := !path + 0w1; 
-                     remove_leaf (tree, node); 
+               then (path := !path + 0w1;
+                     remove_leaf (tree, node);
                      insert_leaf (tree, node))
                else
                 let
@@ -363,14 +363,14 @@ struct
 
   fun aabb_proxy (tree : 'a dynamic_tree, aabb : aabb, a : 'a) : 'a aabb_proxy =
       let
-          fun pxy v = 
+          fun pxy v =
               Real.fmt (StringCvt.FIX (SOME 2)) (vec2x v) ^ " " ^
               Real.fmt (StringCvt.FIX (SOME 2)) (vec2y v)
           val () = dprint (fn () => "  inc aabb: " ^
                           pxy (#lowerbound aabb) ^ " to " ^
                           pxy (#upperbound aabb) ^ "\n")
 
-          
+
           (* Fatten the aabb. *)
           val r : vec2 = vec2(aabb_extension, aabb_extension)
           val fat : aabb = { lowerbound = #lowerbound aabb :-: r,
@@ -398,7 +398,7 @@ struct
       else raise BDDDynamicTree "can only remove leaves"
 
   fun move_proxy (tree : 'a dynamic_tree,
-                  proxy as ref (Node { aabb = proxy_aabb, 
+                  proxy as ref (Node { aabb = proxy_aabb,
                                        data, stamp, ... }) : 'a aabb_proxy,
                   aabb : aabb,
                   displacement : vec2) : bool =
@@ -423,12 +423,12 @@ struct
                              else (0.0, vec2y d)
 
             (* Extend AABB *)
-            val b : aabb = { lowerbound = 
+            val b : aabb = { lowerbound =
                                #lowerbound aabb :-: r :+: vec2(blx, bly),
-                             upperbound = 
+                             upperbound =
                                #upperbound aabb :+: r :+: vec2(bux, buy) }
 
-            fun pxy v = 
+            fun pxy v =
                 Real.fmt (StringCvt.FIX (SOME 2)) (vec2x v) ^ " " ^
                 Real.fmt (StringCvt.FIX (SOME 2)) (vec2y v)
             val () = dprint (fn () => "  moved_aabb: " ^
@@ -521,7 +521,7 @@ struct
                    if is_leaf node
                    then
                        let
-                           val sub_input = { p1 = p1, p2 = p2, 
+                           val sub_input = { p1 = p1, p2 = p2,
                                              max_fraction = !max_fraction }
                            val value = f (sub_input, node)
                        in

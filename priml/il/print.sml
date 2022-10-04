@@ -20,16 +20,16 @@ struct
     fun dolist s f i l = StringUtil.delimit s (List.map (fn m => f i m) l)
 
     fun recordortuple layout sep l r osep vals =
-        let 
-            val sorted = 
+        let
+            val sorted =
                 ListUtil.sort (ListUtil.byfirst ML5pghUtil.labelcompare) vals
         in
             if
                (* can't be length 1 *)
                length sorted <> 1 andalso
                (* must be consecutive numbers *)
-               ListUtil.alladjacent (fn ((x,_), (sx,_)) => 
-                                     (case (Int.fromString x, 
+               ListUtil.alladjacent (fn ((x,_), (sx,_)) =>
+                                     (case (Int.fromString x,
                                             Int.fromString sx) of
                                           (SOME xx, SOME ssxx) => xx = ssxx - 1
                                         | _ => false)) sorted andalso
@@ -41,7 +41,7 @@ struct
         end
 
     exception NoMu
-  
+
 
     fun worldstys nil nil = L.empty
       | worldstys w t =
@@ -66,7 +66,7 @@ struct
                  L.paren (%[self dom,
                             $(if b then "=>" else "->"),
                             self cod])
-           | Arrow (b, dom, cod) => 
+           | Arrow (b, dom, cod) =>
                  L.paren (%[L.list (map self dom),
                             $(if b then "=>" else "->"),
                             self cod])
@@ -94,11 +94,11 @@ struct
 *)
            | Sum ltl => L.listex "[" "]" "," (map (fn (l, Carrier { carried = t,
                                                                     definitely_allocated = b}) =>
-                                                   L.seq[$l, $" : ", 
+                                                   L.seq[$l, $" : ",
                                                          self t]
                                                     | (l, NonCarrier) =>
                                                    L.seq[$l, $"(-none-)"]) ltl)
-           | Mu (i, m) => 
+           | Mu (i, m) =>
                  (* try to figure out the datatype's name
                     and write that instead. this is rather
                     a hack... *)
@@ -108,7 +108,7 @@ struct
                          (v, _) => Variable.basename v)
                          handle _ => raise NoMu
 
-                    val t = 
+                    val t =
                       case ctx thisc of
                         NONE => raise NoMu
                       | SOME s => $s
@@ -119,7 +119,7 @@ struct
                       L.paren (%[$("#" ^ itos i),
                                  $"mu",
                                  L.alignPrefix
-                                 (ListUtil.mapi 
+                                 (ListUtil.mapi
                                   (fn ((v,t),n) =>
                                    %[%[$(itos n), $"as",
                                        $(V.tostring v),
@@ -147,11 +147,11 @@ struct
     fun vtol v =
       (case v of
          Int i => $("0x" ^ Word32.toString i)
-       | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^ 
+       | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^
                        (if size s > 100 then "..." else "") ^ "\"")
        | VRecord lvl => recordortuple vtol "=" "(" ")" "," lvl
        | VRoll (t, v) => %[$"roll", L.paren (ttol t), vtol v]
-       | VInject (t, l, vo) => %[$("inj_" ^ l), 
+       | VInject (t, l, vo) => %[$("inj_" ^ l),
                                  L.paren (ttol t),
                                  (case vo of
                                       NONE => $"NONE"
@@ -164,22 +164,22 @@ struct
                 Fns [one as {name, arg, dom, cod, body, inline, recu, total}] =>
                   if n <> 0
                   then %[$"XXX! fsel out of bounds!", def ()]
-                  else 
+                  else
                     %[%[$"fn",
-                        if length arg <> length dom 
+                        if length arg <> length dom
                         then $"XXX arg/dom mismatch!!"
                         else $"",
                         $(V.tostring name)],
-                      if !iltypes 
+                      if !iltypes
                       then %[$(if inline then "INLINE " else ""),
                              $(if recu then "RECU " else "NRECU "),
                              $(if total then "TOTAL" else "PART")]
                       else $"",
-                        L.listex "(" ")" "," 
-                        (ListPair.map 
+                        L.listex "(" ")" ","
+                        (ListPair.map
                          (fn (a, t) =>
                           %[$(V.tostring a),
-                            if !iltypes 
+                            if !iltypes
                             then L.seq[$":", ttol t]
                             else $""]) (arg, dom)),
                         %[$":",
@@ -199,23 +199,23 @@ struct
        | Fns fl =>
              %[$"fns",
                L.align
-               (ListUtil.mapi 
+               (ListUtil.mapi
                 (fn ({name, arg, dom, cod, body, inline, recu, total}, i) =>
                      %[$("#" ^ Int.toString i ^ " is"),
-                       %[%[if length arg <> length dom 
+                       %[%[if length arg <> length dom
                            then $"XXX arg/dom mismatch!!"
                            else $"",
                            $(V.tostring name)],
-                         if !iltypes 
+                         if !iltypes
                          then L.seq[$(if inline then "INLINE " else ""),
                                     $(if recu then "RECU " else "NRECU "),
                                     $(if total then "TOTAL" else "PART")]
                          else $"",
-                         L.listex "(" ")" "," 
-                         (ListPair.map 
+                         L.listex "(" ")" ","
+                         (ListPair.map
                           (fn (a, t) =>
                            %[$(V.tostring a),
-                             if !iltypes 
+                             if !iltypes
                              then L.seq[$":", ttol t]
                              else $""]) (arg, dom)),
                          %[$":",
@@ -225,18 +225,18 @@ struct
                ]
 
        | Polyuvar {prios=nil, tys=nil, var} => $("~" ^ V.show var)
-       | Polyuvar {prios, tys, var} => 
+       | Polyuvar {prios, tys, var} =>
              %[$("~" ^ V.show var),
-               if !iltypes 
-               then 
+               if !iltypes
+               then
                    (* XXX5 separate them? *)
                    L.listex "<" ">" "," (map prtol prios @ map ttol tys)
                else $""]
 
        | Polyvar {prios=nil, tys=nil, var} => $(V.show var)
        | Polyvar {prios, tys, var} => %[$(V.show var),
-                                         if !iltypes 
-                                         then 
+                                         if !iltypes
+                                         then
                                            (* XXX5 separate them? *)
                                            L.listex "<" ">" "," (map prtol prios @ map ttol tys)
                                          else $""]
@@ -252,8 +252,8 @@ struct
            | Value v => vtol v
 
            (* print as if n-ary *)
-           | Seq _ => 
-                 let 
+           | Seq _ =>
+                 let
                      fun allseqs acc (Seq (ee, er)) = allseqs (ee::acc) er
                        | allseqs acc e = (acc, e)
 
@@ -277,7 +277,7 @@ struct
                       L.indent 4 (etol body),
                       $"end"]
                  end
-           | Proj (l, t, e) => 
+           | Proj (l, t, e) =>
                  if !iltypes
                  then
                    %[L.seq[$("#" ^ l), $"/", L.paren(ttol t)],
@@ -287,7 +287,7 @@ struct
            | Primapp (po, el, ts) =>
                  %( [$"[PRIM", $(Primop.tostring po),
                      L.listex "(" ")" "," (map etol el)]
-                   @ (case (!iltypes, ts) of 
+                   @ (case (!iltypes, ts) of
                           (_, nil) => nil
                         | (false, _) => nil
                         | _ => [L.listex "<" ">" "," (map ttol ts)])
@@ -298,19 +298,19 @@ struct
            | Inject (t, l, SOME e) => L.paren(%[$("inj_" ^ l),
                                                 bttol t,
                                                 etol e])
-           | Unroll e => 
+           | Unroll e =>
                  if !iltypes
                  then L.paren(%[$"unroll", etol e])
                  else etol e
-           | Roll (t,e) => 
+           | Roll (t,e) =>
                  if !iltypes
-                 then L.paren(%[$"roll", 
+                 then L.paren(%[$"roll",
                                 bttol t,
                                 etol e])
                  else etol e
            | Sumcase (t, e, v, lel, def) =>
                  L.align
-                 (%[$"sumcase", etol e, %[$":", ttol t], 
+                 (%[$"sumcase", etol e, %[$":", ttol t],
                     %[$"as", $ (V.tostring v)]] ::
                   map (fn (l, e) => %[%[$"  |", $l, $"=>"], L.indent 4 (etol e)]) lel @
                   [%[%[$"  |", $"_", $"=>"], L.indent 4 (etol def)]])
@@ -319,7 +319,7 @@ struct
                  [%[$"intcase", etol e, $"of"],
                   % ` map (fn (i, e) => %[$(IntConst.toString i), $" => ", L.indent 4 ` etol e]) iel,
                   %[$"  |", $"_", $"=>"], L.indent 4 ` etol def]
-           
+
            | Untag {typ, obj, target, bound, yes, no} =>
 
                  %[%[$"untag", etol obj, $":", ttol typ],
@@ -338,12 +338,12 @@ struct
                                   %[$"in",
                                     L.indent 2 ` etol e]]
 
-           | Say (imports, e) => %[$"say", 
+           | Say (imports, e) => %[$"say",
                                    L.listex "{" "}" "," ` map (fn (l, t) => %[$l, $":", ttol t]) imports,
                                    L.indent 2 ` etol e]
 *)
 
-           | Raise (t, e) => L.paren(%[$"raise", 
+           | Raise (t, e) => L.paren(%[$"raise",
                                        bttol t, etol e])
            | Tag (e1, e2) => L.paren(%[$"tag", etol e1, $"with", etol e2])
 
@@ -352,8 +352,8 @@ struct
                                       $"handle",
                                       %[%[$(V.tostring v), $"=>"], etol h]]
 (*
-           | Get {addr = a, typ = t, body = e, dest} => 
-                 %[$"from", etol a, $":", %[wtol dest, $" addr"], %[$"get", 
+           | Get {addr = a, typ = t, body = e, dest} =>
+                 %[$"from", etol a, $":", %[wtol dest, $" addr"], %[$"get",
                    etol e, $":", ttol t]]
 
            | Jointext el =>
@@ -367,8 +367,8 @@ struct
         (case d of
              Do e => %[$"do", etol e]
            | Tagtype v => %[$"tagtype", $(V.tostring v)]
-           | Newtag (new, t, ext) => %[$"newtag", $(V.tostring new), 
-                                       $"tags", ttol t, $"in", 
+           | Newtag (new, t, ext) => %[$"newtag", $(V.tostring new),
+                                       $"tags", ttol t, $"in",
                                        $(V.tostring ext)]
            | Val (Poly ({prios, tys}, (var, t, e))) =>
                %[%[%([$"val"]
@@ -394,19 +394,19 @@ struct
            | ExternWorld (l, k) => %[$"extern world", wktol k, $l]
            | ExternVal (Poly({worlds, tys}, (l, v, t, w))) =>
                  % ($"extern val" ::
-                    worldstys worlds tys 
+                    worldstys worlds tys
                     :: [$(V.tostring v),
-                        L.indent 4 (%[$":", ttol t, 
-                                      $"@", 
+                        L.indent 4 (%[$":", ttol t,
+                                      $"@",
                                       case w of
                                         Valid wv => %[$"VALID ", $(V.tostring wv), $"."]
                                       | Modal w => wtol w,
                                       $"=", $l])])
-           | ExternType (n, l, v) => 
+           | ExternType (n, l, v) =>
                  %[$"extern type",
                    (case n of
                        0 => $""
-                     | _ => L.listex "(" ")" "," 
+                     | _ => L.listex "(" ")" ","
                           (List.tabulate (n, fn i => $(implode [chr (ord #"a" + i)])))),
                    $(V.tostring v), $"=", $l]
 *)
@@ -418,8 +418,8 @@ struct
                  % ($"export val" ::
                     worldstys worlds tys ::
                        [$ l,
-                        L.indent 4 (%[$":", ttol t, 
-                                      $"@", 
+                        L.indent 4 (%[$":", ttol t,
+                                      $"@",
                                       case w of
                                         NONE => $"VALID"
                                       | SOME w => wtol w,

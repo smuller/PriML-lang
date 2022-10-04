@@ -4,7 +4,7 @@
 
 
 
-structure KeyIntList : Key = 
+structure KeyIntList : Key =
    struct
       type Key = int list
 
@@ -14,7 +14,7 @@ structure KeyIntList : Key =
       val toString = UtilString.List2String Int.toString
    end
 
-structure IntListDict = Dict (structure Key = KeyIntList) 
-structure IntListSymTab = SymTable (structure Key = KeyIntList) 
+structure IntListDict = Dict (structure Key = KeyIntList)
+structure IntListSymTab = SymTable (structure Key = KeyIntList)
 
 

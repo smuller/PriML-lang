@@ -13,7 +13,7 @@ fun transformPoint matr {x, y, z} =
                  (in10, in11, in12, in13),
                  (in20, in21, in22, in23),
                  (in30, in31, in32, in33)) = matr
-             
+
             val w = x * in30 + y * in31 + z * in32 + in33
           in
             if Real.== (0.0, w) then

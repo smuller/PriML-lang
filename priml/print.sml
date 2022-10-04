@@ -28,16 +28,16 @@ struct
 
     fun recordortuplet (layout: typ -> L.layout) sep l r osep
                       (vals : (string * typ) list) =
-        let 
-            val sorted = 
+        let
+            val sorted =
                 ListUtil.sort (ListUtil.byfirst ML5pghUtil.labelcompare) vals
         in
             if
                (* can't be length 1 *)
                length sorted <> 1 andalso
                (* must be consecutive numbers *)
-               ListUtil.alladjacent (fn ((x,_), (sx,_)) => 
-                                     (case (Int.fromString x, 
+               ListUtil.alladjacent (fn ((x,_), (sx,_)) =>
+                                     (case (Int.fromString x,
                                             Int.fromString sx) of
                                           (SOME xx, SOME ssxx) => xx = ssxx - 1
                                         | _ => false)) sorted andalso
@@ -50,16 +50,16 @@ struct
 
     fun recordortuplee (layout: exp -> L.layout) sep l r osep
                       (vals : (string * exp) list) =
-        let 
-            val sorted = 
+        let
+            val sorted =
                 ListUtil.sort (ListUtil.byfirst ML5pghUtil.labelcompare) vals
         in
             if
                (* can't be length 1 *)
                length sorted <> 1 andalso
                (* must be consecutive numbers *)
-               ListUtil.alladjacent (fn ((x,_), (sx,_)) => 
-                                     (case (Int.fromString x, 
+               ListUtil.alladjacent (fn ((x,_), (sx,_)) =>
+                                     (case (Int.fromString x,
                                             Int.fromString sx) of
                                           (SOME xx, SOME ssxx) => xx = ssxx - 1
                                         | _ => false)) sorted andalso
@@ -72,16 +72,16 @@ struct
 
     fun recordortuplep (layout: pat -> L.layout) sep l r osep
                       (vals : (string * pat) list) =
-        let 
-            val sorted = 
+        let
+            val sorted =
                 ListUtil.sort (ListUtil.byfirst ML5pghUtil.labelcompare) vals
         in
             if
                (* can't be length 1 *)
                length sorted <> 1 andalso
                (* must be consecutive numbers *)
-               ListUtil.alladjacent (fn ((x,_), (sx,_)) => 
-                                     (case (Int.fromString x, 
+               ListUtil.alladjacent (fn ((x,_), (sx,_)) =>
+                                     (case (Int.fromString x,
                                             Int.fromString sx) of
                                           (SOME xx, SOME ssxx) => xx = ssxx - 1
                                         | _ => false)) sorted andalso
@@ -150,7 +150,7 @@ struct
 
            | Vector es => L.listex "{" "}" "," (map etol es)
 
-           | Proj (l, t, e) => 
+           | Proj (l, t, e) =>
                  %[L.seq[$("#" ^ l), $" ", etol e]]
 
            | Andalso (e1, e2) => L.paren(%[etol e1, $" andalso ", etol e2])
@@ -166,7 +166,7 @@ struct
            | Primapp (po, ts, el) =>
                  %( [$"[PRIM", $po,
                      L.listex "(" ")" "," (map etol el)]
-                   @ (case ts of 
+                   @ (case ts of
                           nil => nil
                         | _ => [L.listex "<"">" "," (map ttol ts)])
                    @ [$"]"])

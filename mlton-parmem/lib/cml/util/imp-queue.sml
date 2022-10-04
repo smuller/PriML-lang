@@ -62,7 +62,7 @@ structure ImpQueue : IMP_QUEUE =
                        | l => let val l = List.rev l
                               in case l of
                                     [] => raise Fail "ImpQueue.deque:impossible"
-                                  | x :: front' => 
+                                  | x :: front' =>
                                        (front := front'
                                         ; back := []
                                         ; SOME x)
@@ -77,7 +77,7 @@ structure ImpQueue : IMP_QUEUE =
                        | _ => false)
              | _ => false)
 
-      fun enque (T {back, ...}, x) = 
+      fun enque (T {back, ...}, x) =
          (Assert.assertAtomic' ("ImpQueue.enque", NONE)
           ; back := x::(!back))
 
@@ -94,7 +94,7 @@ structure ImpQueue : IMP_QUEUE =
                        | l => let val l = List.rev l
                               in case l of
                                     [] => raise Fail "ImpQueue.peek:impossible"
-                                  | x::front' => 
+                                  | x::front' =>
                                        (front := x::front'
                                         ; back := []
                                         ; SOME x)

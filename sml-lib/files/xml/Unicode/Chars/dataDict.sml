@@ -6,7 +6,7 @@
 
 
 
-structure KeyData : Key = 
+structure KeyData : Key =
    struct
       type Key = UniChar.Data
 
@@ -16,7 +16,7 @@ structure KeyData : Key =
       val toString = UniChar.Data2String
    end
 
-structure DataDict = Dict (structure Key = KeyData) 
-structure DataSymTab = SymTable (structure Key = KeyData) 
+structure DataDict = Dict (structure Key = KeyData)
+structure DataSymTab = SymTable (structure Key = KeyData)
 
 

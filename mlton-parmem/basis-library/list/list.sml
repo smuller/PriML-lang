@@ -100,7 +100,7 @@ structure List: LIST =
 
      fun all pred = not o (exists (not o pred))
 
-     fun tabulate (n, f) = 
+     fun tabulate (n, f) =
         if Primitive.Controls.safe andalso n < 0
            then raise Size
         else let

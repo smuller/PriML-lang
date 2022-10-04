@@ -19,7 +19,7 @@ struct
     type var = string
     val var_eq = op= : string * string -> bool
     val var_cmp = String.compare
-    fun var_vary s = 
+    fun var_vary s =
       let in
         ctr := !ctr + 1;
         s ^ "_" ^ Int.toString (!ctr)
@@ -74,8 +74,8 @@ struct
          in
            if rc = c
            then ()
-           else fail t ("count not correct for " ^ x ^ " (got " ^ 
-                        Int.toString c ^ " wanted " ^ Int.toString rc ^ 
+           else fail t ("count not correct for " ^ x ^ " (got " ^
+                        Int.toString c ^ " wanted " ^ Int.toString rc ^
                         ") in: " ^ ttos t)
          end) l
 
@@ -83,7 +83,7 @@ struct
     VM.appi (fn (v, i) =>
              if real_count v t = i
              then ()
-             else raise Conformance "free variable set incorrect") 
+             else raise Conformance "free variable set incorrect")
     (freevars t)
 
   fun map_eq (m1, m2) = EQUAL = VM.collate Int.compare (m1, m2)
@@ -107,7 +107,7 @@ struct
     then ()
     else raise Conformance "maps are wrong"
 
-  fun self_equal t = 
+  fun self_equal t =
     if ast_cmp (t, t) = EQUAL
     then ()
     else raise Conformance "not equal to self"
@@ -183,13 +183,13 @@ struct
          subst_bug,
          new_bug
          ]
-        
+
       val () = app self_equal terms_base
       val () = app (correct_count vars) terms_base
       val () = app free_are_free terms_base
       val () = app rebuild_eq terms_base
       val () = app correct_map terms_base
-        
+
       (* [t/x]t'  for every term, var, term above *)
       val terms_subst =
         List.concat
@@ -197,15 +197,15 @@ struct
          map (fn t' =>
               List.concat
               (map (fn t =>
-                    (map (fn v => 
-                          let 
+                    (map (fn v =>
+                          let
                             val r = sub t' v t
                           in
                             (* print (ttos t' ^ " for " ^ v ^ " in " ^ ttos t ^ " is:\n    " ^ ttos r ^"\n"); *)
                             r
                           end) vars)) terms_base)) terms_base
          )
-        
+
       val () = app self_equal terms_subst
       val () = print "equal ok.\n"
       val () = app (correct_count vars) terms_subst
@@ -244,7 +244,7 @@ struct
                                                                     BB(["w", "x"],
                                                                        VV "x"))),
          (BB (["x", "y", "z"],
-              "w" \\ VV "x"), "z", "w" \\ "x" \\ (VV "z" // 
+              "w" \\ VV "x"), "z", "w" \\ "x" \\ (VV "z" //
                                                   BB(["q", "a"], VV "z" // VV "a")),
           "w" \\ "xx" \\ BB (["x", "y", "z"],
                              "w" \\ VV "x") //
@@ -252,7 +252,7 @@ struct
                                               "w" \\ VV "x") // VV "a")),
 
          (SS [VV "x", VV "y", VV "z",
-              "w" \\ VV "x"], "z", "w" \\ "x" \\ (VV "z" // 
+              "w" \\ VV "x"], "z", "w" \\ "x" \\ (VV "z" //
                                                   BB(["q", "a"], VV "z" // VV "a")),
           "w" \\ "xx" \\ (SS [VV "x", VV "y", VV "z",
                               "w" \\ VV "x"] //
