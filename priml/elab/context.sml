@@ -373,8 +373,8 @@ struct
 
     fun bindpath c longid t v = 
         case longid of 
-            E.Id i => bindv c i t v
-          | E.Path (i, p) => let newcon = bindpath c p t v
+            IL.Id i => bindv c i t v
+          | IL.Path (i, p) => let val newcon = bindpath c p t v
                              in bindsig c i newcon
                              end 
 

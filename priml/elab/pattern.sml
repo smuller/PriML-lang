@@ -216,7 +216,7 @@ struct
                 let
                     val nfs = newstr ("hoist_" ^ Nonce.nonce ())
                     val nfv = V.namedvar nfs
-                    val ids = E.Id nfs
+                    val ids = I.Id nfs
 
                     val ignored = V.namedvar "ignored"
                     val nonrec = V.namedvar "nonrec"
@@ -1029,8 +1029,8 @@ struct
                                   % ` E.App(% ` E.Var (E.Id no),
                                             % ` E.Record nil, false))])
 
-                     val objects_a = % nobj :: map (% o E.Var) robs
-                     val objects_b = map (% o E.Var) (obj :: robs)
+                     val objects_a = % nobj :: map (% o (E.Var o E.Id)) robs
+                     val objects_b = map (% o (E.Var o E.Id)) (obj :: robs)
                      val cols_a = [E.PApp(yes, SOME punder)] :: 
                                     map (fn x => [hd x]) rcols
                      val cols_b = col :: map tl rcols
@@ -1210,7 +1210,7 @@ struct
                      val newcols =
                          map (fn (l, col) => (l, col, new_evar ())) newcols
 
-                     val (obje, objt) = elab ctx (E.Var obj, loc)
+                     val (obje, objt) = elab ctx (E.Var (E.Id obj), loc)
 
                      fun recurse nil (nctx, ncols, nes) =
                          elm nctx ncols nes def
@@ -1311,7 +1311,7 @@ struct
           val es = map #2 m
 
           val tvs = map (fn ob => 
-                         let val (_, tt) = elab ctx (E.Var ob, loc)
+                         let val (_, tt) = elab ctx (E.Var (E.Id ob), loc)
                          in tt
                          end) obs
 
@@ -1351,7 +1351,7 @@ struct
                        let in
                            dprint ("cleaning " ^ s ^ "...\n");
                            one (pp, (E.Let((E.Val (nil, E.PVar s, 
-                                                   (E.Var a, loc)), 
+                                                   (E.Var (E.Id a), loc)), 
                                             loc), e), loc))
                        end
                  | E.PVar s => one (E.PAs (s, E.PWild), e)

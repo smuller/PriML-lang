@@ -122,7 +122,7 @@ struct
     and etol ((e, l): exp) : L.layout =
         (case e of
              Constant c => ctol c
-           | Var s => $s
+           | Var (Id s) => $s
            | Float f => $(Real.toString f)
            | App (e1, e2, false) => L.paren(%[etol e1, etol e2])
            | App (e1, (Record [("1", a1), ("2", a2)], _), true) =>
