@@ -12,7 +12,7 @@ struct
 
   datatype longid =
       Id of id
-    | Path of string * longid
+    | Path of id * longid
   
 (*
       PrVar of string

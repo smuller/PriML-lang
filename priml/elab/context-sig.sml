@@ -53,10 +53,10 @@ sig
     val bindc : context -> string -> IL.con -> IL.kind -> IL.tystatus -> context
 
     (* bind a signature to a variable *)
-    val bindsig : context -> string -> context -> context
+    val bindsig : context -> IL.id -> context -> context
 
     (* binds ids/longids *)
-    val bindpath: context -> EL.longid -> IL.typ IL.poly -> Variable.var -> context
+    val bindpath: context -> IL.longid -> IL.typ IL.poly -> Variable.var -> context
 
     val pathex : context -> string -> context
 
