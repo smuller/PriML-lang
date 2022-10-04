@@ -216,17 +216,16 @@ struct
                 let
                     val nfs = newstr ("hoist_" ^ Nonce.nonce ())
                     val nfv = V.namedvar nfs
-                    val ids = I.Id nfs
 
                     val ignored = V.namedvar "ignored"
                     val nonrec = V.namedvar "nonrec"
 
                     val nctx =
-                        C.bindpath ctx ids (mono (I.Arrow(false, 
+                        C.bindpath ctx (I.Id nfs) (mono (I.Arrow(false, 
                                                        [I.TRec nil], 
                                                        ilt))) nfv
                         
-                    val (ke, kt) = k nctx ids
+                    val (ke, kt) = k nctx (E.Id nfs)
                 in
                     (* would like to use nil arg list here rather
                        than single arg of unit, but need to be able
