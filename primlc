@@ -1,4 +1,0 @@
-#!/bin/sh
-export MLTON_PARMEM=/home/aman/PriML-lang/mlton-parmem/build/bin/mlton-parmem
-export PRIML_LIB=/home/aman/PriML-lang/stdlib
-/home/aman/PriML-lang/priml/c72s $@
