@@ -250,7 +250,7 @@ struct
              Val (tys, p, e) =>
              %[$"val", listnotnone "(" ")" "," (map op$ tys),
                ptol p, $"=", etol e]
-           |  Do e => %[$"do", etol e]
+           | Do e => %[$"do", etol e]
            | Type (ss, s, t) =>
              %[$"type ", listnotnone "(" ")" "," (map op$ ss), $s, $" = ", ttol t]
            | Fun {inline = inline, funs = f::funs} =>
@@ -269,6 +269,10 @@ struct
            | Exception (new, NONE) => %[$"exception", $new]
            | Exception (new, SOME t) => %[$"exception", $new,
                                           $"of", ttol t]
+           | Structure (id, decs) => %[$"structure", $id, $"=", $"struct",
+             L.listex "" "" "\n" (map dtol decs), $"end"]
+           | Signature (id, decs) => %[$"signature", $id, $"=", $"sig",
+             L.listex "" "" "\n" (map dtol decs), $"end"]
         )
     and ptol p =
         case p of

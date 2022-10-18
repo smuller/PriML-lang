@@ -111,7 +111,9 @@ and depriod ((d, l) : dec) : dec =
       | Newtag (s1, SOME t, s2) => Newtag (s1, SOME (depriot t), s2)
       | Newtag (s1, NONE, s2) => Newtag (s1, NONE, s2)
       | Exception (s, SOME t) => Exception (s, SOME (depriot t))
-      | Exception (s, NONE) => Exception (s, NONE),
+      | Exception (s, NONE) => Exception (s, NONE)
+      | Structure (id, decs) => Structure (id, List.map depriod decs)
+      | Signature (id, decs) => Signature (id, List.map depriod decs),
      l)
 
 and deprioprog (Prog (tds, c)) : dec list =
