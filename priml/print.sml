@@ -119,10 +119,15 @@ struct
           | CString s => $("\"" ^ (escape s) ^ "\"")
           | CChar c => $("#\"" ^ (Char.toString c) ^ "\"")
 
+    and pathtos p =
+        case p of 
+            Id s => s 
+          | Path (i, p) => i ^ "." ^ pathtos p
+
     and etol ((e, l): exp) : L.layout =
         (case e of
              Constant c => ctol c
-           | Var (Id s) => $s
+           | Var p => $(pathtos p)
            | Float f => $(Real.toString f)
            | App (e1, e2, false) => L.paren(%[etol e1, etol e2])
            | App (e1, (Record [("1", a1), ("2", a2)], _), true) =>

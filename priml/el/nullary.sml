@@ -31,6 +31,10 @@ struct
                     if nullexp G s
                     then App(%exp, % `Record nil, false)
                     else exp
+              | Var (Path (i, p)) =>
+                    if nullexp G i 
+                    then App(%exp, % `Record nil, false)
+                    else exp
               | Float _ => exp
               | App (a, b, i) => App(self a, self b, i)
               | Record sel => Record ` ListUtil.mapsecond self sel
