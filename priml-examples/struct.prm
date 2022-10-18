@@ -1,0 +1,38 @@
+priority fg
+priority bg
+order bg < fg
+
+structure Struct = 
+struct 
+
+    val x = 4
+    
+    fun inputLine () =
+        let fun iL_int line =
+                case IO.input1 (!stdin) of
+                    NONE => NONE
+                | SOME (c, is') =>
+                    (upd (stdin, is');
+                    if eq (c, ?\n) then
+                        SOME line
+                    else
+                        iL_int (cat (line, str c)))
+        in
+            iL_int ""
+        end
+
+    fun loop () = loop ()
+
+    fun inploop () =
+        (case inputLine () of
+            NONE => OS.Process.exit OS.Process.success
+        | SOME l =>
+            (print (cat ("Hi, ", cat (l, "\n")));
+            inploop ()))
+end
+
+main
+{
+    x <- spawn[fg] { ret (Struct.inploop ()) };
+    ret (Struct.loop ())
+}
