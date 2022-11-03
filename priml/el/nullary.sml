@@ -174,9 +174,10 @@ struct
            | WFun (s, ppats, pats, NONE, e) =>
              (G, WFun (s, ppats, pats, NONE, nul G e))
            | Structure (s, ds) => 
-               (G, Structure (s, map (fn (_, d) => d) (map (dul G) ds)))
+               (G, Structure (s, map (#2) ` map (dul G) ds))
            | Signature (s, ds) => 
-               (G, Signature (s, map (fn (_, d) => d) (map (dul G) ds))))
+               (G, Signature (s, map (#2) ` map (dul G) ds))
+        )
         end
 
     and iul G (i, loc) =
