@@ -96,6 +96,8 @@ and depriopp (pp: ppat) : pat =
 and depriod ((d, l) : dec) : dec =
     (case d of
         Val (ss, p, e) => Val (ss, p, deprioe e)
+      | SigVal (s, t) => SigVal (s, depriot t)
+      | SigType (ss, s) => SigType (ss, s)
       | Do e => Do (deprioe e)
       | Type (ss, s, t) => Type (ss, s, depriot t)
       | Fun {inline, funs} => Fun {inline = inline, funs = List.map onefun funs}

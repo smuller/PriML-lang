@@ -218,6 +218,10 @@ struct
       (case d of
            E.Val (tyvars, p, e) => (E.Val (tyvars, psubst s p, esubst s e), 
                                         pbinds p vv)
+         | E.Signature (i, ss) => (d, i = vv)
+         | E.Structure (i, ss) => (d, i = vv)
+         | E.SigVal (i, _) => (d, i = vv)
+         | E.SigType (i, _) => (d, false)
          | E.Do e => (E.Do (esubst s e), false)
          | E.Fun { inline, funs = l } => 
                (* if any function is named the same as this variable,

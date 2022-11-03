@@ -273,6 +273,8 @@ struct
              L.listex "" "" "\n" (map dtol decs), $"end"]
            | Signature (id, decs) => %[$"signature", $id, $"=", $"sig",
              L.listex "" "" "\n" (map dtol decs), $"end"]
+           | SigType _ => raise (Print "does sigtype even get used?")
+           | SigVal _ => raise (Print "does sigval even get used?")
         )
     and ptol p =
         case p of

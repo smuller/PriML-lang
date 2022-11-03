@@ -104,8 +104,8 @@ struct
         let fun % (G, x) = (G, (x, loc))
         in
         %(case dec of
-              Do e => (G, Do ` nul G e)
-            | Val (ss, p, e) => (G, Val (ss, pul G p, nul G e))
+             Do e => (G, Do ` nul G e)
+           | Val (ss, p, e) => (G, Val (ss, pul G p, nul G e))
            | Type (sl, s, t) => (G, Type (sl, s, tul G t))
            (* this is where things are added *)
            | Datatype (sl, dats : (string * (string * typ option) list) list) =>
@@ -172,7 +172,11 @@ struct
            | WFun (s, ppats, pats, SOME t, e) =>
              (G, WFun (s, ppats, pats, SOME (tul G t), nul G e))
            | WFun (s, ppats, pats, NONE, e) =>
-             (G, WFun (s, ppats, pats, NONE, nul G e)))
+             (G, WFun (s, ppats, pats, NONE, nul G e))
+           | Structure (s, ds) => 
+               (G, Structure (s, map (fn (_, d) => d) (map (dul G) ds)))
+           | Signature (s, ds) => 
+               (G, Signature (s, map (fn (_, d) => d) (map (dul G) ds))))
         end
 
     and iul G (i, loc) =
