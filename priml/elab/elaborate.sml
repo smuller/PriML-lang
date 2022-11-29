@@ -1764,12 +1764,12 @@ struct
     (* How to properly bind decs to context? And how to bind structure to signature? *)
     (* bind a module name to a sig *)
     | E.Signature (id, ds) => 
-        let val (decs, context) = elabds C.empty ds
+        let val (decs, context) = elabds ctx ds
         in ([], C.bindsig ctx id context)
         end
 
     | E.Structure (id, ds) => 
-        let val (decs, context) = elabds C.empty ds
+        let val (decs, context) = elabds ctx ds
         in ([], C.bindsig ctx id context)
         end
     
