@@ -6,63 +6,69 @@ val start = Time.now ()
 
 val stdin = ref (TextIO.getInstream TextIO.stdIn)
 
-fun inputLine () =
-    let fun iL_int line =
-            case IO.input1 (!stdin) of
-                NONE => NONE
-              | SOME (c, is') =>
-                (upd (stdin, is');
-                 if eq (c, ?\n) then
-                     SOME line
-                 else
-                     iL_int (cat (line, str c)))
-    in
-        iL_int ""
-    end
-
-fun seqfib n =
-    if le (n, 1) then 1
-    else
-        let
-            val (a, b) = (seqfib (minus (n, 1)), seqfib (minus (n, 2)))
+structure Input = struct
+    fun inputLine () =
+        let fun iL_int line =
+                case IO.input1 (!stdin) of
+                    NONE => NONE
+                | SOME (c, is') =>
+                    (upd (stdin, is');
+                    if eq (c, ?\n) then
+                        SOME line
+                    else
+                        iL_int (cat (line, str c)))
         in
-            plus (a, b)
+            iL_int ""
         end
+end
 
-fun fib n =
-    if le (n, 1) then cmd[bg] {ret 1}
-    else if le (n, 20) then cmd[bg] {ret (seqfib n)}
-    else
+structure Fib = struct
+    fun seqfib n =
+        if le (n, 1) then 1
+        else
+            let
+                val (a, b) = (seqfib (minus (n, 1)), seqfib (minus (n, 2)))
+            in
+                plus (a, b)
+            end
+
+    fun fib n =
+        if le (n, 1) then cmd[bg] {ret 1}
+        else if le (n, 20) then cmd[bg] {ret (seqfib n)}
+        else
+            cmd[bg]
+            { bt <- spawn[bg] {x <- do (fib (minus (n, 1))); ret x};
+                a <- do (fib (minus (n, 2)));
+                b <- sync bt;
+                ret (plus (a, b))}
+
+    fun fibdo n =
         cmd[bg]
-           { bt <- spawn[bg] {x <- do (fib (minus (n, 1))); ret x};
-             a <- do (fib (minus (n, 2)));
-             b <- sync bt;
-             ret (plus (a, b))}
-
-fun fibdo n =
-    cmd[bg]
-       { f <- do (fib n);
-         ret ( let val _ = print (cat ("fib(", cat(Int.toString n,
-                                                   cat(") = ",
-                                                       cat (Int.toString f, "\n")))))
-                   (* val finish = Time.now ()
-                   val diff = Time.-(finish, start)
-                   val diffi = LargeInt.toInt (Time.toMilliseconds diff) *)
-               in
-                   (* print (cat ("exectime ", cat (Int.toString diffi, "\n"))); *)
-                   OS.Process.exit OS.Process.success
-               end)}
+        { f <- do (fib n);
+            ret ( let val _ = print (cat ("fib(", cat(Int.toString n,
+                                                    cat(") = ",
+                                                        cat (Int.toString f, "\n")))))
+                    (* val finish = Time.now ()
+                    val diff = Time.-(finish, start)
+                    val diffi = LargeInt.toInt (Time.toMilliseconds diff) *)
+                in
+                    (* print (cat ("exectime ", cat (Int.toString diffi, "\n"))); *)
+                    OS.Process.exit OS.Process.success
+                end)}
+end
 
 fun loop () = loop ()
 
 fun inploop () =
-    (case inputLine () of
-         NONE => OS.Process.exit OS.Process.success
-       | SOME l =>
-         (print (cat ("Hi, ", cat (l, "\n")));
-          inploop ()))
+    (case Input.inputLine () of
+        NONE => OS.Process.exit OS.Process.success
+    | SOME l =>
+        (print (cat ("Hi, ", cat (l, "\n")));
+        inploop ()))
 
-        main
-        {x <- spawn[fg] { ret (inploop ()) };
-         y <- spawn[bg] { x <- do (fibdo 45); ret x};
-         ret (loop ())}
+main
+{  
+    x <- spawn[fg] { ret (inploop ()) };
+    y <- spawn[bg] { x <- do (Fib.fibdo 45); ret x};
+    ret (loop ())
+}
