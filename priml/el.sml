@@ -63,16 +63,13 @@ struct
 
     | Handle of exp * (pat * exp) list
 
-  and inst_ =
-      IDo of exp
+  and cmd_ =
+      IBind of ((string * exp) list) * cmd
     | Spawn of prio * cmd
     | Sync of exp
     | Poll of exp
     | Cancel of exp
     | IRet of exp
-
-  and cmd =
-      Cmd of ((string * inst) list) * inst
 
   and constant =
       CInt of intconst
@@ -178,6 +175,6 @@ struct
 
   withtype exp = exp_ * Pos.pos
   and dec = dec_ * Pos.pos
-  and inst = inst_ * Pos.pos
+  and cmd = cmd_ * Pos.pos
 
 end
