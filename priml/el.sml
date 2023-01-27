@@ -57,14 +57,14 @@ struct
     (* compile-time warning if this code is live *)
     | CompileWarn of string
 
-    | ECmd of prio * cmd
+    | ECmd of prio option * cmd_
     | PFn of ppat list * pat list * exp
     | PApply of exp * prio
 
     | Handle of exp * (pat * exp) list
 
   and cmd_ =
-      IBind of ((string * exp) list) * cmd
+      IBind of ((string * exp) list) * exp
     | Spawn of prio * cmd
     | Sync of exp
     | Poll of exp

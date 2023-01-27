@@ -180,18 +180,16 @@ struct
         )
         end
 
-    and iul G (i, loc) =
+    and cul G (i, loc) =
         ((case i of
-            IDo e => IDo (nul G e)
+              IBind (ses, e) =>
+	      IBind (List.map (fn (s, i) => (s, nul G i)) ses, nul G e)
           | Spawn (p, c) => Spawn (p, cul G c)
           | Sync e => Sync (nul G e)
           | Poll e => Poll (nul G e)
           | Cancel e => Cancel (nul G e)
           | IRet e => IRet (nul G e)),
          loc)
-
-    and cul G (Cmd (sis, i)) =
-        Cmd (List.map (fn (s, i) => (s, iul G i)) sis, iul G i)
 
     fun nullary (Prog (tds, c)) = 
       let 

@@ -419,8 +419,11 @@ struct
                                 Record(ListUtil.mapi 
                                         (fn (e, i) => 
                                             (Int.toString (i + 1), e)) (e::el))),
-               `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd)
-                wth ECmd,
+               `DO >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd)
+                wth (fn (p, (m, _)) => ECmd (SOME p, m)),
+
+	       `DO >> (call G cmd)
+                wth (fn (m, _) => ECmd (NONE, m)),
 
                (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
                wth (fn (p, e) => PApply (e, p))
@@ -680,31 +683,34 @@ struct
           ])
 
       and inst G =
-          !!(alt [`DO >> call G exp wth IDo,
-
+	  let fun mk_cmd_exp (const: 'a -> cmd_) (arg: 'a) =
+	      ECmd (NONE, (const arg))
+	  in
+          !!(alt [
                `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
                 (call G cmd)
-                wth Spawn,
+                wth (mk_cmd_exp Spawn),
 
-               `SYNC >> call G exp wth Sync,
+               `SYNC >> call G exp wth (mk_cmd_exp Sync),
 
-               `POLL >> call G exp wth Poll,
+               `POLL >> call G exp wth (mk_cmd_exp Poll),
 
-               `CANCEL >> call G exp wth Cancel,
+               `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
 
-               `RET >> call G exp wth IRet,
+               `RET >> call G exp wth (mk_cmd_exp IRet),
 
-               call G exp wth IRet
-              ])
+               call G exp wth #1
+          ])
+	  end
 
       and cmd G =
           (* "expected LBRACE (inst;)*inst RBRACE" ** *)
-          (`LBRACE >>
+          !!((* `LBRACE >> *)
             (repeat ((id && (`LARROW >> call G inst << `SEMICOLON)) ||
                      (call G inst << `SEMICOLON wth (fn i => ("ign__", i))))) &&
                  ("expected inst" ** call G inst)
-                 << `RBRACE
-                 wth Cmd)
+                 (* << `RBRACE *)
+                 wth IBind)
 
 (*      fun export G =
         alt [`EXPORT >> `TYPE >> alt[tyvars && id, succeed nil && id]

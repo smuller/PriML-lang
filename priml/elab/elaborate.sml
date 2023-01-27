@@ -639,8 +639,11 @@ struct
                end
 
         | E.ECmd (p, c) =>
-          let val pp = elabpr ctx loc p
-              val (ec, t) = elabcmd ctx pp c
+          let val pp =
+		  case p of
+		      SOME p => elabpr ctx loc p
+		    | NONE => new_pevar ()
+              val (ec, t) = elabcmd ctx pp (c, loc)
           in
               (Cmd (pp, ec), TCmd (t, pp))
           end
@@ -700,22 +703,13 @@ struct
                 | _ => error loc "not a forall"
           end
 
-  and elabinst ctx (pr: IL.prio) ((i, loc): E.inst) =
+  and elabcmd ctx (pr: IL.prio) ((i, loc): E.cmd) =
       case i of
-          E.IDo e =>
-          let val (ee, t) = elab ctx e
-              val tint = new_evar ()
-              val pint = new_pevar ()
-          in
-              unify ctx loc "binding" t (TCmd (tint, pint));
-              unifyp ctx loc "priority of binding" pint pr;
-              (ee, tint)
-          end
-        | E.Spawn (p, c) =>
+          E.Spawn (p, c) =>
           let val pp = elabpr ctx loc p
               val (ec, t) = elabcmd ctx pp c
           in
-              (Cmd (pr, Spawn (pp, t, ec)), TThread (t, pp))
+              (Spawn (pp, t, ec), TThread (t, pp))
           end
         | E.Sync e =>
           let val (ee, t) = elab ctx e
@@ -725,7 +719,7 @@ struct
               unify ctx loc "sync argument" t (TThread (tint, pint));
               ((check_constraint ctx loc pr pint)
                handle C.Context s => error loc s);
-              (Cmd (pr, Sync ee), tint)
+              (Sync ee, tint)
           end
         | E.Poll e =>
           let val (ee, t) = elab ctx e
@@ -741,7 +735,7 @@ struct
                        handle Context.Absent _ =>
                               error loc "Should not happen")
           in
-              (Cmd (pr, Poll ee), t)
+              (Poll ee, t)
           end
         | E.Cancel e =>
           let val (ee, t) = elab ctx e
@@ -749,31 +743,31 @@ struct
               val pint = new_pevar ()
           in
               unify ctx loc "cancel argument" t (TThread (tint, pint));
-              (Cmd (pr, Cancel ee), TRec [])
+              (Cancel ee, TRec [])
           end
         | E.IRet e =>
           let val (ee, t) = elab ctx e
           in
-              (Cmd (pr, Ret ee), t)
+              (Ret ee, t)
           end
 
-  and elabcmd ctx (pr: IL.prio) (E.Cmd (is, li)) =
+  and elabbind ctx (pr: IL.prio) (is, li) =
       case is of
           [] =>
           (* Treat the last instruction as just another binding and return its
              value. May introduce an unnecessary binding, but oh well. *)
           (let val dvar = "retval__"
                val v = V.namedvar dvar
-               val (ii, t) = elabinst ctx pr li
+               val (ii, t) = elab ctx li
            in
                (Bind (v, ii, Ret (Value (Var v))), t)
            end)
         | (s, i)::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
           (let val v = V.namedvar s
-               val (ii, t) = elabinst ctx pr i
+               val (ii, t) = elab ctx i
                val ctx' = C.bindv ctx s (mono t) v
-               val (cmd, t') = elabcmd ctx' pr (E.Cmd (rest, li))
+               val (cmd, t') = elabbind ctx' pr (rest, li)
            in
                (Bind (v, ii, cmd), t')
            end)

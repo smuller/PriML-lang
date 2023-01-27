@@ -36,7 +36,7 @@ fun deprioe ((e, loc): exp) : exp =
       | CompileWarn _ => e
       | ECmd (p, c) =>
         (* Wrap the expression in a thunk to preserve encapsulation *)
-        anonfn [PWild] (deprioc c)
+        anonfn [PWild] (deprioc (c, loc))
       | PFn (ppats, pats, e) =>
         let val ee = deprioe e
         in
@@ -49,10 +49,13 @@ fun deprioe ((e, loc): exp) : exp =
 
 and depriop loc p = (Var (Id p), loc)
 
-and deprioi ((i, loc) : inst) : exp =
-    case i of
-        IDo e => (* Encapsulated thread will be a thunk, so apply it. *)
-        (App ((deprioe e), (Record [], loc), false), loc)
+and deprioc ((c, loc) : cmd) : exp =
+    case c of
+	IBind (ses, e) =>
+	List.foldr
+        (fn ((s, e), ee) => (Let ((Val ([], PVar s, deprioe e), #2 e), ee), #2 e))
+        (deprioe e)
+        ses
       | Spawn (p, c) => (App((App ((Var (Id "Thread.spawn"), loc),
                                   (anonfn [PWild] (deprioc c), loc), false), loc),
                             depriop loc p, false), loc)
@@ -60,12 +63,6 @@ and deprioi ((i, loc) : inst) : exp =
       | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
       | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
       | IRet e => deprioe e
-
-and deprioc (Cmd (sis, i): cmd) : exp =
-    List.foldr
-        (fn ((s, i), ee) => (Let ((Val ([], PVar s, deprioi i), #2 i), ee), #2 i))
-        (deprioi i)
-        sis
 
 and depriot (t: typ) =
     case t of
