@@ -176,6 +176,7 @@ struct
       | Poll of exp
       | Cancel of exp
       | Ret of exp
+      | Change of prio
 
     and dec =
         Do of exp

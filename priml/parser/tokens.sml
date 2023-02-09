@@ -102,6 +102,7 @@ struct
       | RSQUARE
       | LARROW
       | RET
+      | CHANGE
 
       | CMD
       | MAIN
@@ -209,6 +210,7 @@ struct
       | eq (RSQUARE, RSQUARE) = true
       | eq (LARROW, LARROW) = true
       | eq (RET, RET) = true
+      | eq (CHANGE, CHANGE) = true
       | eq (CMD, CMD) = true
       | eq (FORALL, FORALL) = true
       | eq (THREAD, THREAD) = true

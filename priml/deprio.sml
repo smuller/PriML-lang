@@ -63,6 +63,9 @@ and deprioc ((c, loc) : cmd) : exp =
       | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
       | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
       | IRet e => deprioe e
+      (* TODO: Threshold deprioc rule for Change. Should update to use the right 
+      * function in Thread module for updating priority *)
+      | Change p => (App ((Var (Id "Thread.change"), loc), depriop loc p, false), loc) 
 
 and depriot (t: typ) =
     case t of

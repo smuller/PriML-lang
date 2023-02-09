@@ -699,6 +699,9 @@ struct
 
                `RET >> call G exp wth (mk_cmd_exp IRet),
 
+               `CHANGE >> (`LSQUARE >> ($prio) << `RSQUARE)
+                wth (mk_cmd_exp Change),
+
                call G exp wth #1
           ])
 	  end

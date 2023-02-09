@@ -70,6 +70,7 @@ struct
     | Poll of exp
     | Cancel of exp
     | IRet of exp
+    | Change of prio
 
   and constant =
       CInt of intconst
