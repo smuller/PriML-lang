@@ -51,14 +51,14 @@ fun[w] fib n =
                  else if le (n, 20) then cmd[w] {ret (seqfib n)}
                  else
                      cmd[w]
-                        { bt <- spawn[w] {do (fib_int (minus (n, 1)))};
-                          a <- do (fib_int (minus (n, 2)));
+                        { bt <- spawn[w] { fib_int (minus (n, 1)) };
+                          a <- fib_int (minus (n, 2));
                           b <- sync bt;
                           plus (a, b)}
          in
              cmd[w]
              {
-               f <- do (fib_int n);
+               f <- fib_int n;
                print (cat (Int.toString f, "\n"))
              }
          end
@@ -82,7 +82,7 @@ fun statloop () =
         upd (stats, stats');
         cmd[stat_p]
            { ret ([stat_p]fib 42);
-             do (statloop ())
+             statloop ()
            }
     end
 
@@ -200,14 +200,14 @@ fun acceptloop sock =
          cmd[accept_p]
             {
               spawn[serve_p] { ret (inploop s) };
-              do (acceptloop sock)
+              acceptloop sock
             }
     end)
 
 main
 {
-  l <- spawn[accept_p] { do (acceptloop sock) };
+  l <- spawn[accept_p] { acceptloop sock };
   ret (print "spawned\n");
-  spawn[stat_p] { do (statloop ()) };
+  spawn[stat_p] { statloop () };
   sync l
 }
