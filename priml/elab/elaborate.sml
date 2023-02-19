@@ -750,6 +750,11 @@ struct
           in
               (Ret ee, t)
           end
+        | E.Change p => 
+          let val pp = elabpr ctx loc p
+          in
+            (Change pp, TRec [])
+          end
 
   and elabbind ctx (pr: IL.prio) (is, li) =
       case is of

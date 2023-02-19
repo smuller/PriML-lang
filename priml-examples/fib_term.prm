@@ -37,14 +37,14 @@ structure Fib = struct
         else if le (n, 20) then cmd[bg] {ret (seqfib n)}
         else
             cmd[bg]
-            { bt <- spawn[bg] {x <- do (fib (minus (n, 1))); ret x};
-                a <- do (fib (minus (n, 2)));
+            { bt <- spawn[bg] {x <- fib (minus (n, 1)); ret x};
+                a <- fib (minus (n, 2));
                 b <- sync bt;
                 ret (plus (a, b))}
 
     fun fibdo n =
         cmd[bg]
-        { f <- do (fib n);
+        { f <- fib n;
             ret ( let val _ = print (cat ("fib(", cat(Int.toString n,
                                                     cat(") = ",
                                                         cat (Int.toString f, "\n")))))
@@ -69,6 +69,6 @@ fun inploop () =
 main
 {  
     x <- spawn[fg] { ret (inploop ()) };
-    y <- spawn[bg] { x <- do (Fib.fibdo 45); ret x};
+    y <- spawn[bg] { x <- Fib.fibdo 45; ret x};
     ret (loop ())
 }
