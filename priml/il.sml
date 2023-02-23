@@ -28,10 +28,37 @@ struct
       Id of id
     | Path of string * longid 
 
+    (* existential, for type inference *)
+    datatype 'a ebind =
+        Free of int
+      | Bound of 'a
+
     datatype prio =
       PEvar of prio ebind ref
     | PVar of var
     | PConst of string
+
+    fun prcompare (PConst _, PVar _) = GREATER
+      | prcompare (PVar _, PConst _) = LESS
+      | prcompare (PEvar _, PConst _) = GREATER
+      | prcompare (PConst _, PEvar _) = LESS
+      | prcompare (PEvar _, PVar _) = GREATER
+      | prcompare (PVar _, PEvar _) = LESS
+      | prcompare (PVar v1, PVar v2) = Variable.compare (v1,v2) 
+      | prcompare (PConst c1, PConst c2) = String.compare (c1, c2)
+      | prcompare (PEvar (ref (Bound _)), PEvar (ref (Free _))) = GREATER
+      | prcompare (PEvar (ref (Free _)), PEvar (ref (Bound _))) = LESS
+      | prcompare (PEvar (ref (Bound w1)), PEvar (ref (Bound w2))) = prcompare (w1, w2)
+      | prcompare (PEvar (ref (Free n1)), PEvar (ref (Free n2))) = Int.compare (n1, n2)
+
+    structure PrioSet = SplaySetFn (struct 
+                                      type ord_key = prio
+                                      val compare = prcompare
+                                    end)
+
+    datatype prioset = 
+      PSEvar of prioset ebind ref
+    | PSSet of PrioSet.set
 
     and pconstraint = PCons of prio * prio
 
@@ -79,11 +106,6 @@ struct
     and con =
         Typ of typ
       | Lambda of typ list -> typ
-
-    (* existential, for type inference *)
-    and 'a ebind =
-        Free of int
-      | Bound of 'a
 
     (* polymorphic type *)
     and 'a poly = Poly of { prios : var list,
