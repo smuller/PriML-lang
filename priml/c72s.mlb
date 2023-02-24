@@ -109,6 +109,8 @@ elab/pattern.sml
 elab/elaborate-sig.sml
 elab/elaborate.sml
 
+elab/psetcstrs.sml
+
 deprio.sml
 
 print.sml
