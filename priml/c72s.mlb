@@ -92,6 +92,11 @@ il/print.sml
 elab/context-sig.sml
 elab/context.sml
 
+elab/pscontext.sml
+
+elab/psetcstrs-sig.sml
+elab/psetcstrs.sml
+
 elab/unify-sig.sml
 elab/unify.sml
 
@@ -108,9 +113,6 @@ elab/pattern.sml
 
 elab/elaborate-sig.sml
 elab/elaborate.sml
-
-elab/psetcstrs-sig.sml
-elab/psetcstrs.sml
 
 deprio.sml
 
