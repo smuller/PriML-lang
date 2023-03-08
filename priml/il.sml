@@ -60,6 +60,13 @@ struct
       PSEvar of prioset ebind ref
     | PSSet of PrioSet.set
 
+    (* priority set constraint
+        PSSup (ps1, ps2): ps1 is a super set of ps2
+        PSCons (ps1, ps2): priorities in ps1 is less than or equal to priorities in ps2  *)
+    and psconstraint = 
+      PSSup of prioset * prioset 
+    | PSCons of prioset * prioset
+
     and pconstraint = PCons of prio * prio
 
     (* types : classifiers for values *)
@@ -98,8 +105,8 @@ struct
 
       | Arrows of (bool * typ list * typ) list
 
-      | TCmd of typ * prio
-      | TThread of typ * prio
+      | TCmd of typ * (prioset * prioset * prioset)
+      | TThread of typ * prioset
       | TForall of var list * (pconstraint list) * typ
 
     (* type constructors. only used in elaboration *)
@@ -185,7 +192,7 @@ struct
       | Intcase of exp * (intconst * exp) list * exp
 
       | Inject of typ * label * exp option
-      | Cmd of prio * cmd
+      | Cmd of prioset * cmd
       | PFApp of exp * prio
     (*
       (* for more efficient treatment of blobs of text. *)

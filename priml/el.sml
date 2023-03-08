@@ -19,10 +19,6 @@ struct
     | PrConst of priority
 *)
 
-  structure PrioSet = SplaySetFn (type ord_key = prio
-                                  val compare = String.compare)
-  type prioset = PrioSet.set
-
   datatype exp_ =
 
       Constant of constant
@@ -111,7 +107,7 @@ struct
     | TNum of int
   (*     | TAddr of world (* can only be the address of a world expression *) *)
     | TCmd of typ * prio
-    | TThread of typ * prio
+    | TThread of typ * prio 
     | TForall of ppat * typ
 
   and dec_ =
