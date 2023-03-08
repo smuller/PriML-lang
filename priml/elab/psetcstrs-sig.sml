@@ -1,13 +1,16 @@
 signature PSETCSTRS = 
 sig
-    exception PSetConstraints of string
+    exception PSConstraints of string
     
+    (* add priority set constraint *)
+    val add_psconstraint : IL.psconstraint -> unit
+
     (* initialize priority set context *)
-    val psctx_init : prioset list -> IL.PrioSet.set PSEvarMap.map
+    val psctx_init : IL.prioset list -> PSContext.pscontext
 
     (* solve system of priority set constraints *)
-    val psconstraints_solver : pscontext -> psconstraint list -> pscontext
+    val psconstraints_solver : PSContext.pscontext -> IL.psconstraint list -> PSContext.pscontext
 
     (* check psconstraints in the solved system *)
-    fun check_psconstraint : Context.context -> pscontext -> pscontraint list -> unit
+    val check_psconstraints : Context.context -> PSContext.pscontext -> unit
 end
