@@ -1,9 +1,0 @@
-structure Struct = 
-struct 
-    val x = 4
-end
-
-main
-{
-    ret (Struct.x)
-}

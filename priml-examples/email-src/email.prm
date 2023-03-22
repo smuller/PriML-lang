@@ -178,8 +178,8 @@ fun[p] quicksort compare s =
       in
           cmd[p]
              {
-               quicksortl <- spawn[p] { [p]quicksort compare sl };
-               quicksortr <- spawn[p] { [p]quicksort compare sr };
+               quicksortl <- spawn[p] {do ([p]quicksort compare sl)};
+               quicksortr <- spawn[p] {do ([p]quicksort compare sr)};
                ssl <- sync quicksortl;
                ssr <- sync quicksortr;
                ret (append (ssl, append (se, ssr)))
@@ -197,11 +197,11 @@ fun loop emails : unit cmd[loop_p] =
              spawn[alert_p] { ret (print (cat ("Sorting ", cat (Int.toString (length emails), " ...\n"))))};
              spawn[sort_p]
                   {
-                    s <- [sort_p]quicksort field emails;
+                    s <- do ([sort_p]quicksort field emails);
                     spawn[alert_p] { ret (print "Sorted!\n") };
                     ret (display_ordered s)
                   };
-             loop emails
+             do (loop emails)
            }
       | SEND mail =>
         cmd[loop_p]
@@ -209,15 +209,16 @@ fun loop emails : unit cmd[loop_p] =
              spawn[send_p]
                   {
                     mret <- ret (send mail);
-                    if mret then
+                    do (if mret then
                             cmd[send_p] {ret ()}
                         else
                             cmd[send_p]
                                {spawn[alert_p]
                                      {ret (alert "Mail didn't send!")};
                                 ret ()}
+                       )
                   };
-             loop emails
+             do (loop emails)
            }
       | QUIT =>
         cmd[loop_p]
@@ -225,6 +226,6 @@ fun loop emails : unit cmd[loop_p] =
 
 main
 {
-  t <- spawn[loop_p] { loop (Array.fromList (parsemails "mails")) };
+  t <- spawn[loop_p] {do (loop (Array.fromList (parsemails "mails")))};
   sync t
 }

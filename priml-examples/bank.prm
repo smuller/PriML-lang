@@ -37,12 +37,12 @@ fun loop () =
             if String.isPrefix "credit" c then
                 cmd[loop_p] {
                     spawn[credit_p]
-                         {ret (Array.update (accounts, acct,
+                         { ret (Array.update (accounts, acct,
                                               plus (Array.sub (accounts, acct),
                                                     case Int.fromString (List.nth (tokens, 2))
                         of SOME n => n
                          | NONE => 0)))};
-                    loop ()
+                    do (loop ())
                 }
             else if String.isPrefix "debit" c then
                 cmd[loop_p] {
@@ -52,13 +52,13 @@ fun loop () =
                                                     case Int.fromString (List.nth (tokens, 2))
                         of SOME n => n
                          | NONE => 0)))};
-                    loop ()
+                    do (loop ())
                 }
             else if String.isPrefix "query" c then
                 cmd[loop_p] {
                     spawn[query_p]
                          { ret (print (cat (Int.toString (Array.sub (accounts, acct)), "\n"))) };
-                    loop ()
+                    do (loop ())
                 }
             else loop ()
         end
@@ -66,6 +66,6 @@ fun loop () =
 
 main
 {
-  t <- spawn[loop_p] {loop ()};
+  t <- spawn[loop_p] {do (loop ())};
   sync t
 }

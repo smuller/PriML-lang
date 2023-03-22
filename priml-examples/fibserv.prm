@@ -41,15 +41,15 @@ fun[w] fib n =
                  else if le (n, 20) then cmd[w] {ret (seqfib n)}
                  else
                      cmd[w]
-                        { bt <- spawn[w] {fib_int (minus (n, 1))};
-                          a <- fib_int (minus (n, 2));
+                        { bt <- spawn[w] {do (fib_int (minus (n, 1)))};
+                          a <- do (fib_int (minus (n, 2)));
                           b <- sync bt;
-                          ret (plus (a, b))}
+                          plus (a, b)}
          in
              cmd[w]
              {
-               f <- fib_int n;
-               ret (print (cat (Int.toString f, "\n")))
+               f <- do (fib_int n);
+               print (cat (Int.toString f, "\n"))
              }
          end
 
@@ -71,14 +71,14 @@ fun fib_server () =
                    let val _ = print (cat ("Computing fib(", cat (Int.toString n, ")\n")))
                    in
                        if lt (n, 15) then (* small number *)
-                           cmd[fg] {td <- spawn[smallfib] {[smallfib]fib n};
-                                    loop (cons (td, threads))}
+                           cmd[fg] {td <- spawn[smallfib] {do ([smallfib]fib n)};
+                                    do (loop (cons (td, threads)))}
                        else if lt (n, 25) then (* medium number *)
-                           cmd[fg] {td <- spawn[medfib] {[medfib]fib n};
-                                    loop (cons (td, threads))}
+                           cmd[fg] {td <- spawn[medfib] {do ([medfib]fib n)};
+                                    do (loop (cons (td, threads)))}
                        else (* large number *)
-                           cmd[fg] {td <- spawn[largefib] {[largefib]fib n};
-                                    loop (cons (td, threads))}
+                           cmd[fg] {td <- spawn[largefib] {do ([largefib]fib n)};
+                                    do (loop (cons (td, threads)))}
                    end)
         end
     in loop nil
@@ -89,11 +89,11 @@ fun cleanup threads =
         cmd[bot] {()}
     else
         cmd[bot] {sync (List.hd threads);
-                  cleanup (List.tl threads) }
+                  do (cleanup (List.tl threads)) }
 
 main
 {
-  loopthread  <- spawn[fg] { fib_server () };
+  loopthread  <- spawn[fg] {do (fib_server ())};
   bgthreads   <- sync loopthread;
-  cleanup bgthreads
+  do (cleanup bgthreads)
 }

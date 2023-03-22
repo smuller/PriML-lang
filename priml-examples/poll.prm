@@ -11,8 +11,8 @@ fun[p] qsort s =
       in
           cmd[p]
              {
-               quicksortl <- spawn[p] { [p]qsort sl };
-               quicksortr <- spawn[p] { [p]qsort sr };
+               quicksortl <- spawn[p] {do ([p]qsort sl)};
+               quicksortr <- spawn[p] {do ([p]qsort sr)};
                ssl <- sync quicksortl;
                ssr <- sync quicksortr;
                ret (append (ssl, append (se, ssr)))
@@ -28,17 +28,17 @@ fun loop emails bgt : unit cmd[loop_p] =
                SOME l => display_ordered l
              | NONE => ());
     (* Handle events... *)
-    loop emails bgt
+    do (loop emails bgt)
   }
 
 fun startloop emails : unit cmd[loop_p] =
   cmd[loop_p]
   {
-    t <- spawn[sort_p] { [sort_p]qsort emails };
-    loop emails t
+    t <- spawn[sort_p] {do ([sort_p]qsort emails)};
+    do (loop emails t)
   }
 
 main
 {
-spawn[loop_p] { startloop nil }
+spawn[loop_p] {do (startloop nil)}
 }

@@ -441,7 +441,9 @@ struct
 
                `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
 
-               `RET >> call G exp wth (mk_cmd_exp IRet)
+               `RET >> call G exp wth (mk_cmd_exp IRet),
+
+               `CHANGE >> (`LSQUARE >> ($prio) << `RSQUARE) wth (mk_cmd_exp Change)
               ]
 	  end
       and appexp G =
@@ -696,30 +698,6 @@ struct
             
             call G regulardec wth (fn (dec, pos) => dec)
           ])
-
-      and inst G =
-	  let fun mk_cmd_exp (const: 'a -> cmd_) (arg: 'a) =
-	      ECmd (NONE, (const arg))
-	  in
-          !!(alt [
-               `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
-                (call G cmd)
-                wth (mk_cmd_exp Spawn),
-
-               `SYNC >> call G exp wth (mk_cmd_exp Sync),
-
-               `POLL >> call G exp wth (mk_cmd_exp Poll),
-
-               `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
-
-               `RET >> call G exp wth (mk_cmd_exp IRet),
-
-               `CHANGE >> (`LSQUARE >> ($prio) << `RSQUARE)
-                wth (mk_cmd_exp Change),
-
-               call G exp wth #1
-          ])
-	  end
 
       and cmd G =
           "expected LBRACE (inst;)*inst RBRACE" **

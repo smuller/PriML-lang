@@ -11,8 +11,8 @@ fun[p] qsort compare s  =
     in
       cmd[p]
       {
-        quicksort_l <- spawn[p] { [p]qsort compare s_l };
-        quicksort_g <- spawn[p] { [p]qsort compare s_g };
+        quicksort_l <- spawn[p] {do ([p]qsort compare s_l)};
+        quicksort_g <- spawn[p] {do ([p]qsort compare s_g)};
         ss_l <- sync quicksort_l;
         ss_g <- sync quicksort_g;
         ret (Seq.append nil)
@@ -25,7 +25,7 @@ fun loop emails : unit cmd[loop_p] =
     cmd[loop_p]
     {
       t <- spawn[sort_p]
-           { [sort_p]qsort date emails};
+           {do ([sort_p]qsort date emails)};
       l <- sync t;
       ret (display_ordered l)
     }
