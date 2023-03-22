@@ -188,7 +188,8 @@ struct
           | Sync e => Sync (nul G e)
           | Poll e => Poll (nul G e)
           | Cancel e => Cancel (nul G e)
-          | IRet e => IRet (nul G e)),
+          | IRet e => IRet (nul G e)
+          | Change p => Change p),
          loc)
 
     fun nullary (Prog (tds, c)) = 
