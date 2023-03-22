@@ -1948,7 +1948,7 @@ struct
         let 
           val psctx = psconstraints_solver (psctx_init (get_psevars ()))
         in
-          check_psconstraints G psctx
+          check_psconstraints G' psctx
         end
 
       val prios = C.plabs G'
