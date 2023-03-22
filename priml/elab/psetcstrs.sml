@@ -28,7 +28,7 @@ struct
       end
 
     (* priority set constraints solver *)
-    fun psconstraints_solver (psctx: pscontext) (psconstraints: psconstraint list)= 
+    fun psconstraints_solver (psctx: pscontext) = 
       let 
         fun check_sup_constraint (s1, s2) = PrioSet.equal (PrioSet.difference (s1, s2), PrioSet.empty)
 
@@ -52,7 +52,7 @@ struct
         let val psctx' = List.foldl solver_fold psctx (!all_psconstraints)
         in
           if PSEvarMap.collate PrioSet.compare (psctx', psctx) = EQUAL then psctx'
-          else psconstraints_solver psctx' (!all_psconstraints)
+          else psconstraints_solver psctx' 
         end
       end
 
@@ -72,6 +72,7 @@ struct
 
       (* helper function to check set constraint *)
       fun check_app (PSSup _) = ()
+        | check_app (PSCons (PSSet s1, PSSet s2)) = check_sets (s1, s2)
         | check_app (PSCons (PSSet s, ps as PSEvar _)) = 
             (case PSEvarMap.find (psctx, ps) of
               SOME s' => check_sets (s, s')

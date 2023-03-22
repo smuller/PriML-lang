@@ -20,8 +20,13 @@ struct
 
     val all_evars  = ref (nil : IL.typ IL.ebind ref list)
     val all_wevars = ref (nil : IL.prio IL.ebind ref list)
+    val all_psevars = ref (nil : IL.prioset IL.ebind ref list)
     fun clear_evars () = (all_evars  := nil;
-                          all_wevars := nil)
+                          all_wevars := nil;
+                          all_psevars := nil)
+
+    fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars)
+
     fun finalize_evars () =
       let in
         app (fn r =>
@@ -45,6 +50,12 @@ struct
       in
         all_wevars := e :: !all_wevars;
         IL.PEvar e
+      end
+    fun new_psevar () = 
+      let val e = Unify.new_ebind ()
+      in
+        all_psevars := e :: !all_psevars;
+        IL.PSEvar e
       end
 
     (* XXX5 compile flag *)

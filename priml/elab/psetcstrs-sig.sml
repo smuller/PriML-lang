@@ -9,7 +9,7 @@ sig
     val psctx_init : IL.prioset list -> PSContext.pscontext
 
     (* solve system of priority set constraints *)
-    val psconstraints_solver : PSContext.pscontext -> IL.psconstraint list -> PSContext.pscontext
+    val psconstraints_solver : PSContext.pscontext -> PSContext.pscontext
 
     (* check psconstraints in the solved system *)
     val check_psconstraints : Context.context -> PSContext.pscontext -> unit

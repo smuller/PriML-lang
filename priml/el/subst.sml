@@ -80,8 +80,10 @@ struct
 
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
+    (*
     | prsubst s (TCmd (t, p)) = TCmd (prsubst s t, prsubsp s p)
     | prsubst s (TThread (t, p)) = TThread (prsubst s t, prsubsp s p)
+    *)
     | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs
           val t' = prsubst (fromlist (ListPair.zip (wvs, List.map PVar nvs))) t

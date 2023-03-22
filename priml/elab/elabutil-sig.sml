@@ -9,6 +9,9 @@ sig
 
     val new_evar : unit -> IL.typ
     val new_pevar : unit -> IL.prio
+    val new_psevar : unit -> IL.prioset
+
+    val get_psevars : unit -> IL.prioset list
     (* reset the list of evars *)
     val clear_evars : unit -> unit
     (* set all unset evars to unit/home *)
