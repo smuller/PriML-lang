@@ -750,25 +750,34 @@ struct
           in
               (Ret ee, t)
           end
+        | E.IBind (is, li) => elabbind ctx pr (is, li)
 
   and elabbind ctx (pr: IL.prio) (is, li) =
       case is of
           [] =>
           (* Treat the last instruction as just another binding and return its
              value. May introduce an unnecessary binding, but oh well. *)
-          (let val dvar = "retval__"
+          (let val (_, loc) = li
+               val dvar = "retval__"
                val v = V.namedvar dvar
                val (ii, t) = elab ctx li
+               val tint = new_evar ()
+               val pint = new_pevar ()
            in
+               unify ctx loc "bind argument" t (TCmd (tint, pint));
                (Bind (v, ii, Ret (Value (Var v))), t)
            end)
-        | (s, i)::rest =>
+        | (s, i as (_, loc))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
           (let val v = V.namedvar s
                val (ii, t) = elab ctx i
-               val ctx' = C.bindv ctx s (mono t) v
+               val tint = new_evar ()
+               val pint = new_pevar ()
+               val ctx' = C.bindv ctx s (mono tint) v
                val (cmd, t') = elabbind ctx' pr (rest, li)
            in
+               unifyp ctx loc "priority" pr pint;
+               unify ctx loc "bind argument" t (TCmd (tint, pint));
                (Bind (v, ii, cmd), t')
            end)
 
