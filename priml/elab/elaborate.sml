@@ -644,17 +644,13 @@ struct
           let 
               val pp =
                   (case p of
-                        SOME p => 
-                            (let val pp = elabpr ctx loc p 
-                             in 
-                                PSSet (PrioSet.singleton pp)
-                             end)
+                        SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => new_psevar ())
-              val (ec, t, (pi', pp', pf')) = elabcmd ctx pp (c, loc)
+              val (ec, t, (pp', pr1, pr2)) = elabcmd ctx pp (c, loc)
           in
-              add_psconstraint (PSSup (pi', pp));
-              add_psconstraint (PSSup (pp, pi'));
-              (Cmd (pp, ec), TCmd (t, (pi', pp', pf')))
+              add_psconstraint (PSSup (pp', pp));
+              add_psconstraint (PSSup (pp, pp'));
+              (Cmd (pp, ec), TCmd (t, (pp, pr1, pr2)))
           end
 
         | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented")
@@ -715,13 +711,13 @@ struct
   and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
       case i of
           E.Spawn (p', c) =>
-          let val pp = elabpr ctx loc p'
-              val (ec, t, (pi', pp', pf')) = elabcmd ctx (PSSet (PrioSet.singleton pp)) c
-              val psint = new_psevar ()
+          let val pp' = elabpr ctx loc p'
+              val (ec, t, (pr', pr1, pr3)) = elabcmd ctx (PSSet (PrioSet.singleton pp')) c
+              val pr2 = new_psevar ()
           in
-              add_psconstraint (PSSup (psint, pp'));
-              add_psconstraint (PSSup (pp', psint));
-              (Spawn (pp, t, ec), TThread (t, psint), (pr, pr, pr))
+              add_psconstraint (PSSup (pr2, pr1));
+              add_psconstraint (PSSup (pr1, pr2));
+              (Spawn (pp', t, ec), TThread (t, pr2), (pr, pr, pr))
           end
         | E.Sync e =>
           let val (ee, t) = elab ctx e
@@ -762,13 +758,13 @@ struct
               (Ret ee, t, (pr, pr, pr))
           end
         | E.Change p' => 
-          let val pp = elabpr ctx loc p'
-              val psint = new_psevar ()
-              val pps = PSSet (PrioSet.singleton pp)
+          let val pp' = elabpr ctx loc p'
+              val pr' = new_psevar ()
+              val pps' = PSSet (PrioSet.singleton pp')
           in
-            add_psconstraint (PSSup (psint, pps));
-            add_psconstraint (PSSup (psint, pr));
-            (Change pp, TRec [], (pr, psint, pps))
+            add_psconstraint (PSSup (pr', pps'));
+            add_psconstraint (PSSup (pr', pr));
+            (Change pp, TRec [], (pr, pr', pps'))
           end
 
   and elabbind ctx (pr: IL.prioset) (is, li) =
