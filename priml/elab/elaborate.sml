@@ -717,8 +717,6 @@ struct
               val pint = new_pevar ()
           in
               unify ctx loc "sync argument" t (TThread (tint, pint));
-              printp pint;
-              printp pr;
               ((check_constraint ctx loc pr pint)
                handle C.Context s => error loc s);
               (Sync ee, tint)
