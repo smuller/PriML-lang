@@ -717,6 +717,8 @@ struct
               val pint = new_pevar ()
           in
               unify ctx loc "sync argument" t (TThread (tint, pint));
+              printp pint;
+              printp pr;
               ((check_constraint ctx loc pr pint)
                handle C.Context s => error loc s);
               (Sync ee, tint)
@@ -764,8 +766,9 @@ struct
                val tint = new_evar ()
                val pint = new_pevar ()
            in
+               unifyp ctx loc "priority bind" pr pint;
                unify ctx loc "bind argument" t (TCmd (tint, pint));
-               (Bind (v, ii, Ret (Value (Var v))), t)
+               (Bind (v, ii, Ret (Value (Var v))), tint)
            end)
         | (s, i as (_, loc))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
@@ -776,7 +779,7 @@ struct
                val ctx' = C.bindv ctx s (mono tint) v
                val (cmd, t') = elabbind ctx' pr (rest, li)
            in
-               unifyp ctx loc "priority" pr pint;
+               unifyp ctx loc "priority bind" pr pint;
                unify ctx loc "bind argument" t (TCmd (tint, pint));
                (Bind (v, ii, cmd), t')
            end)
