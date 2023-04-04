@@ -117,8 +117,11 @@ struct
        | E.TArrow (dom, cod) => Arrow (false,
                                        [elabtex ctx prefix loc dom],
                                        elabtex ctx prefix loc cod)
-       | E.TCmd (t, p) => TCmd (elabtex ctx prefix loc t, 
-                               (PSSet (PrioSet.singleton (elabpr ctx loc p)), new_psevar (), new_psevar ()))
+       | E.TCmd (t, p) => 
+           let val ps = PSSet (PrioSet.singleton (elabpr ctx loc p))
+           in 
+             TCmd (elabtex ctx prefix loc t, (ps, new_psevar (), new_psevar ()))
+           end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)))
        | E.TForall (E.PPVar s, t) =>
          let val v = V.namedvar s
@@ -646,11 +649,10 @@ struct
                   (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => new_psevar ())
-              val (ec, t, (pp', pr1, pr2)) = elabcmd ctx pp (c, loc)
+              val (ec, t, (pr1, pr2, pr3)) = elabcmd ctx pp (c, loc)
           in
-              add_psconstraint (PSSup (pp', pp));
-              add_psconstraint (PSSup (pp, pp'));
-              (Cmd (pp, ec), TCmd (t, (pp, pr1, pr2)))
+              unifyps loc "priority set command expression" pr1 pp;
+              (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3)))
           end
 
         | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented")
@@ -715,8 +717,8 @@ struct
               val (ec, t, (pr', pr1, pr3)) = elabcmd ctx (PSSet (PrioSet.singleton pp')) c
               val pr2 = new_psevar ()
           in
-              add_psconstraint (PSSup (pr2, pr1));
-              add_psconstraint (PSSup (pr1, pr2));
+              unifyps loc "priority set spawn" pr1 pr2;
+              unifyps loc "priority set spawn" pr' (PSSet (PrioSet.singleton pp'));
               (Spawn (pp', t, ec), TThread (t, pr2), (pr, pr, pr))
           end
         | E.Sync e =>
@@ -764,28 +766,49 @@ struct
           in
             add_psconstraint (PSSup (pr', pps'));
             add_psconstraint (PSSup (pr', pr));
-            (Change pp, TRec [], (pr, pr', pps'))
+            (Change pp', TRec [], (pr, pr', pps'))
           end
+        | E.IBind is => elabbind ctx pr is 
 
   and elabbind ctx (pr: IL.prioset) (is, li) =
       case is of
           [] =>
           (* Treat the last instruction as just another binding and return its
              value. May introduce an unnecessary binding, but oh well. *)
-          (let val dvar = "retval__"
+          (let val (_, loc) = li
+               val dvar = "retval__"
                val v = V.namedvar dvar
                val (ii, t) = elab ctx li
+               val tint = new_evar ()
+               val pr1 = new_psevar ()
+               val pr2 = new_psevar ()
+               val pr3 = new_psevar ()
            in
-               (Bind (v, ii, Ret (Value (Var v))), t)
+               unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
+               unifyps loc "priority set binding" pr pr1;
+               add_psconstraint (PSSup (pr, pr2));
+               add_psconstraint (PSSup (pr, pr3));
+               add_psconstraint (PSSup (pr, pr));
+               (Bind (v, ii, Ret (Value (Var v))), tint, (pr, pr, pr))
            end)
-        | (s, i)::rest =>
+        | (s, i as (_, loc))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
           (let val v = V.namedvar s
                val (ii, t) = elab ctx i
-               val ctx' = C.bindv ctx s (mono t) v
-               val (cmd, t') = elabbind ctx' pr (rest, li)
+               val tint = new_evar ()
+               val pr1 = new_psevar ()
+               val pr2 = new_psevar ()
+               val pr3 = new_psevar ()
+               val pr7 = new_psevar ()
+               val ctx' = C.bindv ctx s (mono tint) v
+               val (cmd, t', (pr4, pr5, pr6)) = elabbind ctx' pr (rest, li)
            in
-               (Bind (v, ii, cmd), t')
+               unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
+               unifyps loc "priority set binding" pr pr1;
+               add_psconstraint (PSSup (pr4, pr3));
+               add_psconstraint (PSSup (pr7, pr2));
+               add_psconstraint (PSSup (pr7, pr5));
+               (Bind (v, ii, cmd), t', (pr1, pr7, pr6))
            end)
 
   and mktyvars ctx tyvars =
@@ -1941,11 +1964,12 @@ struct
           raise Elaborate ("toplevel constraint dec isn't const; how did that happen?")
 
       fun solve_pscstrs () = 
-        let 
-          val psctx = psconstraints_solver (psctx_init (get_psevars ()))
+        let val _ = print_psconstraints ()
+            val psctx = psconstraints_solver (psctx_init (get_psevars ()))
         in
           check_psconstraints G' psctx
         end
+        handle PSConstraints s => raise Elaborate ("constraint solver: " ^ s)
 
       val prios = C.plabs G'
       val cons = List.map checkcons (C.pcons G')

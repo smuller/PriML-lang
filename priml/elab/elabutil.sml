@@ -107,6 +107,25 @@ struct
                     raise Elaborate "type error"
                 end
 
+    fun unifyps loc msg ws1 ws2 = 
+            Unify.unifyps ws1 ws2 
+            handle Unify.Unify s =>
+                let 
+                    val $ = Layout.str
+                    val % = Layout.mayAlign
+                in
+                    Layout.print
+                    (Layout.align
+                     [%[$("World set mismatch (" ^ s ^ ") at "), $(Pos.toString loc),
+                        $": ", $msg],
+                      %[$"expected:", Layout.indent 4 (ILPrint.pstol ws2)],
+                      %[$"actual:  ", Layout.indent 4 (ILPrint.pstol ws1)]],
+                     print);
+                    print "\n";
+                    raise Elaborate "type error"
+                end
+
+
 
     fun check_constraint ctx loc p1 p2 =
         if Context.checkcons ctx p1 p2 then

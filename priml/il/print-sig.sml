@@ -7,8 +7,9 @@ sig
     val ttolex : (string -> string option) -> IL.typ -> Layout.layout
 
     (* type, world, expression, declaration, and unit  to layout. *)
-    val ttol : IL.typ    -> Layout.layout
-    val prtol : IL.prio   -> Layout.layout
+    val ttol : IL.typ       -> Layout.layout
+    val prtol : IL.prio     -> Layout.layout
+    val pstol : IL.prioset  -> Layout.layout
     val etol : IL.exp    -> Layout.layout
     val dtol : IL.dec    -> Layout.layout
     val vtol : IL.value  -> Layout.layout

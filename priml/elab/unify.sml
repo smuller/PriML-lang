@@ -84,6 +84,12 @@ struct
     fun mapplus m (v, vv) =
         Variable.Map.insert (m, v, vv)
 
+    fun unifyps ws1 ws2 = 
+      let in
+        add_psconstraint (PSSup (ws1, ws2));
+        add_psconstraint (PSSup (ws2, ws1))
+      end
+
     fun unifyex ctx eqmap t1 t2 =
         (case (t1, t2) of
              (TVar v1, TVar v2) =>
@@ -194,16 +200,12 @@ struct
                  end
            | (TCmd (t1, (pi1, pp1, pf1)), TCmd (t2, (pi2, pp2, pf2))) =>
              (unifyex ctx eqmap t1 t2;
-              add_psconstraint (PSSup (pi1, pi2));
-              add_psconstraint (PSSup (pi2, pi1));
-              add_psconstraint (PSSup (pp1, pp2));
-              add_psconstraint (PSSup (pp2, pp1));
-              add_psconstraint (PSSup (pf1, pf2));
-              add_psconstraint (PSSup (pf2, pf1)))
+              unifyps pi1 pi2;
+              unifyps pp1 pp2;
+              unifyps pf1 pf2)
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
              (unifyex ctx eqmap t1 t2;
-              add_psconstraint (PSSup (ps1, ps2));
-              add_psconstraint (PSSup (ps2, ps1)))
+              unifyps ps1 ps2)
            | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))

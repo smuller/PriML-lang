@@ -13,4 +13,6 @@ sig
 
     (* check psconstraints in the solved system *)
     val check_psconstraints : Context.context -> PSContext.pscontext -> unit
+
+    val print_psconstraints : unit -> unit
 end

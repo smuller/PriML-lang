@@ -60,7 +60,10 @@ struct
          | E.TApp (tl, str) => E.TApp (map (etsubst s) tl, str)
          | E.TRec stl => E.TRec (ListUtil.mapsecond (etsubst s) stl)
 (*          | E.TAddr s => t *)
-         | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod))
+         | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod)
+         | E.TCmd (t, p) => E.TCmd (etsubst s t, p)
+         | E.TThread (t, p) => E.TThread (etsubst s t, p)
+         | E.TForall (vs, t) => E.TForall (vs, etsubst s t))
 
 
   (* w/x in t *)

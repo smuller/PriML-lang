@@ -9,4 +9,6 @@ sig
 
     val unifyp : Context.context -> IL.prio -> IL.prio -> unit
 
+    val unifyps : IL.prioset -> IL.prioset -> unit
+
 end

@@ -22,7 +22,10 @@ sig
                     IL.typ -> IL.typ -> unit
 
     val unifyp : Context.context -> Pos.pos -> string -> 
-                     IL.prio -> IL.prio -> unit
+                    IL.prio -> IL.prio -> unit
+
+    val unifyps : Pos.pos -> string ->  
+                    IL.prioset -> IL.prioset -> unit
 
     (* check_constraint context location p1 <= p2 *)
     val check_constraint : Context.context -> Pos.pos ->
