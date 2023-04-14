@@ -364,7 +364,8 @@ struct
                  %[$"jointext",
                    L.listex "[" "]" "," (map etol el)]
 *)
-           | Cmd (ps, c) => L.paren(%[$"cmd[", pstol ps, $"]", ctol c])
+           | Cmd (ps, c) => L.paren (%[$"cmd[", pstol ps, $"]", $"{",ctol c, $"}"])
+           | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e])
                  )
 
     and ctol c = 

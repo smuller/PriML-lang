@@ -693,7 +693,6 @@ struct
               (* val _ = print "elaborating p\n" *)
               val pp = elabpr ctx loc p
               (* val _ = print "done\n" *)
-              val priov = new_pevar ()
           in
               (* XXX4 is this casing thing OK? *)
               case t of
@@ -821,6 +820,8 @@ struct
                print "bind last (";
                printe ii;
                print "): ";
+               printps pr;
+               print " ";
                printps pr1;
                print " ";
                printps pr2;
@@ -829,8 +830,7 @@ struct
                print " ";
                print "\n";
                unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
-               unifyps loc "priority set binding" pr pr1;
-               pscstr_gen pr1 pr2 pr3;
+               pscstr_sup pr1 pr;
                (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3))
            end)
         | (s, i as (_, loc))::rest =>
@@ -854,6 +854,8 @@ struct
                printps pr2;
                print " ";
                printps pr3;
+               print " ";
+               printps pr4;
                print " ";
                printps pr7;
                print " ";

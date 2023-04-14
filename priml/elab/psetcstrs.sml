@@ -122,10 +122,12 @@ struct
               SOME s => s
             | _ => raise (PSConstraints "cannot find psevar in context")))
 
-      (* check if solved system has empty solution *)
-      fun check_empty psctx = 
-        if List.all (fn ps => not (PrioSet.isEmpty ps)) (PSEvarMap.listItems psctx) then ()
-        else raise (PSConstraints "empty priority set")
+      (*
+        (* check if solved system has empty solution *)
+        fun check_empty psctx = 
+          if List.all (fn ps => not (PrioSet.isEmpty ps)) (PSEvarMap.listItems psctx) then ()
+          else raise (PSConstraints "empty priority set")
+      *)
 
       (* helper function to check set constraint *)
       fun check (PSSup (ps1, ps2)) = 
@@ -149,7 +151,6 @@ struct
                    ^ (error_msg (ps1, s1) (ps2, s2)))))
           end
     in 
-      check_empty psctx;
       List.app check (!all_psconstraints)
     end
 end
