@@ -364,8 +364,21 @@ struct
                  %[$"jointext",
                    L.listex "[" "]" "," (map etol el)]
 *)
-           | Cmd (ps, c) => L.paren(%[$"cmd at", pstol ps])
+           | Cmd (ps, c) => L.paren(%[$"cmd[", pstol ps, $"]", ctol c])
                  )
+
+    and ctol c = 
+        (case c of 
+          Bind (v, e, c) => 
+              L.align 
+                [%[$(V.tostring v), $"<-", etol e, $";"], 
+                 %[ctol c]]
+        | Spawn (p, t, c) => %[$"spawn[", prtol p, $"]", $"{", ctol c, $"}"]
+        | Sync e => %[$"sync", etol e]
+        | Poll e => %[$"poll", etol e]
+        | Cancel e => %[$"cancel", etol e]
+        | Ret e => %[$"ret", etol e]
+        | Change p => %[$"change", prtol p])
 
     and dtol d =
         (case d of

@@ -21,4 +21,17 @@ struct
                                       end)
 
     type pscontext = PrioSet.set PSEvarMap.map
+
+    (* initialize priority set variables in context *)
+    fun init_psctx (psevars: prioset list) = 
+      let 
+        fun init_fold (PSSet _, ctx) = raise (PSConstraints "cannot have set constant as key")
+          | init_fold (psevar, ctx) =
+            (case (PSEvarMap.find (ctx, psevar)) of 
+              NONE => PSEvarMap.insert (ctx, psevar, PrioSet.empty)
+            | _ => ctx)
+      in
+        List.foldl init_fold PSEvarMap.empty psevars
+      end
+
 end

@@ -11,6 +11,7 @@ sig
     val prtol : IL.prio     -> Layout.layout
     val pstol : IL.prioset  -> Layout.layout
     val etol : IL.exp    -> Layout.layout
+    val ctol : IL.cmd    -> Layout.layout
     val dtol : IL.dec    -> Layout.layout
     val vtol : IL.value  -> Layout.layout
     val ptol : ('a -> Layout.layout) -> 'a IL.poly -> Layout.layout

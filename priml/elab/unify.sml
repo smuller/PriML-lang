@@ -3,7 +3,6 @@ structure Unify :> UNIFY =
 struct
 
     open IL
-    open PSetCstrs
         
     structure V = Variable.Map
         
@@ -84,11 +83,7 @@ struct
     fun mapplus m (v, vv) =
         Variable.Map.insert (m, v, vv)
 
-    fun unifyps ws1 ws2 = 
-      let in
-        add_psconstraint (PSSup (ws1, ws2));
-        add_psconstraint (PSSup (ws2, ws1))
-      end
+    fun unifyps ws1 ws2 = PSetCstrs.pscstr_eq ws1 ws2
 
     fun unifyex ctx eqmap t1 t2 =
         (case (t1, t2) of

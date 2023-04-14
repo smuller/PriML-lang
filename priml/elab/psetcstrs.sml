@@ -5,124 +5,151 @@ struct
     open IL  
     open PSContext
 
+    structure L = Layout
+
     exception PSConstraints of string
+
+    val $ = L.str
+    val % = L.mayAlign
 
     val all_psconstraints = ref (nil : psconstraint list)
 
+    (* clear priority set constraints *)
+    fun clear_psconstraints () = all_psconstraints := nil
+
+    (* add new priority set constraint *)
     fun add_psconstraint pscstr = 
-      let in 
-        all_psconstraints := pscstr :: !all_psconstraints
-      end
+      all_psconstraints := pscstr :: (!all_psconstraints)
 
-    fun psconstraint_tostring (PSSup (ps1, ps2)) = 
-      "(PSSup (" ^ (Layout.tostring (ILPrint.pstol ps1)) ^ "," ^
-      (Layout.tostring (ILPrint.pstol ps2)) ^ "))"
+    (* add superset *)
+    fun pscstr_sup ws1 ws2 = add_psconstraint (PSSup (ws1, ws2))
 
-      | psconstraint_tostring (PSCons (ps1, ps2)) = 
-      "(PSCons (" ^ (Layout.tostring (ILPrint.pstol ps1)) ^ "," ^
-      (Layout.tostring (ILPrint.pstol ps2)) ^ "))"
+    (* add constraint *)
+    fun pscstr_cons ws1 ws2 = add_psconstraint (PSCons (ws1, ws2))
 
-    fun psconstraints_tostring cs = 
-      case cs of 
-        []    => "\n"
-      | [c]   => psconstraint_tostring c ^ "\n"
-      | c::cs => (psconstraint_tostring c) ^ ", " ^ (psconstraints_tostring cs)
+    (* add equal *)
+    fun pscstr_eq ws1 ws2 = (pscstr_sup ws1 ws2;
+                             pscstr_sup ws2 ws1)
 
-    fun print_psconstraints () = 
-      print (psconstraints_tostring (!all_psconstraints))
+    (* add general constraint:
+    *   pi = set of initial priorities
+    *   pp = set of all possible priorities
+    *   pf = set of final priorities
+    *   general constraints: pp is superset of pi, pp is superset of pf
+    * *)
+    fun pscstr_gen pi pp pf = (pscstr_sup pp pi; 
+                               pscstr_sup pp pf)
 
-    fun psctx_tostring psctx_list = 
-      case psctx_list of
-        [] => "\n"
-      | [(k, v)] => (Layout.tostring (ILPrint.pstol k)) ^ " : " ^
-      (Layout.tostring (ILPrint.pstol (PSSet v))) ^ "\n"
-      | (k, v) :: rest => (Layout.tostring (ILPrint.pstol k)) ^ " : " ^
-      (Layout.tostring (ILPrint.pstol (PSSet v))) ^ ", " ^ (psctx_tostring rest)
 
-    fun print_psctx psctx = 
-      print (psctx_tostring (PSEvarMap.listItemsi psctx))
+    (* PRINT FUNCTIONS *)
+    fun pscstrol (PSSup (ps1, ps2))  = 
+          %[$"sup", L.paren (L.seq [ILPrint.pstol ps1, $", ", ILPrint.pstol ps2])]
+      | pscstrol (PSCons (ps1, ps2)) = 
+          %[$"cons", L.paren (L.seq [ILPrint.pstol ps1, $", ", ILPrint.pstol ps2])]
 
-    (* initialize priority set variables in context *)
-    fun psctx_init (psevars: prioset list) = 
-      let 
-        fun init_fold (PSSet _, ctx) = raise (PSConstraints "cannot have set constant as key")
-          | init_fold (psevar, ctx) =
-            (case (PSEvarMap.find (ctx, psevar)) of 
-              NONE => PSEvarMap.insert (ctx, psevar, PrioSet.empty)
-            | _ => ctx)
-      in
-        List.foldl init_fold PSEvarMap.empty psevars
-      end
+    fun pscstrsol pscstrs = L.listex "[" "]" ", " (map pscstrol pscstrs)
 
+    fun psctxkvol (psk, psv) = L.seq [ILPrint.pstol psk, $": ", ILPrint.pstol (PSSet psv)]
+
+    fun psctxol psctx = 
+      L.listex "{" "}" "," (map psctxkvol (PSEvarMap.listItemsi psctx))
+
+    fun print_pscstrs () = L.print (pscstrsol (!all_psconstraints), print)
+
+    fun print_psctx psctx = L.print (psctxol psctx, print)
+
+
+    (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)
-    fun psconstraints_solver (psctx: pscontext) = 
+    fun check_sup (s1, s2) = 
+        PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty)
+
+    fun check_cons ctx (s1, s2) = 
+      PrioSet.foldr 
+        (fn (p, b) => 
+          (PrioSet.foldr (fn (p', b') => 
+            (Context.checkcons ctx p' p) andalso b') true s1) andalso b) 
+        true
+        s2
+
+    fun solve_pscstrs (psctx: pscontext) = 
       let 
-        fun check_empty_sets psctx = 
-          if List.all (fn ps => not (PrioSet.isEmpty ps)) (PSEvarMap.listItems psctx) then ()
-          else raise (PSConstraints "empty priority set")
-
-        fun check_sup_constraint (s1, s2) = 
-          let val d1 = PrioSet.difference (s1, s2)
-              val d2 = PrioSet.difference (s2, s1)
-          in
-            PrioSet.equal (PrioSet.union (d1, d2), PrioSet.empty)
-          end
-
-        fun solver_fold (constraint, psctx) = 
-          case constraint of 
+        fun solve (cstr, psctx) = 
+          case cstr of 
             PSCons _ => psctx
           | PSSup (PSSet _, _) => psctx
-              (*raise (PSConstraints "set constant cannot be a superset in the constraint")*)
           | PSSup (ps as PSEvar _, PSSet s) => 
               (case PSEvarMap.find (psctx, ps) of 
-                NONE => raise (PSConstraints "cannot find psevar in context")   (* this error shouldn't be raised *)
-              | SOME s' => 
-                  if check_sup_constraint (s', s) then psctx 
-                  else PSEvarMap.insert (psctx, ps, PrioSet.union (s', s)))
+                SOME s' => 
+                  if check_sup (s', s) then psctx 
+                  else PSEvarMap.insert (psctx, ps, PrioSet.union (s', s))
+              | _ => 
+                  (* this error shouldn't be raised *)
+                  raise (PSConstraints "cannot find psevar in context"))
           | PSSup (ps1 as PSEvar _, ps2 as PSEvar _) =>
               (case (PSEvarMap.find (psctx, ps1), PSEvarMap.find (psctx, ps2)) of 
                 (SOME s1, SOME s2) => 
-                  if check_sup_constraint (s1, s2) then psctx
+                  if check_sup (s1, s2) then psctx
                   else PSEvarMap.insert (psctx, ps1, PrioSet.union (s1, s2))
-              | _ => raise (PSConstraints "cannot find psevar in context"))     (*this error shouldn't be raised *)
+              | _ => 
+                  (*this error shouldn't be raised *)
+                  raise (PSConstraints "cannot find psevar in context"))     
       in 
-        let val psctx' = List.foldl solver_fold psctx (!all_psconstraints)
+        let val psctx' = List.foldl solve psctx (!all_psconstraints)
         in
           if PSEvarMap.collate PrioSet.compare (psctx', psctx) = EQUAL then 
-            (print_psctx psctx'; check_empty_sets psctx'; psctx')
-          else psconstraints_solver psctx' 
+            (print_psctx psctx'; print "\n";
+             psctx')
+          else solve_pscstrs psctx' 
         end
       end
 
-    (* check (Sync) PSCons constraints in solved system *)
-    fun check_psconstraints (ctx: Context.context) (psctx: pscontext) = 
+    (* check solutions *)
+    fun check_pscstrs_sol (ctx: Context.context) (psctx: pscontext) = 
     let 
-      (* check if sets satisfy (Sync) PSCons constraints *)
-      fun check_sync_cons (s1, s2) = 
-        PrioSet.app 
-          (fn p => 
-            PrioSet.app 
-              (fn p' => if Context.checkcons ctx p p' then () else raise (PSConstraints "constraint violated")) 
-              s2) 
-          s1
+      fun error_msg (ps1, s1) (ps2, s2) = 
+         L.tostring (ILPrint.pstol ps1)
+         ^ " (" ^ L.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
+         ^ L.tostring (ILPrint.pstol ps2)
+         ^ " (" ^ L.tostring (ILPrint.pstol (PSSet s2)) ^ ")"
+
+      (* get set solution in priority set context *)
+      fun get_set ps = 
+        (case ps of 
+           PSSet s => s
+         | PSEvar e => 
+            (case (PSEvarMap.find (psctx, PSEvar e)) of
+              SOME s => s
+            | _ => raise (PSConstraints "cannot find psevar in context")))
+
+      (* check if solved system has empty solution *)
+      fun check_empty psctx = 
+        if List.all (fn ps => not (PrioSet.isEmpty ps)) (PSEvarMap.listItems psctx) then ()
+        else raise (PSConstraints "empty priority set")
 
       (* helper function to check set constraint *)
-      fun check_app (PSSup _) = ()
-        | check_app (PSCons (PSSet s1, PSSet s2)) = check_sync_cons (s1, s2)
-        | check_app (PSCons (PSSet s, ps as PSEvar _)) = 
-            (case PSEvarMap.find (psctx, ps) of
-              SOME s' => check_sync_cons (s, s')
-            | _ => raise (PSConstraints "cannot find psevar in context"))   (* this error shouldn't be raised *)
-        | check_app (PSCons (ps1 as PSEvar _, ps2 as PSEvar _)) = 
-            (case (PSEvarMap.find (psctx, ps1), PSEvarMap.find (psctx, ps2)) of 
-              (SOME s, SOME s') => check_sync_cons (s, s')
-            | _ => raise (PSConstraints "cannot find psevar in context"))   (* this error shouldn't be raised *)
-        | check_app (PSCons (ps as PSEvar _, PSSet s')) = 
-            (case PSEvarMap.find (psctx, ps) of 
-              SOME s => check_sync_cons (s, s')
-            | _ => raise (PSConstraints "cannot find psevar in context"))   (* this error shouldn't be raised *)
+      fun check (PSSup (ps1, ps2)) = 
+          let val s1 = get_set ps1
+              val s2 = get_set ps2
+          in
+            (if check_sup (s1, s2) then ()
+             else raise 
+                (PSConstraints 
+                  ("superset violated: " 
+                   ^ (error_msg (ps1, s1) (ps2, s2)))))
+          end
+        | check (PSCons (ps1, ps2)) =
+          let val s1 = get_set ps1
+              val s2 = get_set ps2
+          in
+            (if check_cons ctx (s1, s2) then ()
+             else raise 
+                (PSConstraints 
+                  ("priority set constraint violated: "
+                   ^ (error_msg (ps1, s1) (ps2, s2)))))
+          end
     in 
-      List.app check_app (!all_psconstraints)
+      check_empty psctx;
+      List.app check (!all_psconstraints)
     end
-
 end
