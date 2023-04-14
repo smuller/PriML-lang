@@ -378,7 +378,7 @@ struct
         | Poll e => %[$"poll", etol e]
         | Cancel e => %[$"cancel", etol e]
         | Ret e => %[$"ret", etol e]
-        | Change p => %[$"change", prtol p])
+        | Change p => %[$"change[", prtol p, $"]"])
 
     and dtol d =
         (case d of

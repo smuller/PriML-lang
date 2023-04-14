@@ -829,6 +829,7 @@ struct
                print " ";
                print "\n";
                unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
+               unifyps loc "priority set binding" pr pr1;
                pscstr_gen pr1 pr2 pr3;
                (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3))
            end)
