@@ -1,4 +1,5 @@
 
+
 structure Elaborate :> ELABORATE =
 struct
 
@@ -668,7 +669,7 @@ struct
               print " ";
               printps pr3;
               print "\n";
-              unifyps loc "priority set command expression" pr1 pp;
+              pscstr_eq pr1 pp;
               (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3)))
           end
 
@@ -733,7 +734,7 @@ struct
               val pp' = PSSet (PrioSet.singleton p')
               val (ec, t, (pr', pr1, pr2)) = elabcmd ctx pp' c
           in
-              unifyps loc "priority set spawn" pr' pp';
+              pscstr_eq pr' pp';
               (Spawn (p', t, ec), TThread (t, pr1), (pr, pr, pr))
           end
         | E.Sync e =>
@@ -861,8 +862,8 @@ struct
                print " ";
                print "\n";
                unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
-               unifyps loc "priority set binding" pr pr1;
-               unifyps loc "priority set binding" pr4 pr4';
+              pscstr_eq pr pr1;
+              pscstr_eq pr4 pr4';
                pscstr_gen pr1 pr7 pr6;
                pscstr_sup pr4 pr3;
                pscstr_sup pr7 pr2;

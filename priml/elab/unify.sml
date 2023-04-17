@@ -3,6 +3,7 @@ structure Unify :> UNIFY =
 struct
 
     open IL
+    open PSetCstrs 
         
     structure V = Variable.Map
         
@@ -82,8 +83,6 @@ struct
 
     fun mapplus m (v, vv) =
         Variable.Map.insert (m, v, vv)
-
-    fun unifyps ws1 ws2 = PSetCstrs.pscstr_eq ws1 ws2
 
     fun unifyex ctx eqmap t1 t2 =
         (case (t1, t2) of
@@ -195,12 +194,12 @@ struct
                  end
            | (TCmd (t1, (pi1, pp1, pf1)), TCmd (t2, (pi2, pp2, pf2))) =>
              (unifyex ctx eqmap t1 t2;
-              unifyps pi1 pi2;
-              unifyps pp1 pp2;
-              unifyps pf1 pf2)
+              pscstr_eq pi1 pi2;
+              pscstr_eq pp1 pp2;
+              pscstr_eq pf1 pf2)
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
              (unifyex ctx eqmap t1 t2;
-              unifyps ps1 ps2)
+              pscstr_eq ps1 ps2)
            | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))
