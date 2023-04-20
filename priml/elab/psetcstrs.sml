@@ -41,24 +41,6 @@ struct
                                pscstr_sup pp pf)
 
 
-    (* PRINT FUNCTIONS *)
-    fun pscstrol (PSSup (ps1, ps2))  = 
-          %[$"sup", L.paren (L.seq [ILPrint.pstol ps1, $", ", ILPrint.pstol ps2])]
-      | pscstrol (PSCons (ps1, ps2)) = 
-          %[$"cons", L.paren (L.seq [ILPrint.pstol ps1, $", ", ILPrint.pstol ps2])]
-
-    fun pscstrsol pscstrs = L.listex "[" "]" ", " (map pscstrol pscstrs)
-
-    fun psctxkvol (psk, psv) = L.seq [ILPrint.pstol psk, $": ", ILPrint.pstol (PSSet psv)]
-
-    fun psctxol psctx = 
-      L.listex "{" "}" "," (map psctxkvol (PSEvarMap.listItemsi psctx))
-
-    fun print_pscstrs () = L.print (pscstrsol (!all_psconstraints), print)
-
-    fun print_psctx psctx = L.print (psctxol psctx, print)
-
-
     (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)
     fun check_sup (s1, s2) = 
@@ -97,9 +79,7 @@ struct
       in 
         let val psctx' = List.foldl solve psctx (!all_psconstraints)
         in
-          if PSEvarMap.collate PrioSet.compare (psctx', psctx) = EQUAL then 
-            (print_psctx psctx'; print "\n";
-             psctx')
+          if PSEvarMap.collate PrioSet.compare (psctx', psctx) = EQUAL then psctx'
           else solve_pscstrs psctx' 
         end
       end
