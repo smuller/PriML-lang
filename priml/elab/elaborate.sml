@@ -121,7 +121,8 @@ struct
        | E.TCmd (t, p) => 
            let val ps = PSSet (PrioSet.singleton (elabpr ctx loc p))
            in 
-             TCmd (elabtex ctx prefix loc t, (ps, new_psevar (), new_psevar ()))
+               TCmd (elabtex ctx prefix loc t, (ps, new_psevar (), new_psevar ()),
+		    [] (* XXX new psconstraint evar *))
            end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)))
        | E.TForall (E.PPVar s, t) =>
@@ -650,11 +651,11 @@ struct
                   (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => new_psevar ())
-              val (ec, t, (pr1, pr2, pr3)) = elabcmd ctx pp (c, loc)
+              val (ec, t, (pr1, pr2, pr3), cc) = elabcmd ctx pp (c, loc)
           in
               pscstr_eq pr1 pp;
               pscstr_gen pr1 pr2 pr3;
-              (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3)))
+              (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3), cc))
           end
 
         | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented")
@@ -716,11 +717,11 @@ struct
           E.Spawn (p', c) =>
           let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
-              val (ec, t, (pr', pr1, pr2)) = elabcmd ctx pp' c
+              val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
           in
               pscstr_eq pr' pp';
               pscstr_gen pr' pr1 pr2;
-              (Spawn (p', t, ec), TThread (t, pr1), (pr, pr, pr))
+              (Spawn (p', t, ec), TThread (t, pr1), (pr, pr, pr), cc)
           end
         | E.Sync e =>
           let val (ee, t) = elab ctx e
@@ -729,7 +730,7 @@ struct
           in
               unify ctx loc "sync argument" t (TThread (tint, psint));
               pscstr_cons pr psint;
-              (Sync ee, tint, (pr, pr, pr))
+              (Sync ee, tint, (pr, pr, pr), [] (* XXX add constraints *))
           end
         | E.Poll e =>
           let val (ee, t) = elab ctx e
@@ -745,7 +746,7 @@ struct
                        handle Context.Absent _ =>
                               error loc "Should not happen")
           in
-              (Poll ee, t, (pr, pr, pr))
+              (Poll ee, t, (pr, pr, pr), [] (* XXX add constraints *))
           end
         | E.Cancel e =>
           let val (ee, t) = elab ctx e
@@ -753,12 +754,12 @@ struct
               val psint = new_psevar ()
           in
               unify ctx loc "cancel argument" t (TThread (tint, psint));
-              (Cancel ee, TRec [], (pr, pr, pr))
+              (Cancel ee, TRec [], (pr, pr, pr), [] (* XXX add constraints *))
           end
         | E.IRet e =>
           let val (ee, t) = elab ctx e
           in
-              (Ret ee, t, (pr, pr, pr))
+              (Ret ee, t, (pr, pr, pr), [] (* XXX add constraints *))
           end
         | E.Change p' => 
           let val p' = elabpr ctx loc p'
@@ -766,7 +767,7 @@ struct
               val pr' = new_psevar ()
           in
             pscstr_gen pr pr' pp';
-            (Change p', TRec [], (pr, pr', pp'))
+            (Change p', TRec [], (pr, pr', pp'), [] (* XXX add constraints *))
           end
         | E.IBind is => elabbind ctx pr is 
 
@@ -784,10 +785,12 @@ struct
                val pr2 = new_psevar ()
                val pr3 = new_psevar ()
            in
-               unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
+               unify ctx loc "bind argument" t
+		     (TCmd (tint, (pr1, pr2, pr3), [] (* XXX *)));
                pscstr_sup pr1 pr;
                pscstr_gen pr1 pr2 pr3;
-               (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3))
+               (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3)
+	       , [] (* XXX add constraints *))
            end)
         | (s, i as (_, loc))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
@@ -800,9 +803,9 @@ struct
                val pr4 = new_psevar ()
                val pr7 = new_psevar ()
                val ctx' = C.bindv ctx s (mono tint) v
-               val (cmd, t', (pr4', pr5, pr6)) = elabbind ctx' pr4 (rest, li)
+               val (cmd, t', (pr4', pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
            in
-               unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3)));
+               unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3), [] (* XXX unify with psconstraint list evar *)));
                pscstr_eq pr pr1;
                pscstr_eq pr4 pr4';
                pscstr_gen pr1 pr7 pr6;
@@ -810,7 +813,7 @@ struct
                pscstr_sup pr4 pr3;
                pscstr_sup pr7 pr2;
                pscstr_sup pr7 pr5;
-               (Bind (v, ii, cmd), t', (pr1, pr7, pr6))
+               (Bind (v, ii, cmd), t', (pr1, pr7, pr6), cc (* append constraints from unify *))
            end)
 
   and mktyvars ctx tyvars =
@@ -1954,7 +1957,7 @@ struct
       val G = C.bindplab Initial.initial "bot"
 
       val (idl, fs, G') = elabtds G dl
-      val (ec, t, (pi, pp, pf)) = elabcmd G' (PSSet (PrioSet.singleton (PConst "bot"))) c
+      val (ec, t, (pi, pp, pf), cc) = elabcmd G' (PSSet (PrioSet.singleton (PConst "bot"))) c
 
 (*
       fun checkprio PConst s = s
@@ -1966,6 +1969,7 @@ struct
         | checkcons _ =
           raise Elaborate ("toplevel constraint dec isn't const; how did that happen?")
 
+		(* XXX solve constraints from cc *)
       fun solve_psetcstrs () = 
         let val psctx = PSContext.init_psctx (get_psevars ())
             val psctx_sol = solve_pscstrs psctx 

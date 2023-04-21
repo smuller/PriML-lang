@@ -105,7 +105,7 @@ struct
 
       | Arrows of (bool * typ list * typ) list
 
-      | TCmd of typ * (prioset * prioset * prioset)
+      | TCmd of typ * (prioset * prioset * prioset) * psconstraint list
       | TThread of typ * prioset
       | TForall of var list * (pconstraint list) * typ
 

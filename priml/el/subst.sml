@@ -39,7 +39,7 @@ struct
 
     | tsubst s (TTag (t, v)) = TTag (tsubst s t, v)
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
-    | tsubst s (TCmd (t, p)) = TCmd (tsubst s t, p)
+    | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
     | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
     | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t)
 (*
@@ -83,8 +83,8 @@ struct
 
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
-    | prsubst s (TCmd (t, (pi, pp, pf))) = 
-        TCmd (prsubst s t, (pssubsp s pi, pssubsp s pp, pssubsp s pf))
+    | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
+        TCmd (prsubst s t, (pssubsp s pi, pssubsp s pp, pssubsp s pf), c)
 
     | prsubst s (TThread (t, ps)) = TThread (prsubst s t, pssubsp s ps)
 

@@ -80,7 +80,7 @@ struct
            | TCont t => L.paren (L.seq[self t, $" cont"])
            | TRef t => L.paren (L.seq[self t, $" ref"])
            | TVar v => L.str (V.show v)
-           | TCmd (t, (pi, pp, pf)) => L.paren (L.seq[self t, $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf, $"]"])
+           | TCmd (t, (pi, pp, pf), _) => L.paren (L.seq[self t, $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf, $"]"])
            | TThread (t, ps) => L.paren (L.seq[self t, $" thread[", pstol ps, $"]"])
            | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",

@@ -8,6 +8,7 @@ struct
   type priority = string
   type prio = string
   type pconstraint = prio * prio
+  type psconstraint = unit (* XXX *)
   type id = string
 
   datatype longid =

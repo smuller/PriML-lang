@@ -212,7 +212,7 @@ struct
                    | IL.Shamrock (w, tt) => IL.Shamrock (w, got tt)
                    | IL.At (t, w) => IL.At(got t, gow w)
 *)
-                   | IL.TCmd (t, p) => IL.TCmd (got t, p)
+                   | IL.TCmd (t, p, c) => IL.TCmd (got t, p, c)
                    | IL.TThread (t, p) => IL.TThread (got t, p)
                    | IL.TForall (v, c, t) => IL.TForall (v, c, got t)
                    | IL.Evar er =>
