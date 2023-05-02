@@ -192,14 +192,18 @@ struct
                                    unifyex ctx eqmap cod1 cod2
                                  end) (al1, al2)
                  end
-           | (TCmd (t1, (pi1, pp1, pf1), _), TCmd (t2, (pi2, pp2, pf2), _)) =>
-             (unifyex ctx eqmap t1 t2;
-              pscstr_eq pi1 pi2;
-              pscstr_eq pp1 pp2;
-              pscstr_eq pf1 pf2) (* XXX unify psconstraint evars *)
+           | (TCmd (t1, (pi1, pp1, pf1), cc1), TCmd (t2, (pi2, pp2, pf2), cc2)) =>
+             (print "cc1: "; print_pscstrs cc1; print "\n";
+              print "cc2: "; print_pscstrs cc2; print "\n\n";
+              unifyex ctx eqmap t1 t2;
+              add_unified_pscstrs ((pscstr_eq pi1 pi2)
+                                    @ (pscstr_eq pp1 pp2)
+                                    @ (pscstr_eq pf1 pf2)
+                                    @ cc1
+                                    @ cc2))
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
              (unifyex ctx eqmap t1 t2;
-              pscstr_eq ps1 ps2)
+              add_unified_pscstrs (pscstr_eq ps1 ps2))
            | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))

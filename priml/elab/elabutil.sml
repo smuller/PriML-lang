@@ -4,11 +4,14 @@ struct
 
     exception Elaborate of string
     structure V = Variable
+    structure PSC = PSContext
 
     infixr 9 `
     fun a ` b = a b
 
     val ltos = Pos.toString
+
+    fun snd (x, y) = y
 
     fun error loc msg =
         let in
@@ -68,6 +71,92 @@ struct
     fun psubsc1 w v c =
         ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
          Subst.prsubsc ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) c)
+
+    (* Rename psevar in priority set *)
+    fun psesubps psemap ps =  
+      case ps of 
+        IL.PSSet _ => (psemap, ps)
+      | IL.PSEvar _ =>
+          (case PSC.PSEvarMap.find (psemap, ps) of
+              NONE => 
+                let val ps' = new_psevar ()
+                    val psemap' = PSC.PSEvarMap.insert (psemap, ps, ps') 
+                in  
+                  (psemap', ps')
+                end
+            | SOME ps' => (psemap, ps'))
+
+    (* Rename psevars in list of psconstraints *)
+    fun psesubspscs psemap pscons =
+      let 
+        (* Rename psevars in psconstraint *)
+        fun psesubspsc (pscon, (psemap, pscons)) =
+          case pscon of
+               IL.PSCons (ps1, ps2) =>
+                let val (psemap', ps1') = psesubps psemap ps1
+                    val (psemap'', ps2') = psesubps psemap' ps2
+                 in 
+                   (psemap'', pscons @ [IL.PSCons (ps1', ps2')])
+                 end
+             | IL.PSSup (ps1, ps2) =>
+                let val (psemap', ps1') = psesubps psemap ps1
+                    val (psemap'', ps2') = psesubps psemap' ps2
+                 in 
+                   (psemap'', pscons @ [IL.PSSup (ps1', ps2')])
+                 end
+      in
+        List.foldl psesubspsc (psemap, []) pscons
+      end
+
+    (* Make a copy and rename psevars in psconstrraints in type *)
+    fun psesubst t = 
+        let 
+          (* XXX only supported for TCmd, TForall, TThread, Arrow *)
+          fun psesubst_rec psemap t = 
+            case t of 
+                 IL.TCmd (t', (pr1, pr2, pr3), pscons) => 
+                    let val (psemap', pscons') = psesubspscs psemap pscons
+                        val (psemap', pr1') = psesubps psemap' pr1
+                        val (psemap', pr2') = psesubps psemap' pr2
+                        val (psemap', pr3') = psesubps psemap' pr3
+                        val (psemap', t'') = psesubst_rec psemap' t'
+                    in
+                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), pscons'))
+                    end
+               | IL.TForall (vl, cons, t') => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TForall (vl, cons, t''))
+                   end
+               | IL.TThread (t', ps) => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TThread (t'', ps))
+                   end
+               | IL.Arrow (r, tl, t') => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.Arrow (r, tl, t''))
+                   end
+               | IL.TVec t' => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TVec t'')
+                   end
+               | IL.TCont t' => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TCont t'')
+                   end
+               | IL.TTag (t', v) => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TTag (t'', v))
+                   end
+               | _ => (psemap, t)
+        in
+          snd (psesubst_rec (PSC.PSEvarMap.empty) t)
+        end
 
     (* unify context location message actual expected *)
     fun unify ctx loc msg t1 t2 =

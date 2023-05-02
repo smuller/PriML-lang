@@ -80,7 +80,10 @@ struct
            | TCont t => L.paren (L.seq[self t, $" cont"])
            | TRef t => L.paren (L.seq[self t, $" ref"])
            | TVar v => L.str (V.show v)
-           | TCmd (t, (pi, pp, pf), _) => L.paren (L.seq[self t, $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf, $"]"])
+           | TCmd (t, (pi, pp, pf), cc) => 
+             L.paren (L.seq[self t, 
+                            $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf,$"]",
+                            L.listex "[" "]" "," (map psctol cc)])
            | TThread (t, ps) => L.paren (L.seq[self t, $" thread[", pstol ps, $"]"])
            | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",
@@ -141,6 +144,9 @@ struct
     and pstol (PSEvar (ref (Bound w))) = pstol w
       | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
       | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
+
+    and psctol (PSSup (ps1, ps2)) = %[$"sup", L.paren(%[pstol ps1, $",", pstol ps2])]
+      | psctol (PSCons (ps1, ps2)) = %[$"cons", L.paren(%[pstol ps1, $",", pstol ps2])]
 
     (* <t> *)
     fun bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]

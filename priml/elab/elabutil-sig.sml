@@ -71,6 +71,8 @@ sig
     val psubst1 : IL.prio -> Variable.var -> IL.typ -> IL.typ
     val psubsc1 : IL.prio -> Variable.var -> IL.pconstraint -> IL.pconstraint
 
+    val psesubst : IL.typ -> IL.typ
+
     val unroll : Pos.pos -> IL.typ -> IL.typ
 
     val mono : 'a -> 'a IL.poly

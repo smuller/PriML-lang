@@ -84,9 +84,9 @@ struct
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
     | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
-        TCmd (prsubst s t, (pssubsp s pi, pssubsp s pp, pssubsp s pf), c)
+        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), map (prsubspsc s) c)
 
-    | prsubst s (TThread (t, ps)) = TThread (prsubst s t, pssubsp s ps)
+    | prsubst s (TThread (t, ps)) = TThread (prsubst s t, prsubsps s ps)
 
     | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs
@@ -113,17 +113,20 @@ struct
           PVar v =>
           ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
            case VM.find (s, v) of
-               SOME ww => ww
+               SOME ww => ww 
              | NONE => x)
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
         | PConst _ => x
 
-  and pssubsp (s: prio subst) x : prioset =
+  and prsubsps (s: prio subst) x : prioset =
       case x of 
            PSSet ps => PSSet (PrioSet.map (prsubsp s) ps)
-         | PSEvar (ref (Bound w)) => pssubsp s w
+         | PSEvar (ref (Bound w)) => prsubsps s w
          | _ => x
+
+  and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)
+    | prsubspsc s (PSCons (ps1, ps2)) = PSCons (prsubsps s ps1, prsubsps s ps2)
 
   and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2))
 
