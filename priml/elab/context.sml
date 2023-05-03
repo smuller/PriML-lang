@@ -166,7 +166,7 @@ struct
                                     has t orelse List.exists has tl) l
                  | TRef t => has t
                  | TCmd (t, _, _) => has t
-                 | TThread (t, _) => has t
+                 | TThread (t, _, _) => has t
                  | TForall (_, _, t) => has t)
       in
         SU.exists (fn (Poly({prios, tys}, t), _, _) => has t) vars 
@@ -211,7 +211,7 @@ struct
                                     has t orelse List.exists has tl) l
                  | TRef t => has t
                  | TCmd (t, _, _) => has t
-                 | TThread (t, _) => has t
+                 | TThread (t, _, _) => has t
                  | TForall (_, _, t) => has t)
 
       in

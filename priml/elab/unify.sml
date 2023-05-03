@@ -53,7 +53,7 @@ struct
            | (Evar (ref (Bound t))) => occurs r t
            | (Evar (r' as ref (Free _))) => r = r'
            | TCmd (t, _, _) => occurs r t
-           | TThread (t, _) => occurs r t
+           | TThread (t, _, _) => occurs r t
            | TForall (_, _, t) => occurs r t
 (*           | At (t, w) => occurs r t
            | Shamrock (_, t) => occurs r t
@@ -193,17 +193,25 @@ struct
                                  end) (al1, al2)
                  end
            | (TCmd (t1, (pi1, pp1, pf1), cc1), TCmd (t2, (pi2, pp2, pf2), cc2)) =>
-             (print "cc1: "; print_pscstrs cc1; print "\n";
-              print "cc2: "; print_pscstrs cc2; print "\n\n";
-              unifyex ctx eqmap t1 t2;
-              add_unified_pscstrs ((pscstr_eq pi1 pi2)
+               let val unified_cc = (pscstr_eq pi1 pi2)
                                     @ (pscstr_eq pp1 pp2)
                                     @ (pscstr_eq pf1 pf2)
-                                    @ cc1
-                                    @ cc2))
-           | (TThread (t1, ps1), TThread (t2, ps2)) =>
-             (unifyex ctx eqmap t1 t2;
-              add_unified_pscstrs (pscstr_eq ps1 ps2))
+                                    @ (!cc1) 
+                                    @ (!cc2) 
+               in
+                 cc1 := unified_cc;
+                 cc2 := unified_cc;
+                 unifyex ctx eqmap t1 t2
+               end
+           | (TThread (t1, ps1, cc1), TThread (t2, ps2, cc2)) =>
+               let val unified_cc = (pscstr_eq ps1 ps2)
+                                    @ (!cc1)
+                                    @ (!cc2)
+               in
+                 cc1 := unified_cc;
+                 cc2 := unified_cc;
+                 unifyex ctx eqmap t1 t2
+               end
            | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))

@@ -83,8 +83,11 @@ struct
            | TCmd (t, (pi, pp, pf), cc) => 
              L.paren (L.seq[self t, 
                             $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf,$"]",
-                            L.listex "[" "]" "," (map psctol cc)])
-           | TThread (t, ps) => L.paren (L.seq[self t, $" thread[", pstol ps, $"]"])
+                            L.listex "[" "]" "," (map psctol (!cc))])
+           | TThread (t, ps, cc) => 
+               L.paren (L.seq[self t, 
+                              $" thread[", pstol ps, $"]",
+                             L.listex "[" "]" "," (map psctol (!cc))])
            | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",
                             L.listex "" "" "" (map (op$ o V.show) vs),

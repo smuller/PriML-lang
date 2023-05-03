@@ -40,7 +40,7 @@ struct
     | tsubst s (TTag (t, v)) = TTag (tsubst s t, v)
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
     | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
-    | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
+    | tsubst s (TThread (t, p, c)) = TThread (tsubst s t, p, c)
     | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t)
 (*
     | tsubst s (At (t, w)) = At (tsubst s t, w)
@@ -84,9 +84,10 @@ struct
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
     | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
-        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), map (prsubspsc s) c)
+        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), ref (map (prsubspsc s) (!c)))
 
-    | prsubst s (TThread (t, ps)) = TThread (prsubst s t, prsubsps s ps)
+    | prsubst s (TThread (t, ps, c)) = 
+        TThread (prsubst s t, prsubsps s ps, ref (map (prsubspsc s) (!c)))
 
     | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs

@@ -111,32 +111,38 @@ struct
     (* Make a copy and rename psevars in psconstrraints in type *)
     fun psesubst t = 
         let 
-          (* XXX only supported for TCmd, TForall, TThread, Arrow *)
           fun psesubst_rec psemap t = 
             case t of 
                  IL.TCmd (t', (pr1, pr2, pr3), pscons) => 
-                    let val (psemap', pscons') = psesubspscs psemap pscons
+                    let val (psemap', pscons') = psesubspscs psemap (!pscons)
                         val (psemap', pr1') = psesubps psemap' pr1
                         val (psemap', pr2') = psesubps psemap' pr2
                         val (psemap', pr3') = psesubps psemap' pr3
                         val (psemap', t'') = psesubst_rec psemap' t'
                     in
-                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), pscons'))
+                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), ref pscons'))
                     end
                | IL.TForall (vl, cons, t') => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
                    in
                      (psemap', IL.TForall (vl, cons, t''))
                    end
-               | IL.TThread (t', ps) => 
-                   let val (psemap', t'') = psesubst_rec psemap t' 
+               | IL.TThread (t', ps, pscons) => 
+                   let val (psemap', pscons') = psesubspscs psemap (!pscons)
+                       val (psemap', t'') = psesubst_rec psemap' t' 
                    in
-                     (psemap', IL.TThread (t'', ps))
+                     (psemap', IL.TThread (t'', ps, ref pscons'))
                    end
                | IL.Arrow (r, tl, t') => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
+                       val (psemap', tl') = List.foldl (fn (t, (psemap, tl)) =>
+                                                          let val (psemap', t') = psesubst_rec psemap t
+                                                          in (psemap', tl @ [t'])
+                                                          end)
+                                                       (psemap, [])
+                                                       tl
                    in
-                     (psemap', IL.Arrow (r, tl, t''))
+                     (psemap', IL.Arrow (r, tl', t''))
                    end
                | IL.TVec t' => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
@@ -152,6 +158,47 @@ struct
                    let val (psemap', t'') = psesubst_rec psemap t' 
                    in
                      (psemap', IL.TTag (t'', v))
+                   end
+               | IL.TRec stl =>
+                   let val (psemap', stl') = List.foldl (fn ((l, t), (psemap, stl)) => 
+                                                            let val (psemap', t') = psesubst_rec psemap t
+                                                            in (psemap', stl @ [(l, t')])
+                                                            end)
+                                                        (psemap, [])
+                                                        stl
+                   in
+                     (psemap', IL.TRec stl')
+                   end
+               | IL.Sum lcl =>
+                   let val (psemap', lcl') = 
+                      List.foldl (fn ((l, tarm), (psemap, lcl)) => 
+                                    case tarm of 
+                                         IL.NonCarrier => (psemap, lcl @ [(l, tarm)])
+                                       | IL.Carrier { definitely_allocated, carried } =>
+                                           let val (psemap', t') = psesubst_rec psemap carried
+                                               val tarm' = IL.Carrier { definitely_allocated=definitely_allocated, 
+                                                                     carried = t' }
+                                           in (psemap', lcl @ [(l, tarm')])
+                                           end)
+                                  (psemap, [])
+                                  lcl
+                   in
+                     (psemap', IL.Sum lcl')
+                   end
+               | IL.Mu (i, m) =>
+                   let val (psemap', m') = List.foldl (fn ((v, t), (psemap, m)) => 
+                                                          let val (psemap', t') = psesubst_rec psemap t
+                                                          in (psemap', m @ [(v, t')])
+                                                          end)
+                                                      (psemap, [])
+                                                      m
+                   in
+                     (psemap', IL.Mu (i, m'))
+                   end
+               | IL.Evar (ref (IL.Bound t')) =>
+                   let val (psemap', t'') = psesubst_rec psemap t'
+                   in
+                     (psemap', IL.Evar (ref (IL.Bound t'')))
                    end
                | _ => (psemap, t)
         in
@@ -302,7 +349,7 @@ struct
                    | IL.At (t, w) => IL.At(got t, gow w)
 *)
                    | IL.TCmd (t, p, c) => IL.TCmd (got t, p, c)
-                   | IL.TThread (t, p) => IL.TThread (got t, p)
+                   | IL.TThread (t, p, c) => IL.TThread (got t, p, c)
                    | IL.TForall (v, c, t) => IL.TForall (v, c, got t)
                    | IL.Evar er =>
                          (case !er of

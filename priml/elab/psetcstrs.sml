@@ -26,21 +26,6 @@ struct
     fun print_psctx psctx = L.print (psctxol psctx, print)
 
 
-    (* UNIFIED PRIORITY SET CONSTRAINTS *)
-    val unified_pscstrs = ref (nil : psconstraint list)
-
-    fun add_unified_pscstrs pscstrs = unified_pscstrs := pscstrs @ (!unified_pscstrs)
-
-    fun clear_unified_pscstrs () = unified_pscstrs := nil
-
-    fun ret_unified_pscstrs () = 
-      let val pscstrs = !unified_pscstrs
-      in 
-        clear_unified_pscstrs ();
-        pscstrs
-      end
-
-
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
     fun pscstr_sup ws1 ws2 = [PSSup (ws1, ws2)]
@@ -77,28 +62,52 @@ struct
 
     fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
       let 
+        (* Retrieve priority of psevar in pscontext. 
+         * If psevar is not in pscontext with empty set as the value. *)
+        fun getps (psctx, pse) = 
+          case PSEvarMap.find (psctx, pse) of 
+               SOME s => (psctx, s)
+             | NONE => (PSEvarMap.insert (psctx, pse, PrioSet.empty), PrioSet.empty)
+
         fun solve (cstr, psctx) = 
           case cstr of 
-            PSCons _ => psctx
-          | PSSup (PSSet _, _) => psctx
+            PSCons (PSSet _, PSSet _) => psctx
+          | PSCons (PSSet _, ps as PSEvar _) => 
+              let val (psctx', _) = getps (psctx, ps) 
+              in 
+                psctx'
+              end
+          | PSCons (ps as PSEvar _, PSSet _) =>
+              let val (psctx', _) = getps (psctx, ps) 
+              in 
+                psctx'
+              end
+          | PSCons (ps1 as PSEvar _, ps2 as PSEvar _) =>
+              let val (psctx', _) = getps (psctx, ps1) 
+                  val (psctx'', _) = getps (psctx', ps2)
+              in
+                psctx''
+              end
+
+          | PSSup (PSSet _, PSSet _) => psctx
+          | PSSup (PSSet _, ps as PSEvar _) =>
+              let val (psctx', _) = getps (psctx, ps) 
+              in 
+                psctx'
+              end
           | PSSup (ps as PSEvar _, PSSet s) => 
-              (case PSEvarMap.find (psctx, ps) of 
-                SOME s' => 
-                  if check_sup (s', s) then psctx 
-                  else PSEvarMap.insert (psctx, ps, PrioSet.union (s', s))
-              | _ => PSEvarMap.insert (psctx, ps, s))
+              let val (psctx', s') = getps (psctx, ps)
+              in
+                if check_sup (s', s) then psctx'
+                else PSEvarMap.insert (psctx', ps, PrioSet.union(s', s))
+              end
           | PSSup (ps1 as PSEvar _, ps2 as PSEvar _) =>
-              (case (PSEvarMap.find (psctx, ps1), PSEvarMap.find (psctx, ps2)) of 
-                 (SOME s1, SOME s2) => 
-                   if check_sup (s1, s2) then psctx
-                   else PSEvarMap.insert (psctx, ps1, PrioSet.union (s1, s2))
-               | (SOME s1, NONE) => PSEvarMap.insert (psctx, ps2, PrioSet.empty)
-               | (NONE, SOME s2) => PSEvarMap.insert (psctx, ps1, s2)
-               | (NONE, NONE) => 
-                   let val psctx' = PSEvarMap.insert (psctx, ps1, PrioSet.empty)
-                   in
-                     PSEvarMap.insert (psctx, ps2, PrioSet.empty)
-                   end)
+              let val (psctx', s1) = getps (psctx, ps1) 
+                  val (psctx'', s2) = getps (psctx', ps2)
+              in
+                if check_sup (s1, s2) then psctx''
+                else PSEvarMap.insert (psctx'', ps1, PrioSet.union(s1, s2))
+              end
         in 
         let val psctx' = List.foldl solve psctx pscstrs 
         in

@@ -2,11 +2,6 @@ signature PSETCSTRS =
 sig
     exception PSConstraints of string
 
-    (* process unified priority set constraints *)
-    val add_unified_pscstrs : IL.psconstraint list -> unit
-    val ret_unified_pscstrs : unit -> IL.psconstraint list
-    val clear_unified_pscstrs : unit -> unit
-    
     (* add priority set constraint *)
     val pscstr_eq   : IL.prioset -> IL.prioset -> IL.psconstraint list
     val pscstr_sup  : IL.prioset -> IL.prioset -> IL.psconstraint list
