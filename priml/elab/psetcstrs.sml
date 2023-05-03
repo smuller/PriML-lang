@@ -5,26 +5,7 @@ struct
     open IL  
     open PSContext
 
-    structure L = Layout
-
     exception PSConstraints of string
-
-
-    (* PRINT FUNCTIONS *)
-    val $ = L.str
-    val % = L.mayAlign
-
-    fun pscstrsol pscstrs = L.listex "[" "]" ", " (map ILPrint.psctol pscstrs)
-
-    fun psctxkvol (psk, psv) = L.seq [ILPrint.pstol psk, $": ", ILPrint.pstol (PSSet psv)]
-
-    fun psctxol psctx = 
-      L.listex "{" "}" "," (map psctxkvol (PSEvarMap.listItemsi psctx))
-
-    fun print_pscstrs pscstrs = L.print (pscstrsol pscstrs, print)
-
-    fun print_psctx psctx = L.print (psctxol psctx, print)
-
 
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
@@ -123,10 +104,10 @@ struct
                           (pscstrs: psconstraint list) = 
       let 
         fun error_msg (ps1, s1) (ps2, s2) = 
-           L.tostring (ILPrint.pstol ps1)
-           ^ " (" ^ L.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
-           ^ L.tostring (ILPrint.pstol ps2)
-           ^ " (" ^ L.tostring (ILPrint.pstol (PSSet s2)) ^ ")"
+           Layout.tostring (ILPrint.pstol ps1)
+           ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
+           ^ Layout.tostring (ILPrint.pstol ps2)
+           ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s2)) ^ ")"
 
         (* get set solution in priority set context *)
         fun get_set ps = 

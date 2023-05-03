@@ -28,15 +28,7 @@ struct
 
   fun bindval p = Val p
 
-  fun printp p = Layout.print (ILPrint.prtol p, print)
-
-  fun printps ps = Layout.print (ILPrint.pstol ps, print)
-
-  fun printe e = Layout.print (ILPrint.etol e, print)
-
-  fun printc c = Layout.print (ILPrint.ctol c, print)
-
-  fun printt t = Layout.print (ILPrint.ttol t, print)
+  (* fun printp p = Layout.print (ILPrint.prtol p, print) *)
 
   val _ = C.install_ne new_evar
 
@@ -661,19 +653,6 @@ struct
               val (ec, t, (pr1, pr2, pr3), cc) = elabcmd ctx pp (c, loc)
               val cc' = ref ((pscstr_gen pr1 pr2 pr3) @ (pscstr_eq pr1 pp) @ cc)
           in
-              print "cmd (";
-              printc ec;
-              print "): ";
-              printps pp;
-              print "=";
-              printps pr1;
-              print " ";
-              printps pr2;
-              print " ";
-              printps pr3;
-              print "\n";
-              printt (TCmd (t, (pr1, pr2, pr3), cc'));
-              print "\n\n";
               (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3), cc'))
           end
 
@@ -721,14 +700,11 @@ struct
                                                end) *)
                                       (psubsc1 pp pv)
                                       cons
-                      val tt' = psesubst (psubst1 pp pv tt)
                   in
-                      print "old fun type: "; printt tt; print "\n\n";
-                      print "fun type: "; printt tt'; print "\n\n";
                       List.app (fn PCons (p1, p2) =>
                                    check_constraint ctx loc p1 p2)
                                cons';
-                      (PFApp (ee, pp), tt')
+                      (PFApp (ee, pp), psesubst (psubst1 pp pv tt))
                   end
                 | TForall _ => error loc "only one priority argument supported"
                 | _ => error loc "not a forall"
@@ -742,17 +718,6 @@ struct
               val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
               val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_eq pr' pp') @ cc
           in
-              print "spawn (e @ ";
-              printps pp';
-              print "=";
-              printps pr';
-              print " ";
-              printps pr1;
-              print " ";
-              printps pr2;
-              print "): ";
-              printps pr;
-              print "\n";
               (Spawn (p', t, ec), TThread (t, pr1, ref cc'), (pr, pr, pr), cc')
           end
         | E.Sync e =>
@@ -763,11 +728,6 @@ struct
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint, unified_pscstrs))
               val cc = (pscstr_cons pr psint) @ (!unified_pscstrs)
           in
-              print "sync (e @ ";
-              printps psint;
-              print "): ";
-              printps pr;
-              print "\n";
               (Sync ee, tint, (pr, pr, pr), cc)
           end
         | E.Poll e =>
@@ -785,11 +745,6 @@ struct
                        handle Context.Absent _ =>
                               error loc "Should not happen")
           in
-              print "poll (e @ ";
-              printps psint;
-              print "): ";
-              printps pr;
-              print "\n";
               (Poll ee, t, (pr, pr, pr), (!unified_pscstrs))
           end
         | E.Cancel e =>
@@ -799,19 +754,11 @@ struct
               val unified_pscstrs = ref []
               val _ = unify ctx loc "cancel argument" t (TThread (tint, psint, unified_pscstrs))
           in
-              print "cancel (e @ ";
-              printps psint;
-              print "): ";
-              printps pr;
-              print "\n";
               (Cancel ee, TRec [], (pr, pr, pr), (!unified_pscstrs))
           end
         | E.IRet e =>
           let val (ee, t) = elab ctx e
           in
-              print "ret: ";
-              printps pr;
-              print "\n";
               (Ret ee, t, (pr, pr, pr), [])
           end
         | E.Change p' => 
@@ -820,13 +767,6 @@ struct
               val pr' = new_psevar ()
               val cc = pscstr_gen pr pr' pp'
           in
-              print "change: ";
-              printps pr;
-              print " ";
-              printps pr';
-              print " ";
-              printps pp';
-              print "\n";
               (Change p', TRec [], (pr, pr', pp'), cc)
           end
         | E.IBind is => elabbind ctx pr is
@@ -849,20 +789,6 @@ struct
                val cc = (pscstr_sup pr1 pr) 
                         @ (!unified_pscstrs)
            in
-               print "bind last (";
-               printe ii;
-               print " ): ";
-               printps pr;
-               print " ";
-               printps pr1;
-               print " ";
-               printps pr2;
-               print " ";
-               printps pr3;
-               print " ";
-               print "\n";
-               printt t;
-               print "\n\n";
                (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3), cc)
            end)
         | (s, i as (_, loc))::rest =>
@@ -888,34 +814,6 @@ struct
                          @ (!unified_pscstrs)
                          @ cc
            in
-               print "bind (";
-               printe ii;
-               print " @ ";
-               printps pr;
-               print "=";
-               printps pr1;
-               print " ";
-               printps pr2;
-               print " ";
-               printps pr3;
-               print "; ";
-               printps pr4;
-               print "=";
-               printps pr4';
-               print " ";
-               printps pr5;
-               print " ";
-               printps pr6;
-               print "): ";
-               printps pr1;
-               print " ";
-               printps pr7;
-               print " ";
-               printps pr6;
-               print " ";
-               print "\n";
-               printt t;
-               print "\n\n";
                (Bind (v, ii, cmd), t', (pr1, pr7, pr6), cc')
            end)
 
@@ -2076,7 +1974,6 @@ struct
         let val psctx = PSC.PSEvarMap.empty
             val psctx_sol = solve_pscstrs psctx pscstrs
         in
-          print_psctx psctx_sol; print "\n";
           check_pscstrs_sol G' psctx_sol pscstrs
         end
         handle PSConstraints s => raise Elaborate ("constraint solver: " ^ s)
@@ -2084,7 +1981,6 @@ struct
       val prios = C.plabs G'
       val cons = List.map checkcons (C.pcons G')
     in
-      print_pscstrs cc; print "\n";
       solve_psetcstrs cc;
       finalize_evars ();
       (idl, prios, cons, fs, ec)
