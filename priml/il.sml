@@ -105,8 +105,12 @@ struct
 
       | Arrows of (bool * typ list * typ) list
 
+      (* XXX pass ref set constaints through TCmd and TThread. 
+       * The correct way to handle this should be a constraint evar and unify
+       * them. But this works! (for now) *)
       | TCmd of typ * (prioset * prioset * prioset) * (psconstraint list ref)
       | TThread of typ * prioset * (psconstraint list ref)
+
       | TForall of var list * (pconstraint list) * typ
 
     (* type constructors. only used in elaboration *)

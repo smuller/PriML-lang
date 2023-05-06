@@ -193,6 +193,7 @@ struct
                                  end) (al1, al2)
                  end
            | (TCmd (t1, (pi1, pp1, pf1), cc1), TCmd (t2, (pi2, pp2, pf2), cc2)) =>
+               (* unified psconstraints from TThread *)
                let val unified_cc = (pscstr_eq pi1 pi2)
                                     @ (pscstr_eq pp1 pp2)
                                     @ (pscstr_eq pf1 pf2)
@@ -204,6 +205,7 @@ struct
                  unifyex ctx eqmap t1 t2
                end
            | (TThread (t1, ps1, cc1), TThread (t2, ps2, cc2)) =>
+               (* unified psconstraints from TThread *)
                let val unified_cc = (pscstr_eq ps1 ps2)
                                     @ (!cc1)
                                     @ (!cc2)

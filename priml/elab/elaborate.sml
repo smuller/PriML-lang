@@ -1974,9 +1974,10 @@ struct
         let val psctx = PSC.PSEvarMap.empty
             val psctx_sol = solve_pscstrs psctx pscstrs
         in
+          (* check psevar solution satifies every psconstraints *)
           check_pscstrs_sol G' psctx_sol pscstrs
         end
-        handle PSConstraints s => raise Elaborate ("constraint solver: " ^ s)
+        handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
 
       val prios = C.plabs G'
       val cons = List.map checkcons (C.pcons G')

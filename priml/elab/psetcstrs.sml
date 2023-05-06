@@ -30,9 +30,12 @@ struct
 
     (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)
+
+    (* check if s1 is superset of s2 *)
     fun check_sup (s1, s2) = 
       PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty)
 
+    (* check if priorities in s1 is less than priorities in s2 *)
     fun check_cons ctx (s1, s2) = 
       PrioSet.foldr 
         (fn (p, b) => 
@@ -43,13 +46,15 @@ struct
 
     fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
       let 
-        (* Retrieve priority of psevar in pscontext. 
+        (* retrieve priority of psevar in pscontext. 
          * If psevar is not in pscontext with empty set as the value. *)
         fun getps (psctx, pse) = 
           case PSEvarMap.find (psctx, pse) of 
                SOME s => (psctx, s)
              | NONE => (PSEvarMap.insert (psctx, pse, PrioSet.empty), PrioSet.empty)
 
+        (* solve priority set system from PSSup (s1, s2) constraints, skip PSCons.
+         * If s1 is not the superset of s2, add every priorities in s2 to s1. *)
         fun solve (cstr, psctx) = 
           case cstr of 
             PSCons (PSSet _, PSSet _) => psctx
@@ -98,7 +103,7 @@ struct
       end
 
 
-    (* check solutions *)
+    (* check solutions satifying all psconstraints *)
     fun check_pscstrs_sol (ctx: Context.context) 
                           (psctx: pscontext) 
                           (pscstrs: psconstraint list) = 

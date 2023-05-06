@@ -72,7 +72,7 @@ struct
         ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
          Subst.prsubsc ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) c)
 
-    (* Rename psevar in priority set *)
+    (* rename psevar in priority set *)
     fun psesubps psemap ps =  
       case ps of 
         IL.PSSet _ => (psemap, ps)
@@ -86,10 +86,10 @@ struct
                 end
             | SOME ps' => (psemap, ps'))
 
-    (* Rename psevars in list of psconstraints *)
+    (* rename psevars in list of psconstraints *)
     fun psesubspscs psemap pscons =
       let 
-        (* Rename psevars in psconstraint *)
+        (* rename psevars in psconstraint *)
         fun psesubspsc (pscon, (psemap, pscons)) =
           case pscon of
                IL.PSCons (ps1, ps2) =>
@@ -108,7 +108,7 @@ struct
         List.foldl psesubspsc (psemap, []) pscons
       end
 
-    (* Make a copy and rename psevars in psconstrraints in type *)
+    (* make a copy and rename psevars in psconstrraints in type *)
     fun psesubst t = 
         let 
           fun psesubst_rec psemap t = 
