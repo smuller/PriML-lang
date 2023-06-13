@@ -8,6 +8,7 @@ struct
   type priority = string
   type prio = string
   type pconstraint = prio * prio
+  type psconstraint = unit (* XXX *)
   type id = string
 
   datatype longid =
@@ -70,6 +71,7 @@ struct
     | Poll of exp
     | Cancel of exp
     | IRet of exp
+    | Change of prio
 
   and constant =
       CInt of intconst
@@ -106,7 +108,7 @@ struct
     | TNum of int
   (*     | TAddr of world (* can only be the address of a world expression *) *)
     | TCmd of typ * prio
-    | TThread of typ * prio
+    | TThread of typ * prio 
     | TForall of ppat * typ
 
   and dec_ =

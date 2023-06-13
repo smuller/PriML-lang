@@ -441,7 +441,9 @@ struct
 
                `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
 
-               `RET >> call G exp wth (mk_cmd_exp IRet)
+               `RET >> call G exp wth (mk_cmd_exp IRet),
+
+               `CHANGE >> (`LSQUARE >> ($prio) << `RSQUARE) wth (mk_cmd_exp Change)
               ]
 	  end
       and appexp G =

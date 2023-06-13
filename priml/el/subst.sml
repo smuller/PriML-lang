@@ -39,8 +39,8 @@ struct
 
     | tsubst s (TTag (t, v)) = TTag (tsubst s t, v)
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
-    | tsubst s (TCmd (t, p)) = TCmd (tsubst s t, p)
-    | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
+    | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
+    | tsubst s (TThread (t, p, c)) = TThread (tsubst s t, p, c)
     | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t)
 (*
     | tsubst s (At (t, w)) = At (tsubst s t, w)
@@ -60,7 +60,10 @@ struct
          | E.TApp (tl, str) => E.TApp (map (etsubst s) tl, str)
          | E.TRec stl => E.TRec (ListUtil.mapsecond (etsubst s) stl)
 (*          | E.TAddr s => t *)
-         | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod))
+         | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod)
+         | E.TCmd (t, p) => E.TCmd (etsubst s t, p)
+         | E.TThread (t, p) => E.TThread (etsubst s t, p)
+         | E.TForall (vs, t) => E.TForall (vs, etsubst s t))
 
 
   (* w/x in t *)
@@ -80,8 +83,12 @@ struct
 
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
-    | prsubst s (TCmd (t, p)) = TCmd (prsubst s t, prsubsp s p)
-    | prsubst s (TThread (t, p)) = TThread (prsubst s t, prsubsp s p)
+    | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
+        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), ref (map (prsubspsc s) (!c)))
+
+    | prsubst s (TThread (t, ps, c)) = 
+        TThread (prsubst s t, prsubsps s ps, ref (map (prsubspsc s) (!c)))
+
     | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs
           val t' = prsubst (fromlist (ListPair.zip (wvs, List.map PVar nvs))) t
@@ -107,11 +114,20 @@ struct
           PVar v =>
           ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
            case VM.find (s, v) of
-               SOME ww => ww
+               SOME ww => ww 
              | NONE => x)
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
         | PConst _ => x
+
+  and prsubsps (s: prio subst) x : prioset =
+      case x of 
+           PSSet ps => PSSet (PrioSet.map (prsubsp s) ps)
+         | PSEvar (ref (Bound w)) => prsubsps s w
+         | _ => x
+
+  and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)
+    | prsubspsc s (PSCons (ps1, ps2)) = PSCons (prsubsps s ps1, prsubsps s ps2)
 
   and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2))
 

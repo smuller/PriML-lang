@@ -80,8 +80,14 @@ struct
            | TCont t => L.paren (L.seq[self t, $" cont"])
            | TRef t => L.paren (L.seq[self t, $" ref"])
            | TVar v => L.str (V.show v)
-           | TCmd (t, p) => L.paren (L.seq[self t, $" cmd[", prtol p, $"]"])
-           | TThread (t, p) => L.paren (L.seq[self t, $" thread[", prtol p, $"]"])
+           | TCmd (t, (pi, pp, pf), cc) => 
+             L.paren (L.seq[self t, 
+                            $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf,$"]",
+                            L.listex "[" "]" "," (map psctol (!cc))])
+           | TThread (t, ps, cc) => 
+               L.paren (L.seq[self t, 
+                              $" thread[", pstol ps, $"]",
+                             L.listex "[" "]" "," (map psctol (!cc))])
            | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",
                             L.listex "" "" "" (map (op$ o V.show) vs),
@@ -137,6 +143,13 @@ struct
       | prtol (PEvar (ref (Free n))) = $("'w" ^ itos n)
       | prtol (PVar v) = $(V.show v)
       | prtol (PConst s) = $s
+
+    and pstol (PSEvar (ref (Bound w))) = pstol w
+      | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
+      | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
+
+    and psctol (PSSup (ps1, ps2)) = %[$"sup", L.paren(%[pstol ps1, $",", pstol ps2])]
+      | psctol (PSCons (ps1, ps2)) = %[$"cons", L.paren(%[pstol ps1, $",", pstol ps2])]
 
     (* <t> *)
     fun bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
@@ -360,8 +373,22 @@ struct
                  %[$"jointext",
                    L.listex "[" "]" "," (map etol el)]
 *)
-           | Cmd (p, c) => L.paren(%[$"cmd at", prtol p])
+           | Cmd (ps, c) => L.paren (%[$"cmd[", pstol ps, $"]", $"{",ctol c, $"}"])
+           | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e])
                  )
+
+    and ctol c = 
+        (case c of 
+          Bind (v, e, c) => 
+              L.align 
+                [%[$(V.tostring v), $"<-", etol e, $";"], 
+                 %[ctol c]]
+        | Spawn (p, t, c) => %[$"spawn[", prtol p, $"]", $"{", ctol c, $"}"]
+        | Sync e => %[$"sync", etol e]
+        | Poll e => %[$"poll", etol e]
+        | Cancel e => %[$"cancel", etol e]
+        | Ret e => %[$"ret", etol e]
+        | Change p => %[$"change[", prtol p, $"]"])
 
     and dtol d =
         (case d of

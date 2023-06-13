@@ -9,6 +9,9 @@ sig
 
     val new_evar : unit -> IL.typ
     val new_pevar : unit -> IL.prio
+    val new_psevar : unit -> IL.prioset
+
+    val get_psevars : unit -> IL.prioset list
     (* reset the list of evars *)
     val clear_evars : unit -> unit
     (* set all unset evars to unit/home *)
@@ -19,7 +22,7 @@ sig
                     IL.typ -> IL.typ -> unit
 
     val unifyp : Context.context -> Pos.pos -> string -> 
-                     IL.prio -> IL.prio -> unit
+                    IL.prio -> IL.prio -> unit
 
     (* check_constraint context location p1 <= p2 *)
     val check_constraint : Context.context -> Pos.pos ->
@@ -67,6 +70,8 @@ sig
 
     val psubst1 : IL.prio -> Variable.var -> IL.typ -> IL.typ
     val psubsc1 : IL.prio -> Variable.var -> IL.pconstraint -> IL.pconstraint
+
+    val psesubst : IL.typ -> IL.typ
 
     val unroll : Pos.pos -> IL.typ -> IL.typ
 

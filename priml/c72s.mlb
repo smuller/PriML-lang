@@ -92,6 +92,11 @@ il/print.sml
 elab/context-sig.sml
 elab/context.sml
 
+elab/pscontext.sml
+
+elab/psetcstrs-sig.sml
+elab/psetcstrs.sml
+
 elab/unify-sig.sml
 elab/unify.sml
 

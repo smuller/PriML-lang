@@ -142,6 +142,7 @@ struct
        ("cancel", CANCEL),
        ("sync", SYNC),
        ("ret", RET),
+       ("change", CHANGE),
        ("priority", PRIORITY),
        ("order", ORDER),
        ("fairness", FAIRNESS),

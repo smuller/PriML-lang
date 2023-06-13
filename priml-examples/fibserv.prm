@@ -59,7 +59,7 @@ fun fib_server () =
         let val _ = print "Enter a number.\n"
             val request = inputLine ()
         in case request of
-               NONE => cmd[fg] {ret threads}
+               NONE => cmd[fg] {threads}
              | SOME s =>
                if eq (s, "done") then
                    cmd[fg] {spawn[alert] {ret (print "cleaning up\n")};
@@ -86,7 +86,7 @@ fun fib_server () =
 
 fun cleanup threads =
     if List.null threads then
-        cmd[bot] {()}
+        cmd[bot] {ret ()}
     else
         cmd[bot] {sync (List.hd threads);
                   cleanup (List.tl threads) }

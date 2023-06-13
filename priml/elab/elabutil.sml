@@ -4,11 +4,14 @@ struct
 
     exception Elaborate of string
     structure V = Variable
+    structure PSC = PSContext
 
     infixr 9 `
     fun a ` b = a b
 
     val ltos = Pos.toString
+
+    fun snd (x, y) = y
 
     fun error loc msg =
         let in
@@ -20,8 +23,13 @@ struct
 
     val all_evars  = ref (nil : IL.typ IL.ebind ref list)
     val all_wevars = ref (nil : IL.prio IL.ebind ref list)
+    val all_psevars = ref (nil : IL.prioset IL.ebind ref list)
     fun clear_evars () = (all_evars  := nil;
-                          all_wevars := nil)
+                          all_wevars := nil;
+                          all_psevars := nil)
+
+    fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars)
+
     fun finalize_evars () =
       let in
         app (fn r =>
@@ -46,6 +54,12 @@ struct
         all_wevars := e :: !all_wevars;
         IL.PEvar e
       end
+    fun new_psevar () = 
+      let val e = Unify.new_ebind ()
+      in
+        all_psevars := e :: !all_psevars;
+        IL.PSEvar e
+      end
 
     (* XXX5 compile flag *)
     fun warn loc s =
@@ -57,6 +71,139 @@ struct
     fun psubsc1 w v c =
         ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
          Subst.prsubsc ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) c)
+
+    (* rename psevar in priority set *)
+    fun psesubps psemap ps =  
+      case ps of 
+        IL.PSSet _ => (psemap, ps)
+      | IL.PSEvar _ =>
+          (case PSC.PSEvarMap.find (psemap, ps) of
+              NONE => 
+                let val ps' = new_psevar ()
+                    val psemap' = PSC.PSEvarMap.insert (psemap, ps, ps') 
+                in  
+                  (psemap', ps')
+                end
+            | SOME ps' => (psemap, ps'))
+
+    (* rename psevars in list of psconstraints *)
+    fun psesubspscs psemap pscons =
+      let 
+        (* rename psevars in psconstraint *)
+        fun psesubspsc (pscon, (psemap, pscons)) =
+          case pscon of
+               IL.PSCons (ps1, ps2) =>
+                let val (psemap', ps1') = psesubps psemap ps1
+                    val (psemap'', ps2') = psesubps psemap' ps2
+                 in 
+                   (psemap'', pscons @ [IL.PSCons (ps1', ps2')])
+                 end
+             | IL.PSSup (ps1, ps2) =>
+                let val (psemap', ps1') = psesubps psemap ps1
+                    val (psemap'', ps2') = psesubps psemap' ps2
+                 in 
+                   (psemap'', pscons @ [IL.PSSup (ps1', ps2')])
+                 end
+      in
+        List.foldl psesubspsc (psemap, []) pscons
+      end
+
+    (* make a copy and rename psevars in psconstrraints in type *)
+    fun psesubst t = 
+        let 
+          fun psesubst_rec psemap t = 
+            case t of 
+                 IL.TCmd (t', (pr1, pr2, pr3), pscons) => 
+                    let val (psemap', pscons') = psesubspscs psemap (!pscons)
+                        val (psemap', pr1') = psesubps psemap' pr1
+                        val (psemap', pr2') = psesubps psemap' pr2
+                        val (psemap', pr3') = psesubps psemap' pr3
+                        val (psemap', t'') = psesubst_rec psemap' t'
+                    in
+                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), ref pscons'))
+                    end
+               | IL.TForall (vl, cons, t') => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TForall (vl, cons, t''))
+                   end
+               | IL.TThread (t', ps, pscons) => 
+                   let val (psemap', pscons') = psesubspscs psemap (!pscons)
+                       val (psemap', t'') = psesubst_rec psemap' t' 
+                   in
+                     (psemap', IL.TThread (t'', ps, ref pscons'))
+                   end
+               | IL.Arrow (r, tl, t') => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                       val (psemap', tl') = List.foldl (fn (t, (psemap, tl)) =>
+                                                          let val (psemap', t') = psesubst_rec psemap t
+                                                          in (psemap', tl @ [t'])
+                                                          end)
+                                                       (psemap, [])
+                                                       tl
+                   in
+                     (psemap', IL.Arrow (r, tl', t''))
+                   end
+               | IL.TVec t' => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TVec t'')
+                   end
+               | IL.TCont t' => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TCont t'')
+                   end
+               | IL.TTag (t', v) => 
+                   let val (psemap', t'') = psesubst_rec psemap t' 
+                   in
+                     (psemap', IL.TTag (t'', v))
+                   end
+               | IL.TRec stl =>
+                   let val (psemap', stl') = List.foldl (fn ((l, t), (psemap, stl)) => 
+                                                            let val (psemap', t') = psesubst_rec psemap t
+                                                            in (psemap', stl @ [(l, t')])
+                                                            end)
+                                                        (psemap, [])
+                                                        stl
+                   in
+                     (psemap', IL.TRec stl')
+                   end
+               | IL.Sum lcl =>
+                   let val (psemap', lcl') = 
+                      List.foldl (fn ((l, tarm), (psemap, lcl)) => 
+                                    case tarm of 
+                                         IL.NonCarrier => (psemap, lcl @ [(l, tarm)])
+                                       | IL.Carrier { definitely_allocated, carried } =>
+                                           let val (psemap', t') = psesubst_rec psemap carried
+                                               val tarm' = IL.Carrier { definitely_allocated=definitely_allocated, 
+                                                                     carried = t' }
+                                           in (psemap', lcl @ [(l, tarm')])
+                                           end)
+                                  (psemap, [])
+                                  lcl
+                   in
+                     (psemap', IL.Sum lcl')
+                   end
+               | IL.Mu (i, m) =>
+                   let val (psemap', m') = List.foldl (fn ((v, t), (psemap, m)) => 
+                                                          let val (psemap', t') = psesubst_rec psemap t
+                                                          in (psemap', m @ [(v, t')])
+                                                          end)
+                                                      (psemap, [])
+                                                      m
+                   in
+                     (psemap', IL.Mu (i, m'))
+                   end
+               | IL.Evar (ref (IL.Bound t')) =>
+                   let val (psemap', t'') = psesubst_rec psemap t'
+                   in
+                     (psemap', IL.Evar (ref (IL.Bound t'')))
+                   end
+               | _ => (psemap, t)
+        in
+          snd (psesubst_rec (PSC.PSEvarMap.empty) t)
+        end
 
     (* unify context location message actual expected *)
     fun unify ctx loc msg t1 t2 =
@@ -201,8 +348,8 @@ struct
                    | IL.Shamrock (w, tt) => IL.Shamrock (w, got tt)
                    | IL.At (t, w) => IL.At(got t, gow w)
 *)
-                   | IL.TCmd (t, p) => IL.TCmd (got t, p)
-                   | IL.TThread (t, p) => IL.TThread (got t, p)
+                   | IL.TCmd (t, p, c) => IL.TCmd (got t, p, c)
+                   | IL.TThread (t, p, c) => IL.TThread (got t, p, c)
                    | IL.TForall (v, c, t) => IL.TForall (v, c, got t)
                    | IL.Evar er =>
                          (case !er of
