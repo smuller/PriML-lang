@@ -25,6 +25,7 @@ struct
   structure P = Primop
 
   exception Impossible
+  exception unimplemented
 
   fun bindval p = Val p
 
@@ -124,7 +125,8 @@ struct
                TCmd (elabtex ctx prefix loc t, (ps, new_psevar (), new_psevar ()), ref [])
            end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)), ref [])
-       | E.TForall (E.PPVar s, t) =>
+       | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p))))
+       (* | E.TForall (E.PPVar s, t) =>
          let val v = V.namedvar s
          in
              TForall ([v], [], elabtex (C.bindp ctx s v) prefix loc t)
@@ -136,7 +138,7 @@ struct
                                cs
          in
              TForall ([v], cs, elabtex (C.bindp ctx s v) prefix loc t)
-         end)
+         end  (* FIX: delete this *) *)
 
     and dovar ctx loc vv =
     ((case C.var ctx vv of
@@ -144,7 +146,7 @@ struct
         let
             (* See below *)
             (* val _ = print "evarizing\n" *)
-            val (tt, prios, tys) = evarize pt
+            val (tt, tys) = evarize pt
             (* val _ = print "done evarizing\n" *)
         in
           (*
@@ -154,7 +156,7 @@ struct
           Layout.print(ILPrint.wtol here, print);
           print "\n";
           *)
-          (Polyuvar {tys = tys, prios = prios, var = v}, tt)
+          (Polyuvar {tys = tys, var = v}, tt)
         end
             (*
     | (pt, v, i, Context.Modal w) =>
@@ -236,9 +238,8 @@ struct
                                  val ts = map (elabt ctx loc) ts
                                  val (args, argts) = ListPair.unzip ` map (elab ctx) es
                                    
-                                 val (l, _, tvs) = ElabUtil.evarizes (Poly({prios=nil,
-                                                                            tys=tys},
-                                                                           cod :: dom))
+                                 val (l, tvs) = ElabUtil.evarizes (Poly({tys=tys},
+                                                                        cod :: dom))
                                    
                                  val cod = hd l
                                  val dom = tl l
@@ -267,6 +268,11 @@ struct
         | E.Float _ => error loc "unimplemented: floating point"
 
         | E.Constant (E.CString s) => value (String s, Initial.ilstring)
+        (* priority constant *)
+        | E.Constant (E.CPrio p) => 
+            let val p' = C.prio ctx p in
+                value (Prio p', TPrio (PSSet (PrioSet.singleton p')))
+            end
 
         | E.Vector nil => 
               let
@@ -644,19 +650,20 @@ struct
                    (foldr Let ee dd, t)
                end
 
-        | E.ECmd (p, c) =>
+        | E.ECmd c =>
           let 
-              val pp =
-                  (case p of
+              val pp = new_psevar ()
+                  (* FIX: Ecmd has no p anymore *)
+                  (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
-                      | NONE => new_psevar ())
+                      | NONE => new_psevar ()) *)
               val (ec, t, (pr1, pr2, pr3), cc) = elabcmd ctx pp (c, loc)
               val cc' = ref ((pscstr_gen pr1 pr2 pr3) @ (pscstr_eq pr1 pp) @ cc)
           in
               (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3), cc'))
           end
 
-        | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented")
+        (* | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented") (* FIX: delete this *) *)
   (* XXX4 TODO come back to this later
           let val cpps = List.map (fn PPVar s => (s, [])
                                   | PPConstrain spcs => spcs
@@ -671,7 +678,7 @@ struct
                          case pp of
                              PPVar s => 
    *)
-        | E.PApply (e, p) =>
+        (* | E.PApply (e, p) =>
           let (* val _ = print "elaborating e\n" *)
               val (ee, t) = elab ctx e
               (* val _ = print "elaborating p\n" *)
@@ -708,23 +715,25 @@ struct
                   end
                 | TForall _ => error loc "only one priority argument supported"
                 | _ => error loc "not a forall"
-          end
+          end (* FIX: delete this *) *)
 
+  (* context, start refinement, (instruction, location) *)
   and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
       case i of
-          E.Spawn (p', c) =>
-          let val p' = elabpr ctx loc p'
+          E.Spawn (p', c) => raise unimplemented
+          (* let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
               val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
               val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_eq pr' pp') @ cc
           in
               (Spawn (p', t, ec), TThread (t, pr1, ref cc'), (pr, pr, pr), cc')
-          end
+          end *)
         | E.Sync e =>
           let val (ee, t) = elab ctx e
               val tint = new_evar ()
               val psint = new_psevar ()
               val unified_pscstrs = ref []
+              (* t should match TThread (tint, psint, unified_pscstrs) *)
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint, unified_pscstrs))
               val cc = (pscstr_cons pr psint) @ (!unified_pscstrs)
           in
@@ -761,14 +770,27 @@ struct
           in
               (Ret ee, t, (pr, pr, pr), [])
           end
-        | E.Change p' => 
-          let val p' = elabpr ctx loc p'
+        | E.Change p' => raise unimplemented
+          (* let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
               val pr' = new_psevar ()
               val cc = pscstr_gen pr pr' pp'
           in
               (Change p', TRec [], (pr, pr', pp'), cc)
-          end
+          end *)
+        (* | E.Change e =>
+          let val (p', t) = elab ctx e
+              val psint = new_psevar ()
+              val unified_pscstrs = ref []
+              val _ = unify ctx loc "change argument" t (TPrio (psint, unified_pscstrs))
+
+              val p' = elabpr ctx loc p'
+              val pp' = PSSet (PrioSet.singleton p')
+              val pr' = new_psevar ()
+              val cc = pscstr_gen pr pr' pp'
+          in
+              (Change p', TRec [], (pr, pr', pp'), cc)
+          end *)
         | E.IBind is => elabbind ctx pr is
 
   and elabbind ctx (pr: IL.prioset) (is, li) =
@@ -877,6 +899,7 @@ struct
                              else rexp
                            end))
               in
+              (* FIX: make arrow types of functions include argument names *)
                   (case to of
                        SOME t => unify ctx loc 
                                    "codomain type constraint on fun" tt
@@ -945,7 +968,7 @@ struct
     | elabk EL.KBytecode = IL.KBytecode
 *)
 
-  (* return a new context, and an il.dec list *)
+  (* return an il.dec list, and a new context *)
   and elabd ctx ((d, loc) : EL.dec) 
     : IL.dec list * C.context =  
     case d of
@@ -1289,15 +1312,14 @@ struct
                   map (fn (dt, arms, mu) =>
                        map (fn (ctor, NonCarrier) => 
                             let
-                              val cty = Poly({prios=nil, tys=atvs}, mu)
+                              val cty = Poly({tys=atvs}, mu)
 
                               val v = V.namedvar ("ctor_null_" ^ ctor)
 
                               val arms = ListUtil.mapsecond (arminfo_map musubst) arms
                             in
                                 (ctor, v, cty,
-                                 Val (Poly({prios = nil, 
-                                     tys = atvs},
+                                 Val (Poly({tys = atvs},
                                     (v, mu, Roll(mu,
                                                  Inject(Sum arms, ctor, NONE))))))
                             end
@@ -1308,8 +1330,7 @@ struct
                                 val dom = musubst ty
 
                                 val cty = 
-                                  Poly({prios=nil,
-                                        tys=atvs},
+                                  Poly({tys=atvs},
                                        (Arrow 
                                         (true (* yes total! *), 
                                          [dom], mu)))
@@ -1321,7 +1342,7 @@ struct
                                  (* type of constructor *)
                                  cty,
                                  (* injection value *)
-                                 Val (Poly({prios = nil, tys = atvs},
+                                 Val (Poly({tys = atvs},
                                             (ctorf,
                                              Arrow(true, [dom], mu),
                                              Value ` FSel (0,
@@ -1464,8 +1485,8 @@ struct
                        since if we generalize something in dom it
                        will be set Bound to that tyvar in cod. But
                        perhaps polygen should take a list of types. *)
-                      val { t = dom, tl = dpt, wl = dpw } = polygen outer_context dom
-                      val { t = cod, tl = cpt, wl = cpw } = polygen outer_context cod
+                      val { t = dom, tl = dpt } = polygen outer_context dom
+                      val { t = cod, tl = cpt} = polygen outer_context cod
                   in
                       ({ name = vv,
                          arg = [x],
@@ -1482,7 +1503,8 @@ struct
                          body = exp } :: fs, 
                        (f, vv, Arrow(false, [dom], cod)) :: efs,
                        dpt @ cpt @ tpolys,
-                       dpw @ cpw @ wpolys)
+                       (* dpw @ cpw @  *) (* FIX: delete priority variables *)
+                       wpolys)
                   end
 
               val (fs, efs, tps, wps) = 
@@ -1498,7 +1520,7 @@ struct
                  
                  We generalize both type variables and world variables.
                  *)
-              fun mkpoly tps wps at = Poly({prios = wps, tys = tps}, at)
+              fun mkpoly tps wps at = Poly({tys = tps}, at)
 
               (* rebuild the context with these functions
                  bound polymorphically *)
@@ -1530,8 +1552,8 @@ struct
                                   Letsham(Poly ({worlds = worlds, tys = tys},
                                                 (v, (wv, t), Sham (wv, e))))
                                   ) *)
-                  (fn Poly ({prios, tys}, (v, t, e)) =>
-                      Val (Poly ({prios = prios, tys = tys}, (v, t, e))))
+                  (fn Poly ({tys}, (v, t, e)) =>
+                      Val (Poly ({tys = tys}, (v, t, e))))
               
               (* we bind the bundle as a var or uvar.. *)
               val PolyOccur = Polyvar
@@ -1568,7 +1590,6 @@ struct
                                                                 Arrow (false, dom, cod), 
                                                                 Value (FSel(i, 
                                                                      PolyOccur { tys = map TVar tps,
-                                                                                 prios = map PVar wps,
                                                                                  var = bundv })))
                                      end) fs,
                       fctx)
@@ -1681,18 +1702,17 @@ struct
                              | _ => false)
 
 
-              val { t = tt, tl = tps, wl = wps } = 
+              val { t = tt, tl = tps } = 
                 if polydec
                 then polygen ctx tt
-                else { t = tt, tl = nil, wl = nil }
+                else { t = tt, tl = nil }
 
               val vv = Variable.namedvar v
 
-              val ctx = C.bindex ctx (SOME v) (Poly ({prios = wps,
-                                                      tys = tps}, tt)) vv Normal 
+              val ctx = C.bindex ctx (SOME v) (Poly ({tys = tps}, tt)) vv Normal 
 
           in
-              ([Val (Poly({ prios = wps, tys = tps }, (vv, tt, ee)))], ctx)
+              ([Val (Poly({ tys = tps }, (vv, tt, ee)))], ctx)
           end
 
     (* anything but a variable is syntactic sugar. *)
@@ -1746,7 +1766,7 @@ struct
             in
               (decls @ declsp, ctx)
             end
-    | E.WFun (s, ppats, pats, tyo, body) =>
+    (* | E.WFun (s, ppats, pats, tyo, body) =>
       let val cpps = List.map (fn E.PPVar s => (s, [])
                               | E.PPConstrain spcs => spcs
                               )
@@ -1798,7 +1818,7 @@ struct
                                                             pbody = ee}))))],
                ctx'')
             | _ => error loc "unexpected"
-      end
+      end (* FIX: delete this *) *)
 
     (* How to properly bind decs to context? And how to bind structure to signature? *)
     (* bind a module name to a sig *)
@@ -1922,7 +1942,22 @@ struct
           in
               (ids, [], ctx)
           end
-        | E.Priority s => ((* print ("binding " ^ s ^ "\n"); *) ([], [], C.bindplab ctx s))
+        | E.Priority s => (print ("binding " ^ s ^ "\n"); 
+            (* ([], [], C.bindplab ctx s) *)
+
+            (* FIX: add priority_name : TPrio {priority_name} (ref []) *)
+            (* Q: ? *)
+          let val p' = PConst s
+              (* (Value val, typ) *)
+              val (ee, tt) = value (Prio p', TPrio (PSSet (PrioSet.singleton p')))
+
+              val vv = Variable.namedvar s
+
+              val ctx = C.bindplab ctx s
+              val ctx = C.bindex ctx (SOME s) (Poly ({tys = nil}, tt)) vv Normal 
+          in
+              ([], [], ctx)
+          end)
         | E.Order (s1, s2) => (([], [], C.bindpcons ctx (PConst s1, PConst s2))
                                handle C.Context s => raise (Elaborate s)
                                     | C.Absent (_, id) =>
@@ -1982,7 +2017,15 @@ struct
       val prios = C.plabs G'
       val cons = List.map checkcons (C.pcons G')
     in
-      solve_psetcstrs cc;
+      Layout.print 
+        (Layout.listex "[" "]" "," 
+          (map ILPrint.psctol (cc)), print);
+      print "\n";
+      Layout.print 
+        (Layout.listex "[" "]" "," 
+        (map ILPrint.psctol (!Unify.global_cstrs)), print);
+      print "\n";
+      solve_psetcstrs (cc @ !Unify.global_cstrs); (* FIX: append global constraints *)
       finalize_evars ();
       (idl, prios, cons, fs, ec)
     end handle e as Match => raise Elaborate ("match:" ^ 

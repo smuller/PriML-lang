@@ -38,7 +38,7 @@ sig
     (* context extension operations *)
     
     (* bind a priority *)
-    val bindp : context -> string -> Variable.var -> context
+    (* val bindp : context -> string -> Variable.var -> context *) (* FIX: delete priority variables *)
     val bindplab : context -> string -> context
 
     val bindpcons : context -> IL.prio * IL.prio -> context

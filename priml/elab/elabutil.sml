@@ -122,11 +122,11 @@ struct
                     in
                       (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), ref pscons'))
                     end
-               | IL.TForall (vl, cons, t') => 
+               (* | IL.TForall (vl, cons, t') => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
                    in
                      (psemap', IL.TForall (vl, cons, t''))
-                   end
+                   end (* FIX: delete this *) *)
                | IL.TThread (t', ps, pscons) => 
                    let val (psemap', pscons') = psesubspscs psemap (!pscons)
                        val (psemap', t'') = psesubst_rec psemap' t' 
@@ -224,8 +224,27 @@ struct
                     raise Elaborate "type error"
                 end
 
+    (* supertype context location message actual expected *)
+    fun supertype ctx loc msg t1 t2 =
+            Unify.supertype ctx t1 t2
+            handle Unify.Unify s => 
+                let 
+                    val $ = Layout.str
+                    val % = Layout.mayAlign
+                in
+                    Layout.print
+                    (Layout.align
+                     [%[%[$("Type mismatch (" ^ s ^ ") at "), %[$(Pos.toString loc),
+                          $": "], $msg]],
+                      %[$"expected:", Layout.indent 4 (ILPrint.ttolex (MuName.name ctx) t2)],
+                      %[$"actual:  ", Layout.indent 4 (ILPrint.ttolex (MuName.name ctx) t1)]],
+                     print);
+                    print "\n";
+                    raise Elaborate "type error"
+                end
+
     (* unify context location message actual expected *)
-    fun unifyp ctx loc msg w1 w2 =
+    (* fun unifyp ctx loc msg w1 w2 =
             Unify.unifyp ctx w1 w2
             handle Unify.Unify s => 
                 let 
@@ -241,7 +260,7 @@ struct
                      print);
                     print "\n";
                     raise Elaborate "type error"
-                end
+                end *)
 
 
     fun check_constraint ctx loc p1 p2 =
@@ -294,9 +313,10 @@ struct
     fun polygen ctx (ty : IL.typ) (* (atworld : IL.prio) *) =
         let 
             val acct = ref nil
-            val accw = ref nil
 
 (*
+            val accw = ref nil
+
             val occurs_in_atworld =
               (* path compress first *)
               let 
@@ -350,7 +370,8 @@ struct
 *)
                    | IL.TCmd (t, p, c) => IL.TCmd (got t, p, c)
                    | IL.TThread (t, p, c) => IL.TThread (got t, p, c)
-                   | IL.TForall (v, c, t) => IL.TForall (v, c, got t)
+                   | IL.TPrio p => IL.TPrio p
+                   (* | IL.TForall (v, c, t) => IL.TForall (v, c, got t) (* FIX: delete this *) *)
                    | IL.Evar er =>
                          (case !er of
                               IL.Free n =>
@@ -366,7 +387,7 @@ struct
                                       end
                             | IL.Bound ty => got ty))
         in
-            { t = got ty, tl = rev (!acct), wl = rev (!accw) }
+            { t = got ty, tl = rev (!acct) }
         end
 
     fun polywgen ctx (w as IL.PEvar er) =
@@ -398,7 +419,7 @@ struct
            NONE
          end
 
-    fun evarizes (IL.Poly({prios, tys}, mt)) =
+    fun evarizes (IL.Poly({tys}, mt)) =
         let
           (* make the type and world substitutions *)
             fun mkts nil m ts = (m, rev ts)
@@ -408,26 +429,17 @@ struct
                 mkts rest (V.Map.insert (m, tv, e)) (e :: ts)
               end
 
-            fun mkws nil m ws = (m, rev ws)
-              | mkws (tv::rest) m ws =
-              let val e = new_pevar ()
-              in
-                mkws rest (V.Map.insert (m, tv, e)) (e :: ws)
-              end
-
-            val (wsubst, ws) = mkws prios V.Map.empty nil
             val (tsubst, ts) = mkts tys V.Map.empty nil
 
-            fun wsu t = Subst.prsubst wsubst t
             fun tsu t = Subst.tsubst tsubst t
 
         in
-          (map ((* wsu o *) tsu) mt, ws, ts)
+          (map tsu mt, ts)
         end
 
-    fun evarize (IL.Poly({prios, tys}, mt)) = 
-      case evarizes ` IL.Poly({prios=prios, tys=tys}, [mt]) of
-        ([m], ws, ts) => (m, ws, ts)
+    fun evarize (IL.Poly({tys}, mt)) = 
+      case evarizes ` IL.Poly({tys=tys}, [mt]) of
+        ([m], ts) => (m, ts)
       | _ => raise Elaborate "impossible"
 
 
@@ -447,7 +459,7 @@ struct
     | unroll loc _ =
       error loc "internal error: unroll non-mu"
 
-  fun mono t = IL.Poly({prios= nil, tys = nil}, t)
+  fun mono t = IL.Poly({tys = nil}, t)
 (*
   local
     val mobiles = ref nil : (Context.context * Pos.pos * string * IL.typ) list ref

@@ -43,14 +43,13 @@ struct
     exception NoMu
   
 
-    fun worldstys nil nil = L.empty
-      | worldstys w t =
-      L.seq [$"(", % ` L.separateRight (map ($ o V.tostring) w, ","),
-             $";", % ` L.separateRight (map ($ o V.tostring) t, ","),
+    fun worldstys nil = L.empty
+      | worldstys t =
+      L.seq [$"(", % ` L.separateRight (map ($ o V.tostring) t, ","),
              $")"]
 
-    fun ptol f (Poly ({prios = nil, tys = nil}, a)) = f a
-      | ptol f (Poly ({prios, tys}, a)) = %[worldstys prios tys, f a]
+    fun ptol f (Poly ({tys = nil}, a)) = f a
+      | ptol f (Poly ({tys}, a)) = %[worldstys tys, f a]
 
     fun ttol t = ttolex (fn _ => NONE) t
     and ttolex ctx t =
@@ -88,11 +87,13 @@ struct
                L.paren (L.seq[self t, 
                               $" thread[", pstol ps, $"]",
                              L.listex "[" "]" "," (map psctol (!cc))])
-           | TForall (vs, pcons, t) =>
+           | TPrio ps => 
+               L.paren (L.seq[$"thread[", pstol ps, $"]"])
+           (* | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",
                             L.listex "" "" "" (map (op$ o V.show) vs),
                             $".",
-                            ttol t])
+                            ttol t]) (* FIX: delete this *) *)
 (*
            | TAddr w => L.paren (L.seq[wtol w, $" addr"])
            | Shamrock (w, t) => %[$("{" ^ V.tostring w ^ "}"), ttol t]
@@ -162,6 +163,7 @@ struct
          Int i => $("0x" ^ Word32.toString i)
        | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^ 
                        (if size s > 100 then "..." else "") ^ "\"")
+       | Prio (PConst p) =>  $("priority[" ^ p ^ "]")
        | VRecord lvl => recordortuple vtol "=" "(" ")" "," lvl
        | VRoll (t, v) => %[$"roll", L.paren (ttol t), vtol v]
        | VInject (t, l, vo) => %[$("inj_" ^ l), 
@@ -201,7 +203,7 @@ struct
                         L.indent 4 (etol body)]
                | _ => def ())
            end
-       | PFn _ => %[$"pfn"]
+       (* | PFn _ => %[$"pfn"] (* FIX: delete this *) *)
 
 
 (*
@@ -237,21 +239,19 @@ struct
                        L.indent 4 (etol body)]) fl)
                ]
 
-       | Polyuvar {prios=nil, tys=nil, var} => $("~" ^ V.show var)
-       | Polyuvar {prios, tys, var} => 
+       | Polyuvar {tys=nil, var} => $("~" ^ V.show var)
+       | Polyuvar {tys, var} => 
              %[$("~" ^ V.show var),
                if !iltypes 
                then 
-                   (* XXX5 separate them? *)
-                   L.listex "<" ">" "," (map prtol prios @ map ttol tys)
+                   L.listex "<" ">" "," (map ttol tys)
                else $""]
 
-       | Polyvar {prios=nil, tys=nil, var} => $(V.show var)
-       | Polyvar {prios, tys, var} => %[$(V.show var),
+       | Polyvar {tys=nil, var} => $(V.show var)
+       | Polyvar {tys, var} => %[$(V.show var),
                                          if !iltypes 
                                          then 
-                                           (* XXX5 separate them? *)
-                                           L.listex "<" ">" "," (map prtol prios @ map ttol tys)
+                                           L.listex "<" ">" "," (map ttol tys)
                                          else $""]
 
            )
@@ -374,7 +374,7 @@ struct
                    L.listex "[" "]" "," (map etol el)]
 *)
            | Cmd (ps, c) => L.paren (%[$"cmd[", pstol ps, $"]", $"{",ctol c, $"}"])
-           | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e])
+           (* | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e]) (* FIX: delete this *) *)
                  )
 
     and ctol c = 
@@ -397,21 +397,21 @@ struct
            | Newtag (new, t, ext) => %[$"newtag", $(V.tostring new), 
                                        $"tags", ttol t, $"in", 
                                        $(V.tostring ext)]
-           | Val (Poly ({prios, tys}, (var, t, e))) =>
+           | Val (Poly ({tys}, (var, t, e))) =>
                %[%[%([$"val"]
-                     @ [worldstys prios tys]
+                     @ [worldstys tys]
                      @ [$(V.tostring var)]),
                    L.indent 4 (%[$":", ttol t, $"="])],
                  L.indent 4 (etol e)]
 (*
-           | Leta (Poly({prios, tys}, (v, t, va))) =>
+           | Leta (Poly({tys}, (v, t, va))) =>
                %[%[%([$"leta"]
                      @ [worldstys prios tys]
                      @ [$(V.tostring v)]),
                    L.indent 4 (%[$":", ttol t, $"="])],
                  L.indent 4 (vtol va)]
 
-           | Letsham (Poly({prios, tys}, (v, (wv, t), va))) =>
+           | Letsham (Poly({tys}, (v, (wv, t), va))) =>
                %[%[%([$"letsham"]
                      @ [worldstys prios tys]
                      @ [$(V.tostring v)]),

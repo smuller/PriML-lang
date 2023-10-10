@@ -64,9 +64,9 @@ struct
                  let val (GG, dd) = dul G d
                  in Let (dd, nul GG e)
                  end
-              | ECmd (p, cmd) => ECmd (p, cmd)
-              | PFn (ppats, pats, e) => PFn (ppats, pats, self e)
-              | PApply (e, p) => PApply (nul G e, p)
+              | ECmd cmd => ECmd cmd
+              (* | PFn (ppats, pats, e) => PFn (ppats, pats, self e) (* FIX: delete this *) *)
+              (* | PApply (e, p) => PApply (nul G e, p) (* FIX: delete this *) *)
            )
         end
 
@@ -82,7 +82,8 @@ struct
            | TArrow (a,b) => TArrow (tul G a, tul G b)
            | TCmd (t, p) => TCmd (tul G t, p)
            | TThread (t, p) => TThread (tul G t, p)
-           | TForall (pp, t) => TForall (pp, tul G t))
+           | TPrio p => TPrio p)
+           (* | TForall (pp, t) => TForall (pp, tul G t) (* FIX: delete this *) *)
 
     and pul G pat =
         (case pat of
@@ -169,10 +170,10 @@ struct
                                    nul G e)) clauses)) fl })
 
                      (* XXX4 should really do something with these *)
-           | WFun (s, ppats, pats, SOME t, e) =>
+           (* | WFun (s, ppats, pats, SOME t, e) =>
              (G, WFun (s, ppats, pats, SOME (tul G t), nul G e))
            | WFun (s, ppats, pats, NONE, e) =>
-             (G, WFun (s, ppats, pats, NONE, nul G e))
+             (G, WFun (s, ppats, pats, NONE, nul G e)) (* FIX: delete this *) *)
            | Structure (s, ds) => 
                (G, Structure (s, map (#2) ` map (dul G) ds))
            | Signature (s, ds) => 

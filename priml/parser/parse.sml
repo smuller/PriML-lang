@@ -142,6 +142,8 @@ struct
 
   fun prio () = id
 
+  fun rfmt () = id
+
   fun pconstraint () =
       separate ("expected prio <= prio" **
                      (id && (`LESSEQUAL >> id))) (`CAND)
@@ -180,8 +182,10 @@ struct
           alt [`UNIT return TRec nil,
                number wth (TNum o Word32.toInt),
                id wth TVar,
-               `FORALL >> ($ppat) << `DOT && ($apptype)
-                wth TForall,
+               (* FIX: no more priority application *)
+               (* `FORALL >> ($ppat) << `DOT && ($apptype)
+                wth TForall, *)
+
                (* XXX should allow specifying world var *)
                (* (`LBRACE && `RBRACE) >> $mostatomic wth (fn t => TSham(NONE, t)), *)
                (* don't allow empty record, because {} means shamrock. *)
@@ -199,10 +203,18 @@ struct
                (* then perhaps some more postfix applications *)
                -- (fn ((t, tt), s) => postfixapps (TApp(t :: tt, s))),
 
-               $mostatomic && (`CMD >> `LSQUARE >> ($prio) << `RSQUARE)
+               (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
+               (* $mostatomic && (`CMD >> `LSQUARE >> ($prio) << `RSQUARE)
+                wth TCmd, *)
+               (* $mostatomic && (`CMD >> `LSQUARE >> ($rfmt && $rfmt && $rfmt) << `RSQUARE)
+                wth TCmd, *)
+               $mostatomic && (`CMD >> `LSQUARE >> ($rfmt) << `RSQUARE)
                 wth TCmd,
 
-               $mostatomic && (`THREAD >> `LSQUARE >> ($prio) << `RSQUARE)
+               (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
+               (* $mostatomic && (`THREAD >> `LSQUARE >> ($prio) << `RSQUARE)
+                wth TThread, *)
+               $mostatomic && (`THREAD >> `LSQUARE >> ($rfmt) << `RSQUARE)
                 wth TThread,
 
                (* also includes mostatomic, not applied to anything *)
@@ -215,6 +227,7 @@ struct
   fun ttoc (INT i) = SOME (CInt i)
     | ttoc (CHAR c) = SOME (CChar c)
     | ttoc (STR s) = SOME (CString s)
+    | ttoc (PRIO p) = SOME (CPrio p)
     | ttoc _ = NONE
 
   val constant = maybe ttoc
@@ -336,7 +349,7 @@ struct
 
       and atomexp G =
 	  let fun mk_cmd_exp (const: 'a -> cmd_) (arg: 'a) =
-		  ECmd (NONE, (const arg))
+		  ECmd (const arg)
 	  in
           alt [lid G wth Var,
                constant wth Constant,
@@ -422,16 +435,24 @@ struct
                                 Record(ListUtil.mapi 
                                         (fn (e, i) => 
                                             (Int.toString (i + 1), e)) (e::el))),
-               `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd) 
-                wth (fn (p, (m, _)) => ECmd (SOME p, m)),
+               (* FIX: change "cmd[p]" to "do" *)
+               (* `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd) 
+               wth (fn (p, (m, _)) => ECmd (SOME p, m)), *)
+               (* `CMD >> (call G cmd)
+                wth (fn (m, _) => ECmd m), *)
 
-	       `CMD >> ( `LBRACE >> (call G cmd) << `RBRACE)
-                wth (fn (m, _) => ECmd (NONE, m)),
+	       `CMD >> (call G cmd)
+                wth (fn (m, _) => ECmd m),
 
-               (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
-						 wth (fn (p, e) => PApply (e, p)),
+               (* FIX: no more priority application *)
+               (* (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
+						 wth (fn (p, e) => PApply (e, p)), *)
 
-	       `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
+           (* FIX: change "spawn[p] {m}" to "spawn[e] {m}" *)
+	       (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
+                (call G cmd)
+                wth (mk_cmd_exp Spawn), *)
+           `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
                 (call G cmd)
                 wth (mk_cmd_exp Spawn),
 
@@ -443,7 +464,7 @@ struct
 
                `RET >> call G exp wth (mk_cmd_exp IRet),
 
-               `CHANGE >> (`LSQUARE >> ($prio) << `RSQUARE) wth (mk_cmd_exp Change)
+               `CHANGE >> (`LSQUARE >> (call G exp) << `RSQUARE) wth (mk_cmd_exp Change)
               ]
 	  end
       and appexp G =
@@ -542,11 +563,13 @@ struct
                            in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l), 
                                    (Var (Id v), l))
                            end),
-                   call G constrainexp,
-                   !!(`WFN) >> (repeat1 ($ppat) && repeat1 (call G mapat)
+                   call G constrainexp
+
+                   (* FIX: no more priority application *)
+                   (* !!(`WFN) >> (repeat1 ($ppat) && repeat1 (call G mapat)
                                         << `DARROW) &&
                             call G exp
-                            wth (fn ((ppats, pats), e) => PFn (ppats, pats, e))
+                            wth (fn ((ppats, pats), e) => PFn (ppats, pats, e)) *)
                   ])
 
       and funclause G =
@@ -674,14 +697,15 @@ struct
                  `FUN >> opt (`INLINE) && 
                    call G funs wth (fn (inl, fs) => Fun { inline = Option.isSome inl,
                                                           funs = fs }),
-                 `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
+                 (* FIX: no more priority application *)
+                 (* `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
                                                `RSQUARE) && (fid G)
                   && (repeat1 (call G mapat))
                   && (opt (`COLON >> typ)))
                   << `EQUALS && (call G exp)
                   wth
                   (fn ((ppats, (v, (pats, t))), e) =>
-                      WFun (v, [ppats], pats, t, e)),
+                      WFun (v, [ppats], pats, t, e)), *)
 
                  `FUN -- punt "expected (INLINE) FUNS after FUN"
 (*                   `WFUN -- punt "expected id PPATS PATS EQUALS exp after WFUN" *)

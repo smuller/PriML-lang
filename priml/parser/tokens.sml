@@ -16,6 +16,7 @@ struct
     datatype token =
         ID of string
       | STR of string
+      | PRIO of string
       | INT of IntConst.intconst
       | CHAR of char
       | FLOAT of real

@@ -294,8 +294,8 @@ struct
                                   (tt, I.Var vv)
                                 end
                             |*)
-                              (IL.Poly({prios=nil, tys=nil}, tt), vv, Normal) =>
-                              (tt, I.Polyuvar {tys = nil, prios = nil, var = vv})
+                              (IL.Poly({tys=nil}, tt), vv, Normal) =>
+                              (tt, I.Polyuvar {tys = nil, var = vv})
 (*                                (wsubst1 here v tt, I.Polyuvar { tys = nil, worlds = nil, var = vv }) *)
                             | _ => raise Pattern 
                                   "case object is poly or constructor (?)"
@@ -345,6 +345,10 @@ struct
                               raise Pattern "(un)expected string pattern"
                         | compare (_, E.CString _) =
                               raise Pattern "(un)expected string pattern"
+                        | compare (E.CPrio _, _) =
+                              raise Pattern "(un)expected priority pattern"
+                        | compare (_, E.CPrio _) =
+                              raise Pattern "(un)expected priority pattern"
                         | compare (E.CChar c, E.CChar d) =
                                   Char.compare(c, d)
 
@@ -444,8 +448,8 @@ struct
                                    val (ee, tt) =
                                        elm ctx cols exps doconst_default
                                in
-                                   unify ctx loc
-                                     "ccw cont / default" deft tt;
+                                   supertype ctx loc
+                                     "ccw cont / default" tt deft;
                                    ee
                                end)],
 
@@ -489,8 +493,8 @@ struct
                                val (ee, tt) =
                                  elm ctx cols exps doconst_default
                              in
-                               unify ctx loc
-                               "ccw-switch cont / default" deft tt;
+                               supertype ctx loc
+                               "ccw-switch cont / default" tt deft;
                                ee
                              end) arms,
                             defe),
@@ -616,7 +620,7 @@ struct
                        it way too hairy to put them together. *)
 
                     case C.var nctx l of
-                      (IL.Poly({prios=nil, tys=nil},
+                      (IL.Poly({tys=nil},
                                (I.Arrow (_, _, cod as I.TVar _))), _, 
                        I.Tagger _) =>
                        (* ****** Exception Constructor **** *)
@@ -634,7 +638,7 @@ struct
                               onelab below *)
                            fun onelab (l, perl) =
                              case C.var nctx l of
-                               (I.Poly ({prios=nil, tys=nil}, 
+                               (I.Poly ({tys=nil}, 
                                         (I.Arrow (_, [ruledom], rulecod))), 
                                 _, I.Tagger vtag) =>
                                  let
@@ -655,8 +659,8 @@ struct
                                         | C.Valid _ => ())
 *)
 
-                                     val () = unify nctx loc "tagcase codomain" 
-                                                      cod rulecod
+                                     val () = supertype nctx loc "tagcase codomain" 
+                                                      rulecod cod
 
                                      val (ocol, oe, rest) = 
                                          ListUtil.unzip3 perl
@@ -685,8 +689,12 @@ struct
 
                                      val (re, rt) = elm nctx cols ne ndef
                                    in
-                                       unify ctx loc 
-                                          "tag pattern return" rt rett;
+                                       supertype ctx loc 
+                                          "tag pattern return" rett rt;
+                                       Layout.print 
+                                         (Layout.listex "[" "]" "," 
+                                         (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                       print "\n ___ \n";
                                        (vtag, re)
                                    end
                              | _ => raise Pattern 
@@ -701,7 +709,7 @@ struct
 
                          val (opt, objv) = 
                            case C.var nctx obj of
-                               (t, v, _) => (t, I.Polyuvar ({prios = nil, tys = nil, var = v}))
+                               (t, v, _) => (t, I.Polyuvar ({tys = nil, var = v}))
                                                 (* (pwsubst1 here vv t, I.Polyuvar ({worlds = nil, tys = nil, var = v}))
                            | (t, v, _, C.Modal w) =>
                                let in
@@ -712,7 +720,11 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "tagcase arg" (#1 (evarize opt)) cod;
-                           unify nctx loc "tagcase default" rett dt; 
+                           supertype nctx loc "tagcase default" rett dt; 
+                           Layout.print 
+                                (Layout.listex "[" "]" "," 
+                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                           print "\n tagcase default \n";
 
                            (I.Tagcase (cod, 
                                        I.Value objv,
@@ -763,7 +775,7 @@ struct
                                                  raise Pattern "non-carrier label has carried type?"
                                              | SOME IL.NonCarrier => ())
 
-                                          val _ = unify nctx loc "(nullary)sum codomain" cod tt
+                                          val _ = supertype nctx loc "(nullary) sum codomain" tt cod
 
                                           (* don't bind var; it would be nonsensical here. *)
 
@@ -787,8 +799,12 @@ struct
                                           (* elaborate the inside *)
                                           val (re, rt) = elm nctx cols oe ndef
                                         in
-                                          unify ctx loc 
-                                             "(nullary) sum pattern return" rt rett;
+                                          supertype ctx loc 
+                                             "(nullary) sum pattern return" rett rt;
+                                          Layout.print 
+                                                (Layout.listex "[" "]" "," 
+                                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                            print "\n (nullary) sum pattern return \n";
                                           (l, re)
                                         end
                                     | _ => raise Pattern "(nullary-pat)mu didn't contain sum")
@@ -816,11 +832,11 @@ struct
                                                 since domvar is fresh and I
                                                 never use it again ... *)
 
-                                               val _ = unify nctx loc "sum domain" 
+                                               val _ = supertype nctx loc "sum domain" 
                                                               domvar ruledom
 
-                                               val _ = unify nctx loc "sum codomain" 
-                                                              cod rulecod
+                                               val _ = supertype nctx loc "sum codomain" 
+                                                              rulecod cod
 
                                                val (ocol, oe, rest) =
                                                    ListUtil.unzip3 perl
@@ -855,8 +871,13 @@ struct
                                                (* elaborate the inside *)
                                                val (re, rt) = elm nctx cols ne ndef
                                            in
-                                               unify ctx loc 
-                                                  "sum pattern return" rt rett;
+                                           (* FIX: turn unifying into subtyping *)
+                                               supertype ctx loc 
+                                                  "sum pattern return" rett rt;
+                                               Layout.print 
+                                                    (Layout.listex "[" "]" "," 
+                                                    (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                                print "\n sum pattern return \n";
                                                (l, re)
                                            end)
                                     | _ => raise Pattern "mu bod not sum?")
@@ -880,7 +901,7 @@ struct
 
                          val (opt, objv) =
                            case C.var nctx obj of
-                               (t, v, _) => (t, I.Polyuvar ({prios = nil, tys = nil, var = v}))
+                               (t, v, _) => (t, I.Polyuvar ({tys = nil, var = v}))
                                                 (*
 
                                (pwsubst1 here vv t, I.Polyuvar ({worlds = nil, tys = nil, var = v}))
@@ -896,7 +917,11 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "sum arg" (#1 (evarize opt)) cod;
-                           unify nctx loc "sum default" rett dt; 
+                           supertype nctx loc "sum default" dt rett; (* FIX: turn unifying into subtyping *)
+                           Layout.print 
+                                (Layout.listex "[" "]" "," 
+                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                            print "\n sum default \n";
 
                            (* a nice optimization is, if the
                               case is exhaustive, then lose the 
@@ -1357,7 +1382,11 @@ struct
                  | E.PConstrain (pp, tt) =>
                        let 
                          val t = elabt ctx loc tt
-                       in unify ctx loc "pattern constraint" tv t;
+                       in supertype ctx loc "pattern constraint" t tv;
+                          Layout.print 
+                                (Layout.listex "[" "]" "," 
+                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                            print "\n pattern constraint \n";
                           one (pp, e)
                        end
 

@@ -41,7 +41,8 @@ struct
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
     | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
     | tsubst s (TThread (t, p, c)) = TThread (tsubst s t, p, c)
-    | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t)
+    | tsubst s (TPrio p) = TPrio p
+    (* | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t) (* FIX: delete this *) *)
 (*
     | tsubst s (At (t, w)) = At (tsubst s t, w)
     | tsubst s (Shamrock (wv, t)) = Shamrock (wv, tsubst s t)
@@ -63,7 +64,8 @@ struct
          | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod)
          | E.TCmd (t, p) => E.TCmd (etsubst s t, p)
          | E.TThread (t, p) => E.TThread (etsubst s t, p)
-         | E.TForall (vs, t) => E.TForall (vs, etsubst s t))
+         | E.TPrio p => E.TPrio p)
+         (* | E.TForall (vs, t) => E.TForall (vs, etsubst s t) (* FIX: delete this *) *)
 
 
   (* w/x in t *)
@@ -88,14 +90,16 @@ struct
 
     | prsubst s (TThread (t, ps, c)) = 
         TThread (prsubst s t, prsubsps s ps, ref (map (prsubspsc s) (!c)))
+    | prsubst s (TPrio ps) = 
+        TPrio (prsubsps s ps)
 
-    | prsubst s (TForall (wvs, cs, t)) =
+    (* | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs
           val t' = prsubst (fromlist (ListPair.zip (wvs, List.map PVar nvs))) t
           val cs' = cs (* XXX4 substitute in constraints *)
       in
           TForall (nvs, cs', prsubst s t')
-      end
+      end (* FIX: delete this *) *)
   (*
     | prsubst s (TAddr w) = TAddr (wsubsw s w)
     | prsubst s (x as Shamrock (wv, t)) = 

@@ -6,8 +6,15 @@ struct
 
   type intconst = Word32.word
   type priority = string
-  type prio = string
-  type pconstraint = prio * prio
+  type prio = string (* FIX: delete this *)
+  (* FIX: constraints *)
+  type pconstraint = prio * prio (* priority constraints *)
+  (* datatype pconstraint = 
+      PCAnd of pconstraint * pconstraint
+    | PCOr of pconstraint * pconstraint
+    | PCLessEqual of exp * exp
+    | PCEqual of exp * exp *)
+  type rfmt = string
   type psconstraint = unit (* XXX *)
   type id = string
 
@@ -58,42 +65,43 @@ struct
     (* compile-time warning if this code is live *)
     | CompileWarn of string
 
-    | ECmd of prio option * cmd_
-    | PFn of ppat list * pat list * exp
-    | PApply of exp * prio
+    | ECmd of cmd_ (* FIX: ECmd of cmd_ *)
+    (* | PFn of ppat list * pat list * exp (* priority abstraction *) (* FIX: delete this *) *)
+    (* | PApply of exp * prio (* FIX: delete this *) *)
 
     | Handle of exp * (pat * exp) list
 
   and cmd_ =
       IBind of ((string * exp) list) * exp
-    | Spawn of prio * cmd
+    | Spawn of exp * cmd  (* Spawn of exp * cmd *)
     | Sync of exp
     | Poll of exp
     | Cancel of exp
     | IRet of exp
-    | Change of prio
+    | Change of exp  (* Change of exp *)
 
   and constant =
       CInt of intconst
     | CString of string
     | CChar of char
+    | CPrio of priority
 
-  and pat =
+  and pat = (* any pattern *)
       PVar of string
-    | PWild
-    | PAs of string * pat
-    | PRecord of (string * pat) list
+    | PWild (* "_" (matches anything) *)
+    | PAs of string * pat (* "as" syntax for matching *)
+    | PRecord of (string * pat) list (* record matching *)
     | PConstrain of pat * typ
     | PConstant of constant
-    | PApp of string * pat option
-    | PWhen of exp * pat
+    | PApp of string * pat option (* matching on constructors *)
+    | PWhen of exp * pat (* "when" syntax for matching *)
 
 (*  and pconstraint =
       CLess of prio * prio
     | CAnd of pconstraint * pconstraint
  *)
 
-  and ppat =
+  and ppat = (* fn[p] pattern *) (* FIX: delete this *)
       PPVar of string
     | PPConstrain of string * pconstraint list (* pconstraint *)
 
@@ -103,13 +111,17 @@ struct
     | TRec of (string * typ) list
 (*    | TSham of string option * typ
     | TAt of typ * world *)
-    | TArrow of typ * typ
+    | TArrow of typ * typ (* FIX: TArrow of (string * typ) * typ *)
     (* shortcut for tuple length *)
     | TNum of int
   (*     | TAddr of world (* can only be the address of a world expression *) *)
-    | TCmd of typ * prio
-    | TThread of typ * prio 
-    | TForall of ppat * typ
+    (* Fix: 3 refinements for cmds *)
+    (* | TCmd of typ * (rfmt * rfmt * rfmt) *)
+    | TCmd of typ * rfmt
+    | TThread of typ * rfmt 
+    (* | TForall of ppat * typ (* FIX: delete this *) *) 
+
+    | TPrio of rfmt
 
   and dec_ =
       (* wish we had refinements here. 
@@ -129,7 +141,7 @@ struct
                funs : (string list * string * 
                        (pat list * typ option * exp) list) list }
 
-    | WFun of string * ppat list * pat list * typ option * exp
+    (* | WFun of string * ppat list * pat list * typ option * exp (* FIX: delete this *) *)
 
     (* datatype (a, b, c) t = A of t | B of b | C of t1
        and                u = D of u | E of t *)

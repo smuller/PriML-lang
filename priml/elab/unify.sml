@@ -17,6 +17,9 @@ struct
             end
     end
 
+    (* FIX: global constraints for priorities (instead of one for each priority) *)
+    val global_cstrs = ref []
+
     (* actually, I think in situations where these are
        called it will be the case that there are no
        top-level "Bound"s *)
@@ -54,7 +57,8 @@ struct
            | (Evar (r' as ref (Free _))) => r = r'
            | TCmd (t, _, _) => occurs r t
            | TThread (t, _, _) => occurs r t
-           | TForall (_, _, t) => occurs r t
+           | TPrio _ => false
+           (* | TForall (_, _, t) => occurs r t (* FIX: delete this *) *)
 (*           | At (t, w) => occurs r t
            | Shamrock (_, t) => occurs r t
            | TAddr w => false
@@ -84,7 +88,8 @@ struct
     fun mapplus m (v, vv) =
         Variable.Map.insert (m, v, vv)
 
-    fun unifyex ctx eqmap t1 t2 =
+    (* FIX: instead of `unifyex` now supertypex *)
+    fun supertypex ctx eqmap t1 t2 =
         (case (t1, t2) of
              (TVar v1, TVar v2) =>
                  ignore (Variable.eq (mapift eqmap v1, v2) 
@@ -94,11 +99,11 @@ struct
                  let in
                      Variable.eq (mapift eqmap v1, v2) 
                       orelse raise Unify "tag var";
-                     unifyex ctx eqmap t1 t2
+                     supertypex ctx eqmap t1 t2
                  end
 
-           | (TVec t1, TVec t2) => unifyex ctx eqmap t1 t2
-           | (TCont t1, TCont t2) => unifyex ctx eqmap t1 t2
+           | (TVec t1, TVec t2) => supertypex ctx eqmap t1 t2
+           | (TCont t1, TCont t2) => supertypex ctx eqmap t1 t2
            | (TRec lcl1, TRec lcl2) =>
                  let
                      val l = ListUtil.sort 
@@ -109,21 +114,21 @@ struct
                      ignore
                      (ListUtil.all2 (fn ((l1,t1),(l2,t2)) =>
                                      let in
-                                         unifyex ctx eqmap t1 t2;
+                                         supertypex ctx eqmap t1 t2;
                                          l1 = l2
                                      end) l r
                       orelse raise Unify "Record")
                  end
            | (Arrow (_, dom1, cod1), Arrow (_, dom2, cod2)) => 
                  let in
-                     ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b; 
+                     ListUtil.all2 (fn (a, b) => (supertypex ctx eqmap b a; (* FIX: domain is contravariant *) 
                                                   true)) 
                                         dom1 dom2
                         orelse raise Unify "Arrow domains have different arity";
-                     unifyex ctx eqmap cod1 cod2
+                     supertypex ctx eqmap cod1 cod2
                  end
-           | (Evar (ref (Bound t1)), t2) => unifyex ctx eqmap t1 t2
-           | (t1, Evar (ref (Bound t2))) => unifyex ctx eqmap t1 t2
+           | (Evar (ref (Bound t1)), t2) => supertypex ctx eqmap t1 t2
+           | (t1, Evar (ref (Bound t2))) => supertypex ctx eqmap t1 t2
            | (Evar (r as ref (Free _)), t2) =>
                  if same_evar r t2 then ()
                  else if occurs r t2 then
@@ -134,7 +139,7 @@ struct
                  else if occurs r t1 then
                          raise Unify "circularity"
                       else set r t1 
-           | (TRef c1, TRef c2) => unifyex ctx eqmap c1 c2
+           | (TRef c1, TRef c2) => supertypex ctx eqmap c1 c2
            | (Mu (i1, m1), Mu (i2, m2)) => 
                let val (mt, mw) = eqmap
                in
@@ -142,7 +147,7 @@ struct
                  ((i1 = i2 andalso
                    ListUtil.all2 (fn ((v1, t1),
                                      (v2, t2)) =>
-                                 (unifyex ctx (mapplus mt (v1, v2), mw) t1 t2; 
+                                 (supertypex ctx (mapplus mt (v1, v2), mw) t1 t2; 
                                   true)) m1 m2)
                   orelse raise Unify "mu")
                end
@@ -157,7 +162,7 @@ struct
                                         let in
                                           if aa1 = aa2 then ()
                                           else raise Unify "sum:always_allocated(bug!)";
-                                          unifyex ctx eqmap tt1 tt2
+                                          supertypex ctx eqmap tt1 tt2
                                         end
                                     | _ => raise Unify "sum:carrier");
                                       l1 = l2))
@@ -170,11 +175,11 @@ struct
                  (* this binds world variables, so we need to insert those in
                     another map... *)
                  let val (mt, mw) = eqmap
-                 in unifyex ctx (mt, mapplus mw (w1, w2)) t1 t2
+                 in supertypex ctx (mt, mapplus mw (w1, w2)) t1 t2
                  end
            | (At (t1, w1), At (t2, w2)) =>
                  let in
-                     unifyex ctx eqmap t1 t2;
+                     supertypex ctx eqmap t1 t2;
                      unifywex ctx eqmap w1 w2
                  end
 *)
@@ -184,43 +189,49 @@ struct
                    else ();
                    ListPair.app (fn ((_, dom1, cod1), (_, dom2, cod2)) =>
                                  let in
-                                   ListUtil.all2 (fn (a, b) => (unifyex ctx eqmap a b; 
+                                   ListUtil.all2 (fn (a, b) => (supertypex ctx eqmap b a; (* FIX: domain is contravariant *) 
                                                                 true)) 
                                    dom1 dom2
                                    orelse raise Unify "(inner) Arrows have different arity";
 
-                                   unifyex ctx eqmap cod1 cod2
+                                   supertypex ctx eqmap cod1 cod2
                                  end) (al1, al2)
                  end
            | (TCmd (t1, (pi1, pp1, pf1), cc1), TCmd (t2, (pi2, pp2, pf2), cc2)) =>
                (* unified psconstraints from TThread *)
-               let val unified_cc = (pscstr_eq pi1 pi2)
-                                    @ (pscstr_eq pp1 pp2)
-                                    @ (pscstr_eq pf1 pf2)
+               let val unified_cc = (pscstr_sup pi2 pi1) (* FIX: start refinement contravariant *)
+                                    @ (pscstr_sup pp1 pp2)
+                                    @ (pscstr_sup pf1 pf2)
                                     @ (!cc1) 
                                     @ (!cc2) 
                in
                  cc1 := unified_cc;
                  cc2 := unified_cc;
-                 unifyex ctx eqmap t1 t2
+                 supertypex ctx eqmap t1 t2
                end
            | (TThread (t1, ps1, cc1), TThread (t2, ps2, cc2)) =>
                (* unified psconstraints from TThread *)
-               let val unified_cc = (pscstr_eq ps1 ps2)
+               let val unified_cc = (pscstr_sup ps1 ps2)
                                     @ (!cc1)
                                     @ (!cc2)
                in
                  cc1 := unified_cc;
                  cc2 := unified_cc;
-                 unifyex ctx eqmap t1 t2
+                 supertypex ctx eqmap t1 t2
                end
-           | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
+            | (TPrio ps1, TPrio ps2) =>
+               (* FIX: unify priorities *)
+               let val cc = pscstr_sup ps1 ps2
+               in
+                 global_cstrs := cc @ !global_cstrs
+               end
+           (* | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))
                                       mw (vs1, vs2)
              in
-                 unifyex ctx (mt, mw') t1 t2
-             end
+                 supertypex ctx (mt, mw') t1 t2
+             end (* FIX: delete this *) *)
 (*
            | (Shamrock _, _) => raise Unify "tycon mismatch (shamrock)"
            | (_, Shamrock _) => raise Unify "tycon mismatch (shamrock)"
@@ -251,15 +262,17 @@ struct
            | (_, TCmd _) => raise Unify "tycon mismatch (command)"
            | (TThread _, _) => raise Unify "tycon mismatch (thread)"
            | (_, TThread _) => raise Unify "tycon mismatch (thread)"
-           | (TForall _, _) => raise Unify "tycon mismatch (forall)"
-           | (_, TForall _) => raise Unify "tycon mismatch (forall)"
+           | (TPrio _, _) => raise Unify "tycon mismatch (prio)"
+           | (_, TPrio _) => raise Unify "tycon mismatch (prio)"
+           (* | (TForall _, _) => raise Unify "tycon mismatch (forall)" (* FIX: delete this *) *)
+           (* | (_, TForall _) => raise Unify "tycon mismatch (forall)" (* FIX: delete this *) *)
 (*           | (At _, _) => raise Unify "tycon mismatch (at)"
            | (_, At _) => raise Unify "tycon mismatch (at)" *)
 
                  (* no catch-all; dangerous if missing cases of unification! *)
                  )
 
-    and unifypex ctx eqmap w1 w2 =
+    (* and unifypex ctx eqmap w1 w2 =
       case (w1, w2) of
         (PVar a, PVar b) => ignore (Variable.eq (mapifw eqmap a, b) orelse raise Unify "world var")
 
@@ -279,10 +292,15 @@ struct
           if same_wevar r w1 then ()
           else if woccursw r w1 
                then raise Unify "circularity"
-               else wset r w1 
+               else wset r w1 *)
 
-    fun unify ctx t1 t2  = unifyex ctx (Variable.Map.empty, Variable.Map.empty) t1 t2
+    fun supertype ctx t1 t2  = 
+      supertypex ctx (Variable.Map.empty, Variable.Map.empty) t1 t2
 
-    fun unifyp ctx w1 w2 = unifypex ctx (Variable.Map.empty, Variable.Map.empty) w1 w2
+    fun unify ctx t1 t2  = 
+      (supertypex ctx (Variable.Map.empty, Variable.Map.empty) t1 t2;
+      supertypex ctx (Variable.Map.empty, Variable.Map.empty) t2 t1)
+
+    (* fun unifyp ctx w1 w2 = unifypex ctx (Variable.Map.empty, Variable.Map.empty) w1 w2 *)
 
 end

@@ -110,13 +110,15 @@ struct
            | TNum n => $(Int.toString n)
            | TCmd _ => raise (Print "can't print PrioML")
            | TThread _ => raise (Print "can't print PrioML")
-           | TForall _ => raise (Print "can't print PrioML"))
+           | TPrio _ => raise (Print "can't print PrioML"))
+           (* | TForall _ => raise (Print "can't print PrioML") *)
         end
 
     and ctol c =
         case c of
             CInt n => $(Word32.fmt StringCvt.DEC n)
           | CString s => $("\"" ^ (escape s) ^ "\"")
+          | CPrio p => $("priority[" ^ p ^ "]")
           | CChar c => $("#\"" ^ (Char.toString c) ^ "\"")
 
     and pathtos p =
@@ -214,9 +216,9 @@ struct
 
            | Handle _ => raise (Print "handle with no handles?")
 
-           | ECmd _ => raise (Print "can't print PrioML")
-           | PFn _ => raise (Print "can't print PrioML")
-           | PApply _ => raise (Print "can't print PrioML"))
+           | ECmd _ => raise (Print "can't print PrioML"))
+           (* | PFn _ => raise (Print "can't print PrioML") *)
+           (* | PApply _ => raise (Print "can't print PrioML") (* FIX: delete this *) *)
 
     and funtol first inline (tys, s, (ps, t, e)::ptes) =
         %[$(if first then "fun " else "and "),
@@ -257,7 +259,7 @@ struct
              %[funtol true inline f,
                L.listex "" "" "\n" (map (funtol false inline) funs)]
            | Fun _ => raise (Print "function with no functions?")
-           | WFun (s, ppats, pats, t, e) => raise (Print "can't print PrioML")
+           (* | WFun (s, ppats, pats, t, e) => raise (Print "can't print PrioML") (* FIX: delete this *) *)
            | Datatype (tys, cons) =>
              %[$"datatype ", listnotnone "(" ")" ", " (map op$ tys),
                L.listex "" "" "" (map contol cons)]

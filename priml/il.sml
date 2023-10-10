@@ -26,10 +26,10 @@ struct
 
     datatype longid =
       Id of id
-    | Path of string * longid 
+    | Path of string * longid
 
     (* existential, for type inference *)
-    datatype 'a ebind =
+    datatype 'a ebind = (* ? typ *)
         Free of int
       | Bound of 'a
 
@@ -76,7 +76,7 @@ struct
       (* bool true => total 
          functions are n-ary.
          *)
-      | Arrow of bool * typ list * typ
+      | Arrow of bool * typ list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
       | Sum of (label * typ arminfo) list
       (* pi_n (mu  v_0 . typ_0
                and v_1 . typ_1
@@ -103,31 +103,36 @@ struct
 
       | TTag of typ * var
 
-      | Arrows of (bool * typ list * typ) list
+      | Arrows of (bool * typ list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
 
       (* XXX pass ref set constaints through TCmd and TThread. 
        * The correct way to handle this should be a constraint evar and unify
        * them. But this works! (for now) *)
+      (* Q: why only one (psconstraint list ref) ? *)
       | TCmd of typ * (prioset * prioset * prioset) * (psconstraint list ref)
       | TThread of typ * prioset * (psconstraint list ref)
+      | TPrio of prioset (* FIX: make work !!! *)
 
-      | TForall of var list * (pconstraint list) * typ
+      (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
 
     (* type constructors. only used in elaboration *)
     and con =
         Typ of typ
-      | Lambda of typ list -> typ
+      | Lambda of typ list -> typ  (* FIX: Lambda of (string * typ) list -> typ *)
 
-    (* polymorphic type *)
-    and 'a poly = Poly of { prios : var list,
+    (* polymorphic type *) 
+    and 'a poly = Poly of { (* prios : var list, *) (* FIX: delete prios *)
                             tys    : var list } * 'a
 
-    and value = 
-        Polyvar  of { tys : typ list, prios : prio list, var : var }
-      | Polyuvar of { tys : typ list, prios : prio list, var : var }
+    and value = (* FIX: delete prios *)
+        Polyvar  of { tys : typ list, (* prios : prio list, *)
+                      var : var }
+      | Polyuvar of { tys : typ list, (* prios : prio list, *)
+                      var : var }
       | MLVal of string
       | Int of intconst
       | String of string
+      | Prio of prio
       | VRecord of (label * value) list
       | VRoll of typ * value
       | VInject of typ * label * value option
@@ -147,12 +152,12 @@ struct
       (* select one of the functions in a bundle *)
       | FSel of int * value
 
-      | PFn of
+      (* | PFn of
         { pname  : var,
           parg   : var list,
           pconst : pconstraint list,
           pcod   : typ,
-          pbody  : exp }
+          pbody  : exp } (* FIX: delete this *) *)
       | PCmd of prio * typ * cmd
 
     and exp =
@@ -197,7 +202,7 @@ struct
 
       | Inject of typ * label * exp option
       | Cmd of prioset * cmd
-      | PFApp of exp * prio
+      (* | PFApp of exp * prio (* FIX: delete this *) *)
     (*
       (* for more efficient treatment of blobs of text. *)
       | Jointext of exp list
@@ -231,7 +236,8 @@ struct
                 (string * intconst) list * cmd
 
     (* now a derived form *)
-    fun Var v = Polyvar { tys = nil, prios = nil, var = v }
+    fun Var v = Polyvar { tys = nil, (* prios = nil, *)
+                          var = v }
     (* expand to linear search *)
     fun Tagcase (t, obj, bound, vel, def) = 
       let
@@ -245,7 +251,7 @@ struct
                   yes = e,
                   no = go rest }
       in
-        Let (Val (Poly ({prios=nil, tys=nil}, (vo, t, obj))),
+        Let (Val (Poly ({tys=nil}, (vo, t, obj))),
              go vel)
       end
 

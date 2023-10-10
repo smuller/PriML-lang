@@ -101,9 +101,8 @@ struct
          ]
 
     (* XXX, just do it inline *)
-    fun mono x = IL.Poly({prios=nil, tys=nil}, x)
-    fun quant (t, IL.Poly({prios, tys}, x)) = IL.Poly({prios = prios, 
-                                                        tys = t :: tys}, x)
+    fun mono x = IL.Poly({tys=nil}, x)
+    fun quant (t, IL.Poly({tys}, x)) = IL.Poly({tys = t :: tys}, x)
 
       (* this is all in the standard library now... *)
     val polyfuns = nil
@@ -181,7 +180,9 @@ struct
 
     (* there are no initial priority variables *)
     val worlds = []
-    val initialw = foldl (fn ((id, w), ctx) => Context.bindp ctx id w) Context.empty worlds
+    (* val initialw = foldl (fn ((id, w), ctx) => Context.bindp ctx id w) Context.empty worlds *)
+    (* FIX: delete priority variables *)
+    val initialw = Context.empty
     
     (* but we start with one constant, "bot" *)
     val worldlabs = [botname]

@@ -97,9 +97,10 @@ struct
         raise (Context "prio not constant or variable")
 
     datatype context = 
+        (* prios = priority variables *)
+        (* plabs = priority labels *)
         C of { vars : (IL.typ IL.poly * Variable.var * IL.idstatus) S.map,
                cons : (IL.kind * IL.con * IL.tystatus) S.map,
-               prios : Variable.var S.map,
                plabs : SS.set,
                mobiles : VS.set,
                pcons : (IL.prio * IL.prio) list,
@@ -112,22 +113,18 @@ struct
 
     structure L = Layout
 
-    fun ctol (C { vars, cons, prios, plabs, mobiles, pcons, tpcons, dbs, sign }) =
+    fun ctol (C { vars, cons, plabs, mobiles, pcons, tpcons, dbs, sign }) =
       let
         val $ = L.str
         val % = L.mayAlign
         val itos = Int.toString
 
         val vars = S.listItemsi vars
-        val prios = S.listItemsi prios
       in
         %[$"Context.",
           L.indent 3
           (
-           %[$"prios:",
-             % (map (fn (s, v) =>
-                     %[$s, $"==", $(Variable.tostring v)]) prios),
-             $"vars:",
+           %[$"vars:",
              % (map (fn (s, (tp, v, vs)) =>
                      %[%[$s, $"==", $(Variable.tostring v), $":"],
                        L.indent 2 (%[ILPrint.ptol ILPrint.ttol tp])]) vars),
@@ -167,9 +164,10 @@ struct
                  | TRef t => has t
                  | TCmd (t, _, _) => has t
                  | TThread (t, _, _) => has t
-                 | TForall (_, _, t) => has t)
+                 | TPrio _ => false) (* FIX: refinements don't have evars? *)
+                 (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
       in
-        SU.exists (fn (Poly({prios, tys}, t), _, _) => has t) vars 
+        SU.exists (fn (Poly({tys}, t), _, _) => has t) vars 
       end
 
     (* for world evars. Again, these can only appear in the types of bound vars;
@@ -212,23 +210,30 @@ struct
                  | TRef t => has t
                  | TCmd (t, _, _) => has t
                  | TThread (t, _, _) => has t
-                 | TForall (_, _, t) => has t)
+                 | TPrio _ => false)
+                 (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
 
       in
-        SU.exists (fn (Poly({prios, tys}, t), _, _) => has t) vars
+        SU.exists (fn (Poly({tys}, t), _, _) => has t) vars
       end
 
     (* Worlds may be world variables or world constants. If there is a world
        constant we assume it takes precedence. (It might be good to prevent
        the binding of a world variable when there is a constant of the same
        name?) *)
-    fun prio (C{prios, plabs, ...}) s =
-      if SS.member (plabs, s)
+    fun prio (C{plabs, ...}) s =
+      (* if SS.member (plabs, s)
       then IL.PConst s
       else
-        (case S.find (prios, s) of
+        (case S.find (s) of
            SOME x => IL.PVar x
-         | NONE => absent "prios" s)
+         | NONE => absent "prios" s) *)
+
+      (* FIX: priorities should be variables *)
+
+      if SS.member (plabs, s)
+      then IL.PConst s
+      else absent "plabs" s
 
 
     fun varex (C {vars, ...}) sym =
@@ -240,7 +245,7 @@ struct
                    val v = Variable.namedvar sym
                in
                    assumed := (sym, tt)::(!assumed);
-                   (IL.Poly({prios= nil, tys = nil}, tt), v, IL.Normal)
+                   (IL.Poly({tys = nil}, tt), v, IL.Normal)
                end))
 
     fun var ctx sym = varex ctx sym
@@ -259,21 +264,20 @@ struct
 
     fun con ctx sym = conex ctx NONE sym
 
-    fun bindplab (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles, sign }) sym =
+    fun bindplab (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym =
         C { vars = vars,
             cons = cons,
             plabs =
             (if SS.member (plabs, sym) then plabs
              else SS.add(plabs, sym)),
             mobiles = mobiles,
-            prios = prios,
             pcons = pcons,
             tpcons = if sym = "bot" then tpcons
                      else (tpc_insert tpcons (IL.PConst "bot", IL.PConst sym)),
             dbs = dbs,
             sign = sign }
 
-    fun bindex (C {vars, cons, dbs, prios, plabs, pcons, tpcons, mobiles, sign }) sym typ var stat =
+    fun bindex (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym typ var stat =
       let 
         val sym = (case sym of NONE => 
                      ML5pghUtil.newstr "bindex" | SOME s => s)
@@ -290,7 +294,6 @@ struct
                              (typ, var, stat)),
             cons = cons,
             plabs = plabs,
-            prios = prios,
             mobiles = mobiles,
             pcons = pcons,
             tpcons = tpcons,
@@ -301,11 +304,10 @@ struct
     fun bindv c sym t v = bindex c (SOME sym) t v IL.Normal
     fun bindu c sym typ var stat = bindex c (SOME sym) typ var stat
 
-    fun bindcex (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) module sym con kind status =
+    fun bindcex (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) module sym con kind status =
         C { vars = vars,
             cons = S.insert (cons, sym, (kind, con, status)),
             plabs = plabs,
-            prios = prios,
             mobiles = mobiles,
             pcons = pcons,
             tpcons = tpcons,
@@ -314,16 +316,16 @@ struct
 
     fun bindc c sym con kind status = bindcex c NONE sym con kind status
 
-    fun bindp (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) s v =
+    (* fun bindp (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) s v =
         C { vars = vars,
             cons = cons,
             mobiles = mobiles,
             plabs = plabs,
             pcons = pcons,
             tpcons = (tpc_insert tpcons (IL.PConst "bot", IL.PVar v)),
-            prios = S.insert (prios, s, v),
+            prios = S.insert (s, v),
             dbs = dbs,
-            sign = sign }
+            sign = sign } *) (* FIX: delete priority variables *)
 
           (* Kind of inefficient, but we do a DFS at every check *)
     fun checkcons (ctx as C { tpcons, ...}) p1 p2 =
@@ -344,14 +346,13 @@ struct
                     end
             end
 
-    fun bindpcons (ctx as C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign })
+    fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
         if checkcons ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
         else
             C { cons = cons,
                 vars = vars,
-                prios = prios,
                 mobiles = mobiles,
                 pcons = (p1, p2)::pcons,
                 tpcons = (tpc_insert tpcons (p1, p2)),
@@ -360,14 +361,13 @@ struct
                 sign = sign
               }
 
-    fun bindsig (C { cons, vars, dbs, prios, mobiles, pcons, tpcons, plabs, sign }) s con = 
+    fun bindsig (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) s con = 
         C { vars = vars,
             cons = cons,
             mobiles = mobiles, 
             pcons = pcons,
             tpcons = tpcons,
             plabs = plabs,
-            prios = prios,
             dbs = dbs,
             sign = S.insert (sign, s, con)}
 
@@ -386,8 +386,7 @@ struct
     fun plabs (C { plabs, ... }) = SSU.tolist plabs
     fun pcons (C { pcons, ... }) = pcons
 
-    val empty = C { prios = S.empty, 
-                    vars = S.empty, 
+    val empty = C { vars = S.empty, 
                     cons = S.empty, 
                     mobiles = VS.empty,
                     plabs = SS.empty,

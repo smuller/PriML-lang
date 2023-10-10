@@ -21,8 +21,12 @@ sig
     val unify : Context.context -> Pos.pos -> string -> 
                     IL.typ -> IL.typ -> unit
 
-    val unifyp : Context.context -> Pos.pos -> string -> 
-                    IL.prio -> IL.prio -> unit
+    (* supertype context location message actual expected *)
+    val supertype : Context.context -> Pos.pos -> string -> 
+                    IL.typ -> IL.typ -> unit
+
+    (* val unifyp : Context.context -> Pos.pos -> string -> 
+                    IL.prio -> IL.prio -> unit *)
 
     (* check_constraint context location p1 <= p2 *)
     val check_constraint : Context.context -> Pos.pos ->
@@ -52,8 +56,7 @@ sig
        type variables and world variables. *)
     val polygen : Context.context -> IL.typ -> (* IL.prio ->  *)
                         { t : IL.typ, 
-                          tl : Variable.var list, 
-                          wl : Variable.var list }
+                          tl : Variable.var list }
 
     (* polygen sctx w
 
@@ -63,9 +66,9 @@ sig
 
     (* instantiate all of the bound type and world variables with new evars and wevars;
        return the types and worlds used to instantiate the type *)
-    val evarize : IL.typ IL.poly -> IL.typ * IL.prio list * IL.typ list
+    val evarize : IL.typ IL.poly -> IL.typ * IL.typ list
     (* same, but list of types (result will have the same length) *)
-    val evarizes : IL.typ list IL.poly -> IL.typ list * IL.prio list * IL.typ list
+    val evarizes : IL.typ list IL.poly -> IL.typ list * IL.typ list
 
 
     val psubst1 : IL.prio -> Variable.var -> IL.typ -> IL.typ

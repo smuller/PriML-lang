@@ -3,6 +3,8 @@ struct
 
 open EL
 
+exception unimplemented
+
 fun anonfn (pats: pat list) (e as (e_, loc): exp) : exp_ =
     Let ((Fun {inline = false,
                 funs = [([], "anonfn", [(pats, NONE, e)])]}, loc),
@@ -34,15 +36,15 @@ fun deprioe ((e, loc): exp) : exp =
               List.map (fn (ps, e) => (ps, deprioe e)) pes,
               opt)
       | CompileWarn _ => e
-      | ECmd (p, c) =>
+      | ECmd c =>
         (* Wrap the expression in a thunk to preserve encapsulation *)
         anonfn [PWild] (deprioc (c, loc))
-      | PFn (ppats, pats, e) =>
+      (* | PFn (ppats, pats, e) =>
         let val ee = deprioe e
         in
             anonfn pats ee
-        end
-      | PApply (e, p) => App (deprioe e, depriop loc p, false)
+        end (* FIX: delete this *) *)
+      (* | PApply (e, p) => App (deprioe e, depriop loc p, false) (* FIX: delete this *) *)
       | Handle (e, pes) =>
         Handle (deprioe e, List.map (fn (p, e) => (p, deprioe e)) pes),
      loc)
@@ -56,16 +58,18 @@ and deprioc ((c, loc) : cmd) : exp =
         (fn ((s, e), ee) => (Let ((Val ([], PVar s, deprioe e), #2 e), ee), #2 e))
         (deprioe e)
         ses
-      | Spawn (p, c) => (App((App ((Var (Id "Thread.spawn"), loc),
+      | Spawn (p, c) => raise unimplemented
+            (* (App((App ((Var (Id "Thread.spawn"), loc),
                                   (anonfn [PWild] (deprioc c), loc), false), loc),
-                            depriop loc p, false), loc)
+                            depriop loc p, false), loc) *)
       | Sync e => (App ((Var (Id "Thread.sync"), loc), deprioe e, false), loc)
       | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
       | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
       | IRet e => deprioe e
       (* TODO: Threshold deprioc rule for Change. Should update to use the right 
       * function in Thread module for updating priority *)
-      | Change p => (App ((Var (Id "Thread.change"), loc), depriop loc p, false), loc) 
+      | Change p =>  raise unimplemented
+        (* (App ((Var (Id "Thread.change"), loc), depriop loc p, false), loc)  *)
 
 and depriot (t: typ) =
     case t of
@@ -76,7 +80,8 @@ and depriot (t: typ) =
       | TNum _ => t
       | TCmd (t, p) => TArrow (TRec [], depriot t)
       | TThread (t, p) => TApp ([depriot t], "Thread.t")
-      | TForall (_, t) => depriot t
+      
+      (* | TForall (_, t) => depriot t (* FIX: delete this *) *)
 
 and onefun (ss, s, pats) =
     (ss, s, List.map (fn (ps, SOME t, e) => (ps, SOME (depriot t), deprioe e)
@@ -101,13 +106,13 @@ and depriod ((d, l) : dec) : dec =
       | Do e => Do (deprioe e)
       | Type (ss, s, t) => Type (ss, s, depriot t)
       | Fun {inline, funs} => Fun {inline = inline, funs = List.map onefun funs}
-      | WFun (s, ppats, pats, tyo, e) =>
+      (* | WFun (s, ppats, pats, tyo, e) =>
         let val tyo = case tyo of SOME t => SOME (depriot t) | NONE => NONE
             val pvars = List.map depriopp ppats
         in
             Fun {inline = false,
                  funs = [([], s, [(pvars @ pats, tyo, deprioe e)])]}
-        end
+        end (* FIX: delete this *) *)
       | Datatype (ss, cs) => Datatype (ss, List.map onecon cs)
       | Tagtype _ => d
       | Newtag (s1, SOME t, s2) => Newtag (s1, SOME (depriot t), s2)
