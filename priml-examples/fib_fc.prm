@@ -1,0 +1,115 @@
+priority smallfib
+priority bigfib
+priority fg
+order bigfib < smallfib
+order smallfib < fg
+
+
+(* 
+    bigfib < smallfib < fg 
+*)
+
+fun[p] fib n =
+    if lt (n, 2) then 
+        cmd[p] { ret n }
+    else
+        cmd[p] { 
+            x_thread <- spawn[p] {
+                x <- [p]fib (minus (n, 2)); 
+                ret x
+            };
+            y <- [p]fib (minus (n, 1));
+            x <- sync x_thread;
+            ret (plus (x, y))
+        }
+
+fun spawnfib n =
+    cmd[bot] {
+        spawn[smallfib] {
+            [smallfib]fib n
+        }
+    }
+
+main {
+    td <- spawnfib 42;
+    sync td
+}
+
+
+
+
+PRESENT
+
+
+(*
+
+(* Priorities *)
+(* 
+    bigfib < smallfib < fg 
+*)
+
+fun[p] fib n =      (* priority polymorhpic *)
+    if lt (n, 2) then 
+        do { ret n }
+    else
+        do { 
+            x_thread <- spawn[p] {
+                x <- [p]fib (minus (n, 2)); 
+                ret x
+            };
+            y <- [p]fib (minus (n, 1));
+            x <- sync x_thread;
+            ret (plus (x, y))
+        }
+
+fun spawnfib n =
+    do {
+        let val p = 
+            if n < 15 then smallfib else bigfib
+            : prio[bigfib, smallfib]
+        in 
+            spawn[p] { [p]fib n };   (* priority p is in the type of fib *)
+    }
+
+main {
+    td <- spawnfib 42;
+    sync td
+}
+
+
+
+
+
+fun fib p n =       (* priority argument *)
+    if lt (n, 2) then 
+        do { ret n }
+    else
+        do { 
+            x_thread <- spawn[p] {
+                x <- fib p (minus (n, 2)); 
+                ret x
+            };
+            y <- fib p (minus (n, 1));
+            x <- sync x_thread;
+            ret (plus (x, y))
+        }
+
+fun spawnfib n =
+    do {
+        let val p = 
+            if n < 15 then smallfib else bigfib
+            : prio[bigfib, smallfib]
+        in 
+            spawn[p] { fib p n };    (* pass priority as value *)
+        end
+    }
+
+main {
+    td <- spawnfib 42;
+    sync td
+}
+
+
+
+
+*)

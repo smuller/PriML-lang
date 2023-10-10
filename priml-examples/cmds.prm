@@ -1,0 +1,117 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+fun command_sequence () =
+    let val (c1 : int cmd['R]) = 
+        do { ret n }
+
+        val (c2 : int cmd['R]) = 
+        do { ret (n + 1) }
+    in
+        do {
+            x <- c1;
+            y <- c2;
+            ret x + y
+        } : int cmd['R]
+    end
+
+
+
+fun condition_inside_command () =
+    do {
+        x <- spawn[A] { ret 1 };
+        y <- spawn[B] { ret 1 };
+        ret (if true then x else y)
+    }
+    : int (thread[A, B]) cmd['R]
+
+
+
+(* ALL WRONG after here *)
+
+
+fun wrong () =
+    let val p = if true then A else B
+    let val (c1 : int cmd[A, B]) = 
+        cmd[p] { ret n }
+
+        val (c2 : int cmd[B]) = 
+        cmd[B] { ret (n + 1) }
+    in
+        cmd[p] {
+            x <- c1;
+            y <- c2;   (* impossible? *)
+            ret x + y
+        }
+    end
+
+fun uh_oh_1 () =
+    let val (c1 : int cmd[A, B]) = 
+        if true then cmd[A] { ret n }
+        else cmd[B] { ret n }
+
+        val (c2 : int cmd[B]) = 
+        cmd[B] { ret (n + 1) }
+    in
+        cmd[???] {
+            x <- c1;
+            y <- c2;
+            ret x + y
+        }
+    end
+
+fun uh_oh_2 () =
+    let val (c1 : int cmd[A, B]) = 
+        if true then cmd[A] { ret n }
+        else cmd[B] { ret n }
+
+        val (c2 :  int cmd[A, B]) = 
+        if false then cmd[A] { ret n }
+        else cmd[B] { ret n }
+    in
+        cmd[???] {
+            x <- c1;
+            y <- c2;
+            ret x + y
+        }
+    end
+
+fun uh_oh_3 () =
+    let val (c1 : (int thread[B]) cmd[C]) = 
+        cmd[C] { 
+            spawn[B] { ret (n + 1) }
+        }
+    
+        val (c2 : int cmd[A, C]) = 
+        if true then cmd[A] { ret n }
+        else cmd[C] { ret n }
+    in
+        cmd[C] {
+            td <- c1;
+            x <- sync td;   (* is this possible? *)
+            y <- c2;
+            ret x + y
+        }
+    end
+
+
+fun suggested_way () =
+    let val (c1 : int cmd[A]) = 
+        cmd[A] { ret (n + 1) }
+
+        val (c2 : int cmd[A, B]) = 
+        if false then cmd[A] { ret n }
+        else cmd[B] { ret n }
+    in
+        cmd[] {
+            x <- c1;
+            y <- c2;
+            ret x + y
+        }
+    end

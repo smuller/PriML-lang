@@ -1,0 +1,72 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+(* Numbered priorities *)
+
+
+val ranking = 
+    [(0, bot), (1, C), (2, B), (3, A)]
+    : (int * prio{A, B, C, bot})
+
+
+
+(* 
+    'rfn |- 'ranking_rfn 
+    
+    because assoc_by_snd is a function that will take a
+    less restrictive list and a more restrictive value,
+    and return a less restrictive value
+
+    so any refinements that are in the type of
+    the snd value of the list that match with
+    any refinements in the search input's type
+    must be implied by them
+
+    and the return type will be the same as the type of 
+    the fst value of the list
+*)
+
+fun decrease_prio (td : 'a thread['rfn]) =
+    let val p_rank = 
+        assoc_by_snd 
+            (ranking : (int * 'ranking_rfn) list)
+            (priority_of p : 'rfn) 
+        : int
+        (* 'rfn |- 'ranking_rfn *)
+    in
+        if p_rank == 0 then 
+            (td : 'a thread['rfn])
+        else
+            (let val next_p = 
+                assoc_by_fst ranking (p_rank - 1)
+                : 'ranking_rfn
+            in
+                spawn[next_p] {  
+                    x <- sync td;
+                    ret x
+                }
+                : 'a thread['ranking_rfn])
+    : 'a thread['ranking_rfn]
+    
+
+(*
+    'rfn = { p | p == A }
+
+    because we sync on a thread of prio{'rfn} from 
+    a thread of prio{'ranking_rfn}, 
+    so the lower bound of 'rfn 
+    must be >= upper bound of 'ranking_rfn,
+    
+    and 'ranking_rfn contains 'rfn
+*)
+
+main {
+    td <- spawn[A] { ret 5 }
+    let val x = decrease_prio td
+    in ret x
+}

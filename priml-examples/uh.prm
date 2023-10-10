@@ -1,0 +1,72 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+
+
+fun function1 () =
+    cmd[A] { ret 1 }
+
+fun function2 () =
+    cmd[B] { ret 1 }
+
+fun function3 () =
+    cmd[C] { ret 1 }
+
+
+(*
+main {
+    x <- (spawn[A] { ret 1 } : (int thread[A]) cmd[bot]);
+    ret (x : int thread[A])
+}
+
+main {
+    ret (cmd[A] { ret 1 } : int cmd[A])
+}
+
+main {
+    ret (spawn[A] { ret 1 } : (int thread[A]) cmd[A])
+}
+
+main {
+    y <- ((ret 1) : int cmd[bot]);
+    ret y
+}
+
+main {
+    v <-
+        let val (c1 : int cmd[bot]) = 
+            cmd[bot] { ret n }
+
+            val (c2 : int cmd[B]) = 
+            cmd[B] { ret (n + 1) }
+        in
+            cmd[bot] {
+                x <- c1;
+                y <- c2;
+                ret x + y
+            }
+        end;
+    ret v
+    
+}
+
+
+fun f () = spawn[A] { ret 1 } : (int thread[A]) cmd[B]
+
+main {
+    cmd[bot] { ret (f ()) }
+}
+
+*)
+
+
+
+main {
+    ret (1 :: "hi" :: nil)
+}

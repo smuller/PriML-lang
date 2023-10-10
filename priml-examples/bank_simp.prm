@@ -1,0 +1,53 @@
+
+(* NO SYNC *)
+
+
+priority query_p
+priority debit_p
+priority credit_p
+priority loop_p
+
+order debit_p < credit_p
+order credit_p < loop_p
+order query_p < loop_p
+
+val accounts = Array.array (10, 0)
+
+fun update_accounts acct operation =
+	SOME 5
+
+fun loop () : int cmd[loop_p] =
+	let val acct = "account" in
+    let val string = "query" in
+	if string = "credit" then
+        cmd[loop_p] {
+            spawn[credit_p] { 
+                ret (case (update_accounts acct "-")
+                    of SOME n => n | NONE => 0)
+            };
+            loop ()
+        }
+	else if string = "debit" then
+        cmd[loop_p] {
+            spawn[debit_p] { 
+                ret (case (update_accounts acct "+")
+                    of SOME n => n | NONE => 0)
+            };
+            loop ()
+        }
+	else if string = "query" then
+        cmd[loop_p] {
+            spawn[query_p] { 
+                ret (print acct)
+            };
+            loop ()
+        }
+	else
+		loop ()
+    end
+    end
+ 
+main {
+  t <- spawn[loop_p] {loop ()};
+  sync t
+}

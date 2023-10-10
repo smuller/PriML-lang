@@ -1,0 +1,31 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+
+(* Refining refinements with constraints *)
+
+
+
+fun specify (td1 : 'a thread[B, C]) =
+    if priority_of td1 = C then
+        (* priority_of td1 : prio[C] *)
+
+    else
+        (* priority_of td1 : prio[B] *)
+
+
+fun compare (td1 : 'a thread[B, C]) (td1 : 'a thread[B, C]) =
+    if priority_of td1 < priority_of td2 then
+        (* priority_of td1 : prio[C] *)
+        (* priority_of td2 : prio[B] *)
+
+    else
+        (* priority_of td1 >= priority_of td2 *)
+
+

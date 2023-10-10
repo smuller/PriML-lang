@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/basis/mlton.mlb
+$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb
+/Users/myrtle/Downloads/a-pl-resoiche/PriML-lang/stdlib/std.sml
+/Users/myrtle/Downloads/a-pl-resoiche/PriML-lang/stdlib/stdlib.sml
+temp.sml

@@ -1,0 +1,22 @@
+priority A
+priority B
+ 
+main {
+
+(*
+    ret (let val x = A in B end)
+*)
+
+    ret (if true then A else B)
+
+(*
+    ret (let val x = A in if true then x else B end)
+*)
+
+(*
+    t <- let val x = A in spawn[x] { ret 1 } end;
+    x <- sync t;
+    ret x
+*)
+
+}

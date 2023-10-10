@@ -1,0 +1,9 @@
+priority A
+
+fun do_some p =
+    spawn[p] { ret 1 }
+ 
+main {
+    t <- do_some A;
+    sync t
+}

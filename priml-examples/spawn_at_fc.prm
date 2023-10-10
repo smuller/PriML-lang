@@ -1,0 +1,72 @@
+
+
+
+fn f a b => () : 'a -> 'b -> ()
+
+
+
+(* using variable name in function type *)
+(* because the refinement is not restricted given the body of the function *)
+
+fun spawn_at (pr : prio['R1]) (c : 'a cmd['R2 -> 'R3 -> 'R4]) =
+    do {
+        spawn[pr] { c }
+    }
+    : ('a thread[pr]) cmd['R5 -> 'R6 -> 'R7]
+
+: prio['R1] 
+-> a cmd['R2 -> 'R3 -> 'R4] 
+-> ('a thread[pr]) cmd['R5 -> 'R6 -> 'R7]
+
+
+fun use_spawn_at () =
+    do {
+        t <- spawn_at (if true then p else p'); 
+            : ('a thread[p, p']) cmd['R1 -> R2 -> R3]
+        sync t
+    }
+
+
+PRESENT
+
+
+fun spawn_at 
+    (pr : prio{'R}) 
+    (c : int cmd['R2])
+    : pr : prio['R] -> c : int cmd['R2] -> (int thread[pr]) cmd[bot]
+=
+    do {
+        spawn[pr] { c }
+    }
+    : (int thread[pr]) cmd[bot]
+
+    (* uses VALUE of variable `pr` in TYPE *)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(*  ---NOPE!
+
+fun['Q] spawn_at (pr : prio{'Q}) (c : 'a cmd['Q2]) =
+    do {
+        spawn[pr] { c }
+    }
+    : ('a thread['Q]) cmd[bot]
+*)

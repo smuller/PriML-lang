@@ -1,0 +1,34 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+PRESENT
+
+
+(* Priorities *)
+(* 
+    C < B < A
+*)
+
+fun get_value_at_highest (td1 : 'a thread[B, C]) =
+    do {
+        (* spawn a <= prio thread to get the value from td1 *)
+        td2 <- 
+            (if priority_of td1 = C then    (* check td1's priority *)
+                spawn[C] {  (* td1's prio = C *)
+                    x <- sync td1;
+                    ret x
+                }
+            else
+                spawn[B] {  (* td1's prio = B *)
+                    x <- sync td1;
+                    ret x
+                });
+        x <- sync td2;
+        ret x
+    }

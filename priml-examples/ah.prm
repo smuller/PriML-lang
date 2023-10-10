@@ -1,0 +1,19 @@
+
+
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+
+main {
+    td1 <- spawn[C] { ... }
+    td2 <- spawn[B] {
+        
+        sync td1;
+    }
+}

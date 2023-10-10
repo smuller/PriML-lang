@@ -1,0 +1,40 @@
+priority A
+priority B
+priority C
+
+(* C < B < A *)
+order C < B
+order B < A
+
+
+
+
+(* syncing is priority dependent *)
+
+
+td <- spawn[B]{ do_something () };
+td2 <- spawn[A]{
+    x <- sync td;   (* the priority of td matters *)
+    ret x
+}
+
+
+
+
+(* command sequence *)
+
+do {
+    x <- sync td;   (* the priority of td matters *)
+    ret x
+}
+
+
+(* command typing *)
+
+do {
+    m1 : cmd[B, C];
+    m2 : cmd[A, B, C];
+    m3 : cmd[B, C, D]
+}
+
+: cmd[B, C]

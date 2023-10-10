@@ -1,0 +1,39 @@
+priority A
+priority B
+priority C
+
+order C < B
+order B < A
+
+(* Does not work because bounds are not first class *)
+
+fun check_specific_prio (td : int thread[== p]) {
+    if p == B then 1
+    else 0
+}
+
+fun check_lower_bound (td : int thread[>= l]) {
+    if l <= B then 1
+    else 0
+}
+
+fun check_upper_bound (td : int thread[<= h]) {
+    if h >= B then 1
+    else 0
+}
+
+fun check_double_bound (td : int thread[>= l; <= h]) {
+    if l <= B && h >= B then 1
+    else 0
+}
+
+fun check_any_bound (td : int thread[bound]) {
+    if (bound IMPLIES {p | p <= B}) then 1
+    else 0
+}
+
+main {
+    td <- spawn[== A] { ret 5 }
+    let val x = check_double_bound td
+    in ret x
+}

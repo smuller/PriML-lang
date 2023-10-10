@@ -1,0 +1,57 @@
+priority smallfib
+priority bigfib
+priority fg
+order bigfib < smallfib
+order smallfib < fg
+
+(*
+fun fib n =
+    if le (n, 1) then cmd[fg] {ret 1}
+    else
+        cmd[fg] { 
+            t <- spawn[fg] {
+                x <- do (fib (minus (n, 1))); 
+                ret x
+            };
+            a <- do (fib (minus (n, 2)));
+            b <- sync t;
+            ret (plus (a, b))
+        }
+
+main {
+    td <- spawn[fg] { fib 42 };
+    sync td
+}
+*)
+
+
+fun[p] fib n =
+    if lt (n, 2) then 
+        cmd[p] { ret n }
+    else
+        cmd[p] { 
+            x_thread <- spawn[p] {
+                x <- do ([p]fib (minus (n, 2))); 
+                ret x
+            };
+            y <- do ([p]fib (minus (n, 1)));
+            x <- sync x_thread;
+            ret (plus (x, y))
+        }
+
+fun spawnfib n =
+    if lt (n, 15) then
+        cmd[fg] { 
+            t <- spawn[smallfib] { [smallfib]fib n };
+            ret 5
+        }
+    else
+        cmd[fg] { 
+            t <- spawn[bigfib] { [bigfib]fib n };
+            ret 5
+        }
+
+main {
+    do (spawnfib 42)
+    
+}

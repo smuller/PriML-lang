@@ -1,0 +1,19 @@
+priority A
+priority B
+ 
+main {
+    t <- 
+        let val m = cmd { 
+            change[A]
+            change[let val _ = () in B end];
+            ret 1 
+        }
+        in
+            spawn[if true then A else B] { m }
+        end;
+
+    t' <- spawn[A] { ret 2 };
+
+    x <- sync t;
+    ret x
+}
