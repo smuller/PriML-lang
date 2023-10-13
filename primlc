@@ -1,0 +1,4 @@
+#!/bin/sh
+export MLTON_PARMEM=/Users/myrtle/Downloads/a-pl-resoiche/PriML-lang/mlton-parmem/build/bin/mlton-parmem
+export PRIML_LIB=/Users/myrtle/Downloads/a-pl-resoiche/PriML-lang/stdlib
+/Users/myrtle/Downloads/a-pl-resoiche/PriML-lang/priml/c72s $@

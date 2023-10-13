@@ -629,7 +629,7 @@ struct
                                              (map (fn (SOME p, e, r) => (p, e, r)
                                                    | _ => raise Pattern
                                                       "exn papp not nullary")) parted
-                           val rett = new_evar ()
+                           val rett = Unify.new_evar ()
 
                            val insidee = newstr "intag"
                            val insidev = V.namedvar insidee
@@ -748,7 +748,7 @@ struct
 
                          val cod = cod
 
-                         val rett = new_evar ()
+                         val rett = Unify.new_evar ()
 
                          (* Sumcase binds one variable for all 
                             arms, but not default *)
@@ -759,7 +759,7 @@ struct
                             do type checking and then elaborate
                             the subpatterns. *)
                          fun onelab (l, perl) =
-                           (case (C.var nctx l, new_evar ()) of
+                           (case (C.var nctx l, Unify.new_evar ()) of
                              ((pt, _, I.Constructor), domvar) =>
                                (case #1 (evarize pt) of
                                   (* nullary constructor *)
@@ -1232,7 +1232,7 @@ struct
                            | _ => raise Pattern "impossible"
 
                      val newcols =
-                         map (fn (l, col) => (l, col, new_evar ())) newcols
+                         map (fn (l, col) => (l, col, Unify.new_evar ())) newcols
 
                      val (obje, objt) = elab ctx (E.Var (E.Id obj), loc)
 

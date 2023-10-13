@@ -7,10 +7,10 @@ main {
     ret (let val x = A in B end)
 *)
 
-    ret (if true then A else B)
+    ret (let val x = A in if true then x else B end)
 
 (*
-    ret (let val x = A in if true then x else B end)
+    ret (if true then A else B)
 *)
 
 (*

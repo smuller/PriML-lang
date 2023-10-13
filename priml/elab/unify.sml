@@ -17,8 +17,53 @@ struct
             end
     end
 
+
     (* FIX: global constraints for priorities (instead of one for each priority) *)
     val global_cstrs = ref []
+
+
+    val all_evars  = ref (nil : IL.typ IL.ebind ref list)
+    (* FIX: delete this, no more priority evars *)
+    val all_wevars = ref (nil : IL.prio IL.ebind ref list)
+    val all_psevars = ref (nil : IL.prioset IL.ebind ref list)
+    fun clear_evars () = (all_evars  := nil;
+                          all_wevars := nil;
+                          all_psevars := nil)
+
+    fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars)
+
+    fun finalize_evars () =
+      let in
+        app (fn r =>
+             case !r of
+               IL.Bound _ => ()
+             | IL.Free _ => r := IL.Bound (IL.TRec nil)) (!all_evars);
+        app (fn r =>
+             case !r of
+               IL.Bound _ => ()
+             | IL.Free _ => r := IL.Bound Initial.bot) (!all_wevars)
+      end
+    
+    fun new_evar ()  = 
+      let val e = new_ebind ()
+      in
+        all_evars := e :: !all_evars;
+        IL.Evar e
+      end
+    (* FIX: delete this, no more priority evars *)
+    fun new_pevar () =
+      let val e = new_ebind ()
+      in
+        all_wevars := e :: !all_wevars;
+        IL.PEvar e
+      end
+    fun new_psevar () = 
+      let val e = new_ebind ()
+      in
+        all_psevars := e :: !all_psevars;
+        IL.PSEvar e
+      end
+    
 
     (* actually, I think in situations where these are
        called it will be the case that there are no
@@ -29,6 +74,7 @@ struct
            | (Evar (r' as ref (Free _))) => r = r'
            | _ => false)
 
+    (* FIX: delete this, no more priority evars *)
     fun same_wevar r x =
         (case x of
              (PEvar (ref (Bound t))) => same_wevar r t
@@ -72,8 +118,12 @@ struct
     fun set r (Evar (ref (Bound t))) = set r t
       | set r t = r := Bound t
 
+    (* FIX: delete this, no more priority evars *)
     fun wset r (PEvar (ref (Bound t))) = wset r t
       | wset r t = r := Bound t
+
+    fun psset r (PSEvar (ref (Bound t))) = psset r t
+      | psset r t = r := Bound t
 
     fun mapift (mt, _) v =
         case Variable.Map.find (mt, v) of
@@ -127,18 +177,6 @@ struct
                         orelse raise Unify "Arrow domains have different arity";
                      supertypex ctx eqmap cod1 cod2
                  end
-           | (Evar (ref (Bound t1)), t2) => supertypex ctx eqmap t1 t2
-           | (t1, Evar (ref (Bound t2))) => supertypex ctx eqmap t1 t2
-           | (Evar (r as ref (Free _)), t2) =>
-                 if same_evar r t2 then ()
-                 else if occurs r t2 then
-                         raise Unify "circularity"
-                      else set r t2
-           | (t1, Evar (r as ref (Free _))) =>
-                 if same_evar r t1 then ()
-                 else if occurs r t1 then
-                         raise Unify "circularity"
-                      else set r t1 
            | (TRef c1, TRef c2) => supertypex ctx eqmap c1 c2
            | (Mu (i1, m1), Mu (i2, m2)) => 
                let val (mt, mw) = eqmap
@@ -225,6 +263,33 @@ struct
                in
                  global_cstrs := cc @ !global_cstrs
                end
+            
+            | (Evar (ref (Bound t1)), t2) => supertypex ctx eqmap t1 t2
+            | (t1, Evar (ref (Bound t2))) => supertypex ctx eqmap t1 t2
+            | (Evar (r as ref (Free _)), t2) =>
+                if same_evar r t2 then ()
+                else if occurs r t2 then
+                    raise Unify "circularity"
+                else 
+                    (case t2 of
+                        (TPrio (PSSet s)) => 
+                            let val ps as PSEvar r' = new_psevar () in
+                                set r (TPrio (ps));
+                                psset r' (PSSet s)
+                            end
+                        | _ => set r t2)
+            | (t1, Evar (r as ref (Free _))) =>
+                if same_evar r t1 then ()
+                else if occurs r t1 then
+                    raise Unify "circularity"
+                else 
+                    (case t1 of
+                        (TPrio (PSSet s)) => 
+                            let val ps as PSEvar r' = new_psevar () in
+                                set r (TPrio (ps));
+                                psset r' (PSSet s)
+                            end
+                        | _ => set r t1)
            (* | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
                  val mw' = ListPair.foldl (fn (v1, v2, m) => mapplus m (v1, v2))

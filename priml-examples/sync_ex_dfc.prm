@@ -1,0 +1,27 @@
+priority High
+priority Med
+priority Low
+
+order Low < Med
+order Med < High
+ 
+main {
+
+    t <- spawn[Low] {
+        (* 
+            change[High];
+            change[if true then Low else High];
+        *)
+        ret 1 
+    };
+
+    t' <- spawn[Med] {
+        x <- sync t;
+        ret (2 + x)
+    };
+
+    x <- sync t;
+    ret x
+
+
+}

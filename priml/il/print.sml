@@ -383,12 +383,12 @@ struct
               L.align 
                 [%[$(V.tostring v), $"<-", etol e, $";"], 
                  %[ctol c]]
-        | Spawn (p, t, c) => %[$"spawn[", prtol p, $"]", $"{", ctol c, $"}"]
+        | Spawn (e, t, c) => %[$"spawn[", etol e, $"]", $"{", ctol c, $"}"]
         | Sync e => %[$"sync", etol e]
         | Poll e => %[$"poll", etol e]
         | Cancel e => %[$"cancel", etol e]
         | Ret e => %[$"ret", etol e]
-        | Change p => %[$"change[", prtol p, $"]"])
+        | Change e => %[$"change[", etol e, $"]"])
 
     and dtol d =
         (case d of

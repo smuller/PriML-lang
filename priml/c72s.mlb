@@ -97,11 +97,11 @@ elab/pscontext.sml
 elab/psetcstrs-sig.sml
 elab/psetcstrs.sml
 
-elab/unify-sig.sml
-elab/unify.sml
-
 elab/initial-sig.sml
 elab/initial.sml
+
+elab/unify-sig.sml
+elab/unify.sml
 
 il/muname.sml
 

@@ -209,12 +209,12 @@ struct
 *)
     and cmd =
         Bind of var * exp * cmd
-      | Spawn of prio * typ * cmd
+      | Spawn of exp * typ * cmd
       | Sync of exp
       | Poll of exp
       | Cancel of exp
       | Ret of exp
-      | Change of prio
+      | Change of exp
 
     and dec =
         Do of exp

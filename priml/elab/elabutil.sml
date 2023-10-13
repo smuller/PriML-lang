@@ -21,45 +21,7 @@ struct
             raise Elaborate "error"
         end
 
-    val all_evars  = ref (nil : IL.typ IL.ebind ref list)
-    val all_wevars = ref (nil : IL.prio IL.ebind ref list)
-    val all_psevars = ref (nil : IL.prioset IL.ebind ref list)
-    fun clear_evars () = (all_evars  := nil;
-                          all_wevars := nil;
-                          all_psevars := nil)
-
-    fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars)
-
-    fun finalize_evars () =
-      let in
-        app (fn r =>
-             case !r of
-               IL.Bound _ => ()
-             | IL.Free _ => r := IL.Bound (IL.TRec nil)) (!all_evars);
-        app (fn r =>
-             case !r of
-               IL.Bound _ => ()
-             | IL.Free _ => r := IL.Bound Initial.bot) (!all_wevars)
-      end
-
-    fun new_evar ()  = 
-      let val e = Unify.new_ebind ()
-      in
-        all_evars := e :: !all_evars;
-        IL.Evar e
-      end
-    fun new_pevar () =
-      let val e = Unify.new_ebind ()
-      in
-        all_wevars := e :: !all_wevars;
-        IL.PEvar e
-      end
-    fun new_psevar () = 
-      let val e = Unify.new_ebind ()
-      in
-        all_psevars := e :: !all_psevars;
-        IL.PSEvar e
-      end
+    
 
     (* XXX5 compile flag *)
     fun warn loc s =
@@ -79,7 +41,7 @@ struct
       | IL.PSEvar _ =>
           (case PSC.PSEvarMap.find (psemap, ps) of
               NONE => 
-                let val ps' = new_psevar ()
+                let val ps' = Unify.new_psevar ()
                     val psemap' = PSC.PSEvarMap.insert (psemap, ps, ps') 
                 in  
                   (psemap', ps')
@@ -424,7 +386,7 @@ struct
           (* make the type and world substitutions *)
             fun mkts nil m ts = (m, rev ts)
               | mkts (tv::rest) m ts =
-              let val e = new_evar ()
+              let val e = Unify.new_evar ()
               in
                 mkts rest (V.Map.insert (m, tv, e)) (e :: ts)
               end

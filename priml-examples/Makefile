@@ -2,6 +2,9 @@ PRIML=../primlc
 
 all: bank email fibserv fibserv-fair fib_term web
 
+sync_ex_dfc: sync_ex_dfc.prm
+	$(PRIML) sync_ex_dfc.prm sync_ex_dfc
+
 var_ex_dfc: var_ex_dfc.prm
 	$(PRIML) var_ex_dfc.prm var_ex_dfc
 

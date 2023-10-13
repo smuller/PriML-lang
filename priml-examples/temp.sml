@@ -20,4 +20,11 @@ val _ = (Basic.finalizePriorities ())
 
 val _ = (Basic.init ())
 
-val _ = (let fun  anonfn _  =  (let val x = A in B end) in anonfn end)
+val
+_
+=
+(let
+     fun  anonfn _  =  (let val x = A in (if  true  then x else B) end)
+ in
+     anonfn
+ end)

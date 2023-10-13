@@ -25,8 +25,9 @@ struct
     *   general constraints: pp is superset of pi, pp is superset of pf
     * *)
     (* FIX: pp not superset of pi *)
-    fun pscstr_gen pi pp pf = (pscstr_sup pp pi) 
-                              @ (pscstr_sup pp pf)
+    fun pscstr_gen pi pp pf = (* (pscstr_sup pp pi) 
+                              @ *)
+                              (pscstr_sup pp pf)
 
 
     (* SOLVER FUNCTIONS *)

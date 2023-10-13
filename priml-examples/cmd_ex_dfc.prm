@@ -2,10 +2,26 @@ priority A
 priority B
  
 main {
+
+(*
+    td <- spawn[if true then A else B] { ret 2 };
+
+    x <- sync td;
+    ret x
+*)
+
+
+(*
+    change[if true then A else B];
+    ret 0
+*)
+
+
+
     t <- 
         let val m = cmd { 
-            change[A]
-            change[let val _ = () in B end];
+            change[A];
+            change[if true then B else A];
             ret 1 
         }
         in
@@ -16,4 +32,6 @@ main {
 
     x <- sync t;
     ret x
+
+
 }

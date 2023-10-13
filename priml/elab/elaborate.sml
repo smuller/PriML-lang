@@ -31,7 +31,7 @@ struct
 
   (* fun printp p = Layout.print (ILPrint.prtol p, print) *)
 
-  val _ = C.install_ne new_evar
+  val _ = C.install_ne Unify.new_evar
 
   (* XXX elabutil *)
   fun mkfn (args, dom, cod, body) =
@@ -114,7 +114,7 @@ struct
        | E.TNum n => if n >= 0
                      then 
                        TRec (List.tabulate(n, (fn i => (Int.toString (i + 1),
-                                                        new_evar ()))))
+                                                        Unify.new_evar ()))))
                      else error loc "num type (record length) must be non-negative"
        | E.TArrow (dom, cod) => Arrow (false,
                                        [elabtex ctx prefix loc dom],
@@ -122,7 +122,7 @@ struct
        | E.TCmd (t, p) => 
            let val ps = PSSet (PrioSet.singleton (elabpr ctx loc p))
            in 
-               TCmd (elabtex ctx prefix loc t, (ps, new_psevar (), new_psevar ()), ref [])
+               TCmd (elabtex ctx prefix loc t, (ps, Unify.new_psevar (), Unify.new_psevar ()), ref [])
            end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)), ref [])
        | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p))))
@@ -276,7 +276,7 @@ struct
 
         | E.Vector nil => 
               let
-                val t = new_evar()
+                val t = Unify.new_evar()
               in
                 (Primapp(P.PArray0, nil, [t]), TVec t)
               end
@@ -404,13 +404,13 @@ struct
                in
                  (* thrown expression must equal cont type *)
                  unify ctx loc "throw" t2 (IL.TCont t1);
-                 (Throw(ee1, ee2), new_evar ())
+                 (Throw(ee1, ee2), Unify.new_evar ())
                end
 
         | E.Letcc (s, e) =>
                let
                  val cv = V.namedvar s
-                 val bodt = new_evar ()
+                 val bodt = Unify.new_evar ()
                  val ctx' = C.bindv ctx s (mono (IL.TCont bodt)) cv here
                    
                  val (ee, tt) = elab ctx' here e
@@ -481,8 +481,8 @@ struct
                let 
                  val (ff, ft) = elab ctx ef
                  val (aa, at) = elab ctx ea
-                 val dom = new_evar ()
-                 val cod = new_evar ()
+                 val dom = Unify.new_evar ()
+                 val cod = Unify.new_evar ()
                in
                  unify ctx loc "app:function" ft (Arrow (false, [dom], cod));
                  unify ctx loc "app:arg" at dom;
@@ -602,7 +602,7 @@ struct
                  (0, Typ exnt, Extensible) =>
                      let 
                          val (ee, tt) = elab ctx e
-                         val ret = new_evar ()
+                         val ret = Unify.new_evar ()
                      in
                          unify ctx loc "raise" tt exnt;
                          (Raise (ret, ee), ret)
@@ -652,11 +652,11 @@ struct
 
         | E.ECmd c =>
           let 
-              val pp = new_psevar ()
+              val pp = Unify.new_psevar ()
                   (* FIX: Ecmd has no p anymore *)
                   (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
-                      | NONE => new_psevar ()) *)
+                      | NONE => Unify.new_psevar ()) *)
               val (ec, t, (pr1, pr2, pr3), cc) = elabcmd ctx pp (c, loc)
               val cc' = ref ((pscstr_gen pr1 pr2 pr3) @ (pscstr_eq pr1 pp) @ cc)
           in
@@ -720,29 +720,52 @@ struct
   (* context, start refinement, (instruction, location) *)
   and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
       case i of
-          E.Spawn (p', c) => raise unimplemented
-          (* let val p' = elabpr ctx loc p'
+          E.Spawn (e, c) => (* raise unimplemented *)
+          let val (pe, pt) = elab ctx e
+              val psint = Unify.new_psevar ()
+              val _ = unify ctx loc "spawn argument" pt (TPrio (psint))
+
+              (* val p' = elabpr ctx loc p' *)
+              val pp' = psint
+              val pr1' = Unify.new_psevar ()
+              val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
+              val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_sup pr' pp') 
+                        @ (pscstr_sup pr1' pr') @ (pscstr_sup pr1' pr1) @ cc
+          in
+              Layout.print 
+                    (Layout.listex "[" "]" "," 
+                    (map ILPrint.psctol (cc')), print);
+                print "\n";
+              (Spawn (pe, t, ec), TThread (t, pr1', ref cc'), (pr, pr, pr), cc')
+          end 
+          (* E.Spawn (p', c) => 
+          let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
               val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
               val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_eq pr' pp') @ cc
           in
               (Spawn (p', t, ec), TThread (t, pr1, ref cc'), (pr, pr, pr), cc')
-          end *)
+          end 
+          *)
         | E.Sync e =>
           let val (ee, t) = elab ctx e
-              val tint = new_evar ()
-              val psint = new_psevar ()
+              val tint = Unify.new_evar ()
+              val psint = Unify.new_psevar ()
               val unified_pscstrs = ref []
               (* t should match TThread (tint, psint, unified_pscstrs) *)
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint, unified_pscstrs))
               val cc = (pscstr_cons pr psint) @ (!unified_pscstrs)
           in
+              Layout.print 
+                    (Layout.listex "[" "]" "," 
+                    (map ILPrint.psctol (cc)), print);
+                print "\n";
               (Sync ee, tint, (pr, pr, pr), cc)
           end
         | E.Poll e =>
           let val (ee, t) = elab ctx e
-              val tint = new_evar ()
-              val psint = new_psevar ()
+              val tint = Unify.new_evar ()
+              val psint = Unify.new_psevar ()
               val unified_pscstrs = ref []
               val _ = unify ctx loc "poll argument" t (TThread (tint, psint, unified_pscstrs))
               val t = ((case C.con ctx "option" of
@@ -758,8 +781,8 @@ struct
           end
         | E.Cancel e =>
           let val (ee, t) = elab ctx e
-              val tint = new_evar ()
-              val psint = new_psevar ()
+              val tint = Unify.new_evar ()
+              val psint = Unify.new_psevar ()
               val unified_pscstrs = ref []
               val _ = unify ctx loc "cancel argument" t (TThread (tint, psint, unified_pscstrs))
           in
@@ -770,29 +793,33 @@ struct
           in
               (Ret ee, t, (pr, pr, pr), [])
           end
-        | E.Change p' => raise unimplemented
-          (* let val p' = elabpr ctx loc p'
-              val pp' = PSSet (PrioSet.singleton p')
-              val pr' = new_psevar ()
-              val cc = pscstr_gen pr pr' pp'
-          in
-              (Change p', TRec [], (pr, pr', pp'), cc)
-          end *)
-        (* | E.Change e =>
-          let val (p', t) = elab ctx e
-              val psint = new_psevar ()
-              val unified_pscstrs = ref []
-              val _ = unify ctx loc "change argument" t (TPrio (psint, unified_pscstrs))
+        | E.Change e => (* raise unimplemented *)
+          let val (pe', pt) = elab ctx e
+              val psint = Unify.new_psevar ()
+              val _ = unify ctx loc "change argument" pt (TPrio (psint))
 
-              val p' = elabpr ctx loc p'
+              (* val p' = elabpr ctx loc p' *)
+              val pp' = psint
+              val pr' = Unify.new_psevar ()
+              val cc = pscstr_gen pr pr' pp'
+          in
+              (Change pe', TRec [], (pr, pr', pp'), cc)
+          end
+        (* | E.Change p' =>
+          let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
-              val pr' = new_psevar ()
+              val pr' = Unify.new_psevar ()
               val cc = pscstr_gen pr pr' pp'
           in
               (Change p', TRec [], (pr, pr', pp'), cc)
-          end *)
+          end 
+        *)
+        (* | E.Change e =>
+          
+        *)
         | E.IBind is => elabbind ctx pr is
 
+  (* FIX: binding with first class priorities *)
   and elabbind ctx (pr: IL.prioset) (is, li) =
       case is of
           [] =>
@@ -802,10 +829,10 @@ struct
                val dvar = "retval__"
                val v = V.namedvar dvar
                val (ii, t) = elab ctx li
-               val tint = new_evar ()
-               val pr1 = new_psevar ()
-               val pr2 = new_psevar ()
-               val pr3 = new_psevar ()
+               val tint = Unify.new_evar ()
+               val pr1 = Unify.new_psevar ()
+               val pr2 = Unify.new_psevar ()
+               val pr3 = Unify.new_psevar ()
                val unified_pscstrs = ref []
                val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3), unified_pscstrs))
                val cc = (pscstr_sup pr1 pr) 
@@ -817,12 +844,12 @@ struct
           (* Bind the elaborated instruction in the elaborated remainder *)
           (let val v = V.namedvar s
                val (ii, t) = elab ctx i
-               val tint = new_evar ()
-               val pr1 = new_psevar ()
-               val pr2 = new_psevar ()
-               val pr3 = new_psevar ()
-               val pr4 = new_psevar ()
-               val pr7 = new_psevar ()
+               val tint = Unify.new_evar ()
+               val pr1 = Unify.new_psevar ()
+               val pr2 = Unify.new_psevar ()
+               val pr3 = Unify.new_psevar ()
+               val pr4 = Unify.new_psevar ()
+               val pr7 = Unify.new_psevar ()
                val ctx' = C.bindv ctx s (mono tint) v
                val unified_pscstrs = ref []
                val (cmd, t', (pr4', pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
@@ -840,7 +867,7 @@ struct
            end)
 
   and mktyvars ctx tyvars =
-      foldl (fn (tv, ctx) => C.bindc ctx tv (Typ ` new_evar ()) 0 Regular)
+      foldl (fn (tv, ctx) => C.bindc ctx tv (Typ ` Unify.new_evar ()) 0 Regular)
             ctx tyvars
 
   and elabf ctx 
@@ -1391,7 +1418,7 @@ struct
           in
               (* provisional instantiation of type, to make sure its
                  body is not bogus (unelaboratable) prima facie *)
-              ignore ` conf (List.tabulate (kind, fn _ => new_evar ()));
+              ignore ` conf (List.tabulate (kind, fn _ => Unify.new_evar ()));
 
               ListUtil.allpairssym op<> tyvars 
                  orelse error loc "duplicate tyvars in type dec";
@@ -1435,8 +1462,8 @@ struct
               val binds =
                   map (fn (tv, f, b) => 
                        let val vv = V.namedvar f
-                           val dom = new_evar ()
-                           val cod = new_evar ()
+                           val dom = Unify.new_evar ()
+                           val cod = Unify.new_evar ()
                        in
                            (tv, f, b, vv, dom, cod)
                        end) bundle
@@ -1605,7 +1632,7 @@ struct
              val (ee, tt) = elab nctx exp
 
              val wv = V.namedvar "ls_wv"
-             val t = new_evar ()
+             val t = Unify.new_evar ()
              val () = unify ctx loc "letsham" tt (Shamrock(wv, t))
 
              val polydec = (case ee of
@@ -1641,7 +1668,7 @@ struct
 
              val (ee, tt) = elab nctx exp
              val there = new_wevar ()
-             val t = new_evar ()
+             val t = Unify.new_evar ()
                  
              val () = unify ctx loc "leta" tt (At(t, there))
 
@@ -1787,7 +1814,7 @@ struct
 
           (* Circuitous way to reuse the Fun elaboration code *)
           (* Generate a temporary evar for the type of the recursive call *)
-          val temp_t = TForall (pvars, pcons, new_evar ())
+          val temp_t = TForall (pvars, pcons, Unify.new_evar ())
           (* Bind the real name with the evar, elaborate the
              priority-monomorphic function with a new name, let elabd
              tell us the actual type *)
@@ -1858,7 +1885,7 @@ struct
           in
               (* provisional instantiation of type, to make sure its
                  body is not bogus (unelaboratable) prima facie *)
-              ignore ` conf (List.tabulate (kind, fn _ => new_evar ()));
+              ignore ` conf (List.tabulate (kind, fn _ => Unify.new_evar ()));
 
               ListUtil.allpairssym op<> tyvars 
                  orelse error loc "duplicate tyvars in type dec";
@@ -1988,7 +2015,7 @@ struct
   fun elaborate (EL.Prog (dl, c)) = 
     let
       (* val () = clear_mobile () *)
-      val () = clear_evars ()
+      val () = Unify.clear_evars ()
       val G = C.bindplab Initial.initial "bot"
 
       val (idl, fs, G') = elabtds G dl
@@ -2010,7 +2037,13 @@ struct
             val psctx_sol = solve_pscstrs psctx pscstrs
         in
           (* check psevar solution satifies every psconstraints *)
-          check_pscstrs_sol G' psctx_sol pscstrs
+          check_pscstrs_sol G' psctx_sol pscstrs;
+          Layout.print 
+            (Layout.listex "[" "]" "," 
+            (PSC.PSEvarMap.listItems (PSC.PSEvarMap.mapi 
+                (fn (k, ps) => Layout.seq [ILPrint.pstol k, Layout.listex "{" "}" "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
+                (psctx_sol))), 
+            print)
         end
         handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
 
@@ -2026,7 +2059,7 @@ struct
         (map ILPrint.psctol (!Unify.global_cstrs)), print);
       print "\n";
       solve_psetcstrs (cc @ !Unify.global_cstrs); (* FIX: append global constraints *)
-      finalize_evars ();
+      Unify.finalize_evars ();
       (idl, prios, cons, fs, ec)
     end handle e as Match => raise Elaborate ("match:" ^ 
                                               StringUtil.delimit " / " ` Port.exnhistory e)
