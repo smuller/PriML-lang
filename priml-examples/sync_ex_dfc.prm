@@ -8,11 +8,28 @@ order Med < High
 main {
 
     t <- spawn[Low] {
+        ret 1
+    };
+
+    t' <- spawn[Med] {
+        x <- sync t;
+        ret x
+    };
+
+    ret 1
+
+
+
+    
+
+
+(*
+    t <- spawn[Low] {
         (* 
             change[High];
             change[if true then Low else High];
         *)
-        ret 1 
+        ret 1
     };
 
     t' <- spawn[Med] {
@@ -22,6 +39,7 @@ main {
 
     x <- sync t;
     ret x
+*)
 
 
 }
