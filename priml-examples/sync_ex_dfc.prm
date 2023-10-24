@@ -5,6 +5,7 @@ priority Low
 order Low < Med
 order Med < High
  
+(* (* catches constraint violation {Med} < {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -17,13 +18,53 @@ main {
     };
 
     ret 1
+}
+*)
 
 
 
+(* (* compiles *)
+main {
+
+    t <- spawn[Med] {
+        ret 1
+    };
+
+    t' <- spawn[Med] {
+        x <- sync t;
+        ret x
+    };
+
+    ret 1
+}
+*)
+
+
+
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    sync t;
     
+    ret 1
+}
+
+
+
+
+
+
+
+
+
 
 
 (*
+main {
+
     t <- spawn[Low] {
         (* 
             change[High];
@@ -39,7 +80,6 @@ main {
 
     x <- sync t;
     ret x
-*)
-
 
 }
+*)

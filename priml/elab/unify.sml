@@ -61,6 +61,8 @@ struct
       let val e = new_ebind ()
       in
         all_psevars := e :: !all_psevars;
+        let val IL.Free i = !e in print (Int.toString i) end;
+        print "\n";
         IL.PSEvar e
       end
     

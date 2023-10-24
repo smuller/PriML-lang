@@ -657,10 +657,16 @@ struct
                   (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => Unify.new_psevar ()) *)
-              val (ec, t, (pr1, pr2, pr3), cc) = elabcmd ctx pp (c, loc)
-              val cc' = ref ((pscstr_gen pr1 pr2 pr3) @ (pscstr_eq pr1 pp) @ cc)
+              val (ec, t, ((* pr1, *) pr2, pr3), cc) = elabcmd ctx pp (c, loc)
+              val cc' = ref ((pscstr_gen (* pr1 *) pp pr2 pr3) 
+                            (* @ (pscstr_eq pr1 pp)  *)
+                            @ cc)
           in
-              (Cmd (pp, ec), TCmd (t, (pr1, pr2, pr3), cc'))
+              Layout.print
+                    (Layout.listex "[" "]" "," 
+                    (map ILPrint.psctol (!cc')), print);
+              print "\n ECmd \n";
+              (Cmd (pp, ec), TCmd (t, ((* pr1, *) pp, pr2, pr3), cc'))
           end
 
         (* | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented") (* FIX: delete this *) *)
@@ -727,17 +733,28 @@ struct
 
               (* val p' = elabpr ctx loc p' *)
               val pp' = psint
-              val pr1' = Unify.new_psevar ()
-              val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
-              val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_sup pr' pp') 
-                        @ (pscstr_sup pr1' pr') @ (pscstr_sup pr1' pr1) @ cc
+              (* val pr1' = Unify.new_psevar () (* FIX *) *)
+              val (ec, t, ((* pr', *) pr1, pr2), cc) = elabcmd ctx pp' c
+              val cc' = (pscstr_gen (* pr' *) pp' pr1 pr2) 
+                        (* @ (pscstr_eq pr' pp') *) (* FIX: change eq to sup *)
+                        (* @ (pscstr_sup pr1' pp') (* FIX *) *)
+                        (* @ (pscstr_sup pr1' pr') *) 
+                        (* @ (pscstr_sup pr1' pr1) (* FIX *) *)
+                        @ cc
           in
-              Layout.print 
+              print "\n spawn start \n";
+              print "(  pr,  pp',  pr1,  pr2)";
+              print "\n";
+              Layout.print
+                    (Layout.listex "(" ")" "," 
+                    (map ILPrint.pstol [pr, pp', pr1, pr2 (* pr1' *)]), print);
+              print "\n";
+              Layout.print
                     (Layout.listex "[" "]" "," 
                     (map ILPrint.psctol (cc')), print);
-                print "\n";
-              (Spawn (pe, t, ec), TThread (t, pr1', ref cc'), (pr, pr, pr), cc')
-          end 
+              print "\n spawn end \n";
+              (Spawn (pe, t, ec), TThread (t, (* pr1' *) pr1, ref cc'), ((* pr, *) pr, pr), cc')
+          end
           (* E.Spawn (p', c) => 
           let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
@@ -752,15 +769,34 @@ struct
               val tint = Unify.new_evar ()
               val psint = Unify.new_psevar ()
               val unified_pscstrs = ref []
+              
+              val _ = 
+                (print "\n sync start \n";
+                print (ELPrint.etosi 0 e);
+                print "\n";
+                Layout.print
+                    (ILPrint.ttol t, print);
+                print "\n";
+                print "(pr, psint)";
+                print "\n";
+                Layout.print
+                    (Layout.listex "(" ")" "," 
+                    (map ILPrint.pstol [pr, psint]), print);
+                print "\n")
+
               (* t should match TThread (tint, psint, unified_pscstrs) *)
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint, unified_pscstrs))
               val cc = (pscstr_cons pr psint) @ (!unified_pscstrs)
           in
-              Layout.print 
-                    (Layout.listex "[" "]" "," 
+              print "\n sync arg matched t \n";
+              (* Layout.print
+                    (ILPrint.ttol t, print); *)
+              print "\n";
+              Layout.print
+                    (Layout.listex "[" "]" ","
                     (map ILPrint.psctol (cc)), print);
-                print "\n";
-              (Sync ee, tint, (pr, pr, pr), cc)
+              print "\n sync end \n";
+              (Sync ee, tint, ((* pr, *) pr, pr), cc)
           end
         | E.Poll e =>
           let val (ee, t) = elab ctx e
@@ -777,7 +813,7 @@ struct
                        handle Context.Absent _ =>
                               error loc "Should not happen")
           in
-              (Poll ee, t, (pr, pr, pr), (!unified_pscstrs))
+              (Poll ee, t, ((* pr, *) pr, pr), (!unified_pscstrs))
           end
         | E.Cancel e =>
           let val (ee, t) = elab ctx e
@@ -786,12 +822,12 @@ struct
               val unified_pscstrs = ref []
               val _ = unify ctx loc "cancel argument" t (TThread (tint, psint, unified_pscstrs))
           in
-              (Cancel ee, TRec [], (pr, pr, pr), (!unified_pscstrs))
+              (Cancel ee, TRec [], ((* pr, *) pr, pr), (!unified_pscstrs))
           end
         | E.IRet e =>
           let val (ee, t) = elab ctx e
           in
-              (Ret ee, t, (pr, pr, pr), [])
+              (Ret ee, t, ((* pr, *) pr, pr), [])
           end
         | E.Change e => (* raise unimplemented *)
           let val (pe', pt) = elab ctx e
@@ -803,7 +839,7 @@ struct
               val pr' = Unify.new_psevar ()
               val cc = pscstr_gen pr pr' pp'
           in
-              (Change pe', TRec [], (pr, pr', pp'), cc)
+              (Change pe', TRec [], ((* pr, *) pr', pp'), cc)
           end
         (* | E.Change p' =>
           let val p' = elabpr ctx loc p'
@@ -829,41 +865,93 @@ struct
                val dvar = "retval__"
                val v = V.namedvar dvar
                val (ii, t) = elab ctx li
+               
+               (* val _ = 
+                 (print "\n bind 1 start \n";
+                 Layout.print
+                    (ILPrint.ttol t, print);
+                 print "\n") *)
+
                val tint = Unify.new_evar ()
-               val pr1 = Unify.new_psevar ()
+               (* val pr1 = Unify.new_psevar () *)
                val pr2 = Unify.new_psevar ()
                val pr3 = Unify.new_psevar ()
                val unified_pscstrs = ref []
-               val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3), unified_pscstrs))
-               val cc = (pscstr_sup pr1 pr) 
-                        @ (!unified_pscstrs)
+               val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr, pr2, pr3), unified_pscstrs))
+               val cc = (* (pscstr_sup pr1 pr) 
+                        @ *) (!unified_pscstrs)
            in
-               (Bind (v, ii, Ret (Value (Var v))), tint, (pr1, pr2, pr3), cc)
+                (* print "\n (tint) \n";
+                Layout.print
+                    (ILPrint.ttol tint, print); *)
+                print "\n";
+                print "(pr, pr2, pr3)";
+                print "\n";
+                Layout.print
+                        (Layout.listex "(" ")" "," 
+                        (map ILPrint.pstol [pr, pr2, pr3]), print);
+                (* print "\n";
+                Layout.print
+                        (Layout.listex "[" "]" "," 
+                        (map ILPrint.psctol (cc)), print); *)
+                print "\n bind 1 end \n";
+                (Bind (v, ii, Ret (Value (Var v))), tint, ((* pr, *) pr2, pr3), cc)
            end)
         | (s, i as (_, loc))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
           (let val v = V.namedvar s
                val (ii, t) = elab ctx i
+
+               (* val _ = 
+                 (print "\n bind 2 start \n";
+                 Layout.print
+                    (ILPrint.ttol t, print);
+                 print "\n") *)
+
                val tint = Unify.new_evar ()
-               val pr1 = Unify.new_psevar ()
+               (* val pr1 = Unify.new_psevar () *)
                val pr2 = Unify.new_psevar ()
                val pr3 = Unify.new_psevar ()
                val pr4 = Unify.new_psevar ()
                val pr7 = Unify.new_psevar ()
-               val ctx' = C.bindv ctx s (mono tint) v
+               val ctx' = C.bindv ctx s (mono tint) v 
+                (* Q: why use tint here instead of t? 
+                   A: So that the variable has just the return type of the command 
+                *)
+                (* Q: why use mono for a polymorphic type? *)
                val unified_pscstrs = ref []
-               val (cmd, t', (pr4', pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
-               val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr1, pr2, pr3), unified_pscstrs))
-               val cc' = (pscstr_gen pr1 pr7 pr6)
-                         @ (pscstr_eq pr pr1)
-                         @ (pscstr_eq pr4 pr4')
+               (* FIX: switched 2 lines: now unify before elabbind
+                       so that the type of the bind variable is in the ctx' 
+                       when binding the rest 
+               *)
+               val _ = unify ctx loc "bind argument" t (TCmd (tint, ((* pr1 *) pr, pr2, pr3), unified_pscstrs))
+               val (cmd, t', ((* pr4', *) pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
+               val cc' = (pscstr_gen pr pr7 pr6)
+                         (* @ (pscstr_eq pr pr1) *)
+                         (* @ (pscstr_eq pr4 pr4') *)
                          @ (pscstr_sup pr4 pr3)
                          @ (pscstr_sup pr7 pr2)
                          @ (pscstr_sup pr7 pr5)
                          @ (!unified_pscstrs)
                          @ cc
            in
-               (Bind (v, ii, cmd), t', (pr1, pr7, pr6), cc')
+                (* print "\n (tint) \n";
+                Layout.print
+                    (ILPrint.ttol tint, print); *)
+                print "\n";
+                print ("bind var: " ^ s);
+                print "\n";
+                print "(pr, pr2, pr3, pr4, pr5, pr6, pr7)";
+                print "\n";
+                Layout.print
+                        (Layout.listex "(" ")" "," 
+                        (map ILPrint.pstol [pr, pr2, pr3, pr4, pr5, pr6, pr7]), print);
+                (* print "\n";
+                Layout.print
+                        (Layout.listex "[" "]" "," 
+                        (map ILPrint.psctol (cc')), print); *)
+                print "\n bind 2 end \n\n";
+                (Bind (v, ii, cmd), t', ((* pr, *) pr7, pr6), cc')
            end)
 
   and mktyvars ctx tyvars =
@@ -2019,7 +2107,8 @@ struct
       val G = C.bindplab Initial.initial "bot"
 
       val (idl, fs, G') = elabtds G dl
-      val (ec, t, (pi, pp, pf), cc) = elabcmd G' (PSSet (PrioSet.singleton (PConst "bot"))) c
+      val pi = (PSSet (PrioSet.singleton (PConst "bot")))
+      val (ec, t, ((* pi, *) pp, pf), cc) = elabcmd G' pi c
 
 (*
       fun checkprio PConst s = s
@@ -2041,9 +2130,10 @@ struct
           Layout.print 
             (Layout.listex "[" "]" "," 
             (PSC.PSEvarMap.listItems (PSC.PSEvarMap.mapi 
-                (fn (k, ps) => Layout.seq [ILPrint.pstol k, Layout.listex "{" "}" "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
+                (fn (k, ps) => Layout.seq [ILPrint.pstol k, Layout.listex ": {" "} " "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
                 (psctx_sol))), 
-            print)
+            print);
+          print "\n"
         end
         handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
 
@@ -2058,7 +2148,7 @@ struct
         (Layout.listex "[" "]" "," 
         (map ILPrint.psctol (!Unify.global_cstrs)), print);
       print "\n";
-      solve_psetcstrs (cc @ !Unify.global_cstrs); (* FIX: append global constraints *)
+      solve_psetcstrs (!Unify.global_cstrs @ cc); (* FIX: append global constraints *)
       Unify.finalize_evars ();
       (idl, prios, cons, fs, ec)
     end handle e as Match => raise Elaborate ("match:" ^ 
