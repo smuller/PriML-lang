@@ -40,7 +40,7 @@ main {
 *)
 
 
-
+(* (* compiles *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -51,10 +51,19 @@ main {
     
     ret 1
 }
+*)
 
 
+main {
 
+    t <- spawn[case SOME 1 of SOME 1 => High | NONE => Low] {
+        ret 1
+    };
 
+    sync t;
+    
+    ret 1
+}
 
 
 

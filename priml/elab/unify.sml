@@ -282,11 +282,11 @@ struct
                     (case t2 of
                         (TPrio s) => 
                         let val ps as PSEvar r' = new_psevar ()
-			    val cc = pscstr_sup ps s
-			    in
-				global_cstrs := cc @ !global_cstrs;
-                                set r (TPrio (ps))
-                            end
+                            val cc = pscstr_sup ps s
+                        in
+                            global_cstrs := cc @ !global_cstrs;
+                            set r (TPrio (ps))
+                        end
                         | _ => set r t2)
             | (t1, Evar (r as ref (Free _))) =>
                 if same_evar r t1 then ()
@@ -296,9 +296,9 @@ struct
                     (case t1 of
                         (TPrio s) => 
                         let val ps as PSEvar r' = new_psevar ()
-			    val cc = pscstr_sup s ps
-			in
-			    global_cstrs := cc @ !global_cstrs;
+                            val cc = pscstr_sup s ps
+                        in
+                            global_cstrs := cc @ !global_cstrs;
                             set r (TPrio (ps))
                         end
                         | _ => set r t1)
