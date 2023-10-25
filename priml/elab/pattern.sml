@@ -919,7 +919,7 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "sum arg" (#1 (evarize opt)) cod;
-                           supertype nctx loc "sum default" dt rett; (* FIX: turn unifying into subtyping *)
+                           supertype nctx loc "sum default" rett dt; (* FIX: turn unifying into subtyping *)
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
                                 (map ILPrint.psctol (!Unify.global_cstrs)), print);
