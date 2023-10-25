@@ -799,6 +799,7 @@ struct
                                           (* elaborate the inside *)
                                           val (re, rt) = elm nctx cols oe ndef
                                         in
+					    print "start (nullary) sum pattern return \n";
                                           supertype ctx loc 
                                              "(nullary) sum pattern return" rett rt;
                                           Layout.print 
@@ -872,6 +873,7 @@ struct
                                                val (re, rt) = elm nctx cols ne ndef
                                            in
                                            (* FIX: turn unifying into subtyping *)
+                                               print "start sum pattern return \n";
                                                supertype ctx loc 
                                                   "sum pattern return" rett rt;
                                                Layout.print 

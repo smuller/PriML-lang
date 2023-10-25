@@ -142,6 +142,11 @@ struct
 
     (* FIX: instead of `unifyex` now supertypex *)
     fun supertypex ctx eqmap t1 t2 =
+	let val _ = Layout.print (Layout.listex
+				      "supertype (" ")\n" ","
+				      (map ILPrint.ttol [t1, t2]),
+				  print)
+	in
         (case (t1, t2) of
              (TVar v1, TVar v2) =>
                  ignore (Variable.eq (mapift eqmap v1, v2) 
@@ -260,11 +265,12 @@ struct
                  supertypex ctx eqmap t1 t2
                end
             | (TPrio ps1, TPrio ps2) =>
-               (* FIX: unify priorities *)
-               let val cc = pscstr_sup ps1 ps2
-               in
-                 global_cstrs := cc @ !global_cstrs
-               end
+              (* FIX: unify priorities *)
+	      let 
+		  val cc = pscstr_sup ps1 ps2
+              in
+                  global_cstrs := cc @ !global_cstrs
+              end
             
             | (Evar (ref (Bound t1)), t2) => supertypex ctx eqmap t1 t2
             | (t1, Evar (ref (Bound t2))) => supertypex ctx eqmap t1 t2
@@ -274,10 +280,12 @@ struct
                     raise Unify "circularity"
                 else 
                     (case t2 of
-                        (TPrio (PSSet s)) => 
-                            let val ps as PSEvar r' = new_psevar () in
-                                set r (TPrio (ps));
-                                psset r' (PSSet s)
+                        (TPrio s) => 
+                        let val ps as PSEvar r' = new_psevar ()
+			    val cc = pscstr_sup ps s
+			    in
+				global_cstrs := cc @ !global_cstrs;
+                                set r (TPrio (ps))
                             end
                         | _ => set r t2)
             | (t1, Evar (r as ref (Free _))) =>
@@ -286,11 +294,13 @@ struct
                     raise Unify "circularity"
                 else 
                     (case t1 of
-                        (TPrio (PSSet s)) => 
-                            let val ps as PSEvar r' = new_psevar () in
-                                set r (TPrio (ps));
-                                psset r' (PSSet s)
-                            end
+                        (TPrio s) => 
+                        let val ps as PSEvar r' = new_psevar ()
+			    val cc = pscstr_sup s ps
+			in
+			    global_cstrs := cc @ !global_cstrs;
+                            set r (TPrio (ps))
+                        end
                         | _ => set r t1)
            (* | (TForall (vs1, cs1, t1), TForall (vs2, cs2, t2)) =>
              let val (mt, mw) = eqmap
@@ -337,7 +347,8 @@ struct
            | (_, At _) => raise Unify "tycon mismatch (at)" *)
 
                  (* no catch-all; dangerous if missing cases of unification! *)
-                 )
+        )
+	end
 
     (* and unifypex ctx eqmap w1 w2 =
       case (w1, w2) of

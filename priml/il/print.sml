@@ -88,7 +88,7 @@ struct
                               $" thread[", pstol ps, $"]",
                              L.listex "[" "]" "," (map psctol (!cc))])
            | TPrio ps => 
-               L.paren (L.seq[$"thread[", pstol ps, $"]"])
+               L.paren (L.seq[$"prio[", pstol ps, $"]"])
            (* | TForall (vs, pcons, t) =>
              L.paren (L.seq[$"forall ",
                             L.listex "" "" "" (map (op$ o V.show) vs),
