@@ -832,7 +832,9 @@ struct
         | E.Change e => (* raise unimplemented *)
           let val (pe', pt) = elab ctx e
               val psint = Unify.new_psevar ()
-              val _ = unify ctx loc "change argument" pt (TPrio (psint))
+              (* FIX: change unify to supertype so that end refinement 
+                      is not constrained to only e's refinement *)
+              val _ = supertype ctx loc "change argument" (TPrio (psint)) pt
 
               (* val p' = elabpr ctx loc p' *)
               val pp' = psint
