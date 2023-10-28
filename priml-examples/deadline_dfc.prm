@@ -1,0 +1,95 @@
+priority p1
+priority p2
+priority p3
+priority p4
+priority p5
+
+order p5 < p4
+order p4 < p3
+order p3 < p2
+order p2 < p1
+
+
+(* (* CORRECT compiles *)
+main {
+
+    let fun curr_time _ = 9
+        val deadline = 10
+        val msecs_to_deadline = deadline - curr_time ()
+    in
+        if (floor  msecs_to_deadline) = 1 then
+            change[p1]  (* : unit cmd[{bot}, {p1}, {p1}] *)
+        else
+            ret ()      (* : unit cmd[{bot}, {bot}, {bot}] *)
+    end
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    let fun curr_time _ = 9
+        val deadline = 10
+        val msecs_to_deadline = deadline - curr_time ()
+    in
+        if (floor  msecs_to_deadline) = 4 then
+            change[p4]
+        else if (floor  msecs_to_deadline) = 3 then
+            change[p3]
+        else if (floor  msecs_to_deadline) = 2 then
+            change[p2]
+        else if (floor  msecs_to_deadline) = 1 then
+            change[p1]
+        else
+            ret ()
+    end
+}
+*)
+
+
+(* (* BAD compiles, but has an empty psevar
+      NOT probably because list type checking is broken
+      BUT probably because of broken extra psevar in sum pattern *)
+main {
+
+    let val priorities_in_order = p1 :: p2 :: p3 :: p4 :: p5 :: nil
+        fun curr_time _ = 9
+        val deadline = 10
+        val msecs_to_deadline = deadline - curr_time ()
+    in
+        if msecs_to_deadline < 5 then
+            change[List.nth priorities_in_order 
+                   (floor  msecs_to_deadline)]
+        else
+            ret ()
+    end
+}
+*)
+
+
+(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+main {
+
+    let fun curr_time _ = 9
+        val deadline = 10
+        val msecs_to_deadline = deadline - curr_time ()
+    in
+        if msecs_to_deadline < 5 then
+            change[
+                if (floor  msecs_to_deadline) = 4 then
+                    p4
+                else if (floor  msecs_to_deadline) = 3 then
+                    p3
+                else if (floor  msecs_to_deadline) = 2 then
+                    p2
+                else
+                    p1
+            ]
+        else
+            ret ()
+    end
+}
+*)
+
+

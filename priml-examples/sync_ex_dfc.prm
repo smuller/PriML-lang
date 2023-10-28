@@ -4,68 +4,472 @@ priority Low
 
 order Low < Med
 order Med < High
- 
-(* (* catches constraint violation {Med} < {Low} *)
-main {
-
-    t <- spawn[Low] {
-        ret 1
-    };
-
-    t' <- spawn[Med] {
-        x <- sync t;
-        ret x
-    };
-
-    ret 1
-}
-*)
 
 
 
-(* (* compiles *)
-main {
 
-    t <- spawn[Med] {
-        ret 1
-    };
-
-    t' <- spawn[Med] {
-        x <- sync t;
-        ret x
-    };
-
-    ret 1
-}
-*)
-
-
-(* (* compiles *)
+(* (* CORRECT compiles *)
 main {
 
     t <- spawn[if true then High else Low] {
         ret 1
     };
 
-    sync t;
-    
+    sync t
+}
+*)
+
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[case SOME 1 of SOME _ => High | NONE => Low] {
+        ret 1
+    };
+
+    sync t
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {Med} < {Low} *)
+main {
+
+    t <- spawn[Low] {
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[Med] {
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {Low} *)
+main {
+
+    t <- spawn[Low] {
+        ret 1
+    };
+
+    spawn[if true then High else Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    spawn[if true then High else Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[let val x = true in if x then High else Low end] {
+        ret 1
+    };
+
+    spawn[if true then High else Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    spawn[let val x = true in if x then High else Med end] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+
+
+
+
+
+
+
+
+
+(* (* CORRECT catches constraint violation {Med} < {Low} *)
+main {
+
+    t <- spawn[Low] {
+        ret 1
+    };
+
+    change[Med];
+
+    x <- sync t;
     ret 1
 }
 *)
 
 
+
+(* (* CORRECT compiles *)
 main {
 
-    t <- spawn[case SOME 1 of SOME 1 => High | NONE => Low] {
+    t <- spawn[Med] {
         ret 1
     };
 
-    sync t;
+    change[Med];
     
+    x <- sync t;
     ret 1
 }
+*)
 
 
+
+(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    change[Med];
+
+    sync t
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {Low} *)
+main {
+
+    t <- spawn[Low] {
+        ret 1
+    };
+
+    change[if true then High else Med];
+
+    sync t
+}
+*)
+
+
+
+(* (* BAD catches constraint violation {High, Med} < {Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    change[if true then High else Med];
+
+    sync t
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then Low else High] {
+        ret 1
+    };
+
+    change[if true then High else Med];
+
+    sync t
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[let val x = true in if x then High else Low end] {
+        ret 1
+    };
+
+    change[if true then High else Med];
+
+    sync t
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    change[let val x = true in if x then High else Med end];
+
+    sync t
+}
+*)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+main {
+
+    t <- spawn[High] {
+        change[Low];
+        change[High];
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {Med} < {High, Low, Med} *)
+main {
+
+    t <- spawn[High] {
+        change[if true then Low else Med];
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {Low, Med} < {High, Low} *)
+main {
+
+    t <- spawn[High] {
+        change[Low];
+        ret 1
+    };
+
+    spawn[if true then Low else Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT catches constraint violation {Med} < {High, Low, Med} *)
+main {
+
+    t <- spawn[if true then High else Med] {
+        change[Low];
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[Med] {
+        change[High]
+    };
+
+    spawn[High] {
+        change[Low];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[Low] {
+        ret 1
+    };
+
+    spawn[Med] {
+        change[Low];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[Med];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then High else Med];
+        change[Low];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then High else Med];
+        change[Low];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+
+(* (* CORRECT catches constraint violation {Med} < {High, Med} *)
+main {
+
+    t <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then Low else Low];
+        change[High];
+        x <- sync t;
+        ret x
+    }
+}
+*)
+
+
+(* (* CORRECT compiles *)
+main {
+
+    t <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then Low else Low];
+        x <- sync t;
+        change[High];
+        ret x
+    }
+}
+*)
+
+
+
+
+
+
+
+
+(* ... *)
 
 
 
@@ -82,7 +486,7 @@ main {
         ret 1
     };
 
-    t' <- spawn[Med] {
+    spawn[Med] {
         x <- sync t;
         ret (2 + x)
     };
@@ -90,5 +494,17 @@ main {
     x <- sync t;
     ret x
 
+}
+*)
+
+
+(* (* constant pattern is broken, but probably never worked in original compiler *)
+main {
+
+    t <- spawn[case SOME 1 of SOME 1 => High | NONE => Low] {
+        ret 1
+    };
+
+    sync t
 }
 *)

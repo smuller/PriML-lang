@@ -1,22 +1,57 @@
 priority A
 priority B
+
  
 main {
 
-(*
+(* (* CORRECT compiles *)
+
     ret (let val x = A in B end)
 *)
 
-    ret (let val x = A in if true then x else B end)
+(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
 
-(*
     ret (if true then A else B)
 *)
 
-(*
-    t <- let val x = A in spawn[x] { ret 1 } end;
+
+(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+
+    ret (let val x = A in if true then x else B end)
+*)
+
+
+(* (* BAD syntax error that makes no sense *)
+
+    t <- (let val x = A 
+          in spawn[x] { ret 1 } 
+          end);
+    x <- sync t;
+    ret x
+*)
+
+
+(* (* BAD syntax error that makes no sense *)
+    t <- 
+        let val m = 1
+        in
+            spawn[A] { ret m }
+        end;
+
     x <- sync t;
     ret x
 *)
 
 }
+
+
+
+(* (* BAD compiles *)
+main {
+
+    ret (1 :: "hi" :: nil)
+}
+*)
+
+
+
