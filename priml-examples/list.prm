@@ -1,0 +1,6 @@
+priority p1
+priority p2
+
+main {
+  ret (cons(p1, cons(p2, nil)))
+}

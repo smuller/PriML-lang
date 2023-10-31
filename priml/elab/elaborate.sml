@@ -1317,8 +1317,8 @@ struct
               val dl =
                   ListUtil.mapi (fn ((dt, arms), n) =>
                                  (dt, arms, n,
-                                  V.namedvar (dt 
-                                              (* ^ "_" ^ itos n ^ "_" *)))) dl
+                                  V.namedvar (dt
+                                               (*^ "_" ^ itos n ^ "_" *)))) dl
 
               (* augment atvs with real variables too *)
               val atvs = map (fn x => (x, V.namedvar x)) atvs
@@ -1335,14 +1335,22 @@ struct
                  the arms. *)
 
               val actx = 
-                  foldl (fn ((dt, _, _, v), c) =>
-                         C.bindc c dt (Typ (TVar v)) 0 Regular) actx dl
+                  foldl (fn ((dt, arms, _, v), c) =>
+			    if List.length atvs = 0 then
+				C.bindc c dt (Typ (TVar v)) 0 Regular
+			    else
+				C.bindc c dt (Lambda (fn _ => TVar v))
+					(List.length atvs)
+					Regular
+			)
+			actx dl
 
-              fun gen_arminfo NONE = NonCarrier
-                | gen_arminfo (SOME t) = 
-                let
-                  val tt = elabt actx loc t
-                in
+              fun gen_arminfo (n, NONE) = (n, NonCarrier)
+                | gen_arminfo (n, SOME t) = 
+                  let
+		      val _ = print ("checking: " ^ n ^ "\n")
+                      val tt = elabt actx loc t
+                  in
                   (* PERF this is very conservative now
                      (got the post-bug jitters), mainly
                      designed to catch the list datatype.
@@ -1351,21 +1359,23 @@ struct
                      ints, other definitely allocated
                      datatypes, etc...
                      *)
-                  Carrier { carried = tt,
-                            definitely_allocated = 
-                            (case tt of
-                               TRec (_ :: _ :: _) => true
-                             | TVec _ => true
-                             | TRef _ => true
-                             | Arrow _ => true
-                             | _ => false) }
+                      (n,
+		       Carrier { carried = tt,
+				 definitely_allocated = 
+				 (case tt of
+				      TRec (_ :: _ :: _) => true
+				    | TVec _ => true
+				    | TRef _ => true
+				    | Arrow _ => true
+				    | _ => false) }
+		       )
                 end
 
               (* elaborate each arm *)
               val dl =
                   map (fn (dt, arms, n, v) =>
                        (dt, 
-                        ListUtil.mapsecond gen_arminfo arms,
+                        map gen_arminfo arms,
                         n, v)) dl
 
               (* make body of mu *)

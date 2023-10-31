@@ -24,7 +24,8 @@ cmd_ex_dfc: cmd_ex_dfc.prm
 cmd_ex: cmd_ex.prm
 	$(PRIML) cmd_ex.prm cmd_ex
 
-
+list: list.prm
+	$(PRIML) list.prm list
 
 
 uh: uh.prm

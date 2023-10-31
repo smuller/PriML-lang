@@ -242,7 +242,6 @@ struct
                               (["'a"], [("option",
                                          [("NONE", NONE),
                                           ("SOME", SOME (EL.TVar "'a"))])])))
-(*
             val declist =
                 EL.Dec (%(EL.Datatype
                               (["'a"], [("list",
@@ -250,7 +249,6 @@ struct
                                           ("cons", SOME (EL.TRec
                                                              [("1", EL.TVar "'a"),
                                                               ("2", EL.TApp ([EL.TVar "'a"], "list"))]))])])))
-*)
 
             (* because parser can't parse fun inline = (x, y) = .. *)
                        (*
@@ -274,7 +272,7 @@ struct
               (EL.Dec (%(EL.Exception (matchname, NONE))))
 
         in
-          EL.Prog(impexns :: decbool (* :: deceq *) :: decopt :: (*declist ::*) ds, c)
+          EL.Prog(impexns :: decbool (* :: deceq *) :: decopt :: declist :: ds, c)
         end
 
     fun trueexp loc = (EL.Var (EL.Id truename), loc)
