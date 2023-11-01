@@ -246,7 +246,7 @@ struct
                 EL.Dec (%(EL.Datatype
                               (["'a"], [("list",
                                          [("nil", NONE),
-                                          ("cons", SOME (EL.TRec
+                                          ("::", SOME (EL.TRec
                                                              [("1", EL.TVar "'a"),
                                                               ("2", EL.TApp ([EL.TVar "'a"], "list"))]))])])))
 
