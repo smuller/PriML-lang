@@ -8,7 +8,7 @@ order Med < High
 
 
 
-(* (* CORRECT compiles *)
+(* CORRECT compiles *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -17,7 +17,6 @@ main {
 
     sync t
 }
-*)
 
 
 
@@ -195,8 +194,8 @@ main {
 }
 *)
 
-
-(* (* CORRECT catches constraint violation {High, Med} < {Low} *)
+(*
+(* CORRECT catches constraint violation {High, Med} < {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -208,7 +207,6 @@ main {
     sync t
 }
 *)
-
 
 
 (* (* BAD catches constraint violation {High, Med} < {Low} *)

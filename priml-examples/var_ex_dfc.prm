@@ -42,16 +42,15 @@ main {
     ret x
 *)
 
-}
-
-
-
-(* (* BAD compiles *)
-main {
-
+(*
+    (* BAD compiles -- don't use this syntax *)
     ret (1 :: "hi" :: nil)
-}
 *)
 
+(*
+    (* GOOD type error on second element *)
+    ret (cons(1, cons ("hi", nil)))
+*)
+}
 
 

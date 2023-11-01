@@ -3,8 +3,8 @@ priority B
  
 
 main {
-
-(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+(*
+ (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
     
     change[if true then A else B]
 *)
@@ -17,8 +17,8 @@ main {
     sync td
 *)
 
-
-(* (* CORRECT compiles WITHOUT empty psevar due to broken extra psevar in sum pattern *)
+(*
+(* CORRECT compiles WITHOUT empty psevar due to broken extra psevar in sum pattern *)
     
     t <- 
         let val m = cmd { 
@@ -34,6 +34,5 @@ main {
 
     x <- sync t;
     ret x
-*)
-
+    *)
 }
