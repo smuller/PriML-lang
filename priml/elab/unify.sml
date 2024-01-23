@@ -265,9 +265,8 @@ struct
                  supertypex ctx eqmap t1 t2
                end
             | (TPrio ps1, TPrio ps2) =>
-              (* FIX: unify priorities *)
-	      let 
-		  val cc = pscstr_sup ps1 ps2
+              (* FIXED: unify priorities *)
+	          let val cc = pscstr_sup ps1 ps2
               in
                   global_cstrs := cc @ !global_cstrs
               end

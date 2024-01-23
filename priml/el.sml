@@ -111,7 +111,7 @@ struct
     | TRec of (string * typ) list
 (*    | TSham of string option * typ
     | TAt of typ * world *)
-    | TArrow of typ * typ (* FIX: TArrow of (string * typ) * typ *)
+    | TArrow of typ * typ
     (* shortcut for tuple length *)
     | TNum of int
   (*     | TAddr of world (* can only be the address of a world expression *) *)

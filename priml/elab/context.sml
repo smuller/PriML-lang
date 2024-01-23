@@ -97,7 +97,6 @@ struct
         raise (Context "prio not constant or variable")
 
     datatype context = 
-        (* prios = priority variables *)
         (* plabs = priority labels *)
         C of { vars : (IL.typ IL.poly * Variable.var * IL.idstatus) S.map,
                cons : (IL.kind * IL.con * IL.tystatus) S.map,
@@ -278,9 +277,30 @@ struct
             sign = sign }
 
     fun bindex (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym typ var stat =
+      (* TRYING:  
+            add x : TPrio[y :: y = x] to ctx
+            add global constraint: { x } is a subset of R
+        *)
       let 
         val sym = (case sym of NONE => 
                      ML5pghUtil.newstr "bindex" | SOME s => s)
+        val IL.Poly ({tys}, t) = typ
+        val t' = 
+            case t of
+                (* IL.TPrio ps => 
+                    (* FIX: add x : TPrio[y :: y = x] to ctx *)
+                    (* FIX^^^: add priority_name : TPrio[{priority_name}] to ctx *)
+                    (* Q: ? *)
+                    let val p' = IL.PConst sym
+                        val ps' = IL.PSSet (IL.PrioSet.singleton p')
+
+                        val cc = PSetCstrs.pscstr_sup ps ps'
+                    in
+                        Unify.global_cstrs := cc @ !Unify.global_cstrs;
+                        IL.TPrio ps'
+                    end
+              | *) _ => t
+
       in
         if !showbinds
         then let in
@@ -291,7 +311,7 @@ struct
         else ();
         C { vars = S.insert (vars, 
                              sym,
-                             (typ, var, stat)),
+                             (IL.Poly ({tys = tys}, t'), var, stat)),
             cons = cons,
             plabs = plabs,
             mobiles = mobiles,
@@ -302,6 +322,7 @@ struct
       end
 
     fun bindv c sym t v = bindex c (SOME sym) t v IL.Normal
+
     fun bindu c sym typ var stat = bindex c (SOME sym) typ var stat
 
     fun bindcex (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) module sym con kind status =

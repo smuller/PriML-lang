@@ -27,6 +27,10 @@ struct
   exception Impossible
   exception unimplemented
 
+  (* TRYING: global alpha-varying id # *)
+  val alphaid = ref 0
+
+
   fun bindval p = Val p
 
   (* fun printp p = Layout.print (ILPrint.prtol p, print) *)
@@ -138,7 +142,7 @@ struct
                                cs
          in
              TForall ([v], cs, elabtex (C.bindp ctx s v) prefix loc t)
-         end  (* FIX: delete this *) *)
+         end  (* FIXED: delete this *) *)
 
     and dovar ctx loc vv =
     ((case C.var ctx vv of
@@ -653,7 +657,7 @@ struct
         | E.ECmd c =>
           let 
               val pp = Unify.new_psevar ()
-                  (* FIX: Ecmd has no p anymore *)
+                  (* FIXED: Ecmd has no p anymore *)
                   (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => Unify.new_psevar ()) *)
@@ -669,7 +673,7 @@ struct
               (Cmd (pp, ec), TCmd (t, ((* pr1, *) pp, pr2, pr3), cc'))
           end
 
-        (* | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented") (* FIX: delete this *) *)
+        (* | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented") (* FIXED: delete this *) *)
   (* XXX4 TODO come back to this later
           let val cpps = List.map (fn PPVar s => (s, [])
                                   | PPConstrain spcs => spcs
@@ -721,7 +725,7 @@ struct
                   end
                 | TForall _ => error loc "only one priority argument supported"
                 | _ => error loc "not a forall"
-          end (* FIX: delete this *) *)
+          end (* FIXED: delete this *) *)
 
   (* context, start refinement, (instruction, location) *)
   and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
@@ -736,10 +740,10 @@ struct
               (* val pr1' = Unify.new_psevar () (* FIX *) *)
               val (ec, t, ((* pr', *) pr1, pr2), cc) = elabcmd ctx pp' c
               val cc' = (pscstr_gen (* pr' *) pp' pr1 pr2) 
-                        (* @ (pscstr_eq pr' pp') *) (* FIX: change eq to sup *)
-                        (* @ (pscstr_sup pr1' pp') (* FIX *) *)
+                        (* @ (pscstr_eq pr' pp') *) (* FIXED: change eq to sup *)
+                        (* @ (pscstr_sup pr1' pp') (* FIXED: *) *)
                         (* @ (pscstr_sup pr1' pr') *) 
-                        (* @ (pscstr_sup pr1' pr1) (* FIX *) *)
+                        (* @ (pscstr_sup pr1' pr1) (* FIXED: *) *)
                         @ cc
           in
               print "\n spawn start \n";
@@ -832,7 +836,7 @@ struct
         | E.Change e => (* raise unimplemented *)
           let val (pe', pt) = elab ctx e
               val psint = Unify.new_psevar ()
-              (* FIX: change unify to supertype so that end refinement 
+              (* FIXED: change unify to supertype so that end refinement 
                       is not constrained to only e's refinement *)
               val _ = supertype ctx loc "change argument" (TPrio (psint)) pt
 
@@ -857,7 +861,7 @@ struct
         *)
         | E.IBind is => elabbind ctx pr is
 
-  (* FIX: binding with first class priorities *)
+  (* FIXED: binding with first class priorities *)
   and elabbind ctx (pr: IL.prioset) (is, li) =
       case is of
           [] =>
@@ -922,7 +926,7 @@ struct
                 *)
                 (* Q: why use mono for a polymorphic type? *)
                val unified_pscstrs = ref []
-               (* FIX: switched 2 lines: now unify before elabbind
+               (* FIXED: switched 2 lines: now unify before elabbind
                        so that the type of the bind variable is in the ctx' 
                        when binding the rest 
                *)
@@ -1016,7 +1020,6 @@ struct
                              else rexp
                            end))
               in
-              (* FIX: make arrow types of functions include argument names *)
                   (case to of
                        SOME t => unify ctx loc 
                                    "codomain type constraint on fun" tt
@@ -1630,7 +1633,7 @@ struct
                          body = exp } :: fs, 
                        (f, vv, Arrow(false, [dom], cod)) :: efs,
                        dpt @ cpt @ tpolys,
-                       (* dpw @ cpw @  *) (* FIX: delete priority variables *)
+                       (* dpw @ cpw @  *) (* FIXED: delete priority variables *)
                        wpolys)
                   end
 
@@ -1945,7 +1948,7 @@ struct
                                                             pbody = ee}))))],
                ctx'')
             | _ => error loc "unexpected"
-      end (* FIX: delete this *) *)
+      end (* FIXED: delete this *) *)
 
     (* How to properly bind decs to context? And how to bind structure to signature? *)
     (* bind a module name to a sig *)
@@ -2072,7 +2075,7 @@ struct
         | E.Priority s => (print ("binding " ^ s ^ "\n"); 
             (* ([], [], C.bindplab ctx s) *)
 
-            (* FIX: add priority_name : TPrio {priority_name} (ref []) *)
+            (* FIXED: add priority_name : TPrio {priority_name} (ref []) *)
             (* Q: ? *)
           let val p' = PConst s
               (* (Value val, typ) *)
@@ -2100,6 +2103,55 @@ struct
               ([], [(s, n)], ctx)
           end
 
+
+
+
+
+
+
+
+  
+          
+
+  and alphads ctx nil = (nil, ctx)
+    | alphads ctx ((d : EL.dec) :: rest) =
+    let 
+      val (d, ctx) = alphad ctx d
+      val (rs, ctx) = alphads ctx rest
+    in
+      (d :: rs, ctx)
+    end
+
+  and alphad ctx ((d, loc) : EL.dec) =
+      case d of
+          _ => (E.Dec (d, loc), ctx)
+          
+
+  fun manglevary s = 
+      let in
+        alphaid := !alphaid + 1;
+        s ^ "__vary$$$#!__" ^ (Int.toString (!alphaid))
+      end
+
+  fun alphatd ctx (td: E.tdec) =
+      case td of
+          E.Dec d =>
+            alphad ctx d
+        | E.Priority s => 
+            (E.Priority s, ctx) (* Q: manglevary s *)
+        | _ => (td, ctx)
+    
+
+  fun alphatds ctx (tds: E.tdec list) =
+      List.foldl
+          (fn (td, (tds, ctx)) =>
+              let val (td', ctx') = alphatd ctx td
+              in
+                  (tds @ [td'], ctx')
+              end)
+          ([], ctx)
+          tds
+
   fun elabtds ctx
               (tds: E.tdec list)
       : IL.dec list * (string * intconst) list * C.context =
@@ -2118,9 +2170,10 @@ struct
       val () = Unify.clear_evars ()
       val G = C.bindplab Initial.initial "bot"
 
-      val (idl, fs, G') = elabtds G dl
+      val (dl', G') = alphatds G dl
+      val (idl, fs, G'') = elabtds G' dl'
       val pi = (PSSet (PrioSet.singleton (PConst "bot")))
-      val (ec, t, ((* pi, *) pp, pf), cc) = elabcmd G' pi c
+      val (ec, t, ((* pi, *) pp, pf), cc) = elabcmd G'' pi c
 
 (*
       fun checkprio PConst s = s
@@ -2138,7 +2191,7 @@ struct
             val psctx_sol = solve_pscstrs psctx pscstrs
         in
           (* check psevar solution satifies every psconstraints *)
-          check_pscstrs_sol G' psctx_sol pscstrs;
+          check_pscstrs_sol G'' psctx_sol pscstrs;
           Layout.print 
             (Layout.listex "[" "]" "," 
             (PSC.PSEvarMap.listItems (PSC.PSEvarMap.mapi 
@@ -2149,8 +2202,8 @@ struct
         end
         handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
 
-      val prios = C.plabs G'
-      val cons = List.map checkcons (C.pcons G')
+      val prios = C.plabs G''
+      val cons = List.map checkcons (C.pcons G'')
     in
       Layout.print 
         (Layout.listex "[" "]" "," 
@@ -2160,7 +2213,7 @@ struct
         (Layout.listex "[" "]" "," 
         (map ILPrint.psctol (!Unify.global_cstrs)), print);
       print "\n";
-      solve_psetcstrs (!Unify.global_cstrs @ cc); (* FIX: append global constraints *)
+      solve_psetcstrs (!Unify.global_cstrs @ cc); (* FIXED: append global constraints *)
       Unify.finalize_evars ();
       (idl, prios, cons, fs, ec)
     end handle e as Match => raise Elaborate ("match:" ^ 

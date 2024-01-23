@@ -76,7 +76,7 @@ struct
       (* bool true => total 
          functions are n-ary.
          *)
-      | Arrow of bool * typ list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
+      | Arrow of bool * typ list * typ
       | Sum of (label * typ arminfo) list
       (* pi_n (mu  v_0 . typ_0
                and v_1 . typ_1
@@ -103,7 +103,7 @@ struct
 
       | TTag of typ * var
 
-      | Arrows of (bool * typ list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
+      | Arrows of (bool * typ list * typ) list
 
       (* XXX pass ref set constaints through TCmd and TThread. 
        * The correct way to handle this should be a constraint evar and unify
@@ -111,7 +111,7 @@ struct
       (* Q: why only one (psconstraint list ref) ? *)
       | TCmd of typ * (prioset * prioset * prioset) * (psconstraint list ref)
       | TThread of typ * prioset * (psconstraint list ref)
-      | TPrio of prioset (* FIX: make work !!! *)
+      | TPrio of prioset (* FIXED: make priorities work *)
 
       (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
 
@@ -121,7 +121,7 @@ struct
       | Lambda of typ list -> typ  (* FIX: Lambda of (string * typ) list -> typ *)
 
     (* polymorphic type *) 
-    and 'a poly = Poly of { (* prios : var list, *) (* FIX: delete prios *)
+    and 'a poly = Poly of { (* prios : var list, *) (* FIXED: delete prios *)
                             tys    : var list } * 'a
 
     and value = (* FIX: delete prios *)
