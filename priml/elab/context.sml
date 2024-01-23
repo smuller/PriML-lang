@@ -20,6 +20,10 @@ struct
     exception Context of string
     exception Absent of string * string
 
+    (* FIXING: global constraints for priorities (instead of one for each priority)
+            moved from Unify.sml *)
+    val global_cstrs = ref []
+
     val assumed = ref []
 
     val new_evar = ref (fn _ => raise (Context "not installed"))

@@ -9,6 +9,10 @@ sig
 
     type context
 
+    (* FIXING: global constraints on priorities (values of type Prio[/psi])
+            moved from Unify.sml *)
+    val global_cstrs : IL.psconstraint list ref
+
     val empty : context
 
     val ctol : context -> Layout.layout

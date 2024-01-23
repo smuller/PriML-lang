@@ -693,7 +693,7 @@ struct
                                           "tag pattern return" rett rt;
                                        Layout.print 
                                          (Layout.listex "[" "]" "," 
-                                         (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                         (map ILPrint.psctol (!Context.global_cstrs)), print);
                                        print "\n ___ \n";
                                        (vtag, re)
                                    end
@@ -723,7 +723,7 @@ struct
                            supertype nctx loc "tagcase default" rett dt; 
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map ILPrint.psctol (!Context.global_cstrs)), print);
                            print "\n tagcase default \n";
 
                            (I.Tagcase (cod, 
@@ -804,7 +804,7 @@ struct
                                              "(nullary) sum pattern return" rett rt;
                                           Layout.print 
                                                 (Layout.listex "[" "]" "," 
-                                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                                (map ILPrint.psctol (!Context.global_cstrs)), print);
                                             print "\n (nullary) sum pattern return \n";
                                           (l, re)
                                         end
@@ -878,7 +878,7 @@ struct
                                                   "sum pattern return" rett rt;
                                                Layout.print 
                                                     (Layout.listex "[" "]" "," 
-                                                    (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                                    (map ILPrint.psctol (!Context.global_cstrs)), print);
                                                 print "\n sum pattern return \n";
                                                (l, re)
                                            end)
@@ -922,7 +922,7 @@ struct
                            supertype nctx loc "sum default" rett dt; (* FIX: turn unifying into supertyping *)
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map ILPrint.psctol (!Context.global_cstrs)), print);
                             print "\n sum default \n";
 
                            (* a nice optimization is, if the
@@ -1387,7 +1387,7 @@ struct
                        in supertype ctx loc "pattern constraint" t tv;
                           Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map ILPrint.psctol (!Context.global_cstrs)), print);
                             print "\n pattern constraint \n";
                           one (pp, e)
                        end

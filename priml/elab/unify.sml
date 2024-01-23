@@ -18,10 +18,6 @@ struct
     end
 
 
-    (* FIX: global constraints for priorities (instead of one for each priority) *)
-    val global_cstrs = ref []
-
-
     val all_evars  = ref (nil : IL.typ IL.ebind ref list)
     (* FIX: delete this, no more priority evars *)
     val all_wevars = ref (nil : IL.prio IL.ebind ref list)
@@ -268,7 +264,7 @@ struct
               (* FIXED: unify priorities *)
 	          let val cc = pscstr_sup ps1 ps2
               in
-                  global_cstrs := cc @ !global_cstrs
+                  Context.global_cstrs := cc @ !Context.global_cstrs
               end
             
             | (Evar (ref (Bound t1)), t2) => supertypex ctx eqmap t1 t2
@@ -283,7 +279,7 @@ struct
                         let val ps as PSEvar r' = new_psevar ()
                             val cc = pscstr_sup ps s
                         in
-                            global_cstrs := cc @ !global_cstrs;
+                            Context.global_cstrs := cc @ !Context.global_cstrs;
                             set r (TPrio (ps))
                         end
                         | _ => set r t2)
@@ -297,7 +293,7 @@ struct
                         let val ps as PSEvar r' = new_psevar ()
                             val cc = pscstr_sup s ps
                         in
-                            global_cstrs := cc @ !global_cstrs;
+                            Context.global_cstrs := cc @ !Context.global_cstrs;
                             set r (TPrio (ps))
                         end
                         | _ => set r t1)

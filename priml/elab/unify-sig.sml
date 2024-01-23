@@ -3,7 +3,8 @@ signature UNIFY =
 sig
     exception Unify of string
 
-    val global_cstrs : IL.psconstraint list ref
+    (* FIXING - moving this to Context *)
+    (* val global_cstrs : IL.psconstraint list ref *)
 
     val new_evar : unit -> IL.typ
     val new_pevar : unit -> IL.prio

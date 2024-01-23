@@ -2170,8 +2170,9 @@ struct
       val () = Unify.clear_evars ()
       val G = C.bindplab Initial.initial "bot"
 
-      val (dl', G') = alphatds G dl
-      val (idl, fs, G'') = elabtds G' dl'
+      (* FIXING: alpha-vary first *)
+      (* val (dl', G') = alphatds G dl *)
+      val (idl, fs, G'') = elabtds G dl
       val pi = (PSSet (PrioSet.singleton (PConst "bot")))
       val (ec, t, ((* pi, *) pp, pf), cc) = elabcmd G'' pi c
 
@@ -2211,9 +2212,9 @@ struct
       print "\n";
       Layout.print 
         (Layout.listex "[" "]" "," 
-        (map ILPrint.psctol (!Unify.global_cstrs)), print);
+        (map ILPrint.psctol (!Context.global_cstrs)), print);
       print "\n";
-      solve_psetcstrs (!Unify.global_cstrs @ cc); (* FIXED: append global constraints *)
+      solve_psetcstrs (!Context.global_cstrs @ cc); (* FIXED: append global constraints *)
       Unify.finalize_evars ();
       (idl, prios, cons, fs, ec)
     end handle e as Match => raise Elaborate ("match:" ^ 
