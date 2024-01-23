@@ -20,7 +20,7 @@ main {
     ret (let val x = A in if true then x else B end)
 *)
 
-
+(*
  (* CORRECT compiles *)
 
     t <- let val x = A 
@@ -28,7 +28,10 @@ main {
          end;
     x <- sync t;
     ret x
+*)
 
+    (* CORRECT type error on first cons *)
+    ret (A :: B :: nil)
 
 (*
     (* CORRECT type error on first cons *)
