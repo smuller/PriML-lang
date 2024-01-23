@@ -9,9 +9,8 @@ fn f a b => () : 'a -> 'b -> ()
 (* because the refinement is not restricted given the body of the function *)
 
 fun spawn_at (pr : prio['R1]) (c : 'a cmd['R2 -> 'R3 -> 'R4]) =
-    do {
-        spawn[pr] { c }
-    }
+    spawn[pr] { c }
+
     : ('a thread[pr]) cmd['R5 -> 'R6 -> 'R7]
 
 : prio['R1] 
@@ -25,6 +24,38 @@ fun use_spawn_at () =
             : ('a thread[p, p']) cmd['R1 -> R2 -> R3]
         sync t
     }
+
+
+
+
+
+
+fun spawn_at (pr : prio['R1]) (c : 'a cmd['R2 -> 'R3 -> 'R4]) =
+    do {
+        td <- spawn[pr] { c };
+        spawn[pr] { sync td }
+    }
+
+    : ('a thread[pr]) cmd['R5 -> 'R6 -> 'R7]
+
+: prio['R1] 
+-> a cmd['R2 -> 'R3 -> 'R4] 
+-> ('a thread[pr]) cmd['R5 -> 'R6 -> 'R7]
+
+
+fun use_spawn_at () =
+    do {
+        t <- spawn_at (if true then p else p'); 
+            : ('a thread[p, p']) cmd['R1 -> R2 -> R3]
+        sync t
+    }
+
+(* 
+   should compile even though 
+   a lower priority is in the refinement 'R1 of p 
+*)
+
+
 
 
 PRESENT

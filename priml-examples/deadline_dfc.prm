@@ -10,7 +10,7 @@ order p3 < p2
 order p2 < p1
 
 
-(* (* CORRECT compiles *)
+ (* CORRECT compiles *)
 main {
 
     let fun curr_time _ = 9
@@ -23,7 +23,7 @@ main {
             ret ()      (* : unit cmd[{bot}, {bot}, {bot}] *)
     end
 }
-*)
+
 
 
 (* (* CORRECT compiles *)
@@ -48,9 +48,7 @@ main {
 *)
 
 
-(* (* BAD compiles, but has an empty psevar
-      NOT probably because list type checking is broken
-      BUT probably because of broken extra psevar in sum pattern *)
+(* (* CORRECT compiles, but empty psevar due to extra psevar in sum pattern *)
 main {
 
     let val priorities_in_order = p1 :: p2 :: p3 :: p4 :: p5 :: nil
@@ -68,7 +66,7 @@ main {
 *)
 
 
-(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+(* (* CORRECT compiles, but empty psevar due to extra psevar in sum pattern *)
 main {
 
     let fun curr_time _ = 9

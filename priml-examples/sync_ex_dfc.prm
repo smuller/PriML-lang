@@ -32,7 +32,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {Med} < {Low} *)
+(* (* CORRECT catches constraint violation {Med} <= {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -64,7 +64,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -79,7 +79,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -93,7 +93,7 @@ main {
 }
 *)
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -109,7 +109,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[let val x = true in if x then High else Low end] {
@@ -124,7 +124,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -149,7 +149,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {Med} < {Low} *)
+(* (* CORRECT catches constraint violation {Med} <= {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -181,7 +181,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -195,7 +195,7 @@ main {
 *)
 
 (*
-(* CORRECT catches constraint violation {High, Med} < {Low} *)
+(* CORRECT catches constraint violation {High, Med} <= {Low} *)
 main {
 
     t <- spawn[Low] {
@@ -209,7 +209,7 @@ main {
 *)
 
 
-(* (* BAD catches constraint violation {High, Med} < {Low} *)
+(* (* BAD catches constraint violation {High, Med} <= {Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -223,7 +223,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then Low else High] {
@@ -237,7 +237,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[let val x = true in if x then High else Low end] {
@@ -251,7 +251,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {High, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {High, Med} <= {High, Low} *)
 main {
 
     t <- spawn[if true then High else Low] {
@@ -278,7 +278,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Low} *)
 main {
 
     t <- spawn[High] {
@@ -295,7 +295,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Low, Med} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Low, Med} *)
 main {
 
     t <- spawn[High] {
@@ -311,7 +311,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {Low, Med} < {High, Low} *)
+(* (* CORRECT catches constraint violation {Low, Med} <= {High, Low} *)
 main {
 
     t <- spawn[High] {
@@ -327,7 +327,7 @@ main {
 *)
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Low, Med} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Low, Med} *)
 main {
 
     t <- spawn[if true then High else Med] {
@@ -427,7 +427,7 @@ main {
 
 
 
-(* (* CORRECT catches constraint violation {Med} < {High, Med} *)
+(* (* CORRECT catches constraint violation {Med} <= {High, Med} *)
 main {
 
     t <- spawn[if true then High else Med] {

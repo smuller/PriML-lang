@@ -21,44 +21,32 @@ main {
 *)
 
 
-(* (* BAD syntax error that makes no sense *)
+ (* CORRECT compiles *)
 
-    t <- (let val x = A 
-          in spawn[x] { ret 1 } 
-          end);
+    t <- let val x = A 
+         in spawn[x] { ret 1 } 
+         end;
     x <- sync t;
     ret x
-*)
 
-
-(* (* BAD syntax error that makes no sense *)
-    t <- 
-        let val m = 1
-        in
-            spawn[A] { ret m }
-        end;
-
-    x <- sync t;
-    ret x
-*)
 
 (*
-    (* GOOD type error on first cons *)
+    (* CORRECT type error on first cons *)
     ret (1 :: "hi" :: nil)
-    *)
+*)
 
 (*
-    (* GOOD type error on first cons *)
+    (* CORRECT type error on first cons *)
     ret (cons (1, cons ("hi", nil)))
 *)
 
 (*
-    (* GOOD compiles *)
+    (* CORRECT compiles *)
     ret (0 :: 1 :: nil)
 *)
 
 (*
-    (* GOOD compiles -- alternate syntax *)
+    (* CORRECT compiles -- alternate syntax *)
     ret (cons (0, cons (1, nil)))
 *)
 
