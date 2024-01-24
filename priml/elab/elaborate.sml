@@ -21,7 +21,7 @@ struct
 
   open IL
   open ElabUtil
-  open PSetCstrs
+  (* open PSetCstrs *) (* FIXING: moved PSetCstrs to Context *)
   structure P = Primop
 
   exception Impossible
@@ -662,7 +662,7 @@ struct
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => Unify.new_psevar ()) *)
               val (ec, t, ((* pr1, *) pr2, pr3), cc) = elabcmd ctx pp (c, loc)
-              val cc' = ref ((pscstr_gen (* pr1 *) pp pr2 pr3) 
+              val cc' = ref ((Context.pscstr_gen (* pr1 *) pp pr2 pr3) 
                             (* @ (pscstr_eq pr1 pp)  *)
                             @ cc)
           in
@@ -739,11 +739,11 @@ struct
               val pp' = psint
               (* val pr1' = Unify.new_psevar () (* FIX *) *)
               val (ec, t, ((* pr', *) pr1, pr2), cc) = elabcmd ctx pp' c
-              val cc' = (pscstr_gen (* pr' *) pp' pr1 pr2) 
+              val cc' = (Context.pscstr_gen (* pr' *) pp' pr1 pr2) 
                         (* @ (pscstr_eq pr' pp') *) (* FIXED: change eq to sup *)
-                        (* @ (pscstr_sup pr1' pp') (* FIXED: *) *)
-                        (* @ (pscstr_sup pr1' pr') *) 
-                        (* @ (pscstr_sup pr1' pr1) (* FIXED: *) *)
+                        (* @ (Context.pscstr_sup pr1' pp') (* FIXED: *) *)
+                        (* @ (Context.pscstr_sup pr1' pr') *) 
+                        (* @ (Context.pscstr_sup pr1' pr1) (* FIXED: *) *)
                         @ cc
           in
               print "\n spawn start \n";
@@ -763,7 +763,7 @@ struct
           let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
               val (ec, t, (pr', pr1, pr2), cc) = elabcmd ctx pp' c
-              val cc' = (pscstr_gen pr' pr1 pr2) @ (pscstr_eq pr' pp') @ cc
+              val cc' = (Context.pscstr_gen pr' pr1 pr2) @ (pscstr_eq pr' pp') @ cc
           in
               (Spawn (p', t, ec), TThread (t, pr1, ref cc'), (pr, pr, pr), cc')
           end 
@@ -790,7 +790,7 @@ struct
 
               (* t should match TThread (tint, psint, unified_pscstrs) *)
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint, unified_pscstrs))
-              val cc = (pscstr_cons pr psint) @ (!unified_pscstrs)
+              val cc = (Context.pscstr_cons pr psint) @ (!unified_pscstrs)
           in
               print "\n sync arg matched t \n";
               (* Layout.print
@@ -843,7 +843,7 @@ struct
               (* val p' = elabpr ctx loc p' *)
               val pp' = psint
               val pr' = Unify.new_psevar ()
-              val cc = pscstr_gen pr pr' pp'
+              val cc = Context.pscstr_gen pr pr' pp'
           in
               (Change pe', TRec [], ((* pr, *) pr', pp'), cc)
           end
@@ -851,7 +851,7 @@ struct
           let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
               val pr' = Unify.new_psevar ()
-              val cc = pscstr_gen pr pr' pp'
+              val cc = Context.pscstr_gen pr pr' pp'
           in
               (Change p', TRec [], (pr, pr', pp'), cc)
           end 
@@ -884,7 +884,7 @@ struct
                val pr3 = Unify.new_psevar ()
                val unified_pscstrs = ref []
                val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr, pr2, pr3), unified_pscstrs))
-               val cc = (* (pscstr_sup pr1 pr) 
+               val cc = (* (Context.pscstr_sup pr1 pr) 
                         @ *) (!unified_pscstrs)
            in
                 (* print "\n (tint) \n";
@@ -932,12 +932,12 @@ struct
                *)
                val _ = unify ctx loc "bind argument" t (TCmd (tint, ((* pr1 *) pr, pr2, pr3), unified_pscstrs))
                val (cmd, t', ((* pr4', *) pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
-               val cc' = (pscstr_gen pr pr7 pr6)
+               val cc' = (Context.pscstr_gen pr pr7 pr6)
                          (* @ (pscstr_eq pr pr1) *)
                          (* @ (pscstr_eq pr4 pr4') *)
-                         @ (pscstr_sup pr4 pr3)
-                         @ (pscstr_sup pr7 pr2)
-                         @ (pscstr_sup pr7 pr5)
+                         @ (Context.pscstr_sup pr4 pr3)
+                         @ (Context.pscstr_sup pr7 pr2)
+                         @ (Context.pscstr_sup pr7 pr5)
                          @ (!unified_pscstrs)
                          @ cc
            in
@@ -2189,10 +2189,10 @@ struct
       (* XXX solve constraints from cc *)
       fun solve_psetcstrs pscstrs = 
         let val psctx = PSC.PSEvarMap.empty
-            val psctx_sol = solve_pscstrs psctx pscstrs
+            val psctx_sol = Context.solve_pscstrs psctx pscstrs
         in
           (* check psevar solution satifies every psconstraints *)
-          check_pscstrs_sol G'' psctx_sol pscstrs;
+          Context.check_pscstrs_sol G'' psctx_sol pscstrs;
           Layout.print 
             (Layout.listex "[" "]" "," 
             (PSC.PSEvarMap.listItems (PSC.PSEvarMap.mapi 
@@ -2201,7 +2201,7 @@ struct
             print);
           print "\n"
         end
-        handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
+        handle Context.PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
 
       val prios = C.plabs G''
       val cons = List.map checkcons (C.pcons G'')

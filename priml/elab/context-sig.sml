@@ -2,12 +2,41 @@
 (* Contexts for elaboration. *)
 signature CONTEXT =
 sig
+    (* FIXING: moving PSetCstrs to Context *)
+    
+    exception PSConstraints of string
+
+
+
     (* what sort of thing (world, type, val), id *)
     exception Absent of string * string
     (* other problems *)
     exception Context of string
 
     type context
+
+
+
+    (* add priority set constraint *)
+    val pscstr_eq   : IL.prioset -> IL.prioset -> IL.psconstraint list
+    val pscstr_sup  : IL.prioset -> IL.prioset -> IL.psconstraint list
+    val pscstr_cons : IL.prioset -> IL.prioset -> IL.psconstraint list
+    val pscstr_gen  : IL.prioset -> IL.prioset -> IL.prioset -> 
+                        IL.psconstraint list
+
+    (* solve system of priority set constraints *)
+    val solve_pscstrs : PSContext.pscontext -> IL.psconstraint list -> PSContext.pscontext
+
+    (* check psconstraints in the solved system *)
+    val check_pscstrs_sol : context -> PSContext.pscontext ->
+                              IL.psconstraint list -> unit
+
+
+
+
+
+    
+    
 
     (* FIXING: global constraints on priorities (values of type Prio[/psi])
             moved from Unify.sml *)

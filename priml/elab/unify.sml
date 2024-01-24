@@ -3,7 +3,7 @@ structure Unify :> UNIFY =
 struct
 
     open IL
-    open PSetCstrs 
+    (* open PSetCstrs  *)
         
     structure V = Variable.Map
         
@@ -240,9 +240,9 @@ struct
                  end
            | (TCmd (t1, (pi1, pp1, pf1), cc1), TCmd (t2, (pi2, pp2, pf2), cc2)) =>
                (* unified psconstraints from TThread *)
-               let val unified_cc = (pscstr_sup pi2 pi1) (* FIX: start refinement contravariant *)
-                                    @ (pscstr_sup pp1 pp2)
-                                    @ (pscstr_sup pf1 pf2)
+               let val unified_cc = (Context.pscstr_sup pi2 pi1) (* FIX: start refinement contravariant *)
+                                    @ (Context.pscstr_sup pp1 pp2)
+                                    @ (Context.pscstr_sup pf1 pf2)
                                     @ (!cc1) 
                                     @ (!cc2) 
                in
@@ -252,7 +252,7 @@ struct
                end
            | (TThread (t1, ps1, cc1), TThread (t2, ps2, cc2)) =>
                (* unified psconstraints from TThread *)
-               let val unified_cc = (pscstr_sup ps1 ps2)
+               let val unified_cc = (Context.pscstr_sup ps1 ps2)
                                     @ (!cc1)
                                     @ (!cc2)
                in
@@ -262,7 +262,7 @@ struct
                end
             | (TPrio ps1, TPrio ps2) =>
               (* FIXED: unify priorities *)
-	          let val cc = pscstr_sup ps1 ps2
+	          let val cc = Context.pscstr_sup ps1 ps2
               in
                   Context.global_cstrs := cc @ !Context.global_cstrs
               end
@@ -277,7 +277,7 @@ struct
                     (case t2 of
                         (TPrio s) => 
                         let val ps as PSEvar r' = new_psevar ()
-                            val cc = pscstr_sup ps s
+                            val cc = Context.pscstr_sup ps s
                         in
                             Context.global_cstrs := cc @ !Context.global_cstrs;
                             set r (TPrio (ps))
@@ -291,7 +291,7 @@ struct
                     (case t1 of
                         (TPrio s) => 
                         let val ps as PSEvar r' = new_psevar ()
-                            val cc = pscstr_sup s ps
+                            val cc = Context.pscstr_sup s ps
                         in
                             Context.global_cstrs := cc @ !Context.global_cstrs;
                             set r (TPrio (ps))
