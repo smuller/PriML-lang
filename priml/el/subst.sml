@@ -8,8 +8,6 @@ struct
 
   exception Subst of string
 
-  structure VM = Variable.Map
-  type 'a subst = 'a VM.map
 
   fun fromlist l =
       foldl VM.insert' VM.empty l
@@ -39,8 +37,8 @@ struct
 
     | tsubst s (TTag (t, v)) = TTag (tsubst s t, v)
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
-    | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
-    | tsubst s (TThread (t, p, c)) = TThread (tsubst s t, p, c)
+    | tsubst s (TCmd (t, p)) = TCmd (tsubst s t, p)
+    | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
     | tsubst s (TPrio p) = TPrio p
     (* | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t) (* FIX: delete this *) *)
 (*
@@ -49,7 +47,8 @@ struct
     | tsubst s (TAddr w) = TAddr w
 *)
 
-  and arrow s (b, dom, cod) = (b, map (tsubst s) dom, tsubst s cod)
+  and arrow s (b, dom, cod) =
+      (b, map (fn (v, t) => (v, tsubst s t)) dom, tsubst s cod)
 
   fun etsubst s t =
       (case t of
@@ -85,11 +84,11 @@ struct
 
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
-    | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
-        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), ref (map (prsubspsc s) (!c)))
+    | prsubst s (TCmd (t, (pi, pp, pf))) = 
+        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf))
 
-    | prsubst s (TThread (t, ps, c)) = 
-        TThread (prsubst s t, prsubsps s ps, ref (map (prsubspsc s) (!c)))
+    | prsubst s (TThread (t, ps)) = 
+        TThread (prsubst s t, prsubsps s ps)
     | prsubst s (TPrio ps) = 
         TPrio (prsubsps s ps)
 
@@ -110,7 +109,8 @@ struct
     | prsubst s (At (t, w)) = At (prsubst s t, wsubsw s w)
 *)
 
-  and warrow s (b, dom, cod) = (b, map (prsubst s) dom, prsubst s cod)
+  and warrow s (b, dom, cod) =
+      (b, map (fn (v, t) => (v, prsubst s t)) dom, prsubst s cod)
 
   (* w/x in w' *)
   and prsubsp (s: prio subst) x : prio =
@@ -130,9 +130,10 @@ struct
          | PSEvar (ref (Bound w)) => prsubsps s w
          | _ => x
 
+		    (*
   and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)
     | prsubspsc s (PSCons (ps1, ps2)) = PSCons (prsubsps s ps1, prsubsps s ps2)
-
+		    *)
   and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2))
 
   fun pbinds  E.PWild _ = false

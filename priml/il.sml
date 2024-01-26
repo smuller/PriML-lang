@@ -1,4 +1,3 @@
-
 structure IL =
 struct
 
@@ -56,16 +55,13 @@ struct
                                       val compare = prcompare
                                     end)
 
+    structure VM = Variable.Map
+    type 'a subst = 'a VM.map
+				   
     datatype prioset = 
-      PSEvar of prioset ebind ref
-    | PSSet of PrioSet.set
-
-    (* priority set constraint
-        PSSup (ps1, ps2): ps1 is a super set of ps2
-        PSCons (ps1, ps2): priorities in ps1 is less than or equal to priorities in ps2  *)
-    and psconstraint = 
-      PSSup of prioset * prioset 
-    | PSCons of prioset * prioset
+	     PSEvar of prioset ebind ref
+	     | PSSet of PrioSet.set
+	     | PSPendSub of exp subst * prioset
 
     and pconstraint = PCons of prio * prio
 
@@ -76,7 +72,7 @@ struct
       (* bool true => total 
          functions are n-ary.
          *)
-      | Arrow of bool * typ list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
+      | Arrow of bool * (var * typ) list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
       | Sum of (label * typ arminfo) list
       (* pi_n (mu  v_0 . typ_0
                and v_1 . typ_1
@@ -103,14 +99,14 @@ struct
 
       | TTag of typ * var
 
-      | Arrows of (bool * typ list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
+      | Arrows of (bool * (var * typ) list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
 
       (* XXX pass ref set constaints through TCmd and TThread. 
        * The correct way to handle this should be a constraint evar and unify
        * them. But this works! (for now) *)
       (* Q: why only one (psconstraint list ref) ? *)
-      | TCmd of typ * (prioset * prioset * prioset) * (psconstraint list ref)
-      | TThread of typ * prioset * (psconstraint list ref)
+      | TCmd of typ * (prioset * prioset * prioset)
+      | TThread of typ * prioset
       | TPrio of prioset (* FIX: make work !!! *)
 
       (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
@@ -170,7 +166,7 @@ struct
       (* #lab/typ e *)
       | Proj of label * typ * exp
       | Raise of typ * exp
-      (* var bound to exn value within handler *)
+      (* var bound to exn value within handler*)
       | Handle of exp * typ * var * exp
 
       | Seq of exp * exp
@@ -192,13 +188,13 @@ struct
       | Primapp of Primop.primop * exp list * typ list
 
       (* sum type, object, var (for all arms but not default), 
-         branches, default.
+         branches, default, return type.
          the label/exp list need not be exhaustive.
          *)
-      | Sumcase of typ * exp * var * (label * exp) list * exp
+      | Sumcase of typ * exp * var * (label * exp) list * exp * typ
 
       (* simpler; no inner val needs to be defined. can't be exhaustive. *)
-      | Intcase of exp * (intconst * exp) list * exp
+      | Intcase of exp * (intconst * exp) list * exp * typ
 
       | Inject of typ * label * exp option
       | Cmd of prioset * cmd

@@ -114,6 +114,9 @@ elab/pattern.sml
 elab/elaborate-sig.sml
 elab/elaborate.sml
 
+constraint.sml
+solve.sml
+
 deprio.sml
 
 print.sml

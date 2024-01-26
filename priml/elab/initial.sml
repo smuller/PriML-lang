@@ -68,7 +68,7 @@ struct
 
     (* XXX5 should probably be done in terms of extern vals *)
 
-    val ii = [IL.TRec [("1", ilint), ("2", ilint)]]
+    val ii = [(Variable.namedvar "_", IL.TRec [("1", ilint), ("2", ilint)])]
     val monofuns =
         [
 
@@ -93,7 +93,7 @@ struct
          ("andb", P.B P.PAndb, ii, ilint),
          ("orb", P.B P.POrb, ii, ilint),
          ("xorb", P.B P.PXorb, ii, ilint),
-         ("notb", P.PNotb, [ilint], ilint),
+         ("notb", P.PNotb, [(Variable.namedvar "_", ilint)], ilint),
          (* shift (a, b) by b mod 32. *)
          ("shl", P.B P.PShl, ii, ilint),
          ("shr", P.B P.PShr, ii, ilint)

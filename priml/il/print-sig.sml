@@ -10,7 +10,7 @@ sig
     val ttol : IL.typ       -> Layout.layout
     val prtol : IL.prio     -> Layout.layout
     val pstol : IL.prioset  -> Layout.layout
-    val psctol : IL.psconstraint  -> Layout.layout
+    (* val psctol : IL.psconstraint  -> Layout.layout *)
     val etol : IL.exp    -> Layout.layout
     val ctol : IL.cmd    -> Layout.layout
     val dtol : IL.dec    -> Layout.layout

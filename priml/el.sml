@@ -118,7 +118,7 @@ struct
     (* Fix: 3 refinements for cmds *)
     (* | TCmd of typ * (rfmt * rfmt * rfmt) *)
     | TCmd of typ * rfmt
-    | TThread of typ * rfmt 
+    | TThread of typ * rfmt
     (* | TForall of ppat * typ (* FIX: delete this *) *) 
 
     | TPrio of rfmt

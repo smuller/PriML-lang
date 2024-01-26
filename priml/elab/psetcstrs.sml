@@ -4,19 +4,36 @@ struct
 
     open IL  
     open PSContext
+    open ILPrint
 
     exception PSConstraints of string
 
+    (* priority set constraint
+      PSSup (ps1, ps2): ps1 is a super set of ps2
+      PSCons (ps1, ps2): priorities in ps1 is less than or equal to priorities in ps2  *)
+    datatype psconstraint = 
+      PSSup of Context.context * prioset * prioset 
+    | PSCons of Context.context * prioset * prioset
+
+    fun psctol (PSSup (_, ps1, ps2)) =
+	Layout.mayAlign
+	    [Layout.str "sup",
+	     Layout.paren(Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
+      | psctol (PSCons (_, ps1, ps2)) =
+	Layout.mayAlign
+	    [Layout.str "cons",
+	     Layout.paren (Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
+
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
-    fun pscstr_sup ws1 ws2 = [PSSup (ws1, ws2)]
+    fun pscstr_sup ctx ws1 ws2 = [PSSup (ctx, ws1, ws2)]
 
     (* add constraint *)
-    fun pscstr_cons ws1 ws2 = [PSCons (ws1, ws2)]
+    fun pscstr_cons ctx ws1 ws2 = [PSCons (ctx, ws1, ws2)]
 
     (* add equal *)
-    fun pscstr_eq ws1 ws2 = (pscstr_sup ws1 ws2) 
-                            @ (pscstr_sup ws2 ws1)
+    fun pscstr_eq ctx ws1 ws2 = (pscstr_sup ctx ws1 ws2) 
+				@ (pscstr_sup ctx ws2 ws1)
 
     (* add general constraint:
     *   pi = set of initial priorities
@@ -25,9 +42,9 @@ struct
     *   general constraints: pp is superset of pi, pp is superset of pf
     * *)
     (* FIX: pp not superset of pi *)
-    fun pscstr_gen pi pp pf = (pscstr_sup pp pi) 
-                              @
-                              (pscstr_sup pp pf)
+    fun pscstr_gen ctx pi pp pf = (pscstr_sup ctx pp pi) 
+				  @
+				  (pscstr_sup ctx pp pf)
 
 
     (* SOLVER FUNCTIONS *)
@@ -59,37 +76,37 @@ struct
          * If s1 is not the superset of s2, add every priorities in s2 to s1. *)
         fun solve (cstr, psctx) = 
           case cstr of 
-            PSCons (PSSet _, PSSet _) => psctx
-          | PSCons (PSSet _, ps as PSEvar _) => 
+            PSCons (_, PSSet _, PSSet _) => psctx
+          | PSCons (_, PSSet _, ps as PSEvar _) => 
               let val (psctx', _) = getps (psctx, ps) 
               in 
                 psctx'
               end
-          | PSCons (ps as PSEvar _, PSSet _) =>
+          | PSCons (_, ps as PSEvar _, PSSet _) =>
               let val (psctx', _) = getps (psctx, ps) 
               in 
                 psctx'
               end
-          | PSCons (ps1 as PSEvar _, ps2 as PSEvar _) =>
+          | PSCons (_, ps1 as PSEvar _, ps2 as PSEvar _) =>
               let val (psctx', _) = getps (psctx, ps1) 
                   val (psctx'', _) = getps (psctx', ps2)
               in
                 psctx''
               end
 
-          | PSSup (PSSet _, PSSet _) => psctx
-          | PSSup (PSSet _, ps as PSEvar _) =>
+          | PSSup (_, PSSet _, PSSet _) => psctx
+          | PSSup (_, PSSet _, ps as PSEvar _) =>
               let val (psctx', _) = getps (psctx, ps) 
               in 
                 psctx'
               end
-          | PSSup (ps as PSEvar _, PSSet s) => 
+          | PSSup (_, ps as PSEvar _, PSSet s) => 
               let val (psctx', s') = getps (psctx, ps)
               in
                 if check_sup (s', s) then psctx'
                 else PSEvarMap.insert (psctx', ps, PrioSet.union(s', s))
               end
-          | PSSup (ps1 as PSEvar _, ps2 as PSEvar _) =>
+          | PSSup (_, ps1 as PSEvar _, ps2 as PSEvar _) =>
               let val (psctx', s1) = getps (psctx, ps1) 
                   val (psctx'', s2) = getps (psctx', ps2)
               in
@@ -106,8 +123,7 @@ struct
 
 
     (* check solutions satifying all psconstraints *)
-    fun check_pscstrs_sol (ctx: Context.context) 
-                          (psctx: pscontext) 
+    fun check_pscstrs_sol (psctx: pscontext) 
                           (pscstrs: psconstraint list) = 
       let 
         fun error_msg (ps1, s1) (ps2, s2) = 
@@ -133,7 +149,7 @@ struct
         *)
 
         (* helper function to check set constraint *)
-        fun check (PSSup (ps1, ps2)) = 
+        fun check (PSSup (_, ps1, ps2)) = 
             let val s1 = get_set ps1
                 val s2 = get_set ps2
             in
@@ -143,7 +159,7 @@ struct
                     ("superset violated: " 
                      ^ (error_msg (ps1, s1) (ps2, s2)))))
             end
-          | check (PSCons (ps1, ps2)) =
+          | check (PSCons (ctx, ps1, ps2)) =
             let val s1 = get_set ps1
                 val s2 = get_set ps2
             in

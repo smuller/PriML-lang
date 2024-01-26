@@ -143,7 +143,7 @@ struct
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
-                       List.exists has tl
+                       List.exists (fn (_, t) => has t) tl
                  | Sum ltl => List.exists 
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
@@ -160,10 +160,11 @@ struct
 *)
                  | Arrows l =>
                        List.exists (fn (_, tl, t) =>
-                                    has t orelse List.exists has tl) l
+                                       has t orelse
+				       List.exists (fn (_, t) => has t) tl) l
                  | TRef t => has t
-                 | TCmd (t, _, _) => has t
-                 | TThread (t, _, _) => has t
+                 | TCmd (t, _) => has t
+                 | TThread (t, _) => has t
                  | TPrio _ => false) (* FIX: refinements don't have evars? *)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
       in
@@ -189,7 +190,7 @@ struct
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
-                       List.exists has tl
+                       List.exists (fn (_, t) => has t) tl
                  | Sum ltl => List.exists 
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
@@ -206,10 +207,11 @@ struct
 *)
                  | Arrows l =>
                        List.exists (fn (_, tl, t) =>
-                                    has t orelse List.exists has tl) l
+                                       has t orelse
+				       List.exists (fn (_, t) => has t) tl) l
                  | TRef t => has t
-                 | TCmd (t, _, _) => has t
-                 | TThread (t, _, _) => has t
+                 | TCmd (t, _) => has t
+                 | TThread (t, _) => has t
                  | TPrio _ => false)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
 

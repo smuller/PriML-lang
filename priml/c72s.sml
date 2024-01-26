@@ -58,6 +58,10 @@ val (idl, prios, cons, fs, il) = Elaborate.elaborate el'
                                     (print ("Type error: " ^ s ^ "\n");
                                      OS.Process.exit OS.Process.failure)
 
+val pscons = Constraint.consprog (idl, prios, cons, fs, il)
+
+val _ = Solve.solve_psetcstrs pscons
+					
 val dp = DePrio.deprio el prios cons fs
 
 val s = Layout.tostring (ELPrint.progtol dp)
