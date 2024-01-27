@@ -246,7 +246,7 @@ struct
                                                    inline = false,
                                                    recu = false,
                                                    total = false }]))),
-                      ke), kt)
+                      ke, kt), kt)
                 end
 
             (* handles splitting of constant patterns.
@@ -734,7 +734,8 @@ struct
                                        I.Value objv,
                                        insidev,
                                        thearms,
-                                       de),
+                                       de,
+				       rett),
                             rett)
 
                        end
@@ -1262,7 +1263,7 @@ struct
                          in
                              (I.Let(I.Val(
                                            mono (v, t, I.Proj (l, objt, obje))),
-                                   ee),
+                                   ee, tt),
                               tt)
                          end
 

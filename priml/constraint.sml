@@ -5,9 +5,183 @@ open IL
 structure C = Context
 structure V = Variable
 
+open PSetCstrs
+     
 exception Priority of string
+exception TyError of string
 
 fun mkpoly t = Poly ({tys = []}, t)
+
+val new_psevar = Unify.new_psevar
+
+fun supertypex ctx t1 t2 =
+    let val _ = Layout.print (Layout.listex
+				  "supertype (" ")\n" ","
+				  (map ILPrint.ttol [t1, t2]),
+			      print)
+    in
+        (case (t1, t2) of
+             (TVar v1, TVar v2) => []
+           | (TTag (t1, v1), TTag (t2, v2)) => 
+             supertypex ctx t1 t2
+           | (TVec t1, TVec t2) => supertypex ctx t1 t2
+           | (TCont t1, TCont t2) => supertypex ctx t1 t2
+           | (TRec lcl1, TRec lcl2) =>
+             let
+                 val l = ListUtil.sort 
+                             (ListUtil.byfirst String.compare) lcl1
+                 val r = ListUtil.sort 
+                             (ListUtil.byfirst String.compare) lcl2
+		 val cs = ListPair.map
+			      (fn ((_, t1), (_, t2)) =>
+				  supertypex ctx t1 t2)
+			      (l, r)
+             in
+		 List.concat cs
+	     end
+           | (Arrow (_, dom1, cod1), Arrow (_, dom2, cod2)) => 
+             let
+		 val domcs = ListPair.map
+			      (fn ((_, a), (_, b)) =>
+				  supertypex ctx b a
+					     (* FIX: domain is contravariant *)
+			      )
+                              (dom1, dom2)
+
+		 val codcs = supertypex ctx cod1 cod2
+	     in
+		 List.concat (codcs::domcs)
+             end
+           | (TRef c1, TRef c2) => supertypex ctx c1 c2
+           | (Mu (_, m1), Mu (_, m2)) => 
+             let val cs = ListPair.map (fn ((_, t1), (_, t2)) =>
+					   supertypex ctx t1 t2)
+				       (m1, m2)
+	     in
+		 List.concat cs
+	     end
+           | (Sum ltl1, Sum ltl2) =>
+	     let val cs = ListPair.map
+			      (fn ((_, t1), (_, t2)) =>
+				  case (t1, t2) of
+                                      (NonCarrier, NonCarrier) => []
+                                    | (Carrier { definitely_allocated = aa1, carried = tt1}, 
+                                       Carrier { definitely_allocated = aa2, carried = tt2}) => 
+                                            supertypex ctx tt1 tt2
+                                    | _ => raise TyError "sum:carrier")
+			      (ListUtil.sort (ListUtil.byfirst String.compare) ltl1,
+			       ListUtil.sort (ListUtil.byfirst String.compare) ltl2)
+	     in
+		 List.concat cs
+	     end
+           | (Arrows al1, Arrows al2) =>
+             if length al1 <> length al2 then
+		 raise TyError "Arrows have different arity"
+             else
+		 let val cs =
+			 ListPair.map
+			     (fn ((_, dom1, cod1), (_, dom2, cod2)) =>
+				 List.concat
+				     (
+				      (supertypex ctx cod1 cod2)::
+                                 (ListPair.map
+				     (fn ((_, a), (_, b)) =>
+					 supertypex ctx b a
+						    (* FIX: domain is contravariant *)
+				     )
+				     (dom1, dom2)
+			     )))
+			     (al1, al2)
+		 in
+		     List.concat cs
+		 end
+           | (TCmd (t1, (pi1, pp1, pf1)), TCmd (t2, (pi2, pp2, pf2))) =>
+               (pscstr_sup ctx pi2 pi1) (* FIX: start refinement contravariant *)
+               @ (pscstr_sup ctx pp1 pp2)
+               @ (pscstr_sup ctx pf1 pf2)
+	       @ (supertypex ctx t1 t2)
+           | (TThread (t1, ps1), TThread (t2, ps2)) =>
+	     (pscstr_sup ctx ps1 ps2) @ (supertypex ctx t1 t2)
+           | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2
+	   | _ => raise (TyError "supertype unhandled case")
+	)
+    end
+
+fun subtype ctx t1 t2 = supertypex ctx t2 t1
+	
+fun wf_cons ctx t =
+    case t of
+	TVar _ => []
+      | TRec fields =>
+	List.concat (List.map (fn (_, t) => wf_cons ctx t) fields)
+      | Arrow (_, dom, cod) =>
+	let val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+	in
+	    (wf_cons ctx cod) @ (List.concat dom_cons)
+	end
+      | Sum arms =>
+	List.concat (List.map (fn (_, ai) =>
+				  case ai of NonCarrier => []
+					   | Carrier {carried, ...} =>
+					     wf_cons ctx carried
+			      )
+			      arms)
+      | Mu (i, typs) =>
+	List.concat (List.map (fn (_, t) => wf_cons ctx t) typs)
+      | Evar _ => []
+      | TVec t => wf_cons ctx t
+      | TCont t => wf_cons ctx t
+      | TRef t => wf_cons ctx t
+      | TTag (t, _) => wf_cons ctx t
+      | Arrows fns =>
+	List.concat
+	    (List.map
+		 (fn (_, dom, cod) =>
+		     let val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+		     in
+			 (wf_cons ctx cod) @ (List.concat dom_cons)
+		     end
+		 )
+		 fns
+	    )
+      | TCmd (t, (p1, p2, p3)) =>
+	(pscstr_wf ctx p1)
+	@ (pscstr_wf ctx p2)
+	@ (pscstr_wf ctx p3)
+	@ (wf_cons ctx t)
+      | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
+      | TPrio p => (pscstr_wf ctx p)
+
+fun fresh t =
+    case t of
+	TVar _ => t
+      | TRec fields =>
+	TRec (List.map (fn (l, t) => (l, fresh t)) fields)
+      | Arrow (total, dom, cod) =>
+	Arrow (total,
+	       List.map (fn (x, t) => (x, fresh t)) dom,
+	       fresh cod)
+      | Sum arms =>
+	Sum (List.map (fn (l, ai) => (l, arminfo_map fresh ai)) arms)
+      | Mu (i, typs) =>
+	Mu (i, List.map (fn (x, t) => (x, fresh t)) typs)
+      | Evar _ => t
+      | TVec t => TVec (fresh t)
+      | TCont t => TCont (fresh t)
+      | TRef t => TRef (fresh t)
+      | TTag (t, v) => TTag (fresh t, v)
+      | Arrows fns =>
+	Arrows
+	(List.map (fn (total, dom, cod) =>
+		      (total,
+		       List.map (fn (x, t) => (x, fresh t)) dom,
+		       fresh cod)
+		  )
+		  fns)
+      | TCmd (t, (_, _, _)) =>
+	TCmd (fresh t, (new_psevar (), new_psevar (), new_psevar ()))
+      | TThread (t, _) => TThread (fresh t, new_psevar ())
+      | TPrio _ => TPrio (new_psevar ())
 
 fun consval ctx v =
     case v of
@@ -78,16 +252,157 @@ fun consval ctx v =
 	)
       | PCmd (p, t, cmd) =>
 	let val (t, midprios, endprios, cs) = conscmd p ctx cmd in
-	    (TCmd (t, (PSSet (PrioSet.singleton p), midprios, endprios)), cs)
-	end
+	    (TCmd (t, (p, midprios, endprios)), cs)
+    end
 	    
-and cons ctx e =
+and cons ctx e : typ * (psconstraint list) =
     case e of
 	Value v => consval ctx v
-      | _ => raise (Priority "not implemented")
+      | App (efun, eargs) =>
+	let val (funty, cs) = cons ctx efun
+	    val (argtys, css) = ListPair.unzip (List.map (cons ctx) eargs)
+	in
+	    case funty of
+		Arrow (_, dom, cod) =>
+		let val subcs = ListPair.map
+				    (fn (argty, (_, party)) =>
+					subtype ctx argty party)
+				    (argtys, dom)
+		    val substs = ListPair.map (fn ((x, _), arg) => (x, arg))
+					      (dom, eargs)
+		in
+		    (Subst.subst_e_in_t (Subst.fromlist substs) cod,
+		     List.concat (cs::(css @ subcs)))
+		end
+	end
+      | Record fields =>
+	let val (ts, ccs) =
+		List.foldl (fn ((l, v), (ts, ccs)) =>
+			       let val (t, cs) = cons ctx v in
+				   ((l, t)::ts, cs @ ccs)
+			       end)
+			   ([], [])
+			   fields
+	in
+	    (TRec (List.rev ts), ccs)
+	end
+      | Proj (label, t, e) =>
+	let val field_t =
+		case t of
+		    TRec fields =>
+		    (case List.filter (fn (l, _) => l = label) fields of
+			 (_, t)::_ => t
+		       | _ => raise (TyError "field not found")
+		    )
+		  | _ => raise (TyError "not a record type")
+	    val (et, cs) = cons ctx e
+	in
+	    (field_t, (subtype ctx et field_t) @ cs)
+	end
+      | Raise (t, e) => raise (Priority "unimplemented: cons raise")
+	
+      (* var bound to exn value within handler*)
+      | Handle (ebody, t, evar, handler) =>
+	raise (Priority "unimplemented: cons handle")
+
+      | Seq (e1, e2) =>
+	let val (_, cons1) = cons ctx e1
+	    val (t2, cons2) = cons ctx e2
+	in
+	    (t2, cons1 @ cons2)
+	end
+
+      | Let (d, ebody, t) => 
+	let val F = fresh t
+	    val (ctx', cs) = consdec ctx d
+	    val (F2, cs') = cons ctx' ebody
+	    val subcs = subtype ctx' F2 F
+	in
+	    (F, cs @ cs' @ subcs @ (wf_cons ctx F))
+	end
+	    
+      | Unroll e => raise (Priority "unimplemented: cons unroll")
+      | Roll (t, e) => raise (Priority "unimplemented: cons roll")
+
+      (* tag v with t *)
+      | Tag (e, et) => raise (Priority "unimplemented: cons tag")
+
+      | Untag _ => raise (Priority "unimplemented: cons untag")
+
+      (* apply a primitive to some expressions and types *)
+      | Primapp (pop, eargs, argtys) =>
+	raise (Priority "unimplemented: cons primapp")
+
+      (* sum type, object, var (for all arms but not default), 
+         branches, default, return type.
+         the label/exp list need not be exhaustive.
+         *)
+      | Sumcase (sumty, ecase, branchvar, branches, def, rett) =>
+	let val constrs =
+		case sumty of
+		    Sum ts => ts
+		  | _ => raise (TyError "not a sum type")
+	    val F = fresh rett
+	    val (_, cs) = cons ctx ecase
+	    val (tys, css) =
+		ListPair.unzip
+		    (ListPair.map
+			 (fn ((_, e), (_, arm)) =>
+			     let val ctx' =
+				     case arm of
+					 NonCarrier => ctx
+				       | Carrier {carried, ...} =>
+					 C.bindv ctx
+					       (V.show branchvar)
+					       (mkpoly carried)
+					       branchvar
+			     in
+				 cons ctx' e
+			     end)
+			 (branches, constrs))
+	    val (dty, dcs) = cons ctx def
+	    val subtycs =
+		List.concat
+		    (List.map (supertypex ctx F) (dty::tys))
+	in
+	    (F, cs @ dcs @ subtycs @ (wf_cons ctx F) @ (List.concat css))
+	end
+
+      (* simpler; no inner val needs to be defined. can't be exhaustive. *)
+      | Intcase (ecase, branches, def, rett) =>
+	let val F = fresh rett
+	    val (_, cs) = cons ctx ecase
+	    val (tys, css) =
+		ListPair.unzip
+		    (List.map (fn (_, e) => cons ctx e) branches)
+	    val (dty, dcs) = cons ctx def
+	    val subtycs =
+		List.concat
+		    (List.map (supertypex ctx F) (dty::tys))
+	in
+	    (F, cs @ dcs @ subtycs @ (wf_cons ctx F) @ (List.concat css))
+	end
+
+	
+      | Inject (t, label, eopt) =>
+	(case eopt of
+	     NONE => (t, [])
+	   | SOME e =>
+	     let val (_, cs) = cons ctx e
+	     in
+		 (t, cs)
+	     end
+	)
+	
+      | Cmd (p, cmd) =>
+	let val (t, midprios, endprios, cs) = conscmd p ctx cmd
+	in
+	    (TCmd (t, (p, midprios, endprios)),
+	     cs)
+	end
 	
 and conscmd p ctx cmd =
-    (TVar (V.newvar ()), PSSet (PrioSet.singleton p), PSSet (PrioSet.singleton p), [])
+    (TVar (V.newvar ()), p, p, [])
 
 and consdec ctx d =
     raise (Priority "not implemented")
@@ -102,7 +417,8 @@ fun consprog (decs, prios, cons, fairness, maincmd) =
 	    )
 	    (C.empty, [])
 	    decs
-	val (_, _, _, cs') = conscmd (PConst "bot") ctx maincmd
+	val (_, _, _, cs') = conscmd (PSSet (PrioSet.singleton (PConst "bot")))
+				     ctx maincmd
     in
 	cs @ cs'
     end

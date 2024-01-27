@@ -29,6 +29,9 @@ struct
 
   fun bindval p = Val p
 
+  fun mk_let t (d, e) =
+      Let (d, e, t)
+
   (* fun printp p = Layout.print (ILPrint.prtol p, print) *)
 
   val _ = C.install_ne Unify.new_evar
@@ -556,7 +559,7 @@ struct
                               val (ein, tin) = force rest nctx (s::acc)
                             in
                               (Let(Val (mono(sv, tt, ee)),
-                                   ein), tin)
+                                   ein, tin), tin)
                             end
                in
                    force es ctx nil
@@ -650,7 +653,7 @@ struct
                    val (dd, nctx) = elabd ctx d
                    val (ee, t) = elab nctx e
                in
-                   (foldr Let ee dd, t)
+                   (foldr (mk_let t) ee dd, t)
                end
 
         | E.ECmd c =>

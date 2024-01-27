@@ -14,6 +14,7 @@ struct
     datatype psconstraint = 
       PSSup of Context.context * prioset * prioset 
     | PSCons of Context.context * prioset * prioset
+    | PSWellformed of Context.context * prioset
 
     fun psctol (PSSup (_, ps1, ps2)) =
 	Layout.mayAlign
@@ -46,6 +47,7 @@ struct
 				  @
 				  (pscstr_sup ctx pp pf)
 
+    fun pscstr_wf ctx p = [PSWellformed (ctx, p)]
 
     (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)

@@ -277,9 +277,9 @@ struct
                      L.listex "(" ")" ";" (rev (map etol (last::front)))
                  end
            (* also fake n-ary like above *)
-           | Let (dd, ee) =>
+           | Let (dd, ee, _) =>
                  let
-                     fun alldecs acc (Let (dd, er)) = alldecs (dd::acc) er
+                     fun alldecs acc (Let (dd, er, _)) = alldecs (dd::acc) er
                        | alldecs acc e = (acc, e)
 
                      val (decs', body) = alldecs nil e

@@ -4,7 +4,8 @@ sig
 
     datatype psconstraint = 
       PSSup of Context.context * IL.prioset * IL.prioset 
-     | PSCons of Context.context * IL.prioset * IL.prioset
+    | PSCons of Context.context * IL.prioset * IL.prioset
+    | PSWellformed of Context.context * IL.prioset
 
     val psctol : psconstraint  -> Layout.layout
 
@@ -13,7 +14,9 @@ sig
     val pscstr_sup  : Context.context -> IL.prioset -> IL.prioset -> psconstraint list
     val pscstr_cons : Context.context -> IL.prioset -> IL.prioset -> psconstraint list
     val pscstr_gen  : Context.context -> IL.prioset -> IL.prioset -> IL.prioset -> 
-                        psconstraint list
+                      psconstraint list
+
+    val pscstr_wf   : Context.context -> IL.prioset -> psconstraint list
 
     (* solve system of priority set constraints *)
     val solve_pscstrs : PSContext.pscontext -> psconstraint list -> PSContext.pscontext

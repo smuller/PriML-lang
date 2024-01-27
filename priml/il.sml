@@ -154,7 +154,7 @@ struct
           pconst : pconstraint list,
           pcod   : typ,
           pbody  : exp } (* FIX: delete this *) *)
-      | PCmd of prio * typ * cmd
+      | PCmd of prioset * typ * cmd
 
     and exp =
         Value of value
@@ -170,7 +170,7 @@ struct
       | Handle of exp * typ * var * exp
 
       | Seq of exp * exp
-      | Let of dec * exp
+      | Let of dec * exp * typ
       | Unroll of exp
       | Roll of typ * exp
 
@@ -235,7 +235,7 @@ struct
     fun Var v = Polyvar { tys = nil, (* prios = nil, *)
                           var = v }
     (* expand to linear search *)
-    fun Tagcase (t, obj, bound, vel, def) = 
+    fun Tagcase (t, obj, bound, vel, def, rett) = 
       let
         val vo = Variable.namedvar "tagcase"
         fun go nil = def
@@ -248,7 +248,8 @@ struct
                   no = go rest }
       in
         Let (Val (Poly ({tys=nil}, (vo, t, obj))),
-             go vel)
+             go vel,
+	     rett)
       end
 
     fun pr_eq (PConst s1, PConst s2) = (case String.compare (s1, s2) of
