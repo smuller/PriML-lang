@@ -401,11 +401,88 @@ and cons ctx e : typ * (psconstraint list) =
 	     cs)
 	end
 	
-and conscmd p ctx cmd =
-    (TVar (V.newvar ()), p, p, [])
+and conscmd sp ctx cmd =
+    case cmd of
+	Bind (x, e, m) =>
+	(case cons ctx e of
+	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
+	     let val ctx' = C.bindv ctx (V.show x) (mkpoly t) x
+		 val (t', mp', ep', cs') = conscmd endprios ctx' m'
+	     in
+		 (t, sp', startprios, mp', ep',
+		  cs @ cs'
+		  @ (wf_cons ctx t')
+		  @ (pscstr_wf ctx sp')
+		  @ (pscstr_wf ctx mp')
+		  @ (pscstr_wf ctx ep')
+		  @ (pscstr_eq ctx startprios sp)
+		  @ (pscstr_eq ctx midprios mp')
+		 )
+	     end
+	  | _ => raise (TyError "not a cmd")
+	)
+      | Spawn (p, _, m) =>
+	(case cons ctx p of
+	     (TPrio psint, cs) =>
+	     let val (t, mp, ep, cs') = conscmd psint ctx m
+		 val pp' = new_psevar ()
+	     in
+		 (TThread (t, pp'),
+		  sp,
+		  sp,
+		  sp,
+		  cs @ cs'
+		  @ (pscstr_gen psint pp' mp),
+		 )
+	     end
+	  | _ => raise (TyError "not a prio")
+	)
+	    
+      | Sync e =>
+	(case cons ctx e of
+	     (TThread (t, p'), cs) =>
+	     (t, sp, sp, sp, cs @ (pscstr_cons ctx p p'))
+	   | _ => raise (TyError "not a thread")
+	)
+	     
+      | Poll e =>
+	(case cons ctx e of
+	     (TThread (t, p'), cs) =>
+	     (t, sp, sp, sp, cs)
+	   | _ => raise (TyError "not a thread")
+	)
+      | Cancel e =>
+	(case cons ctx e of
+	     (TThread (t, p'), cs) =>
+	     (t, sp, sp, sp, cs)
+	   | _ => raise (TyError "not a thread")
+	)
+      | Ret e =>
+	let val (t, cs) = cons ctx e
+	in
+	    (t, sp, sp, sp, cs)
+	end
+
+      | Change p =>
+	(case cons ctx p of
+	     (TPrio ep', cs) =>
+	     (TRec [], sp, ep', ep')
+	   | _ => raise (TyError "not a priority")
+	)
 
 and consdec ctx d =
-    raise (Priority "not implemented")
+    case d of
+	Do e =>
+	let val (_, cs) = cons ctx e in
+	    (ctx, cs)
+	end
+      | Val ({tys}, (x, t, e)) =>
+	let val (t', cs) = cons ctx e in
+	    (C.bindv ctx (V.show x) t' x,
+	     cs @ (subtype ctx t' t)
+	    )
+      | Tagtype a => (ctx, [])
+      | Newtag (c, t, a) => (ctx, [])
 
 fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =
