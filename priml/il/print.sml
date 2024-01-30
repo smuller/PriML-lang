@@ -149,6 +149,8 @@ struct
     and pstol (PSEvar (ref (Bound w))) = pstol w
       | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
       | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
+      | pstol (PSPendSub (s, ps)) = %[$"[]", pstol ps]
+	
 
 				    (*
     and psctol (PSSup (ps1, ps2)) = %[$"sup", L.paren(%[pstol ps1, $",", pstol ps2])]

@@ -23,4 +23,7 @@ sig
 
     (* check psconstraints in the solved system *)
     val check_pscstrs_sol : PSContext.pscontext ->  psconstraint list -> unit
+
+    val dosub_cstr : psconstraint -> psconstraint
+    val dosub : IL.prioset -> IL.prioset
 end

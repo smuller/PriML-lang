@@ -65,6 +65,17 @@ struct
         true
         s2
 
+    fun dosub ps =
+	case ps of
+	    PSPendSub (_, ps) => dosub ps (* XXX *)
+	  | _ => ps
+
+    fun dosub_cstr cstr =
+	case cstr of
+	    PSCons (ctx, ps1, ps2) => PSCons (ctx, dosub ps1, dosub ps2)
+	  | PSSup (ctx, ps1, ps2) => PSSup (ctx, dosub ps1, dosub ps2)
+	  | PSWellformed (ctx, ps) => PSWellformed (ctx, dosub ps)
+	
     fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
       let 
         (* retrieve priority of psevar in pscontext. 
@@ -77,7 +88,7 @@ struct
         (* solve priority set system from PSSup (s1, s2) constraints, skip PSCons.
          * If s1 is not the superset of s2, add every priorities in s2 to s1. *)
         fun solve (cstr, psctx) = 
-          case cstr of 
+          case dosub_cstr cstr of 
             PSCons (_, PSSet _, PSSet _) => psctx
           | PSCons (_, PSSet _, ps as PSEvar _) => 
               let val (psctx', _) = getps (psctx, ps) 
@@ -115,6 +126,7 @@ struct
                 if check_sup (s1, s2) then psctx''
                 else PSEvarMap.insert (psctx'', ps1, PrioSet.union(s1, s2))
               end
+	  | PSWellformed _ => psctx (* XXX *)
         in 
         let val psctx' = List.foldl solve psctx pscstrs 
         in
@@ -136,7 +148,7 @@ struct
 
         (* get set solution in priority set context *)
         fun get_set ps = 
-          (case ps of 
+          (case dosub ps of 
              PSSet s => s
            | PSEvar e => 
               (case (PSEvarMap.find (psctx, PSEvar e)) of
@@ -171,6 +183,7 @@ struct
                     ("priority set constraint violated: "
                      ^ (error_msg (ps1, s1) (ps2, s2)))))
             end
+	  | check (PSWellformed _) = () (* XXX *)
       in 
         List.app check pscstrs 
       end

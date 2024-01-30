@@ -7,12 +7,17 @@ structure V = Variable
 
 open PSetCstrs
      
-exception Priority of string
+exception PriorityErr of string
 exception TyError of string
 
 fun mkpoly t = Poly ({tys = []}, t)
 
 val new_psevar = Unify.new_psevar
+
+fun basety (t, cs) =
+    case t of
+	(Evar (ref (Bound t))) => basety (t, cs)
+      | _ => (t, cs)
 
 fun supertypex ctx t1 t2 =
     let val _ = Layout.print (Layout.listex
@@ -103,11 +108,25 @@ fun supertypex ctx t1 t2 =
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
 	     (pscstr_sup ctx ps1 ps2) @ (supertypex ctx t1 t2)
            | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2
-	   | _ => raise (TyError "supertype unhandled case")
+	   | (Evar (ref (Bound t1)), Evar (ref (Bound t2))) =>
+	     supertypex ctx t1 t2
+	   | (Evar (ref (Bound t1)), t2) => supertypex ctx t1 t2
+	   | (t1, Evar (ref (Bound t2))) => supertypex ctx t1 t2
+	   | (Evar (ref (Free _)), _) => []
+	   | (_, Evar (ref (Free _))) => []
+	   | _ => raise (TyError ("supertype unhandled case"
+				  ^
+				  (Layout.tostring
+				    (Layout.listex
+					 "supertype (" ")\n" ","
+					 (map ILPrint.ttol [t1, t2]))
+				 )))
 	)
     end
 
-fun subtype ctx t1 t2 = supertypex ctx t2 t1
+fun subtype ctx t1 t2 =
+    (supertypex ctx t2 t1)
+    handle TyError s => (print s; raise (TyError s))
 	
 fun wf_cons ctx t =
     case t of
@@ -184,8 +203,12 @@ fun fresh t =
       | TPrio _ => TPrio (new_psevar ())
 
 fun consval ctx v =
+    let val _ = Layout.print (Layout.mayAlign [Layout.str "consval ",
+					       ILPrint.vtol v,
+					       Layout.str "\n"], print) in
     case v of
 	Polyvar {tys, var} =>
+	let val (t, cs) =
 	(case C.var ctx (V.show var) of
 	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
@@ -193,15 +216,32 @@ fun consval ctx v =
 	   | (Poly (_, t), _, _) =>
 	     (t, [])
 	)
+	in
+	    Layout.print (Layout.mayAlign [Layout.str "type of ",
+					   Layout.str (V.show var),
+					   Layout.str ": ",
+					   ILPrint.ttol t],
+			  print);
+	    (t, cs)
+	end
       | Polyuvar {tys, var} =>
+	let val (t, cs) =
 	(case C.var ctx (V.show var) of
-	     (Poly (p, TPrio ps), _, _) =>
+	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
 	      [])
 	   | (Poly (_, t), _, _) =>
 	     (t, [])
 	)
-      | MLVal _ => raise (Priority "what's an mlval?")
+	in
+	    Layout.print (Layout.mayAlign [Layout.str "type of ",
+					   Layout.str (V.show var),
+					   Layout.str ": ",
+					   ILPrint.ttol t],
+			  print);
+	    (t, cs)
+	end
+      | MLVal _ => raise (PriorityErr "what's an mlval?")
       | Int _ => (Initial.ilint, [])
       | String _ => (Initial.ilstring, [])
       | Prio p => (TPrio (PSSet (PrioSet.singleton p)), [])
@@ -216,7 +256,7 @@ fun consval ctx v =
 	in
 	    (TRec (List.rev ts), ccs)
 	end
-      | VRoll _ => raise (Priority "pretty sure this is unused")
+      | VRoll _ => raise (PriorityErr "pretty sure this is unused")
       | VInject (t, cons, vopt) =>
 	let val cs =
 	    case vopt of
@@ -248,14 +288,18 @@ fun consval ctx v =
       | FSel (n, fs) =>
 	(case consval ctx fs of
 	     (Arrows ts, cs) => (Arrow (List.nth (ts, n)), cs)
-	   | _ => raise (Priority "FSel value is not Fns")
+	   | _ => raise (PriorityErr "FSel value is not Fns")
 	)
       | PCmd (p, t, cmd) =>
 	let val (t, midprios, endprios, cs) = conscmd p ctx cmd in
 	    (TCmd (t, (p, midprios, endprios)), cs)
-    end
+	end
+end
 	    
 and cons ctx e : typ * (psconstraint list) =
+    let val _ = Layout.print (Layout.mayAlign [Layout.str "cons ",
+					       ILPrint.etol e,
+					       Layout.str "\n"], print) in
     case e of
 	Value v => consval ctx v
       | App (efun, eargs) =>
@@ -299,11 +343,19 @@ and cons ctx e : typ * (psconstraint list) =
 	in
 	    (field_t, (subtype ctx et field_t) @ cs)
 	end
-      | Raise (t, e) => raise (Priority "unimplemented: cons raise")
+      | Raise (t, e) =>
+	let val (_, cs) = cons ctx e in
+	    (t, cs)
+	end
 	
       (* var bound to exn value within handler*)
       | Handle (ebody, t, evar, handler) =>
-	raise (Priority "unimplemented: cons handle")
+	let val (_, cs1) = cons ctx ebody
+	    val ctx' = C.bindv ctx (V.show evar) (mkpoly Initial.ilexn) evar
+	    val (_, cs2) = cons ctx' handler
+	in
+	    (t, cs1 @ cs2)
+	end
 
       | Seq (e1, e2) =>
 	let val (_, cons1) = cons ctx e1
@@ -321,17 +373,43 @@ and cons ctx e : typ * (psconstraint list) =
 	    (F, cs @ cs' @ subcs @ (wf_cons ctx F))
 	end
 	    
-      | Unroll e => raise (Priority "unimplemented: cons unroll")
-      | Roll (t, e) => raise (Priority "unimplemented: cons roll")
+      | Unroll e =>
+	(case cons ctx e of
+	     (Mu (n, arms), cs) =>
+	     let val subst = Subst.fromlist
+			     (List.tabulate
+			      (List.length arms,
+			       (fn i =>
+				   let val (v, t) = List.nth (arms, i) in
+				       (v, Mu (i, arms))
+				   end
+			       )
+			     ))
+	     in
+		 (Subst.tsubst subst (#2 (List.nth (arms, n))), cs)
+	     end
+	   | _ => raise (TyError "not a Mu")
+	)
+
+      | Roll (t, e) =>
+	let val (_, cs) = cons ctx e in
+	    (t, cs)
+	end
 
       (* tag v with t *)
-      | Tag (e, et) => raise (Priority "unimplemented: cons tag")
+      | Tag (e, et) => (TRec [], []) (* XXX *)
 
-      | Untag _ => raise (Priority "unimplemented: cons untag")
+      | Untag _ => (TRec [], []) (* XXX *)
 
       (* apply a primitive to some expressions and types *)
-      | Primapp (pop, eargs, argtys) =>
-	raise (Priority "unimplemented: cons primapp")
+      | Primapp (po, eargs, argtys) =>
+	let
+            val { worlds, tys, dom, cod } = Podata.potype po
+	    val (_, cs) = ListPair.unzip
+			      (List.map (cons ctx) eargs)
+	in
+	    (TRec [] (* XXX *), List.concat cs)
+	end
 
       (* sum type, object, var (for all arms but not default), 
          branches, default, return type.
@@ -400,19 +478,22 @@ and cons ctx e : typ * (psconstraint list) =
 	    (TCmd (t, (p, midprios, endprios)),
 	     cs)
 	end
+    end
 	
 and conscmd sp ctx cmd =
+    let val _ = Layout.print (Layout.mayAlign [Layout.str "cons ",
+					       ILPrint.ctol cmd,
+					       Layout.str "\n"], print) in
     case cmd of
 	Bind (x, e, m) =>
 	(case cons ctx e of
 	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
 	     let val ctx' = C.bindv ctx (V.show x) (mkpoly t) x
-		 val (t', mp', ep', cs') = conscmd endprios ctx' m'
+		 val (t', mp', ep', cs') = conscmd endprios ctx' m
 	     in
-		 (t, sp', startprios, mp', ep',
+		 (t, mp', ep',
 		  cs @ cs'
 		  @ (wf_cons ctx t')
-		  @ (pscstr_wf ctx sp')
 		  @ (pscstr_wf ctx mp')
 		  @ (pscstr_wf ctx ep')
 		  @ (pscstr_eq ctx startprios sp)
@@ -422,7 +503,7 @@ and conscmd sp ctx cmd =
 	  | _ => raise (TyError "not a cmd")
 	)
       | Spawn (p, _, m) =>
-	(case cons ctx p of
+	(case basety (cons ctx p) of
 	     (TPrio psint, cs) =>
 	     let val (t, mp, ep, cs') = conscmd psint ctx m
 		 val pp' = new_psevar ()
@@ -430,45 +511,46 @@ and conscmd sp ctx cmd =
 		 (TThread (t, pp'),
 		  sp,
 		  sp,
-		  sp,
 		  cs @ cs'
-		  @ (pscstr_gen psint pp' mp),
+		  @ (pscstr_gen ctx psint pp' mp)
 		 )
 	     end
-	  | _ => raise (TyError "not a prio")
+	   | (t, _) => (Layout.print (ILPrint.ttol t, print);
+			raise (TyError "not a prio"))
 	)
 	    
       | Sync e =>
 	(case cons ctx e of
 	     (TThread (t, p'), cs) =>
-	     (t, sp, sp, sp, cs @ (pscstr_cons ctx p p'))
+	     (t, sp, sp, cs @ (pscstr_cons ctx sp p'))
 	   | _ => raise (TyError "not a thread")
 	)
 	     
       | Poll e =>
 	(case cons ctx e of
 	     (TThread (t, p'), cs) =>
-	     (t, sp, sp, sp, cs)
+	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
 	)
       | Cancel e =>
 	(case cons ctx e of
 	     (TThread (t, p'), cs) =>
-	     (t, sp, sp, sp, cs)
+	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
 	)
       | Ret e =>
 	let val (t, cs) = cons ctx e
 	in
-	    (t, sp, sp, sp, cs)
+	    (t, sp, sp, cs)
 	end
 
       | Change p =>
 	(case cons ctx p of
 	     (TPrio ep', cs) =>
-	     (TRec [], sp, ep', ep')
+	     (TRec [], ep', ep', cs)
 	   | _ => raise (TyError "not a priority")
 	)
+    end
 
 and consdec ctx d =
     case d of
@@ -476,13 +558,21 @@ and consdec ctx d =
 	let val (_, cs) = cons ctx e in
 	    (ctx, cs)
 	end
-      | Val ({tys}, (x, t, e)) =>
+      | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
-	    (C.bindv ctx (V.show x) t' x,
+	    (C.bindv ctx (V.show x) (mkpoly t') x,
 	     cs @ (subtype ctx t' t)
 	    )
+	end
       | Tagtype a => (ctx, [])
       | Newtag (c, t, a) => (ctx, [])
+      | Priority p =>
+	let val _ = print ("IL prio dec " ^ (V.show p) ^"\n")
+	    val ps = PSSet (PrioSet.singleton (PVar p))
+	    val ctx' = C.bindv ctx (V.show p) (mkpoly (TPrio ps)) p
+	in
+	    (ctx', [])
+	end
 
 fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =

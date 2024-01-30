@@ -223,6 +223,7 @@ struct
       | Tagtype of var
         (* tag of typ in tagtype *)
       | Newtag of var * typ * var
+      | Priority of var
 
     (* the kind is the number of curried arguments. 0 is kind T. *)
     withtype kind = int

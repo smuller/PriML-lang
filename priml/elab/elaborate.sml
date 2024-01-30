@@ -2103,7 +2103,7 @@ struct
               val ctx = C.bindplab ctx s
               val ctx = C.bindex ctx (SOME s) (Poly ({tys = nil}, tt)) vv Normal 
           in
-              ([], [], ctx)
+              ([Priority vv], [], ctx)
           end)
         | E.Order (s1, s2) => (([], [], C.bindpcons ctx (PConst s1, PConst s2))
                                handle C.Context s => raise (Elaborate s)
