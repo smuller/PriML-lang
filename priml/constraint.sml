@@ -366,15 +366,17 @@ and cons ctx e : typ * (psconstraint list) =
 
       | Let (d, ebody, t) => 
 	let val F = fresh t
-	    val (ctx', cs) = consdec ctx d
+	    val (ctx', subs, cs) = consdec ctx d
 	    val (F2, cs') = cons ctx' ebody
+	    val _ = print "subtype let\n"
 	    val subcs = subtype ctx' F2 F
 	in
-	    (F, cs @ cs' @ subcs @ (wf_cons ctx F))
+	    (Subst.subst_e_in_t (Subst.fromlist subs) F,
+	     cs @ cs' @ subcs @ (wf_cons ctx F))
 	end
 	    
       | Unroll e =>
-	(case cons ctx e of
+	(case basety (cons ctx e) of
 	     (Mu (n, arms), cs) =>
 	     let val subst = Subst.fromlist
 			     (List.tabulate
@@ -486,18 +488,20 @@ and conscmd sp ctx cmd =
 					       Layout.str "\n"], print) in
     case cmd of
 	Bind (x, e, m) =>
-	(case cons ctx e of
+	(case basety (cons ctx e) of
 	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
 	     let val ctx' = C.bindv ctx (V.show x) (mkpoly t) x
+		 val p = new_psevar ()
 		 val (t', mp', ep', cs') = conscmd endprios ctx' m
 	     in
-		 (t, mp', ep',
+		 (t', mp', ep',
 		  cs @ cs'
 		  @ (wf_cons ctx t')
 		  @ (pscstr_wf ctx mp')
 		  @ (pscstr_wf ctx ep')
 		  @ (pscstr_eq ctx startprios sp)
-		  @ (pscstr_eq ctx midprios mp')
+		  @ (pscstr_sup ctx p midprios)
+		  @ (pscstr_sup ctx p mp')
 		 )
 	     end
 	  | _ => raise (TyError "not a cmd")
@@ -520,20 +524,20 @@ and conscmd sp ctx cmd =
 	)
 	    
       | Sync e =>
-	(case cons ctx e of
+	(case basety (cons ctx e) of
 	     (TThread (t, p'), cs) =>
 	     (t, sp, sp, cs @ (pscstr_cons ctx sp p'))
 	   | _ => raise (TyError "not a thread")
 	)
 	     
       | Poll e =>
-	(case cons ctx e of
+	(case basety (cons ctx e) of
 	     (TThread (t, p'), cs) =>
 	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
 	)
       | Cancel e =>
-	(case cons ctx e of
+	(case basety (cons ctx e) of
 	     (TThread (t, p'), cs) =>
 	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
@@ -545,7 +549,7 @@ and conscmd sp ctx cmd =
 	end
 
       | Change p =>
-	(case cons ctx p of
+	(case basety (cons ctx p) of
 	     (TPrio ep', cs) =>
 	     (TRec [], ep', ep', cs)
 	   | _ => raise (TyError "not a priority")
@@ -556,29 +560,30 @@ and consdec ctx d =
     case d of
 	Do e =>
 	let val (_, cs) = cons ctx e in
-	    (ctx, cs)
+	    (ctx, [], cs)
 	end
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
 	    (C.bindv ctx (V.show x) (mkpoly t') x,
-	     cs @ (subtype ctx t' t)
+	     [(x, e)],
+	     cs @ (print "subtype val\n"; subtype ctx t' t)
 	    )
 	end
-      | Tagtype a => (ctx, [])
-      | Newtag (c, t, a) => (ctx, [])
+      | Tagtype a => (ctx, [], [])
+      | Newtag (c, t, a) => (ctx, [], [])
       | Priority p =>
 	let val _ = print ("IL prio dec " ^ (V.show p) ^"\n")
 	    val ps = PSSet (PrioSet.singleton (PVar p))
 	    val ctx' = C.bindv ctx (V.show p) (mkpoly (TPrio ps)) p
 	in
-	    (ctx', [])
+	    (ctx', [], [])
 	end
 
 fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =
 	List.foldl
 	    (fn (d, (ctx, cs)) =>
-		 let val (ctx', cs') = consdec ctx d in
+		 let val (ctx', _, cs') = consdec ctx d in
 		     (ctx', cs @ cs')
 		 end
 	    )

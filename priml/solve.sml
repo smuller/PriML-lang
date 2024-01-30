@@ -16,6 +16,10 @@ struct
 (* XXX solve constraints from cc *)
 fun solve_psetcstrs pscstrs = 
     let val psctx = PSC.PSEvarMap.empty
+	val _ =
+	    Layout.print
+                (Layout.listex "[" "]" "," 
+			       (map PSetCstrs.psctol pscstrs), print)
         val psctx_sol = solve_pscstrs psctx pscstrs
     in
         (* check psevar solution satifies every psconstraints *)
@@ -28,6 +32,7 @@ fun solve_psetcstrs pscstrs =
              print);
         print "\n"
     end
-    handle PSConstraints s => raise Elaborate ("psconstraint solver: " ^ s)
+    handle PSConstraints s =>
+	   (print s; raise Elaborate ("psconstraint solver: " ^ s))
 
 end

@@ -24,6 +24,10 @@ struct
 	Layout.mayAlign
 	    [Layout.str "cons",
 	     Layout.paren (Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
+      | psctol (PSWellformed (_, ps)) =
+	Layout.mayAlign
+	    [Layout.str "wf",
+	     Layout.paren (pstol ps)]
 
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
@@ -53,8 +57,9 @@ struct
     (* priority set constraints solver *)
 
     (* check if s1 is superset of s2 *)
-    fun check_sup (s1, s2) = 
-      PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty)
+    fun check_sup (s1, s2) =
+	PrioSet.isSubset (s2, s1)
+(*      PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty) *)
 
     (* check if priorities in s1 is less than priorities in s2 *)
     fun check_cons ctx (s1, s2) = 

@@ -168,6 +168,7 @@ struct
        | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^ 
                        (if size s > 100 then "..." else "") ^ "\"")
        | Prio (PConst p) =>  $("priority[" ^ p ^ "]")
+       | Prio (PVar p) =>  $("priority[" ^ (V.show p) ^ "]")
        | VRecord lvl => recordortuple vtol "=" "(" ")" "," lvl
        | VRoll (t, v) => %[$"roll", L.paren (ttol t), vtol v]
        | VInject (t, l, vo) => %[$("inj_" ^ l), 

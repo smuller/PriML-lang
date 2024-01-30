@@ -3,6 +3,8 @@ struct
 
     type intconst = IntConst.intconst
 
+    structure V = Variable
+			
     type label = string
     type var = Variable.var
     type id = string
@@ -37,18 +39,14 @@ struct
     | PVar of var
     | PConst of string
 
-    fun prcompare (PConst _, PVar _) = GREATER
-      | prcompare (PVar _, PConst _) = LESS
-      | prcompare (PEvar _, PConst _) = GREATER
-      | prcompare (PConst _, PEvar _) = LESS
-      | prcompare (PEvar _, PVar _) = GREATER
-      | prcompare (PVar _, PEvar _) = LESS
-      | prcompare (PVar v1, PVar v2) = Variable.compare (v1,v2) 
+    fun prcompare (PEvar (ref (Free _)), _) = LESS
+      | prcompare (_, PEvar (ref (Free _))) = GREATER
+      | prcompare (PEvar (ref (Bound p1)), p2) = prcompare (p1, p2)
+      | prcompare (p1, PEvar (ref (Bound p2))) = prcompare (p1, p2)
+      | prcompare (PVar v1, PVar v2) = String.compare (V.show v1, V.show v2)
+      | prcompare (PVar v1, PConst c2) = String.compare (V.show v1, c2)
+      | prcompare (PConst c1, PVar v2) = String.compare (c1, V.show v2)
       | prcompare (PConst c1, PConst c2) = String.compare (c1, c2)
-      | prcompare (PEvar (ref (Bound _)), PEvar (ref (Free _))) = GREATER
-      | prcompare (PEvar (ref (Free _)), PEvar (ref (Bound _))) = LESS
-      | prcompare (PEvar (ref (Bound w1)), PEvar (ref (Bound w2))) = prcompare (w1, w2)
-      | prcompare (PEvar (ref (Free n1)), PEvar (ref (Free n2))) = Int.compare (n1, n2)
 
     structure PrioSet = SplaySetFn (struct 
                                       type ord_key = prio
@@ -256,7 +254,15 @@ struct
     fun pr_eq (PConst s1, PConst s2) = (case String.compare (s1, s2) of
                                             EQUAL => true
                                           | _ => false)
-      | pr_eq (PVar v1, PVar v2) = Variable.eq (v1, v2)
+      | pr_eq (PVar v1, PVar v2) = (case String.compare (V.show v1, V.show v2) of
+                                            EQUAL => true
+                                          | _ => false)
+      | pr_eq (PVar v1, PConst s2) = (case String.compare (V.show v1, s2) of
+                                            EQUAL => true
+                                          | _ => false)
+      | pr_eq (PConst c1, PVar v2) = (case String.compare (c1, V.show v2) of
+                                            EQUAL => true
+                                          | _ => false)
       | pr_eq _ = false
 
     datatype tystatus = Regular | Extensible

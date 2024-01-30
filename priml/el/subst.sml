@@ -150,7 +150,6 @@ struct
              | NONE => x)
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
-        | PConst _ => x
 
   and prsubsps (s: prio subst) x : prioset =
       case x of 
