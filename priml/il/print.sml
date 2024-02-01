@@ -51,6 +51,8 @@ struct
     fun ptol f (Poly ({tys = nil}, a)) = f a
       | ptol f (Poly ({tys}, a)) = %[worldstys tys, f a]
 
+    val okchar = StringUtil.charspec "-0-9A-Za-z!@$%^&*()_+=`~\"'[]{}|:;,./<>? " (* " *)
+
     fun ttol t = ttolex (fn _ => NONE) t
     and ttolex ctx t =
       if not (!iltypes)
@@ -149,7 +151,12 @@ struct
     and pstol (PSEvar (ref (Bound w))) = pstol w
       | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
       | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
-      | pstol (PSPendSub (s, ps)) = %[$"[]", pstol ps]
+      | pstol (PSPendSub (s, ps)) = %[L.listex "[" "]" ","
+				      (map (fn (x, e) =>
+					       %[etol e, $"/", $(V.show x)]
+					   )
+				       (VM.listItemsi s))
+				    , pstol ps]
 	
 
 				    (*
@@ -157,12 +164,10 @@ struct
       | psctol (PSCons (ps1, ps2)) = %[$"cons", L.paren(%[pstol ps1, $",", pstol ps2])]
 *)
     (* <t> *)
-    fun bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
+    and bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
                   else $""
 
-    val okchar = StringUtil.charspec "-0-9A-Za-z!@$%^&*()_+=`~\"'[]{}|:;,./<>? " (* " *)
-
-    fun vtol v =
+    and vtol v =
       (case v of
          Int i => $("0x" ^ Word32.toString i)
        | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^ 

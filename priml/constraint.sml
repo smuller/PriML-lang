@@ -213,8 +213,13 @@ fun consval ctx v =
 	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
 	      [])
-	   | (Poly (_, t), _, _) =>
-	     (t, [])
+	   | (Poly ({tys=tyvars}, t), _, _) =>
+	     let val ftps = List.map fresh tys
+		 val subst = Subst.fromlist
+				 (ListPair.zip (tyvars, ftps))
+	     in
+		 (Subst.tsubst subst t, [])
+	     end
 	)
 	in
 	    Layout.print (Layout.mayAlign [Layout.str "type of ",
@@ -230,8 +235,13 @@ fun consval ctx v =
 	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
 	      [])
-	   | (Poly (_, t), _, _) =>
-	     (t, [])
+	   | (Poly ({tys=tyvars}, t), _, _) =>
+	     let val ftps = List.map fresh tys
+		 val subst = Subst.fromlist
+				 (ListPair.zip (tyvars, ftps))
+	     in
+		 (Subst.tsubst subst t, [])
+	     end
 	)
 	in
 	    Layout.print (Layout.mayAlign [Layout.str "type of ",
@@ -279,10 +289,20 @@ fun consval ctx v =
 		)
 		ctx
 		fs
+	    fun consf f =
+		let val ctx' =
+			ListPair.foldl
+			(fn (arg, ty, ctx) =>
+			    C.bindv ctx (V.show arg) (mkpoly ty) arg
+			)
+			ctx
+			(#arg f, #dom f)
+		in
+		    #2 (cons ctx' (#body f))
+		end
 	in
 	(Arrows (List.map (fn f => (false, ListPair.zip (#arg f, #dom f), #cod f)) fs),
-	 List.concat
-	     (List.map (fn f => #2 (cons ctx (#body f))) fs)
+	 List.concat (List.map consf fs)
 	)
 	end
       | FSel (n, fs) =>
@@ -564,7 +584,7 @@ and consdec ctx d =
 	end
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
-	    (C.bindv ctx (V.show x) (mkpoly t') x,
+	    (C.bindv ctx (V.show x) (Poly ({tys = tys}, t')) x,
 	     [(x, e)],
 	     cs @ (print "subtype val\n"; subtype ctx t' t)
 	    )

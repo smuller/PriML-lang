@@ -24,43 +24,44 @@ main {
 }
 *)
 
-(*
-fun spawn_at_and_sync_at_any p c =
+
+fun spawn_at_and_sync_at_any p =
     cmd {
-        td <- spawn[p] { c };
+        td <- spawn[p] { ret 1 };
         sync td
     }
-*)
 
-(* (* CORRECT compiles *)
+(*
+(* CORRECT compiles *)
 main {
-    spawn_at_and_sync_at_any Low (ret 1)
+    spawn_at_and_sync_at_any Low
 }
 *)
 
-(* (* CORRECT catches constraint violation {High} <= {Low} *)
+
+(* CORRECT catches constraint violation {High} <= {Low} *)
 main {
     spawn[High] {
-        spawn_at_and_sync_at_any Low (ret 1)
+        spawn_at_and_sync_at_any Low
     }
 }
-*)
 
 
 
-fun spawn_at_and_sync_at p c =
+(*
+fun spawn_at_and_sync_at p =
     cmd {
-        td <- spawn[p] { c };
+        td <- spawn[p] { ret 1 };
         spawn[p] { sync td }
     }
 
 
-(* BAD says {High, Low} !<= {High, Low} *)
+(* CORRECT compiles *)
 main {
-    spawn_at_and_sync_at (if true then Low else High) (ret 1)
+    spawn_at_and_sync_at (if true then Low else High)
 }
-
-
+*)
+(*
 
 case p of 
     SOME p' =>
@@ -74,3 +75,4 @@ let val p' = p in
             td <- spawn[p'] { c };
             spawn[p'] { sync td }
         }
+        *)

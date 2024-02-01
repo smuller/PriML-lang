@@ -19,6 +19,8 @@ sig
        status and world *)
     val var : context -> string -> IL.typ IL.poly * Variable.var * IL.idstatus
 
+    val rem : context -> string -> (context * (IL.typ IL.poly * Variable.var * IL.idstatus)) option
+
     (* resolve a type/con identifer in the current context, return its kind
        and binding *)
     val con : context -> string -> IL.kind * IL.con * IL.tystatus

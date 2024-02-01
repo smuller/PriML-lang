@@ -30,13 +30,13 @@ main {
     ret x
 *)
 
-    (* CORRECT type error on first cons *)
-    ret (A :: B :: nil)
-
 (*
+    (* CORRECT compiles *)
+    ret (A :: B :: nil)
+*)
+
     (* CORRECT type error on first cons *)
     ret (1 :: "hi" :: nil)
-*)
 
 (*
     (* CORRECT type error on first cons *)

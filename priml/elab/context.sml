@@ -252,6 +252,14 @@ struct
 
     fun var ctx sym = varex ctx sym
 
+    fun rem (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym =
+	(let val (vars', r) = S.remove (vars, sym)
+	     val ctx = C {vars=vars', cons=cons, dbs=dbs, plabs=plabs, pcons=pcons, tpcons=tpcons, mobiles=mobiles, sign=sign }
+	 in
+	     SOME (ctx, r)
+	 end)
+	handle _ => NONE
+		      
     fun conex (C {cons, ...}) module sym =
         (case S.find (cons, sym) of
              SOME x => x

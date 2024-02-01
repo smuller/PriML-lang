@@ -70,15 +70,85 @@ struct
         true
         s2
 
-    fun dosub ps =
+    fun sub_in_set sub set =
+	VM.foldli
+	(fn (x, e, set) =>
+	    case e of
+		Value (Polyvar {var, ...}) =>
+		PrioSet.map
+		(fn p => if pr_eq (p, PVar x)
+			 then (PVar var)
+			 else p
+		)
+		set
+	      | Value (Polyuvar {var, ...}) =>
+		PrioSet.map
+		(fn p => if pr_eq (p, PVar x)
+			 then (PVar var)
+			 else p
+		)
+		set
+	      | _ => set
+	)
+	set
+	sub
+
+    fun baseps ps =
 	case ps of
-	    PSPendSub (_, ps) => dosub ps (* XXX *)
+	    PSEvar (ref (Bound ps)) => baseps ps
+	  | PSSet set => PSSet set
 	  | _ => ps
+
+    fun inst_prio ctx p =
+	case p of
+	    PEvar (ref (Bound p)) => inst_prio ctx p
+	  | PVar v =>
+	    (case Context.rem ctx (V.show v) of
+		 SOME (ctx, (Poly (_, TPrio ps), _, _)) =>
+		  (case baseps ps of
+		       PSSet set => inst_set ctx set
+		     | _ => PrioSet.singleton p)
+		 
+	       | _ => PrioSet.singleton p
+	    )
+	  | PConst s =>
+	    (case Context.rem ctx s of
+		 SOME (ctx, (Poly (_, TPrio ps), _, _)) =>
+		  (case baseps ps of
+		       PSSet set => inst_set ctx set
+		     | _ => PrioSet.singleton p)
+		 
+	       | _ => PrioSet.singleton p
+	    )
+
+    and inst_set ctx set =
+	PrioSet.foldl
+	    (fn (p, set) => PrioSet.union (set, inst_prio ctx p))
+	    PrioSet.empty
+	    set
+
+    fun inst_ps ctx (PSEvar (ref (Bound ps))) = inst_ps ctx ps
+      | inst_ps ctx (PSSet set) = PSSet (inst_set ctx set)
+      | inst_ps ctx ps = ps
+	
+    fun sub_in_ps s ps =
+	case ps of
+	    PSEvar (ref (Bound ps)) => sub_in_ps s ps
+	  | PSEvar (ref _) => ps
+	  | PSSet set => PSSet (sub_in_set s set)
+	  | PSPendSub (sub, ps) =>
+	    sub_in_ps s (sub_in_ps sub ps)
+	
+    fun dosub ps =
+	sub_in_ps VM.empty ps
 
     fun dosub_cstr cstr =
 	case cstr of
 	    PSCons (ctx, ps1, ps2) => PSCons (ctx, dosub ps1, dosub ps2)
-	  | PSSup (ctx, ps1, ps2) => PSSup (ctx, dosub ps1, dosub ps2)
+	  | PSSup (ctx, ps1, ps2) =>
+	    PSSup (Context.empty,
+		   inst_ps ctx (dosub ps1),
+		   inst_ps ctx (dosub ps2))
 	  | PSWellformed (ctx, ps) => PSWellformed (ctx, dosub ps)
 	
     fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
@@ -93,7 +163,7 @@ struct
         (* solve priority set system from PSSup (s1, s2) constraints, skip PSCons.
          * If s1 is not the superset of s2, add every priorities in s2 to s1. *)
         fun solve (cstr, psctx) = 
-          case dosub_cstr cstr of 
+          case cstr of 
             PSCons (_, PSSet _, PSSet _) => psctx
           | PSCons (_, PSSet _, ps as PSEvar _) => 
               let val (psctx', _) = getps (psctx, ps) 
@@ -153,7 +223,7 @@ struct
 
         (* get set solution in priority set context *)
         fun get_set ps = 
-          (case dosub ps of 
+          (case ps of 
              PSSet s => s
            | PSEvar e => 
               (case (PSEvarMap.find (psctx, PSEvar e)) of
