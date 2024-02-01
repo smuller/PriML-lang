@@ -598,6 +598,11 @@ and consdec ctx d =
 	in
 	    (ctx', [], [])
 	end
+      | Order (p1, p2) =>
+	(C.bindpcons ctx (PVar p1, PVar p2),
+	 [],
+	 []
+	)
 
 fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =

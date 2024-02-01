@@ -38,14 +38,20 @@ main {
 }
 *)
 
+main {
+    spawn[Low] {
+        spawn_at_and_sync_at_any Low
+    }
+}
 
+(*
 (* CORRECT catches constraint violation {High} <= {Low} *)
 main {
     spawn[High] {
         spawn_at_and_sync_at_any Low
     }
 }
-
+*)
 
 
 (*

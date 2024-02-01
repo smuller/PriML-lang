@@ -2105,11 +2105,14 @@ struct
           in
               ([Priority vv], [], ctx)
           end)
-        | E.Order (s1, s2) => (([], [], C.bindpcons ctx (PConst s1, PConst s2))
-                               handle C.Context s => raise (Elaborate s)
-                                    | C.Absent (_, id) =>
-                                      raise (Elaborate
-                                                 (id ^ " in fairness criterion but not declared")))
+        | E.Order (s1, s2) =>
+	  (([Order (Variable.namedvar s1, Variable.namedvar s2)],
+	   [],
+	   C.bindpcons ctx (PConst s1, PConst s2))
+          handle C.Context s => raise (Elaborate s)
+               | C.Absent (_, id) =>
+                 raise (Elaborate
+                            (id ^ " in fairness criterion but not declared")))
         | E.Fairness (s, n) =>
           let val _ = (C.prio ctx s)
                       handle C.Context s => raise (Elaborate s)

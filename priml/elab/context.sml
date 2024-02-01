@@ -36,10 +36,10 @@ struct
             raise Absent (what, s)
         end
 
-    type tpcons = (VS.set * SS.set) VM.map * (VS.set * SS.set) S.map
+    type tpcons = SS.set S.map
 
     val tpc_empty =
-        (VM.empty, S.empty)
+        S.empty
 
     fun ground (IL.PEvar r) =
         (case !r of
@@ -47,54 +47,37 @@ struct
            | IL.Bound x => x)
       | ground p = p
 
-    fun tpc_insert (vm, sm) (IL.PConst s1, IL.PConst s2) =
-        (case S.find (sm, s1) of
-             SOME (vs, ss) => (vm, S.insert (sm, s1, (vs, SS.add (ss, s2))))
-           | NONE => (vm, S.insert (sm, s1, (VS.empty, SS.add (SS.empty, s2)))))
-      | tpc_insert (vm, sm) (IL.PVar v1, IL.PConst s2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, ss) => (VM.insert (vm, v1, (vs, SS.add (ss, s2))), sm)
-           | NONE => (VM.insert (vm, v1, (VS.empty, SS.add (SS.empty, s2))), sm))
-      | tpc_insert (vm, sm) (IL.PConst s1, IL.PVar v2) =
-        (case S.find (sm, s1) of
-             SOME (vs, ss) => (vm, S.insert (sm, s1, (VS.add (vs, v2), ss)))
-           | NONE => (vm, S.insert (sm, s1, (VS.add (VS.empty, v2), SS.empty))))
-      | tpc_insert (vm, sm) (IL.PVar v1, IL.PVar v2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, ss) => (VM.insert (vm, v1, (VS.add (vs, v2), ss)), sm)
-           | NONE => (VM.insert (vm, v1, (VS.add (VS.empty, v2), SS.empty)), sm))
-      | tpc_insert (vm, sm) _ = raise (Context "prio cons not constant or variable")
+    fun s_of_p (IL.PConst c) = c
+      | s_of_p (IL.PVar v) = (Variable.show v)
+      | s_of_p _ = raise (Context "prio cons not constant or variable")
 
-    fun tpc_mem (vm, sm) (IL.PConst s1, IL.PConst s2) =
-        (case S.find (sm, s1) of
-             SOME (_, ss) => SS.member (ss, s2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PVar v1, IL.PConst s2) =
-        (case VM.find (vm, v1) of
-             SOME (_, ss) => SS.member (ss, s2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PConst s1, IL.PVar v2) =
-        (case S.find (sm, s1) of
-             SOME (vs, _) => VS.member (vs, v2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PVar v1, IL.PVar v2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, _) => VS.member (vs, v2)
-           | NONE => false)
-      | tpc_mem (vm, sm) _ = raise (Context "prio cons not constant or variable")
+    fun tpc_insert m (p1, p2) =
+	let 
+	    val s1 = s_of_p p1
+	    val s2 = s_of_p p2
+	in
+	    case S.find (m, s1) of
+		SOME ss => (S.insert (m, s1, SS.add (ss, s2)))
+	      | NONE => S.insert (m, s1, SS.singleton s2)
+	end
 
-    fun get_greater ((_, sm): tpcons) (IL.PConst s) =
-        (case S.find (sm, s) of
-             SOME (vs, ss) => (List.map IL.PVar (VSU.tolist vs)) @
-                              (List.map IL.PConst (SSU.tolist ss))
-           | NONE => [])
-      | get_greater ((vm, _): tpcons) (IL.PVar v) =
-        (case VM.find (vm, v) of
-             SOME (vs, ss) => (List.map IL.PVar (VSU.tolist vs)) @
-                              (List.map IL.PConst (SSU.tolist ss))
-           | NONE => [])
-      | get_greater _ _ =
-        raise (Context "prio not constant or variable")
+    fun tpc_mem (m: tpcons) (p1, p2) =
+	let 
+	    val s1 = s_of_p p1
+	    val s2 = s_of_p p2
+	in
+            case S.find (m, s1) of
+		SOME ss => SS.member (ss, s2)
+              | NONE => false
+	end
+
+    fun get_greater m p =
+	let val s = s_of_p p
+	in
+	    case S.find (m, s) of
+		SOME ss => (List.map IL.PConst (SSU.tolist ss))
+              | NONE => []
+	end
 
     datatype context = 
         (* prios = priority variables *)

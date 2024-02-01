@@ -145,6 +145,11 @@ struct
     fun dosub_cstr cstr =
 	case cstr of
 	    PSCons (ctx, ps1, ps2) => PSCons (ctx, dosub ps1, dosub ps2)
+					  (*
+	    PSCons (Context.empty,
+		    inst_ps ctx (dosub ps1),
+		    inst_ps ctx (dosub ps2))
+					  *)
 	  | PSSup (ctx, ps1, ps2) =>
 	    PSSup (Context.empty,
 		   inst_ps ctx (dosub ps1),
@@ -215,8 +220,13 @@ struct
     fun check_pscstrs_sol (psctx: pscontext) 
                           (pscstrs: psconstraint list) = 
       let 
-        fun error_msg (ps1, s1) (ps2, s2) = 
-           Layout.tostring (ILPrint.pstol ps1)
+          fun error_msg ctx (ps1, s1) (ps2, s2) =
+	      (case ctx of
+		   SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
+			       ^ ") =>"
+		 | NONE => ""
+	      )
+           ^ Layout.tostring (ILPrint.pstol ps1)
            ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
            ^ Layout.tostring (ILPrint.pstol ps2)
            ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s2)) ^ ")"
@@ -246,7 +256,7 @@ struct
                else raise 
                   (PSConstraints 
                     ("superset violated: " 
-                     ^ (error_msg (ps1, s1) (ps2, s2)))))
+                     ^ (error_msg NONE (ps1, s1) (ps2, s2)))))
             end
           | check (PSCons (ctx, ps1, ps2)) =
             let val s1 = get_set ps1
@@ -256,7 +266,7 @@ struct
                else raise 
                   (PSConstraints 
                     ("priority set constraint violated: "
-                     ^ (error_msg (ps1, s1) (ps2, s2)))))
+                     ^ (error_msg (SOME ctx) (ps1, s1) (ps2, s2)))))
             end
 	  | check (PSWellformed _) = () (* XXX *)
       in 
