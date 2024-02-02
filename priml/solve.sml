@@ -15,7 +15,7 @@ struct
 
 (* XXX solve constraints from cc *)
 fun solve_psetcstrs pscstrs = 
-    let val psctx = PSC.PSEvarMap.empty
+    let val psctx = IntMap.empty
 	val _ =
 	    Layout.print
                 (Layout.listex "[" "]" "," 
@@ -26,8 +26,8 @@ fun solve_psetcstrs pscstrs =
         check_pscstrs_sol psctx_sol pscstrs;
         Layout.print 
             (Layout.listex "[" "]" "," 
-            (PSC.PSEvarMap.listItems (PSC.PSEvarMap.mapi 
-					  (fn (k, ps) => Layout.seq [ILPrint.pstol k, Layout.listex ": {" "} " "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
+            (IntMap.listItems (IntMap.mapi 
+					  (fn (k, ps) => Layout.seq [Layout.str (Int.toString k), Layout.listex ": {" "} " "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
 					  (psctx_sol))), 
              print);
         print "\n"

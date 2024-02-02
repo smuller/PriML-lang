@@ -60,7 +60,7 @@ val (idl, prios, cons, fs, il) = Elaborate.elaborate el'
 
 val pscons = Constraint.consprog (idl, prios, cons, fs, il)
 
-val _ = Solve.solve_psetcstrs (List.map PSetCstrs.dosub_cstr pscons)
+val _ = Solve.solve_psetcstrs pscons (* (List.map PSetCstrs.dosub_cstr pscons) *)
 					
 val dp = DePrio.deprio el prios cons fs
 

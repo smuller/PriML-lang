@@ -2,6 +2,8 @@ signature PSETCSTRS =
 sig
     exception PSConstraints of string
 
+    type pscontext = IL.PrioSet.set IntMap.map
+
     datatype psconstraint = 
       PSSup of Context.context * IL.prioset * IL.prioset 
     | PSCons of Context.context * IL.prioset * IL.prioset
@@ -19,11 +21,12 @@ sig
     val pscstr_wf   : Context.context -> IL.prioset -> psconstraint list
 
     (* solve system of priority set constraints *)
-    val solve_pscstrs : PSContext.pscontext -> psconstraint list -> PSContext.pscontext
+    val solve_pscstrs : pscontext -> psconstraint list -> pscontext
 
     (* check psconstraints in the solved system *)
-    val check_pscstrs_sol : PSContext.pscontext ->  psconstraint list -> unit
-
+    val check_pscstrs_sol : pscontext ->  psconstraint list -> unit
+(*
     val dosub_cstr : psconstraint -> psconstraint
     val dosub : IL.prioset -> IL.prioset
+*)
 end

@@ -31,18 +31,22 @@ fun spawn_at_and_sync_at_any p =
         sync td
     }
 
-(*
+
 (* CORRECT compiles *)
 main {
     spawn_at_and_sync_at_any Low
 }
-*)
 
+
+(* CORRECT compiles *)
+(*
 main {
     spawn[Low] {
         spawn_at_and_sync_at_any Low
     }
 }
+*)
+
 
 (*
 (* CORRECT catches constraint violation {High} <= {Low} *)
