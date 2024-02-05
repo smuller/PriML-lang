@@ -48,7 +48,7 @@ struct
       | ground p = p
 
     fun s_of_p (IL.PConst c) = c
-      | s_of_p (IL.PVar v) = (Variable.show v)
+      | s_of_p (IL.PVar v) = (Variable.tostring v)
       | s_of_p _ = raise (Context "prio cons not constant or variable")
 
     fun tpc_insert m (p1, p2) =
@@ -111,6 +111,9 @@ struct
              % (map (fn (s, (tp, v, vs)) =>
                      %[%[$s, $"==", $(Variable.tostring v), $":"],
                        L.indent 2 (%[ILPrint.ptol ILPrint.ttol tp])]) vars),
+	     $"orders",
+	     % (map (fn (p1, p2) => %[$(s_of_p p1), $" <= ", $(s_of_p p2)])
+		    pcons),
              $"XXX mobiles, cons, plabs"])]
           
       end

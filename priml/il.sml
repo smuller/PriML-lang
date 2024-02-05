@@ -252,19 +252,17 @@ struct
 	     rett)
       end
 
-    fun pr_eq (PConst s1, PConst s2) = (case String.compare (s1, s2) of
+    fun string_of_prio (PConst s) = SOME s
+      | string_of_prio (PVar v) = SOME (V.show v)
+      | string_of_prio _ = NONE
+	  
+    fun pr_eq (p1, p2) =
+	case (string_of_prio p1, string_of_prio p2) of
+	    (SOME s1, SOME s2) => (case String.compare (s1, s2) of
                                             EQUAL => true
                                           | _ => false)
-      | pr_eq (PVar v1, PVar v2) = (case String.compare (V.show v1, V.show v2) of
-                                            EQUAL => true
-                                          | _ => false)
-      | pr_eq (PVar v1, PConst s2) = (case String.compare (V.show v1, s2) of
-                                            EQUAL => true
-                                          | _ => false)
-      | pr_eq (PConst c1, PVar v2) = (case String.compare (c1, V.show v2) of
-                                            EQUAL => true
-                                          | _ => false)
-      | pr_eq _ = false
+	  | _ => false
+
 
     datatype tystatus = Regular | Extensible
     datatype idstatus = 

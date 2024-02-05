@@ -17,7 +17,6 @@ main {
     sync td
 *)
 
-(*
 (* CORRECT compiles WITHOUT empty psevar due to broken extra psevar in sum pattern *)
     
     t <- 
@@ -34,5 +33,5 @@ main {
 
     x <- sync t;
     ret x
-    *)
+
 }
