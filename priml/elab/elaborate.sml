@@ -2158,14 +2158,14 @@ struct
       val prios = C.plabs G'
       val cons = List.map checkcons (C.pcons G')
     in
-      Layout.print 
+      (* Layout.print 
         (Layout.listex "[" "]" "," 
           (map PSetCstrs.psctol (cc)), print);
       print "\n";
       Layout.print 
         (Layout.listex "[" "]" "," 
         (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-      print "\n";
+      print "\n"; *)
       (*
       solve_psetcstrs (!Unify.global_cstrs @ cc); (* FIX: append global constraints *)
       *)
