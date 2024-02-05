@@ -752,7 +752,7 @@ struct
                         (* @ (pscstr_sup pr1' pr1) (* FIX *) *)
                         @ cc *)
           in
-              print "\n spawn start \n";
+              (* print "\n spawn start \n";
               print "(  pr,  pp',  pr1,  pr2)";
               print "\n";
               Layout.print
@@ -762,7 +762,7 @@ struct
               Layout.print
                     (Layout.listex "[" "]" "," 
                     (map PSetCstrs.psctol (cc')), print);
-              print "\n spawn end \n";
+              print "\n spawn end \n"; *)
               (Spawn (pe, t, ec), TThread (t, (* pr1' *) pr1), ((* pr, *) pr, pr), cc')
           end
           (* E.Spawn (p', c) => 
@@ -781,7 +781,7 @@ struct
               val unified_pscstrs = ref []
               
               val _ = 
-                (print "\n sync start \n";
+                (* (print "\n sync start \n";
                 print (ELPrint.etosi 0 e);
                 print "\n";
                 Layout.print
@@ -792,20 +792,20 @@ struct
                 Layout.print
                     (Layout.listex "(" ")" "," 
                     (map ILPrint.pstol [pr, psint]), print);
-                print "\n")
+                print "\n") *)
 
               (* t should match TThread (tint, psint, unified_pscstrs) *)
               val _ = unify ctx loc "sync argument" t (TThread (tint, psint))
               val cc = [] (* (pscstr_cons pr psint) @ (!unified_pscstrs)*)
           in
-              print "\n sync arg matched t \n";
+              (* print "\n sync arg matched t \n";
               (* Layout.print
                     (ILPrint.ttol t, print); *)
               print "\n";
               Layout.print
                     (Layout.listex "[" "]" ","
                     (map PSetCstrs.psctol (cc)), print);
-              print "\n sync end \n";
+              print "\n sync end \n"; *)
               (Sync ee, tint, ((* pr, *) pr, pr), cc)
           end
         | E.Poll e =>

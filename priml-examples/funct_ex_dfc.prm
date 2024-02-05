@@ -71,6 +71,7 @@ main {
     spawn_at_and_sync_at (if true then Low else High)
 }
 *)
+
 (*
 
 case p of 
@@ -85,4 +86,4 @@ let val p' = p in
             td <- spawn[p'] { c };
             spawn[p'] { sync td }
         }
-        *)
+*)
