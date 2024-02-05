@@ -102,7 +102,7 @@ struct
       (* XXX pass ref set constaints through TCmd and TThread. 
        * The correct way to handle this should be a constraint evar and unify
        * them. But this works! (for now) *)
-      (* Q: why only one (psconstraint list ref) ? *)
+      
       | TCmd of typ * (prioset * prioset * prioset)
       | TThread of typ * prioset
       | TPrio of prioset (* FIX: make work !!! *)

@@ -780,8 +780,8 @@ struct
               val psint = Unify.new_psevar ()
               val unified_pscstrs = ref []
               
-              val _ = 
-                (* (print "\n sync start \n";
+              (* val _ = 
+                (print "\n sync start \n";
                 print (ELPrint.etosi 0 e);
                 print "\n";
                 Layout.print

@@ -5,6 +5,26 @@ priority Low
 order Low < Med
 order Med < High
 
+
+
+
+(* Let example *)
+main {
+    let val p = if true then Low else High
+    in
+        cmd {
+            td <- spawn[p] { ret 1 };
+            spawn[p] { sync td }
+        }
+    end
+}
+
+
+
+
+
+
+
 (*
 fun spawn_at p c =
     spawn[p] { c }
@@ -24,7 +44,7 @@ main {
 }
 *)
 
-
+(*
 fun spawn_at_and_sync_at_any p =
     cmd {
         td <- spawn[p] { ret 1 };
@@ -36,6 +56,7 @@ fun spawn_at_and_sync_at_any p =
 main {
     spawn_at_and_sync_at_any Low
 }
+*)
 
 
 (* CORRECT compiles *)
