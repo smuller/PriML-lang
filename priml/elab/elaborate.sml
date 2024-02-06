@@ -2094,11 +2094,14 @@ struct
 
             (* FIX: add priority_name : TPrio {priority_name} (ref []) *)
             (* Q: ? *)
-          let val p' = PConst s
+          let (* val p' = PConst s *)
               (* (Value val, typ) *)
-              val (ee, tt) = value (Prio p', TPrio (PSSet (PrioSet.singleton p')))
-
               val vv = Variable.namedvar s
+	      val p' = PVar vv
+	      val ps = Unify.new_psevar ()
+              val (ee, tt) = value (Prio p', TPrio (ps (*PSSet (PrioSet.singleton p')*)))
+
+
 
               val ctx = C.bindplab ctx s
               val ctx = C.bindex ctx (SOME s) (Poly ({tys = nil}, tt)) vv Normal 
@@ -2106,9 +2109,13 @@ struct
               ([Priority vv], [], ctx)
           end)
         | E.Order (s1, s2) =>
-	  (([Order (Variable.namedvar s1, Variable.namedvar s2)],
-	   [],
-	   C.bindpcons ctx (PConst s1, PConst s2))
+	  (let val (_, pv1, _) = C.var ctx s1
+	       val (_, pv2, _) = C.var ctx s2
+	   in
+	       ([Order (pv1, pv2)],
+		[],
+		C.bindpcons ctx (PConst s1, PConst s2))
+	   end
           handle C.Context s => raise (Elaborate s)
                | C.Absent (_, id) =>
                  raise (Elaborate
