@@ -109,7 +109,7 @@ struct
 	  | PEvar _ => PrioSet.singleton p
 	  | PVar v =>
 	    (
-	     case Context.rem ctx (V.show v) of
+	     case Context.rem ctx (V.basename v) of
 		 SOME (ctx, (Poly (_, TPrio ps), _, _)) =>
 		 inst_set ctx get_set (get_set ps)
 	       | _ => PrioSet.singleton p

@@ -284,7 +284,7 @@ fun consval ctx v =
 					   ListPair.zip (#arg f, #dom f),
 					   #cod f))
 		    in
-			C.bindv ctx (V.show (#name f)) t (#name f)
+			C.bindv ctx (V.basename (#name f)) t (#name f)
 		    end
 		)
 		ctx
@@ -293,7 +293,7 @@ fun consval ctx v =
 		let val ctx' =
 			ListPair.foldl
 			(fn (arg, ty, ctx) =>
-			    C.bindv ctx (V.show arg) (mkpoly ty) arg
+			    C.bindv ctx (V.basename arg) (mkpoly ty) arg
 			)
 			ctx
 			(#arg f, #dom f)
@@ -371,7 +371,7 @@ and cons ctx e : typ * (psconstraint list) =
       (* var bound to exn value within handler*)
       | Handle (ebody, t, evar, handler) =>
 	let val (_, cs1) = cons ctx ebody
-	    val ctx' = C.bindv ctx (V.show evar) (mkpoly Initial.ilexn) evar
+	    val ctx' = C.bindv ctx (V.basename evar) (mkpoly Initial.ilexn) evar
 	    val (_, cs2) = cons ctx' handler
 	in
 	    (t, cs1 @ cs2)
@@ -453,7 +453,7 @@ and cons ctx e : typ * (psconstraint list) =
 					 NonCarrier => ctx
 				       | Carrier {carried, ...} =>
 					 C.bindv ctx
-					       (V.show branchvar)
+					       (V.basename branchvar)
 					       (mkpoly carried)
 					       branchvar
 			     in
@@ -510,7 +510,7 @@ and conscmd sp ctx cmd =
 	Bind (x, e, m) =>
 	(case basety (cons ctx e) of
 	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
-	     let val ctx' = C.bindv ctx (V.show x) (mkpoly t) x
+	     let val ctx' = C.bindv ctx (V.basename x) (mkpoly t) x
 		 val p = new_psevar ()
 		 val (t', mp', ep', cs') = conscmd endprios ctx' m
 	     in
@@ -540,6 +540,7 @@ and conscmd sp ctx cmd =
 		 )
 	     end
 	   | (t, _) => (Layout.print (ILPrint.ttol t, print);
+			Layout.print (Context.ctol ctx, print);
 			raise (TyError "not a prio"))
 	)
 	    
@@ -584,7 +585,7 @@ and consdec ctx d =
 	end
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
-	    (C.bindv ctx (V.show x) (Poly ({tys = tys}, t')) x,
+	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
 	     [(x, e)],
 	     cs @ (print "subtype val\n"; subtype ctx t' t)
 	    )
@@ -592,9 +593,9 @@ and consdec ctx d =
       | Tagtype a => (ctx, [], [])
       | Newtag (c, t, a) => (ctx, [], [])
       | Priority p =>
-	let val _ = print ("IL prio dec " ^ (V.show p) ^"\n")
+	let val _ = print ("IL prio dec " ^ (V.basename p) ^"\n")
 	    val ps = PSSet (PrioSet.singleton (PVar p))
-	    val ctx' = C.bindv ctx (V.show p) (mkpoly (TPrio ps)) p
+	    val ctx' = C.bindv ctx (V.basename p) (mkpoly (TPrio ps)) p
 	in
 	    (ctx', [], [])
 	end
