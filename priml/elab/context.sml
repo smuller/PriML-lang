@@ -242,16 +242,21 @@ struct
     fun varex (C {vars, ...}) sym =
         (case S.find (vars, sym) of
              SOME x => x
-           | NONE =>
-             ( (* we'll assume this is defined elsewhere *)
-               let val tt = (!new_evar) ()
-                   val v = Variable.namedvar sym
-               in
-                   assumed := (sym, tt)::(!assumed);
-                   (IL.Poly({tys = nil}, tt), v, IL.Normal)
-               end))
+           | NONE => absent "vars" sym
+        )
 
-    fun var ctx sym = varex ctx sym
+    fun var ctx sym =
+	(varex ctx sym)
+	handle Absent _ =>
+	       ( (* we'll assume this is defined elsewhere *)
+		 let val tt = (!new_evar) ()
+                     val v = Variable.namedvar sym
+		 in
+                     assumed := (sym, tt)::(!assumed);
+                     (IL.Poly({tys = nil}, tt), v, IL.Normal)
+		 end)
+
+    fun var_fail ctx sym = varex ctx sym
 
     fun rem (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym =
 	(let val (vars', r) = S.remove (vars, sym)

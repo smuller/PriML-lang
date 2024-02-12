@@ -209,7 +209,7 @@ fun consval ctx v =
     case v of
 	Polyvar {tys, var} =>
 	let val (t, cs) =
-	(case C.var ctx (V.basename var) of
+	(case C.var_fail ctx (V.basename var) of
 	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
 	      [])
@@ -231,7 +231,7 @@ fun consval ctx v =
 	end
       | Polyuvar {tys, var} =>
 	let val (t, cs) =
-	(case C.var ctx (V.basename var) of
+	(case C.var_fail ctx (V.basename var) of
 	     (Poly (_, TPrio ps), _, _) =>
 	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
 	      [])
@@ -578,6 +578,8 @@ and conscmd sp ctx cmd =
     end
 
 and consdec ctx d =
+    let val _ = Layout.print (C.ctol ctx, print)
+    in
     case d of
 	Do e =>
 	let val (_, cs) = cons ctx e in
@@ -607,6 +609,7 @@ and consdec ctx d =
 	 []
 	)
 	end
+    end
 
 fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =

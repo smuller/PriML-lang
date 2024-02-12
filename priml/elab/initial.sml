@@ -105,10 +105,12 @@ struct
     fun quant (t, IL.Poly({tys}, x)) = IL.Poly({tys = t :: tys}, x)
 
       (* this is all in the standard library now... *)
-    val polyfuns = nil
-(*
+    val polyfuns =
         [
-
+	  ("=", P.PBind, quant(a, mono(IL.Arrow(true,
+						[(Variable.namedvar "_", IL.TRec [("1", IL.TVar a), ("2", IL.TVar a)])], ilbool))))
+	]
+    (*
          (* XXX should really be exn cont, but there's no way to
             spell that type here. so make it unit cont and then the
             handler just can't use its argument. *)
@@ -170,10 +172,8 @@ struct
 *)
 
     val vals =
-(*
         map (fn (name, prim, ty) =>
              (name, ty, IL.Primitive prim)) polyfuns @
-*)
         map (fn (name, prim, cod, dom) =>
              (name, mono (IL.Arrow(false, cod, dom)), 
               IL.Primitive prim)) monofuns
@@ -200,7 +200,7 @@ struct
 
     (* initial environment is all valid *)
     val initial = foldl (fn ((s, c, t), ctx) =>
-                         Context.bindex ctx (SOME s) c (namedvar "dummy") t)
+                         Context.bindex ctx (SOME s) c (namedvar s) t)
                         initialec vals
 
     (* also, assume some types are mobile *)
