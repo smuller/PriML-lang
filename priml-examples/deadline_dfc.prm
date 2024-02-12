@@ -10,7 +10,7 @@ order p3 < p2
 order p2 < p1
 
 
-(* (* CORRECT compiles *)
+(* (* 1 - BAD doesn't compile *)
 main {
 
     let fun curr_time _ = 9
@@ -26,7 +26,7 @@ main {
 *)
 
 
- (* CORRECT compiles *)
+(* (* 2 - BAD doesn't compile *)
 main {
 
     let fun curr_time _ = 9
@@ -45,13 +45,10 @@ main {
             ret ()
     end
 }
-
-
-
-(* (* BAD superset violated: {p1} ({p1}) and 'ws22 ({p1, p2, p3, p4, p5}) 
-    because we're consing each priority one at a time 
-    this is supposed to happen, but how do we implement this then?
 *)
+
+
+(* (* CORRECT compiles, but empty psevar due to extra psevar in sum pattern *)
 main {
 
     let val priorities_in_order = p1 :: p2 :: p3 :: p4 :: p5 :: nil
@@ -59,12 +56,10 @@ main {
         val deadline = 10
         val msecs_to_deadline = deadline - curr_time ()
     in
-        (* 
         if msecs_to_deadline < 5 then
             change[List.nth priorities_in_order 
                    (floor  msecs_to_deadline)]
-        else 
-        *)
+        else
             ret ()
     end
 }

@@ -251,20 +251,21 @@ main {
 *)
 
 
- (* BAD catches constraint violation {Low} <= {High, Med} *)
+(* (* CORRECT no longer catches constraint violation {Low} <= {High, Med} *)
 main {
 
-    t <- spawn[if true then High else Med] {
+    t <- spawn[Med] {
         ret 1
     };
 
-    change[let val x = true in if x then Low else Low end];
-
-    sync t
+    spawn[Low] {
+        sync t
+    }
+    
 }
+*)
 
-
-(* (* BAD catches constraint violation {Low, Med} <= {High, Med} *)
+(* (* CORRECT no longer catches constraint violation {Low, Med} <= {High, Med} *)
 main {
 
     t <- spawn[if true then High else Med] {

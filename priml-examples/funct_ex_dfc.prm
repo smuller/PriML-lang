@@ -9,6 +9,7 @@ order Med < High
 
 (*
 (* Let example *)
+(* BAD doesn't compile *)
 main {
     let val p = if true then Low else High
     in
@@ -26,12 +27,12 @@ main {
 
 
 
-(* 
+
 fun spawn_at p c =
     spawn[p] { c }
 
  
- (* CORRECT compiles *)
+(* (* CORRECT compiles *)
 main {
     t <- spawn_at High (ret 1);
     sync t
@@ -80,15 +81,15 @@ main {
 *)
 
 
-(*
+
 fun spawn_at_and_sync_at p =
     cmd {
         td <- spawn[p] { ret 1 };
         spawn[p] { sync td }
     }
 
-
-(* CORRECT compiles *)
+(*
+(* BAD doesn't compile *)
 main {
     let val p = (if true then Low else High)
     in
@@ -96,6 +97,17 @@ main {
     end
 }
 *)
+
+(*
+(* BAD doesn't compile *)
+main {
+    let val p = (if true then Low else High)
+    in
+        spawn_at_and_sync_at p
+    end
+}
+*)
+
 
 (*
 
