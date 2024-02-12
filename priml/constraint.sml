@@ -201,7 +201,7 @@ fun fresh t =
 	TCmd (fresh t, (new_psevar (), new_psevar (), new_psevar ()))
       | TThread (t, _) => TThread (fresh t, new_psevar ())
       | TPrio _ => TPrio (new_psevar ())
-
+			 
 fun consval ctx v =
     let val _ = Layout.print (Layout.mayAlign [Layout.str "consval ",
 					       ILPrint.vtol v,
@@ -616,7 +616,7 @@ fun consprog (decs, prios, cons, fairness, maincmd) =
 		     (ctx', cs @ cs')
 		 end
 	    )
-	    (C.empty, [])
+	    (Initial.initial, [])
 	    decs
 	val (_, _, _, cs') = conscmd (PSSet (PrioSet.singleton (PConst "bot")))
 				     ctx maincmd

@@ -9,6 +9,8 @@ sig
 
     type context
 
+    type pscontext = IL.PrioSet.set IntMap.map
+
     val empty : context
 
     val ctol : context -> Layout.layout
@@ -27,7 +29,7 @@ sig
 
     val prio : context -> string -> IL.prio
 
-    val checkcons : context -> IL.prio -> IL.prio -> bool
+    val checkcons : pscontext -> context -> IL.prio -> IL.prio -> bool
 
     (* has_evar ctx n
        Does the context contain the free type evar n in the type of any

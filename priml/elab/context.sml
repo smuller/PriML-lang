@@ -16,6 +16,21 @@ struct
     structure VM = Variable.Map
     structure E = EL
 
+    structure IM = IntMap
+
+    type pscontext = IL.PrioSet.set IM.map
+
+    structure PrioPairSet = SplaySetFn
+				(struct 
+                                  type ord_key = IL.prio * IL.prio
+				  fun compare ((p1a, p2a), (p1b, p2b)) =
+				      case IL.prcompare (p1a, p1b) of
+					  LESS => LESS
+					| GREATER => GREATER
+					| EQUAL => IL.prcompare (p2a, p2b)
+                                  end)
+				   
+
     (* first is class of identifier, second is identifier *)
     exception Context of string
     exception Absent of string * string
@@ -312,6 +327,41 @@ struct
 
     fun bindc c sym con kind status = bindcex c NONE sym con kind status
 
+    datatype expandfound =
+	     NEUTRAL
+	     | YES
+	     | NO
+		   
+    fun efall f l =
+	let fun efall_rec ef l =
+		case l of
+		    [] => ef
+		  | a::t =>
+		    (case (ef, f a) of
+			 (NO, _) => NO
+		       | (_, NO) => NO
+		       | (_, YES) => efall_rec YES t
+		       | (YES, _) => efall_rec YES t
+		       | (NEUTRAL, NEUTRAL) => efall_rec NEUTRAL t
+		    )
+	in efall_rec NEUTRAL l
+	end
+
+    fun efexists f l =
+	let fun efexists_rec ef l =
+		case l of
+		    [] => ef
+		  | a::t =>
+		    (case (ef, f a) of
+			 (YES, _) => YES
+		       | (_, YES) => YES
+		       | (_, NO) => efexists_rec NO t
+		       | (NO, _) => efexists_rec NO t
+		       | (NEUTRAL, NEUTRAL) => efexists_rec NEUTRAL t
+		    )
+	in efexists_rec NEUTRAL l
+	end
+					      
     (* fun bindp (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) s v =
         C { vars = vars,
             cons = cons,
@@ -324,27 +374,133 @@ struct
             sign = sign } *) (* FIX: delete priority variables *)
 
           (* Kind of inefficient, but we do a DFS at every check *)
-    fun checkcons (ctx as C { tpcons, ...}) p1 p2 =
-        (* hacky special case *)
+    fun checkcons psctx (ctx as C { tpcons, ...}) p1 p2 =
+	let fun checkcons checked psctx (ctx as C { tpcons, ...}) p1 p2 =
+		(* The actual priority graph can't have cycles but 
+		 * instantiating variables can create cycles so
+		 * we still check if we've been here before.
+		 * The state is a pair of (p1, p2). We only stop if
+		 * we've seen both before. *)
+		(print ("checkcons " ^
+			       (Layout.tostring (ILPrint.prtol p1)) ^ " <= "
+			       ^ (Layout.tostring (ILPrint.prtol p2)) ^ "\n");
+		 if PrioPairSet.member (checked, (p1, p2)) then
+		     (print "stopping\n"; NEUTRAL)
+		else
+            let
+	    fun sub_in_set sub set =
+		VM.foldli
+		    (fn (x, e, set) =>
+			case e of
+			    IL.Value (IL.Polyvar {var, ...}) =>
+			    IL.PrioSet.map
+				(fn p => if IL.pr_eq (p, IL.PVar x)
+					 then (IL.PVar var)
+					 else p
+				)
+				set
+			  | IL.Value (IL.Polyuvar {var, ...}) =>
+			    IL.PrioSet.map
+				(fn p => if IL.pr_eq (p, IL.PVar x)
+					 then (IL.PVar var)
+					 else p
+				)
+				set
+			  | _ => set
+		    )
+		    set
+		    sub
+	    fun get_set psctx ps = 
+		case ps of 
+		    IL.PSSet s => s
+		  | IL.PSPendSub (es, ps) =>
+		    sub_in_set es (get_set psctx ps)
+		  | IL.PSEvar (ref (IL.Bound ps)) => get_set psctx ps
+		  | IL.PSEvar (ref (IL.Free i)) => 
+		    (case (IM.find (psctx, i)) of
+			 SOME s => s
+		       | NONE => IL.PrioSet.empty
+		    )
+	    fun inst_prio psctx ctx p =
+		case p of
+		    IL.PEvar (ref (IL.Bound p)) => inst_prio psctx ctx p
+		  | IL.PEvar _ => IL.PrioSet.singleton p
+		  | IL.PVar v =>
+		    (
+		      case rem ctx (Variable.basename v) of
+			  SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
+			  get_set psctx ps
+			| _ => IL.PrioSet.singleton p
+		    )
+		  | IL.PConst s =>
+		    (case rem ctx s of
+			 SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
+			 get_set psctx ps
+		       | _ => IL.PrioSet.singleton p
+		    )
+	    fun crossprod (l1, l2) =
+		List.concat (List.map (fn x1 => List.map (fn x2 => (x1, x2))
+							 l2) l1)
+	in
+	    (* hacky special case *)
         case p1 of
-            IL.PConst "bot" => true
+            IL.PConst "bot" => YES
           | _ =>
             let val (p1, p2) = (ground p1, ground p2)
             in
                 if IL.pr_eq (p1, p2) then
-                    true
+		    (* p1 <= p1 *)
+                    YES
                 else if tpc_mem tpcons (p1, p2) then
-                    true
-                else
-                    let val gs = get_greater tpcons p1
-                    in
-                        List.exists (fn p => checkcons ctx p p2) gs
-                    end
+		    (* Check if this particular edge is in the graph *)
+                    YES
+                else if
+		    (* Transitivity: check all parents of p1 *)
+		    let val gs = get_greater tpcons p1
+		    in
+			efexists (fn p => checkcons checked psctx ctx p p2) gs
+		    end = YES
+		then YES
+		else
+		    (* If p1 = PVar x and x : prio[p1', ..., pn']
+		     * and p2 = PVar x' and x' : prio[p1'', ..., pn''] 
+		     * check {p1', ..., pn'} x {p1'', ..., pn''} *)
+		    let val _ = print "(\n"
+			val s1 = inst_prio psctx ctx p1
+			val s2 = inst_prio psctx ctx p2
+			val s1 =
+			    if IL.PrioSet.isEmpty s1 then
+				IL.PrioSet.singleton p1
+			    else s1
+			val s2 =
+			    if IL.PrioSet.isEmpty s2 then
+				IL.PrioSet.singleton p2
+			    else s2
+			val checked' = PrioPairSet.add (checked, (p1, p2))
+		    in
+			efall
+			    (fn (p1, p2) =>
+				checkcons
+				    checked'
+				    psctx ctx p1 p2
+			    )
+			    (crossprod
+				 (IL.PrioSet.listItems s1,
+				  IL.PrioSet.listItems s2))
+			before print ")\n"
+		    end
             end
+	    end)
+	in
+	    case checkcons PrioPairSet.empty psctx ctx p1 p2 of
+		YES => true
+	      | NO => false
+	      | NEUTRAL => false
+	end
 
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
-        if checkcons ctx p2 p1 then
+        if checkcons IM.empty ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
         else
             C { cons = cons,

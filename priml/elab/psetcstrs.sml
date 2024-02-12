@@ -8,7 +8,7 @@ struct
 	     
     structure IM = IntMap
 
-    type pscontext = PrioSet.set IM.map
+    type pscontext = Context.pscontext
 
     exception PSConstraints of string
 
@@ -66,11 +66,11 @@ struct
 (*      PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty) *)
 
     (* check if priorities in s1 is less than priorities in s2 *)
-    fun check_cons ctx (s1, s2) = 
+    fun check_cons psctx ctx (s1, s2) = 
       PrioSet.foldr 
         (fn (p, b) => 
           (PrioSet.foldr (fn (p', b') => 
-            (Context.checkcons ctx p' p) andalso b') true s1) andalso b) 
+            (Context.checkcons psctx ctx p' p) andalso b') true s1) andalso b) 
         true
         s2
 
@@ -243,8 +243,10 @@ struct
             PSCons _ => psctx
 
           | PSSup (ctx, ps1, ps2) =>
-	    let val s1 = inst_set ctx get_set (get_set ps1)
-                val s2 = inst_set ctx get_set (get_set ps2)
+	    let (*val s1 = inst_set ctx get_set (get_set ps1)
+                val s2 = inst_set ctx get_set (get_set ps2) *)
+		val s1 = get_set ps1
+		val s2 = get_set ps2
 		val _ = print (error_msg NONE (ps1, s1) (ps2, s2))
 		val _ = print "\n"
 	    in
@@ -300,10 +302,10 @@ struct
                      ^ (error_msg NONE (ps1, s1) (ps2, s2)))))
             end
           | check (PSCons (ctx, ps1, ps2)) =
-            let val s1 = inst_set ctx get_set (get_set ps1)
-                val s2 = inst_set ctx get_set (get_set ps2)
+            let val s1 = get_set ps1
+                val s2 = get_set ps2
             in
-              (if check_cons ctx (s1, s2) then ()
+              (if check_cons psctx ctx (s1, s2) then ()
                else raise 
                   (PSConstraints 
                     ("priority set constraint violated: "

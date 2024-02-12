@@ -230,7 +230,7 @@ struct
 
 
     fun check_constraint ctx loc p1 p2 =
-        if Context.checkcons ctx p1 p2 then
+        if Context.checkcons IntMap.empty ctx p1 p2 then
             ()
         else
             let 
