@@ -15,7 +15,7 @@ val stdlib = case OS.Process.getEnv "PRIML_LIB" of
 val basefiles = ["$(SML_LIB)/basis/basis.mlb",
                  "$(SML_LIB)/basis/mlton.mlb",
                  (* "../x/graphics.mlb", *)
-                 "$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb",
+                 (* "$(SML_LIB)/basis/schedulers/prio-private-deqs.mlb", *)
                  stdlib ^ "/std.sml",
                  stdlib ^ "/stdlib.sml"]
 

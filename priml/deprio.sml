@@ -49,27 +49,28 @@ fun deprioe ((e, loc): exp) : exp =
         Handle (deprioe e, List.map (fn (p, e) => (p, deprioe e)) pes),
      loc)
 
+    (*
 and depriop loc p = (Var (Id p), loc)
-
+*)
 and deprioc ((c, loc) : cmd) : exp =
     case c of
 	IBind (ses, e) =>
 	List.foldr
-        (fn ((s, e), ee) => (Let ((Val ([], PVar s, deprioe e), #2 e), ee), #2 e))
-        (deprioe e)
+        (fn ((s, e), ee) => (Let ((Val ([], PVar s, (App (deprioe e, (Record [], #2 e), false), #2 e)), #2 e), ee), #2 e))
+        (App (deprioe e, (Record [], #2 e), false), #2 e)
         ses
-      | Spawn (p, c) => raise unimplemented
-            (* (App((App ((Var (Id "Thread.spawn"), loc),
-                                  (anonfn [PWild] (deprioc c), loc), false), loc),
-                            depriop loc p, false), loc) *)
+      | Spawn (p, c) =>
+        (App((App ((Var (Id "Thread.spawn"), loc),
+                   (anonfn [PWild] (deprioc c), loc), false), loc),
+             deprioe p, false), loc)
       | Sync e => (App ((Var (Id "Thread.sync"), loc), deprioe e, false), loc)
       | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
       | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
       | IRet e => deprioe e
       (* TODO: Threshold deprioc rule for Change. Should update to use the right 
       * function in Thread module for updating priority *)
-      | Change p =>  raise unimplemented
-        (* (App ((Var (Id "Thread.change"), loc), depriop loc p, false), loc)  *)
+      | Change p =>
+        (App ((Var (Id "Thread.change"), loc), deprioe p, false), loc)
 
 and depriot (t: typ) =
     case t of
@@ -80,6 +81,7 @@ and depriot (t: typ) =
       | TNum _ => t
       | TCmd (t, p) => TArrow (TRec [], depriot t)
       | TThread (t, p) => TApp ([depriot t], "Thread.t")
+      | TPrio _ => TVar "Priority.t"
       
       (* | TForall (_, t) => depriot t (* FIX: delete this *) *)
 

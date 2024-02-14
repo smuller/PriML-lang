@@ -19,6 +19,11 @@ fun basety (t, cs) =
 	(Evar (ref (Bound t))) => basety (t, cs)
       | _ => (t, cs)
 
+fun basety_plain t =
+    case t of
+	(Evar (ref (Bound t))) => basety_plain t
+      | _ => t
+
 fun supertypex ctx t1 t2 =
     let val _ = Layout.print (Layout.listex
 				  "supertype (" ")\n" ","
@@ -326,7 +331,7 @@ and cons ctx e : typ * (psconstraint list) =
 	let val (funty, cs) = cons ctx efun
 	    val (argtys, css) = ListPair.unzip (List.map (cons ctx) eargs)
 	in
-	    case funty of
+	    case basety_plain funty of
 		Arrow (_, dom, cod) =>
 		let val subcs = ListPair.map
 				    (fn (argty, (_, party)) =>
@@ -338,6 +343,7 @@ and cons ctx e : typ * (psconstraint list) =
 		    (Subst.subst_e_in_t (Subst.fromlist substs) cod,
 		     List.concat (cs::(css @ subcs)))
 		end
+	      | _ => raise (TyError "not an arrow")
 	end
       | Record fields =>
 	let val (ts, ccs) =
@@ -352,7 +358,7 @@ and cons ctx e : typ * (psconstraint list) =
 	end
       | Proj (label, t, e) =>
 	let val field_t =
-		case t of
+		case basety_plain t of
 		    TRec fields =>
 		    (case List.filter (fn (l, _) => l = label) fields of
 			 (_, t)::_ => t
@@ -361,7 +367,7 @@ and cons ctx e : typ * (psconstraint list) =
 		  | _ => raise (TyError "not a record type")
 	    val (et, cs) = cons ctx e
 	in
-	    (field_t, (subtype ctx et field_t) @ cs)
+	    (field_t, (subtype ctx et t) @ cs)
 	end
       | Raise (t, e) =>
 	let val (_, cs) = cons ctx e in
@@ -444,22 +450,30 @@ and cons ctx e : typ * (psconstraint list) =
 		  | _ => raise (TyError "not a sum type")
 	    val F = fresh rett
 	    val (_, cs) = cons ctx ecase
+	    val _ = print "Done checking ecase\n"
+	    fun getarm arms l =
+		case arms of
+		    [] => raise (TyError "sum arm not found")
+		  | (l', arm)::t => if l = l' then arm else getarm t l
+	    val getarm = getarm constrs
 	    val (tys, css) =
 		ListPair.unzip
-		    (ListPair.map
-			 (fn ((_, e), (_, arm)) =>
+		    (List.map
+			 (fn (l, e) =>
 			     let val ctx' =
-				     case arm of
-					 NonCarrier => ctx
+				     case getarm l of
+					 NonCarrier =>
+					 (print "Not a carrier"; ctx)
 				       | Carrier {carried, ...} =>
+					 (print ("Adding " ^ (V.basename branchvar));
 					 C.bindv ctx
 					       (V.basename branchvar)
 					       (mkpoly carried)
-					       branchvar
+					       branchvar)
 			     in
 				 cons ctx' e
 			     end)
-			 (branches, constrs))
+			 branches)
 	    val (dty, dcs) = cons ctx def
 	    val subtycs =
 		List.concat

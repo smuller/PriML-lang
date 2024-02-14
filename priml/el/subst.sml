@@ -148,6 +148,7 @@ struct
            case VM.find (s, v) of
                SOME ww => ww 
              | NONE => x)
+	| PConst _ => x
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
 
@@ -226,8 +227,21 @@ struct
          | E.CompileWarn s => E.CompileWarn s
 (*         | E.Get (a,b) => E.Get(esubst s a, esubst s b)
  *)
+	 | E.ECmd c => E.ECmd (csubst s c)
      )
 
+  and csubst s c =
+       (case c of
+	    E.IBind (cmds, e) =>
+	    E.IBind (List.map (fn (x, e) => (x, esubst s e)) cmds, esubst s e)
+	  | E.Spawn (e, (c, loc)) =>
+	    E.Spawn (esubst s e, (csubst s c, loc))
+	  | E.Sync e => E.Sync (esubst s e)
+	  | E.Poll e => E.Poll (esubst s e)
+	  | E.Cancel e => E.Cancel (esubst s e)
+	  | E.IRet e => E.IRet (esubst s e)
+	  | E.Change e => E.Change (esubst s e)
+       )
 
   (* pattern lists as in fn; 
      just pretend it's a tuple for the sake of bindings *)

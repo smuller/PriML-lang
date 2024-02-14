@@ -69,6 +69,7 @@ struct
     (* XXX5 should probably be done in terms of extern vals *)
 
     val ii = [(Variable.namedvar "_", IL.TRec [("1", ilint), ("2", ilint)])]
+    val ii = [(Variable.namedvar "_", IL.TRec [("1", ilint), ("2", ilint)])]
     val monofuns =
         [
 
@@ -108,7 +109,20 @@ struct
     val polyfuns =
         [
 	  ("=", P.PBind, quant(a, mono(IL.Arrow(true,
-						[(Variable.namedvar "_", IL.TRec [("1", IL.TVar a), ("2", IL.TVar a)])], ilbool))))
+						[(Variable.namedvar "_", IL.TRec [("1", IL.TVar a), ("2", IL.TVar a)])], ilbool)))),
+	  ("ref", P.PRef, quant(a, mono
+                                       (IL.Arrow(false, [(Variable.namedvar "_",
+							  IL.TVar a)],
+						 IL.TRef (IL.TVar a))))),
+	  ("!", P.PGet, quant(a, mono
+                                     (IL.Arrow(false, [(Variable.namedvar "_",
+							IL.TRef (IL.TVar a))],
+                                          IL.TVar a)))),
+
+         (":=", P.PSet, quant(a, mono
+                                     (IL.Arrow(false,
+					       [(Variable.namedvar "_", IL.TRec [("1", IL.TRef (IL.TVar a)), ("2", IL.TVar a)])],
+                                           tuple nil))))
 	]
     (*
          (* XXX should really be exn cont, but there's no way to
@@ -129,18 +143,9 @@ struct
 (*
          ("^", P.PJointext 2, mono(IL.Arrow(false, [ilstring, ilstring], ilstring))),
 
-         ("!", P.PGet, quant(a, mono
-                                (IL.Arrow(false, [IL.TRef (IL.TVar a)],
-                                          IL.TVar a)))),
+         ,
 
-         (":=", P.PSet, quant(a, mono
-                                 (IL.Arrow(false, [IL.TRef (IL.TVar a),
-                                                   IL.TVar a],
-                                           tuple nil)))),
-
-         ("ref", P.PRef, quant(a, mono
-                                  (IL.Arrow(false, [IL.TVar a],
-                                            IL.TRef (IL.TVar a))))),
+         
 *)
 (*
          ("array0", P.PArray0, quant (a, mono

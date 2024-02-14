@@ -287,6 +287,8 @@ struct
             recordortuplep ptol "=" "(" ")" " ," sps
           | PConstrain (p, t) => L.paren (%[ptol p, $":", ttol t])
           | PConstant c => ctol c
+	  | PApp ("::", SOME (PRecord [(_, p1), (_, p2)])) =>
+	    L.paren (%[L.paren (ptol p1), $"::", L.paren(ptol p2)])
           | PApp (s, NONE) => $s
           | PApp (s, SOME p) => L.paren (%[$s, ptol p])
           | PWhen _ => raise (Print "I don't know what a when pattern is; let's hope this doesn't come up")
