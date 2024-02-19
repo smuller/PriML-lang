@@ -66,12 +66,13 @@ main {
 *)
 
 
-(* (* CORRECT compiles, but empty psevar due to extra psevar in sum pattern *)
+(* CORRECT compiles, but empty psevar due to extra psevar in sum pattern *)
 main {
 
     let fun curr_time _ = 9
         val deadline = 10
         val msecs_to_deadline = deadline - curr_time ()
+        fun floor a = a
     in
         if msecs_to_deadline < 5 then
             change[
@@ -88,6 +89,6 @@ main {
             ret ()
     end
 }
-*)
+
 
 
