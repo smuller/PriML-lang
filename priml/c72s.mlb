@@ -117,9 +117,9 @@ elab/elaborate.sml
 constraint.sml
 solve.sml
 
-deprio.sml
+depriocaml.sml
 
-print.sml
+printcaml.sml
 
 compile.sml
 

@@ -35,6 +35,8 @@ struct
 
     | App of exp * exp * bool (* infix? *)
 
+    | LabeledArg of string * exp (* only for OCaml backend *)
+
     | Let of dec * exp
 
     | Record of (string * exp) list

@@ -14,6 +14,13 @@ struct
 
     exception Print of string
 
+    fun convertid s =
+	case s of
+	    "SOME" => "Some"
+	  | "NONE" => "None"
+	  | "nil" => "[]"
+	  | _ => s
+
     fun dolist s f i l = StringUtil.delimit s (List.map (fn m => f i m) l)
 
     fun escape s =
@@ -45,7 +52,8 @@ struct
                (List.null sorted orelse
                 #1 (hd sorted) = "1")
             then L.listex l r osep (map (layout o #2) sorted)
-            else L.recordex sep (ListUtil.mapsecond layout sorted)
+            else L.listex "{" "}" ";"
+	         (map (fn (f, t) => L.seq [$(f ^ " " ^ sep ^ " "), layout t]) sorted)
         end
 
     fun recordortuplee (layout: exp -> L.layout) sep l r osep
@@ -67,7 +75,8 @@ struct
                (List.null sorted orelse
                 #1 (hd sorted) = "1")
             then L.listex l r osep (map (layout o #2) sorted)
-            else L.recordex sep (ListUtil.mapsecond layout sorted)
+            else L.listex "{" "}" ";"
+	         (map (fn (f, t) => L.seq [$(f ^ " " ^ sep ^ " "), layout t]) sorted)
         end
 
     fun recordortuplep (layout: pat -> L.layout) sep l r osep
@@ -89,7 +98,8 @@ struct
                (List.null sorted orelse
                 #1 (hd sorted) = "1")
             then L.listex l r osep (map (layout o #2) sorted)
-            else L.recordex sep (ListUtil.mapsecond layout sorted)
+            else L.listex "{" "}" ";"
+	         (map (fn (f, t) => L.seq [$(f ^ " " ^ sep ^ " "), layout t]) sorted)
         end
 
     and ttol t =
@@ -119,11 +129,11 @@ struct
             CInt n => $(Word32.fmt StringCvt.DEC n)
           | CString s => $("\"" ^ (escape s) ^ "\"")
           | CPrio p => $("priority[" ^ p ^ "]")
-          | CChar c => $("#\"" ^ (Char.toString c) ^ "\"")
+          | CChar c => $("'" ^ (Char.toString c) ^ "'")
 
     and pathtos p =
         case p of 
-            Id s => s 
+            Id s => convertid s 
           | Path (i, p) => i ^ "." ^ pathtos p
 
     and etol ((e, l): exp) : L.layout =
@@ -136,34 +146,30 @@ struct
              L.paren(%[etol a1, etol e1, etol a2])
            | App _ => raise (Print "ill-formed infix application")
 
+	   | LabeledArg (l, e) =>
+	     %[$("~" ^ l ^ ":"), L.paren (etol e)]
+
            (* print as if n-ary *)
            | Let (dd, ee) =>
-                 L.paren (let
-                     fun alldecs acc (Let (dd, er), _) = alldecs (dd::acc) er
-                       | alldecs acc e = (acc, e)
-
-                     val (decs', body) = alldecs nil (e, l)
-                     val decs = rev (map dtol decs')
-                 in
+                 L.paren (
                      L.align
                      [$"let",
-                      L.indent 4 (L.align decs),
+                      L.indent 4 (dtol dd),
                       $"in",
-                      L.indent 4 (etol body),
-                      $"end"]
-                 end)
+                      L.indent 4 (etol ee)]
+                 )
 
            | Record sel => recordortuplee etol "=" "(" ")" "," sel
 
-           | Vector es => L.listex "{" "}" "," (map etol es)
+           | Vector es => raise (Print "vector")
 
            | Proj (l, t, e) => 
                  %[L.seq[$("#" ^ l), $" ", etol e]]
 
-           | Andalso (e1, e2) => L.paren(%[etol e1, $" andalso ", etol e2])
-           | Orelse (e1, e2) => L.paren(%[etol e1, $" orelse ", etol e2])
-           | Andthen (e1, e2) => L.paren(%[etol e1, $" andthen ", etol e2])
-           | Otherwise (e1, e2) => L.paren(%[etol e1, $" otherwise ", etol e2])
+           | Andalso (e1, e2) => L.paren(%[etol e1, $" && ", etol e2])
+           | Orelse (e1, e2) => L.paren(%[etol e1, $" || ", etol e2])
+           | Andthen (e1, e2) => raise (Print "andthen")
+           | Otherwise (e1, e2) => raise (Print "otherwise")
 
            | If (e1, e2, e3) => L.paren(L.align [$"if ", etol e1, $" then",
                                          L.indent 4 (etol e2),
@@ -195,12 +201,12 @@ struct
 
 
            | Case ([es], ([p], e)::pes, _) =>
-             L.paren(%[$"case", etol es, $"of",
-                       L.indent 4 (%[ptol p, $" => ", etol e]),
+             L.paren(%[$"match", etol es, $"with",
+                       L.indent 4 (%[ptol p, $" -> ", etol e]),
                        L.indent 2 (L.listex "" "" ""
                                             (map (fn ([p], e) =>
                                                      %[$"| ", ptol p,
-                                                       $" => ", etol e])
+                                                       $" -> ", etol e])
                                                  pes))])
 
            | Case _ => raise (Print "invalid case")
@@ -208,11 +214,12 @@ struct
            | CompileWarn s => $s
 
            | Handle (e, (p, h)::pes) =>
-             %[L.paren(etol e),
-               $"handle",
-               ptol p, $"=>", etol h,
+             %[$"try",
+	       L.paren(etol e),
+               $"with",
+               ptol p, $"->", etol h,
                L.listex "" "" "|"
-                        (map (fn (p, e) => %[ptol p, $"=>", etol e]) pes)]
+                        (map (fn (p, e) => %[ptol p, $"->", etol e]) pes)]
 
            | Handle _ => raise (Print "handle with no handles?")
 
@@ -220,39 +227,29 @@ struct
            (* | PFn _ => raise (Print "can't print PrioML") *)
            (* | PApply _ => raise (Print "can't print PrioML") (* FIX: delete this *) *)
 
-    and funtol first inline (tys, s, (ps, t, e)::ptes) =
-        %[$(if first then "fun " else "and "),
-          %[listnotnone "(" ")" ", " (map op$ tys)],
-          $(if inline then "inline " else ""), $s,
+    and funtol first inline (tys, s, (ps, t, e)::[]) =
+        %[$(if first then "rec " else "and "),
+          $s,
           L.listex "" "" " " (map ptol ps),
           %(case t of
                 NONE => []
               | SOME t => [$" : ", ttol t]),
           $" = ",
-          L.indent 4 (etol e),
-          L.indent 2 (
-              L.listex "" "" "\n"
-                       (map (fn (ps, t, e) =>
-                                %[$"|", $s,
-                                  L.listex "" "" " " (map ptol ps),
-                                  %(case t of
-                                        NONE => []
-                                      | SOME t => [$":", ttol t]),
-                                  $"=",
-                                  L.indent 4 (etol e)]) ptes)
-          )]
+          L.indent 4 (etol e)]
+      | funtol first inline (tys, s, (ps, t, e)::ptes) =
+	raise (Print "multi-arm functions")
 
     and contol (s, sts) =
         %[$s, $" = ", L.listex "" "" " | "
                                (map (fn (s, SOME t) => %[$s, $" of ", ttol t]
                                     | (s, NONE) => $s) sts)]
 
-    and dtol (d, _) =
+    and dtol (d, _) : L.layout =
         (case d of
              Val (tys, p, e) =>
-             %[$"val", listnotnone "(" ")" "," (map op$ tys),
+             %[listnotnone "(" ")" "," (map op$ tys),
                ptol p, $"=", etol e]
-           | Do e => %[$"do", etol e]
+           | Do e => %[$"_ = ", etol e]
            | Type (ss, s, t) =>
              %[$"type ", listnotnone "(" ")" "," (map op$ ss), $s, $" = ", ttol t]
            | Fun {inline = inline, funs = f::funs} =>
@@ -261,38 +258,39 @@ struct
            | Fun _ => raise (Print "function with no functions?")
            (* | WFun (s, ppats, pats, t, e) => raise (Print "can't print PrioML") (* FIX: delete this *) *)
            | Datatype (tys, cons) =>
-             %[$"datatype ", listnotnone "(" ")" ", " (map op$ tys),
+             %[$"type ", listnotnone "(" ")" ", " (map op$ tys),
                L.listex "" "" "" (map contol cons)]
-           | Tagtype s => %[$"tagtype", $s]
-           | Newtag (new, NONE, ext) => %[$"newtag", $new, $"in", $ext]
-           | Newtag (new, SOME t, ext) => %[$"newtag", $new,
-                                       $"tags", ttol t, $"in",
-                                       $ext]
+           | Tagtype s => raise (Print "tagtype")
+           | Newtag _ => raise (Print "newtag")
            | Exception (new, NONE) => %[$"exception", $new]
            | Exception (new, SOME t) => %[$"exception", $new,
                                           $"of", ttol t]
-           | Structure (id, decs) => %[$"structure", $id, $"=", $"struct",
+           | Structure (id, decs) => %[$"module", $id, $"=", $"struct",
              L.listex "" "" "\n" (map dtol decs), $"end"]
            | Signature (id, decs) => %[$"signature", $id, $"=", $"sig",
              L.listex "" "" "\n" (map dtol decs), $"end"]
            | SigType _ => raise (Print "does sigtype even get used?")
            | SigVal _ => raise (Print "does sigval even get used?")
         )
+
+    and tdtol d =
+	%[$"let", dtol d]
+	
     and ptol p =
         case p of
-            PVar s => $s
+            PVar s => $(convertid s)
           | PWild => $"_"
-          | PAs (s, p) => L.paren (%[$s, $" as ", ptol p])
+          | PAs (s, p) => L.paren (%[ptol p, $" as ", $s])
           | PRecord sps =>
             recordortuplep ptol "=" "(" ")" " ," sps
           | PConstrain (p, t) => L.paren (%[ptol p, $":", ttol t])
           | PConstant c => ctol c
 	  | PApp ("::", SOME (PRecord [(_, p1), (_, p2)])) =>
 	    L.paren (%[L.paren (ptol p1), $"::", L.paren(ptol p2)])
-          | PApp (s, NONE) => $s
-          | PApp (s, SOME p) => L.paren (%[$s, ptol p])
+          | PApp (s, NONE) => $(convertid s)
+          | PApp (s, SOME p) => L.paren (%[$(convertid s), ptol p])
           | PWhen _ => raise (Print "I don't know what a when pattern is; let's hope this doesn't come up")
 
     fun progtol ds =
-        L.listex "" "" "\n" (map dtol ds)
+        L.listex "" "" "\n" (map tdtol ds)
 end
