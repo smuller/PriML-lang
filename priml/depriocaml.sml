@@ -216,7 +216,7 @@ fun deprio p prios cons fs =
 	       funs = [([], "__main", [([PWild], NONE, decstolet (deprioprog p))])]
 	}, l)] @
 	[(Val ([], PWild,
-	       (App ((Var (Id "__main"), l), (Record [], l), false), l)), l)]
+	       (App ((Var (Id ("Domainslib.Task.run " ^ poolvar)), l), (Var (Id "__main"), l), false), l)), l)]
     end
 
 end
