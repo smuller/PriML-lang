@@ -12,8 +12,10 @@ sig
                     IL.typ -> IL.typ -> unit
 
     (* supertype context location message actual expected *)
+					    (*
     val supertype : Context.context -> Pos.pos -> string -> 
                     IL.typ -> IL.typ -> unit
+					    *)
 
     (* val unifyp : Context.context -> Pos.pos -> string -> 
                     IL.prio -> IL.prio -> unit *)

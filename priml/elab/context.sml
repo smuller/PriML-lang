@@ -16,6 +16,21 @@ struct
     structure VM = Variable.Map
     structure E = EL
 
+    structure IM = IntMap
+
+    type pscontext = IL.PrioSet.set IM.map
+
+    structure PrioPairSet = SplaySetFn
+				(struct 
+                                  type ord_key = IL.prio * IL.prio
+				  fun compare ((p1a, p2a), (p1b, p2b)) =
+				      case IL.prcompare (p1a, p1b) of
+					  LESS => LESS
+					| GREATER => GREATER
+					| EQUAL => IL.prcompare (p2a, p2b)
+                                  end)
+				   
+
     (* first is class of identifier, second is identifier *)
     exception Context of string
     exception Absent of string * string
@@ -36,10 +51,10 @@ struct
             raise Absent (what, s)
         end
 
-    type tpcons = (VS.set * SS.set) VM.map * (VS.set * SS.set) S.map
+    type tpcons = SS.set S.map
 
     val tpc_empty =
-        (VM.empty, S.empty)
+        S.empty
 
     fun ground (IL.PEvar r) =
         (case !r of
@@ -47,54 +62,37 @@ struct
            | IL.Bound x => x)
       | ground p = p
 
-    fun tpc_insert (vm, sm) (IL.PConst s1, IL.PConst s2) =
-        (case S.find (sm, s1) of
-             SOME (vs, ss) => (vm, S.insert (sm, s1, (vs, SS.add (ss, s2))))
-           | NONE => (vm, S.insert (sm, s1, (VS.empty, SS.add (SS.empty, s2)))))
-      | tpc_insert (vm, sm) (IL.PVar v1, IL.PConst s2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, ss) => (VM.insert (vm, v1, (vs, SS.add (ss, s2))), sm)
-           | NONE => (VM.insert (vm, v1, (VS.empty, SS.add (SS.empty, s2))), sm))
-      | tpc_insert (vm, sm) (IL.PConst s1, IL.PVar v2) =
-        (case S.find (sm, s1) of
-             SOME (vs, ss) => (vm, S.insert (sm, s1, (VS.add (vs, v2), ss)))
-           | NONE => (vm, S.insert (sm, s1, (VS.add (VS.empty, v2), SS.empty))))
-      | tpc_insert (vm, sm) (IL.PVar v1, IL.PVar v2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, ss) => (VM.insert (vm, v1, (VS.add (vs, v2), ss)), sm)
-           | NONE => (VM.insert (vm, v1, (VS.add (VS.empty, v2), SS.empty)), sm))
-      | tpc_insert (vm, sm) _ = raise (Context "prio cons not constant or variable")
+    fun s_of_p (IL.PConst c) = c
+      | s_of_p (IL.PVar v) = (Variable.tostring v)
+      | s_of_p _ = raise (Context "prio cons not constant or variable")
 
-    fun tpc_mem (vm, sm) (IL.PConst s1, IL.PConst s2) =
-        (case S.find (sm, s1) of
-             SOME (_, ss) => SS.member (ss, s2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PVar v1, IL.PConst s2) =
-        (case VM.find (vm, v1) of
-             SOME (_, ss) => SS.member (ss, s2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PConst s1, IL.PVar v2) =
-        (case S.find (sm, s1) of
-             SOME (vs, _) => VS.member (vs, v2)
-           | NONE => false)
-      | tpc_mem (vm, sm) (IL.PVar v1, IL.PVar v2) =
-        (case VM.find (vm, v1) of
-             SOME (vs, _) => VS.member (vs, v2)
-           | NONE => false)
-      | tpc_mem (vm, sm) _ = raise (Context "prio cons not constant or variable")
+    fun tpc_insert m (p1, p2) =
+	let 
+	    val s1 = s_of_p p1
+	    val s2 = s_of_p p2
+	in
+	    case S.find (m, s1) of
+		SOME ss => (S.insert (m, s1, SS.add (ss, s2)))
+	      | NONE => S.insert (m, s1, SS.singleton s2)
+	end
 
-    fun get_greater ((_, sm): tpcons) (IL.PConst s) =
-        (case S.find (sm, s) of
-             SOME (vs, ss) => (List.map IL.PVar (VSU.tolist vs)) @
-                              (List.map IL.PConst (SSU.tolist ss))
-           | NONE => [])
-      | get_greater ((vm, _): tpcons) (IL.PVar v) =
-        (case VM.find (vm, v) of
-             SOME (vs, ss) => (List.map IL.PVar (VSU.tolist vs)) @
-                              (List.map IL.PConst (SSU.tolist ss))
-           | NONE => [])
-      | get_greater _ _ =
-        raise (Context "prio not constant or variable")
+    fun tpc_mem (m: tpcons) (p1, p2) =
+	let 
+	    val s1 = s_of_p p1
+	    val s2 = s_of_p p2
+	in
+            case S.find (m, s1) of
+		SOME ss => SS.member (ss, s2)
+              | NONE => false
+	end
+
+    fun get_greater m p =
+	let val s = s_of_p p
+	in
+	    case S.find (m, s) of
+		SOME ss => (List.map IL.PConst (SSU.tolist ss))
+              | NONE => []
+	end
 
     datatype context = 
         (* prios = priority variables *)
@@ -128,6 +126,9 @@ struct
              % (map (fn (s, (tp, v, vs)) =>
                      %[%[$s, $"==", $(Variable.tostring v), $":"],
                        L.indent 2 (%[ILPrint.ptol ILPrint.ttol tp])]) vars),
+	     $"orders",
+	     % (map (fn (p1, p2) => %[$(s_of_p p1), $" <= ", $(s_of_p p2)])
+		    pcons),
              $"XXX mobiles, cons, plabs"])]
           
       end
@@ -143,7 +144,7 @@ struct
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
-                       List.exists has tl
+                       List.exists (fn (_, t) => has t) tl
                  | Sum ltl => List.exists 
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
@@ -160,10 +161,11 @@ struct
 *)
                  | Arrows l =>
                        List.exists (fn (_, tl, t) =>
-                                    has t orelse List.exists has tl) l
+                                       has t orelse
+				       List.exists (fn (_, t) => has t) tl) l
                  | TRef t => has t
-                 | TCmd (t, _, _) => has t
-                 | TThread (t, _, _) => has t
+                 | TCmd (t, _) => has t
+                 | TThread (t, _) => has t
                  | TPrio _ => false) (* FIX: refinements don't have evars? *)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
       in
@@ -189,7 +191,7 @@ struct
                                             has t) ltl
                  | Arrow (_, tl, t) =>
                        has t orelse
-                       List.exists has tl
+                       List.exists (fn (_, t) => has t) tl
                  | Sum ltl => List.exists 
                        (fn (_, Carrier { carried, ... }) => has carried
                           | _ => false) ltl
@@ -206,10 +208,11 @@ struct
 *)
                  | Arrows l =>
                        List.exists (fn (_, tl, t) =>
-                                    has t orelse List.exists has tl) l
+                                       has t orelse
+				       List.exists (fn (_, t) => has t) tl) l
                  | TRef t => has t
-                 | TCmd (t, _, _) => has t
-                 | TThread (t, _, _) => has t
+                 | TCmd (t, _) => has t
+                 | TThread (t, _) => has t
                  | TPrio _ => false)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
 
@@ -239,17 +242,30 @@ struct
     fun varex (C {vars, ...}) sym =
         (case S.find (vars, sym) of
              SOME x => x
-           | NONE =>
-             ( (* we'll assume this is defined elsewhere *)
-               let val tt = (!new_evar) ()
-                   val v = Variable.namedvar sym
-               in
-                   assumed := (sym, tt)::(!assumed);
-                   (IL.Poly({tys = nil}, tt), v, IL.Normal)
-               end))
+           | NONE => absent "vars" sym
+        )
 
-    fun var ctx sym = varex ctx sym
+    fun var ctx sym =
+	(varex ctx sym)
+	handle Absent _ =>
+	       ( (* we'll assume this is defined elsewhere *)
+		 let val tt = (!new_evar) ()
+                     val v = Variable.namedvar sym
+		 in
+                     assumed := (sym, tt)::(!assumed);
+                     (IL.Poly({tys = nil}, tt), v, IL.Normal)
+		 end)
 
+    fun var_fail ctx sym = varex ctx sym
+
+    fun rem (C {vars, cons, dbs, plabs, pcons, tpcons, mobiles, sign }) sym =
+	(let val (vars', r) = S.remove (vars, sym)
+	     val ctx = C {vars=vars', cons=cons, dbs=dbs, plabs=plabs, pcons=pcons, tpcons=tpcons, mobiles=mobiles, sign=sign }
+	 in
+	     SOME (ctx, r)
+	 end)
+	handle _ => NONE
+		      
     fun conex (C {cons, ...}) module sym =
         (case S.find (cons, sym) of
              SOME x => x
@@ -316,6 +332,41 @@ struct
 
     fun bindc c sym con kind status = bindcex c NONE sym con kind status
 
+    datatype expandfound =
+	     NEUTRAL
+	     | YES
+	     | NO
+		   
+    fun efall f l =
+	let fun efall_rec ef l =
+		case l of
+		    [] => ef
+		  | a::t =>
+		    (case (ef, f a) of
+			 (NO, _) => NO
+		       | (_, NO) => NO
+		       | (_, YES) => efall_rec YES t
+		       | (YES, _) => efall_rec YES t
+		       | (NEUTRAL, NEUTRAL) => efall_rec NEUTRAL t
+		    )
+	in efall_rec NEUTRAL l
+	end
+
+    fun efexists f l =
+	let fun efexists_rec ef l =
+		case l of
+		    [] => ef
+		  | a::t =>
+		    (case (ef, f a) of
+			 (YES, _) => YES
+		       | (_, YES) => YES
+		       | (_, NO) => efexists_rec NO t
+		       | (NO, _) => efexists_rec NO t
+		       | (NEUTRAL, NEUTRAL) => efexists_rec NEUTRAL t
+		    )
+	in efexists_rec NEUTRAL l
+	end
+					      
     (* fun bindp (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) s v =
         C { vars = vars,
             cons = cons,
@@ -328,27 +379,133 @@ struct
             sign = sign } *) (* FIX: delete priority variables *)
 
           (* Kind of inefficient, but we do a DFS at every check *)
-    fun checkcons (ctx as C { tpcons, ...}) p1 p2 =
-        (* hacky special case *)
+    fun checkcons psctx (ctx as C { tpcons, ...}) p1 p2 =
+	let fun checkcons checked psctx (ctx as C { tpcons, ...}) p1 p2 =
+		(* The actual priority graph can't have cycles but 
+		 * instantiating variables can create cycles so
+		 * we still check if we've been here before.
+		 * The state is a pair of (p1, p2). We only stop if
+		 * we've seen both before. *)
+		(print ("checkcons " ^
+			       (Layout.tostring (ILPrint.prtol p1)) ^ " <= "
+			       ^ (Layout.tostring (ILPrint.prtol p2)) ^ "\n");
+		 if PrioPairSet.member (checked, (p1, p2)) then
+		     (print "stopping\n"; NEUTRAL)
+		else
+            let
+	    fun sub_in_set sub set =
+		VM.foldli
+		    (fn (x, e, set) =>
+			case e of
+			    IL.Value (IL.Polyvar {var, ...}) =>
+			    IL.PrioSet.map
+				(fn p => if IL.pr_eq (p, IL.PVar x)
+					 then (IL.PVar var)
+					 else p
+				)
+				set
+			  | IL.Value (IL.Polyuvar {var, ...}) =>
+			    IL.PrioSet.map
+				(fn p => if IL.pr_eq (p, IL.PVar x)
+					 then (IL.PVar var)
+					 else p
+				)
+				set
+			  | _ => set
+		    )
+		    set
+		    sub
+	    fun get_set psctx ps = 
+		case ps of 
+		    IL.PSSet s => s
+		  | IL.PSPendSub (es, ps) =>
+		    sub_in_set es (get_set psctx ps)
+		  | IL.PSEvar (ref (IL.Bound ps)) => get_set psctx ps
+		  | IL.PSEvar (ref (IL.Free i)) => 
+		    (case (IM.find (psctx, i)) of
+			 SOME s => s
+		       | NONE => IL.PrioSet.empty
+		    )
+	    fun inst_prio psctx ctx p =
+		case p of
+		    IL.PEvar (ref (IL.Bound p)) => inst_prio psctx ctx p
+		  | IL.PEvar _ => IL.PrioSet.singleton p
+		  | IL.PVar v =>
+		    (
+		      case rem ctx (Variable.basename v) of
+			  SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
+			  get_set psctx ps
+			| _ => IL.PrioSet.singleton p
+		    )
+		  | IL.PConst s =>
+		    (case rem ctx s of
+			 SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
+			 get_set psctx ps
+		       | _ => IL.PrioSet.singleton p
+		    )
+	    fun crossprod (l1, l2) =
+		List.concat (List.map (fn x1 => List.map (fn x2 => (x1, x2))
+							 l2) l1)
+	in
+	    (* hacky special case *)
         case p1 of
-            IL.PConst "bot" => true
+            IL.PConst "bot" => YES
           | _ =>
             let val (p1, p2) = (ground p1, ground p2)
             in
                 if IL.pr_eq (p1, p2) then
-                    true
+		    (* p1 <= p1 *)
+                    YES
                 else if tpc_mem tpcons (p1, p2) then
-                    true
-                else
-                    let val gs = get_greater tpcons p1
-                    in
-                        List.exists (fn p => checkcons ctx p p2) gs
-                    end
+		    (* Check if this particular edge is in the graph *)
+                    YES
+                else if
+		    (* Transitivity: check all parents of p1 *)
+		    let val gs = get_greater tpcons p1
+		    in
+			efexists (fn p => checkcons checked psctx ctx p p2) gs
+		    end = YES
+		then YES
+		else
+		    (* If p1 = PVar x and x : prio[p1', ..., pn']
+		     * and p2 = PVar x' and x' : prio[p1'', ..., pn''] 
+		     * check {p1', ..., pn'} x {p1'', ..., pn''} *)
+		    let val _ = print "(\n"
+			val s1 = inst_prio psctx ctx p1
+			val s2 = inst_prio psctx ctx p2
+			val s1 =
+			    if IL.PrioSet.isEmpty s1 then
+				IL.PrioSet.singleton p1
+			    else s1
+			val s2 =
+			    if IL.PrioSet.isEmpty s2 then
+				IL.PrioSet.singleton p2
+			    else s2
+			val checked' = PrioPairSet.add (checked, (p1, p2))
+		    in
+			efall
+			    (fn (p1, p2) =>
+				checkcons
+				    checked'
+				    psctx ctx p1 p2
+			    )
+			    (crossprod
+				 (IL.PrioSet.listItems s1,
+				  IL.PrioSet.listItems s2))
+			before print ")\n"
+		    end
             end
+	    end)
+	in
+	    case checkcons PrioPairSet.empty psctx ctx p1 p2 of
+		YES => true
+	      | NO => false
+	      | NEUTRAL => false
+	end
 
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
-        if checkcons ctx p2 p1 then
+        if checkcons IM.empty ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
         else
             C { cons = cons,

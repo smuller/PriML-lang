@@ -7,15 +7,45 @@ order debit_p < credit_p
 order credit_p < loop_p
 order query_p < loop_p
 
-val stdin = ref (TextIO.getInstream TextIO.stdIn)
+fun getInstream () = ()
+val stdIn = ()
+fun input1 () = SOME (?a, ())
+fun cat (_, _) = " "
+fun str (_: char) = " "
+fun array _ = ()
+fun update (_, _, _) = ()
+fun isSpace _ = false
+fun tokens _ _ = nil
+
+
+fun hd l =
+  case l of
+    nil => ""
+  | h::t => h
+
+fun nth (l, n) =
+  case l of
+    nil => ""
+  | h::t => if n = 0 then h else nth (t, n - 1)
+
+fun fromString _ = SOME 0
+fun toString _ = ""
+
+fun print _ = () 
+
+fun sub _ = 0
+
+fun isPrefix _ _ = true
+
+val stdin = ref (getInstream stdIn)
 
 fun inputLine () =
     let fun iL_int line =
-            case IO.input1 (!stdin) of
+            case input1 (!stdin) of
                 NONE => NONE
               | SOME (c, is') =>
-                (upd (stdin, is');
-                 if eq (c, ?\n) then
+                ((stdin := is');
+                 if c = ?\n then
                      SOME line
                  else
                      iL_int (cat (line, str c)))
@@ -23,41 +53,42 @@ fun inputLine () =
         iL_int ""
     end
 
-val accounts = Array.array (10, 0)
+val accounts = array (10, 0)
 
 fun loop () =
     case inputLine () of
         SOME line =>
-        let val tokens = String.tokens Char.isSpace line
-            val c = List.hd tokens
-            val acct = case Int.fromString (List.nth (tokens, 1))
+        let val toks = tokens isSpace line
+            val c = tokens
+            val acct = case fromString (nth (toks, 1))
                         of SOME n => n
                          | NONE => 0
         in
-            if String.isPrefix "credit" c then
-                cmd[loop_p] {
+            if isPrefix "credit" c then
+                cmd {
                     spawn[credit_p]
-                         {ret (Array.update (accounts, acct,
-                                              plus (Array.sub (accounts, acct),
-                                                    case Int.fromString (List.nth (tokens, 2))
+                         {ret (update (accounts, acct,
+                                              (sub (accounts, acct))
+                                              + (
+                                                    case fromString (nth (toks, 2))
                         of SOME n => n
                          | NONE => 0)))};
                     loop ()
                 }
-            else if String.isPrefix "debit" c then
-                cmd[loop_p] {
+            else if isPrefix "debit" c then
+                cmd {
                     spawn[credit_p]
-                         { ret (Array.update (accounts, acct,
-                                              minus (Array.sub (accounts, acct),
-                                                    case Int.fromString (List.nth (tokens, 2))
+                         { ret (update (accounts, acct,
+                                               (sub (accounts, acct)) -
+                                                    (case fromString (nth (toks, 2))
                         of SOME n => n
                          | NONE => 0)))};
                     loop ()
                 }
-            else if String.isPrefix "query" c then
-                cmd[loop_p] {
+            else if isPrefix "query" c then
+                cmd {
                     spawn[query_p]
-                         { ret (print (cat (Int.toString (Array.sub (accounts, acct)), "\n"))) };
+                         { ret (print (cat (toString (sub (accounts, acct)), "\n"))) };
                     loop ()
                 }
             else loop ()

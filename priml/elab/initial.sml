@@ -68,7 +68,8 @@ struct
 
     (* XXX5 should probably be done in terms of extern vals *)
 
-    val ii = [IL.TRec [("1", ilint), ("2", ilint)]]
+    val ii = [(Variable.namedvar "_", IL.TRec [("1", ilint), ("2", ilint)])]
+    val ii = [(Variable.namedvar "_", IL.TRec [("1", ilint), ("2", ilint)])]
     val monofuns =
         [
 
@@ -93,7 +94,7 @@ struct
          ("andb", P.B P.PAndb, ii, ilint),
          ("orb", P.B P.POrb, ii, ilint),
          ("xorb", P.B P.PXorb, ii, ilint),
-         ("notb", P.PNotb, [ilint], ilint),
+         ("notb", P.PNotb, [(Variable.namedvar "_", ilint)], ilint),
          (* shift (a, b) by b mod 32. *)
          ("shl", P.B P.PShl, ii, ilint),
          ("shr", P.B P.PShr, ii, ilint)
@@ -105,10 +106,25 @@ struct
     fun quant (t, IL.Poly({tys}, x)) = IL.Poly({tys = t :: tys}, x)
 
       (* this is all in the standard library now... *)
-    val polyfuns = nil
-(*
+    val polyfuns =
         [
+	  ("=", P.PBind, quant(a, mono(IL.Arrow(true,
+						[(Variable.namedvar "_", IL.TRec [("1", IL.TVar a), ("2", IL.TVar a)])], ilbool)))),
+	  ("ref", P.PRef, quant(a, mono
+                                       (IL.Arrow(false, [(Variable.namedvar "_",
+							  IL.TVar a)],
+						 IL.TRef (IL.TVar a))))),
+	  ("!", P.PGet, quant(a, mono
+                                     (IL.Arrow(false, [(Variable.namedvar "_",
+							IL.TRef (IL.TVar a))],
+                                          IL.TVar a)))),
 
+         (":=", P.PSet, quant(a, mono
+                                     (IL.Arrow(false,
+					       [(Variable.namedvar "_", IL.TRec [("1", IL.TRef (IL.TVar a)), ("2", IL.TVar a)])],
+                                           tuple nil))))
+	]
+    (*
          (* XXX should really be exn cont, but there's no way to
             spell that type here. so make it unit cont and then the
             handler just can't use its argument. *)
@@ -127,18 +143,9 @@ struct
 (*
          ("^", P.PJointext 2, mono(IL.Arrow(false, [ilstring, ilstring], ilstring))),
 
-         ("!", P.PGet, quant(a, mono
-                                (IL.Arrow(false, [IL.TRef (IL.TVar a)],
-                                          IL.TVar a)))),
+         ,
 
-         (":=", P.PSet, quant(a, mono
-                                 (IL.Arrow(false, [IL.TRef (IL.TVar a),
-                                                   IL.TVar a],
-                                           tuple nil)))),
-
-         ("ref", P.PRef, quant(a, mono
-                                  (IL.Arrow(false, [IL.TVar a],
-                                            IL.TRef (IL.TVar a))))),
+         
 *)
 (*
          ("array0", P.PArray0, quant (a, mono
@@ -170,10 +177,8 @@ struct
 *)
 
     val vals =
-(*
         map (fn (name, prim, ty) =>
              (name, ty, IL.Primitive prim)) polyfuns @
-*)
         map (fn (name, prim, cod, dom) =>
              (name, mono (IL.Arrow(false, cod, dom)), 
               IL.Primitive prim)) monofuns
@@ -200,7 +205,7 @@ struct
 
     (* initial environment is all valid *)
     val initial = foldl (fn ((s, c, t), ctx) =>
-                         Context.bindex ctx (SOME s) c (namedvar "dummy") t)
+                         Context.bindex ctx (SOME s) c (namedvar s) t)
                         initialec vals
 
     (* also, assume some types are mobile *)

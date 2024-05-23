@@ -51,27 +51,32 @@ struct
     fun ptol f (Poly ({tys = nil}, a)) = f a
       | ptol f (Poly ({tys}, a)) = %[worldstys tys, f a]
 
+    val okchar = StringUtil.charspec "-0-9A-Za-z!@$%^&*()_+=`~\"'[]{}|:;,./<>? " (* " *)
+
     fun ttol t = ttolex (fn _ => NONE) t
     and ttolex ctx t =
       if not (!iltypes)
       then $"-"
       else
       let
-        val self = ttolex ctx
+          val self = ttolex ctx
+	  fun pvt (v, t) = %[L.str (V.show v),
+			     $":",
+			     self t]
       in
         (case t of
            (* should print these right-associatively *)
              Arrow (b, [dom], cod) =>
-                 L.paren (%[self dom,
+                 L.paren (%[pvt dom,
                             $(if b then "=>" else "->"),
                             self cod])
            | Arrow (b, dom, cod) => 
-                 L.paren (%[L.list (map self dom),
+                 L.paren (%[L.list (map pvt dom),
                             $(if b then "=>" else "->"),
                             self cod])
            | Arrows al => L.listex "(" ")" " &&" `
                               map (fn (b, dom, cod) =>
-                                   %[L.list (map self dom),
+                                   %[L.list (map pvt dom),
                                      $(if b then "=>" else "->"),
                                      self cod]) al
 
@@ -79,14 +84,12 @@ struct
            | TCont t => L.paren (L.seq[self t, $" cont"])
            | TRef t => L.paren (L.seq[self t, $" ref"])
            | TVar v => L.str (V.show v)
-           | TCmd (t, (pi, pp, pf), cc) => 
+           | TCmd (t, (pi, pp, pf)) => 
              L.paren (L.seq[self t, 
-                            $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf,$"]",
-                            L.listex "[" "]" "," (map psctol (!cc))])
-           | TThread (t, ps, cc) => 
+                            $" cmd[", pstol pi, $",", pstol pp, $",", pstol pf,$"]"])
+           | TThread (t, ps) => 
                L.paren (L.seq[self t, 
-                              $" thread[", pstol ps, $"]",
-                             L.listex "[" "]" "," (map psctol (!cc))])
+                              $" thread[", pstol ps, $"]"])
            | TPrio ps => 
                L.paren (L.seq[$"prio[", pstol ps, $"]"])
            (* | TForall (vs, pcons, t) =>
@@ -148,22 +151,29 @@ struct
     and pstol (PSEvar (ref (Bound w))) = pstol w
       | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
       | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
+      | pstol (PSPendSub (s, ps)) = %[L.listex "[" "]" ","
+				      (map (fn (x, e) =>
+					       %[etol e, $"/", $(V.show x)]
+					   )
+				       (VM.listItemsi s))
+				    , pstol ps]
+	
 
+				    (*
     and psctol (PSSup (ps1, ps2)) = %[$"sup", L.paren(%[pstol ps1, $",", pstol ps2])]
       | psctol (PSCons (ps1, ps2)) = %[$"cons", L.paren(%[pstol ps1, $",", pstol ps2])]
-
+*)
     (* <t> *)
-    fun bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
+    and bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
                   else $""
 
-    val okchar = StringUtil.charspec "-0-9A-Za-z!@$%^&*()_+=`~\"'[]{}|:;,./<>? " (* " *)
-
-    fun vtol v =
+    and vtol v =
       (case v of
          Int i => $("0x" ^ Word32.toString i)
        | String s => $("\"" ^ StringUtil.harden okchar #"#" 100 s ^ 
                        (if size s > 100 then "..." else "") ^ "\"")
        | Prio (PConst p) =>  $("priority[" ^ p ^ "]")
+       | Prio (PVar p) =>  $("priority[" ^ (V.show p) ^ "]")
        | VRecord lvl => recordortuple vtol "=" "(" ")" "," lvl
        | VRoll (t, v) => %[$"roll", L.paren (ttol t), vtol v]
        | VInject (t, l, vo) => %[$("inj_" ^ l), 
@@ -275,9 +285,9 @@ struct
                      L.listex "(" ")" ";" (rev (map etol (last::front)))
                  end
            (* also fake n-ary like above *)
-           | Let (dd, ee) =>
+           | Let (dd, ee, _) =>
                  let
-                     fun alldecs acc (Let (dd, er)) = alldecs (dd::acc) er
+                     fun alldecs acc (Let (dd, er, _)) = alldecs (dd::acc) er
                        | alldecs acc e = (acc, e)
 
                      val (decs', body) = alldecs nil e
@@ -321,13 +331,13 @@ struct
                                 bttol t,
                                 etol e])
                  else etol e
-           | Sumcase (t, e, v, lel, def) =>
+           | Sumcase (t, e, v, lel, def, _) =>
                  L.align
                  (%[$"sumcase", etol e, %[$":", ttol t], 
                     %[$"as", $ (V.tostring v)]] ::
                   map (fn (l, e) => %[%[$"  |", $l, $"=>"], L.indent 4 (etol e)]) lel @
                   [%[%[$"  |", $"_", $"=>"], L.indent 4 (etol def)]])
-           | Intcase (e, iel, def) =>
+           | Intcase (e, iel, def, _) =>
                  L.align
                  [%[$"intcase", etol e, $"of"],
                   % ` map (fn (i, e) => %[$(IntConst.toString i), $" => ", L.indent 4 ` etol e]) iel,

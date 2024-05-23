@@ -58,13 +58,17 @@ val (idl, prios, cons, fs, il) = Elaborate.elaborate el'
                                     (print ("Type error: " ^ s ^ "\n");
                                      OS.Process.exit OS.Process.failure)
 
+val pscons = Constraint.consprog (idl, prios, cons, fs, il)
+
+val _ = Solve.solve_psetcstrs pscons (* (List.map PSetCstrs.dosub_cstr pscons) *)
+					
 val dp = DePrio.deprio el prios cons fs
 
 val s = Layout.tostring (ELPrint.progtol dp)
         handle ELPrint.Print err => (print err; raise (ELPrint.Print err))
-val () = StringUtil.writefile "temp.sml" s
+val () = StringUtil.writefile "temp.ml" s
 
-val _ = Compile.compile (deps, "temp.sml") morefiles output moreopts
-        handle Compile.Compile s => (print ("primlc: " ^ s ^ "\n");
+val _ = CompileCaml.compile "temp.ml" [] morefiles output moreopts
+        handle CompileCaml.Compile s => (print ("primlc: " ^ s ^ "\n");
                                      OS.Process.exit OS.Process.failure)
-val _ = OS.Process.system ("rm temp.sml")
+val _ = OS.Process.system ("rm temp.ml")

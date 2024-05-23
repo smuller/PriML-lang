@@ -12,6 +12,8 @@ struct
   infixr 9 `
   fun a ` b = a b
 
+  fun anonarg t = (Variable.namedvar "_", t)
+
   exception Pattern of string
 
   open ElabUtil
@@ -222,7 +224,7 @@ struct
 
                     val nctx =
                         C.bindpath ctx (I.Id nfs) (mono (I.Arrow(false, 
-                                                       [I.TRec nil], 
+                                                       [anonarg ` I.TRec nil], 
                                                        ilt))) nfv
                         
                     val (ke, kt) = k nctx (E.Id nfs)
@@ -233,7 +235,7 @@ struct
                     (I.Let
                      (I.Val (
                                    mono (nfv,
-                                   I.Arrow(false, [I.TRec nil], ilt),
+                                   I.Arrow(false, [anonarg (I.TRec nil)], ilt),
                                    I.Value `
                                    I.FSel (0, 
                                            I.Fns[{ name = nonrec,
@@ -244,7 +246,7 @@ struct
                                                    inline = false,
                                                    recu = false,
                                                    total = false }]))),
-                      ke), kt)
+                      ke, kt), kt)
                 end
 
             (* handles splitting of constant patterns.
@@ -398,6 +400,7 @@ struct
                          pass the expression to check against,
                          the primop that performs such equality,
                          and the il type *)
+
                       fun smallconst eq_exp peq ilt matches rest =
                         let
 
@@ -448,21 +451,21 @@ struct
                                    val (ee, tt) =
                                        elm ctx cols exps doconst_default
                                in
-                                   supertype ctx loc
+                                   unify(*supertype*) ctx loc
                                      "ccw cont / default" tt deft;
                                    ee
                                end)],
 
                              (* if not equal, invoke
                                 failure continuation*)
-                             failc),
+                             failc,
+			     deft),
                             deft)
                            end
 
                         in
                             hoist kk ctx ` gen rest
                         end
-
 
                       and genswitch fetch ilt arms =
                         let
@@ -493,11 +496,12 @@ struct
                                val (ee, tt) =
                                  elm ctx cols exps doconst_default
                              in
-                               supertype ctx loc
+                               unify (*supertype*) ctx loc
                                "ccw-switch cont / default" tt deft;
                                ee
                              end) arms,
-                            defe),
+                            defe,
+			    deft),
                            deft)
                         end
 
@@ -639,7 +643,7 @@ struct
                            fun onelab (l, perl) =
                              case C.var nctx l of
                                (I.Poly ({tys=nil}, 
-                                        (I.Arrow (_, [ruledom], rulecod))), 
+                                        (I.Arrow (_, [(_, ruledom)], rulecod))), 
                                 _, I.Tagger vtag) =>
                                  let
                                      (* objty = rulecod *)
@@ -659,7 +663,7 @@ struct
                                         | C.Valid _ => ())
 *)
 
-                                     val () = supertype nctx loc "tagcase codomain" 
+                                     val () = unify(*supertype*) nctx loc "tagcase codomain" 
                                                       rulecod cod
 
                                      val (ocol, oe, rest) = 
@@ -689,11 +693,11 @@ struct
 
                                      val (re, rt) = elm nctx cols ne ndef
                                    in
-                                       supertype ctx loc 
+                                       unify(*supertype*) ctx loc 
                                           "tag pattern return" rett rt;
                                        Layout.print 
                                          (Layout.listex "[" "]" "," 
-                                         (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                         (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                                        print "\n ___ \n";
                                        (vtag, re)
                                    end
@@ -720,17 +724,18 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "tagcase arg" (#1 (evarize opt)) cod;
-                           supertype nctx loc "tagcase default" rett dt; 
+                           unify(*supertype*) nctx loc "tagcase default" rett dt; 
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                            print "\n tagcase default \n";
 
                            (I.Tagcase (cod, 
                                        I.Value objv,
                                        insidev,
                                        thearms,
-                                       de),
+                                       de,
+				       rett),
                             rett)
 
                        end
@@ -775,7 +780,7 @@ struct
                                                  raise Pattern "non-carrier label has carried type?"
                                              | SOME IL.NonCarrier => ())
 
-                                          val _ = supertype nctx loc "(nullary) sum codomain" tt cod
+                                          val _ = unify(*supertype*) nctx loc "(nullary) sum codomain" tt cod
 
                                           (* don't bind var; it would be nonsensical here. *)
 
@@ -800,11 +805,11 @@ struct
                                           val (re, rt) = elm nctx cols oe ndef
                                         in
 					    print "start (nullary) sum pattern return \n";
-                                          supertype ctx loc 
+                                          unify(*supertype*) ctx loc 
                                              "(nullary) sum pattern return" rett rt;
                                           Layout.print 
                                                 (Layout.listex "[" "]" "," 
-                                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                                (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                                             print "\n (nullary) sum pattern return \n";
                                           (l, re)
                                         end
@@ -822,7 +827,7 @@ struct
 
                                                val ruledom = 
                                                  case ruledom of
-                                                   [rd] => rd
+                                                   [(_, rd)] => rd
                                                  | _ => raise Pattern "carrier not unary arrow"
 
                                                val nctx = C.bindv nctx insides 
@@ -833,10 +838,10 @@ struct
                                                 since domvar is fresh and I
                                                 never use it again ... *)
 
-                                               val _ = supertype nctx loc "sum domain" 
+                                               val _ = unify(*supertype*) nctx loc "sum domain" 
                                                               domvar ruledom
 
-                                               val _ = supertype nctx loc "sum codomain" 
+                                               val _ = unify(*supertype*) nctx loc "sum codomain" 
                                                               rulecod cod
 
                                                val (ocol, oe, rest) =
@@ -874,11 +879,11 @@ struct
                                            in
                                            (* FIX: turn unifying into supertyping *)
                                                print "start sum pattern return \n";
-                                               supertype ctx loc 
+                                               unify(*supertype*) ctx loc 
                                                   "sum pattern return" rett rt;
                                                Layout.print 
                                                     (Layout.listex "[" "]" "," 
-                                                    (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                                    (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                                                 print "\n sum pattern return \n";
                                                (l, re)
                                            end)
@@ -919,10 +924,10 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "sum arg" (#1 (evarize opt)) cod;
-                           supertype nctx loc "sum default" rett dt; (* FIX: turn unifying into supertyping *)
+                           unify(*supertype*) nctx loc "sum default" rett dt; (* FIX: turn unifying into supertyping *)
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                             print "\n sum default \n";
 
                            (* a nice optimization is, if the
@@ -940,7 +945,8 @@ struct
                                             thearms,
                                             (* XXX PERF. instead return
                                                HALT here -- unreachable! *)
-                                            de)
+                                            de,
+					    rett)
                               (*
                               (* also could do this if we can find an arm
                                  that's nullary, since we wouldn't have to
@@ -954,7 +960,8 @@ struct
                                          I.Unroll ` I.Value objv,
                                          insidev,
                                          thearms,
-                                         de),
+                                         de,
+					 rett),
                               rett)
 
                        end
@@ -1256,7 +1263,7 @@ struct
                          in
                              (I.Let(I.Val(
                                            mono (v, t, I.Proj (l, objt, obje))),
-                                   ee),
+                                   ee, tt),
                               tt)
                          end
 
@@ -1384,10 +1391,10 @@ struct
                  | E.PConstrain (pp, tt) =>
                        let 
                          val t = elabt ctx loc tt
-                       in supertype ctx loc "pattern constraint" t tv;
+                       in unify(*supertype*) ctx loc "pattern constraint" t tv;
                           Layout.print 
                                 (Layout.listex "[" "]" "," 
-                                (map ILPrint.psctol (!Unify.global_cstrs)), print);
+                                (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
                             print "\n pattern constraint \n";
                           one (pp, e)
                        end

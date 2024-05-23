@@ -9,13 +9,13 @@ main {
     ret (let val x = A in B end)
 *)
 
-(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+(* (* CORRECT compiles, but empty psevar due to broken extra psevar in sum pattern *)
 
     ret (if true then A else B)
 *)
 
 
-(* (* BAD compiles, but empty psevar due to broken extra psevar in sum pattern *)
+(* (* CORRECT compiles, but empty psevar due to broken extra psevar in sum pattern *)
 
     ret (let val x = A in if true then x else B end)
 *)
@@ -30,8 +30,10 @@ main {
     ret x
 *)
 
-    (* CORRECT type error on first cons *)
+(*
+    (* CORRECT compiles, but empty psevar due to broken extra psevar in sum pattern *)
     ret (A :: B :: nil)
+*)
 
 (*
     (* CORRECT type error on first cons *)

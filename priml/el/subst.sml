@@ -8,8 +8,6 @@ struct
 
   exception Subst of string
 
-  structure VM = Variable.Map
-  type 'a subst = 'a VM.map
 
   fun fromlist l =
       foldl VM.insert' VM.empty l
@@ -39,17 +37,46 @@ struct
 
     | tsubst s (TTag (t, v)) = TTag (tsubst s t, v)
     | tsubst s (Arrows l) = Arrows (map (arrow s) l)
-    | tsubst s (TCmd (t, p, c)) = TCmd (tsubst s t, p, c)
-    | tsubst s (TThread (t, p, c)) = TThread (tsubst s t, p, c)
+    | tsubst s (TCmd (t, p)) = TCmd (tsubst s t, p)
+    | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
     | tsubst s (TPrio p) = TPrio p
     (* | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t) (* FIX: delete this *) *)
 (*
     | tsubst s (At (t, w)) = At (tsubst s t, w)
     | tsubst s (Shamrock (wv, t)) = Shamrock (wv, tsubst s t)
     | tsubst s (TAddr w) = TAddr w
-*)
+ *)
 
-  and arrow s (b, dom, cod) = (b, map (tsubst s) dom, tsubst s cod)
+  and subst_e_in_t (s: exp subst) (TVar v) = TVar v
+    | subst_e_in_t s (TRec ltl) = TRec (ListUtil.mapsecond (subst_e_in_t s) ltl)
+    | subst_e_in_t s (Arrow a) = Arrow (etarrow s a)
+    | subst_e_in_t s (Sum ltl) = Sum (ListUtil.mapsecond (arminfo_map (subst_e_in_t s)) ltl)
+    | subst_e_in_t s (Mu (i, vtl)) =
+      Mu (i, ListUtil.mapsecond (subst_e_in_t s) vtl)
+    | subst_e_in_t s (Evar(ref (Bound t))) = subst_e_in_t s t
+    | subst_e_in_t s (x as (Evar _)) = x
+
+    | subst_e_in_t s (TRef t) = TRef (subst_e_in_t s t)
+
+    | subst_e_in_t s (TVec t) = TVec (subst_e_in_t s t)
+    | subst_e_in_t s (TCont t) = TCont (subst_e_in_t s t)
+
+    | subst_e_in_t s (TTag (t, v)) = TTag (subst_e_in_t s t, v)
+    | subst_e_in_t s (Arrows l) = Arrows (map (etarrow s) l)
+    | subst_e_in_t s (TCmd (t, (p1, p2, p3))) =
+      TCmd (subst_e_in_t s t,
+	    (esubstprset s p1, esubstprset s p2, esubstprset s p3))
+    | subst_e_in_t s (TThread (t, p)) =
+      TThread (subst_e_in_t s t, esubstprset s p)
+    | subst_e_in_t s (TPrio p) = TPrio (esubstprset s p)
+			   
+  and esubstprset s p = PSPendSub (s, p)
+
+  and arrow s (b, dom, cod) =
+      (b, map (fn (v, t) => (v, tsubst s t)) dom, tsubst s cod)
+
+  and etarrow s (b, dom, cod) =
+      (b, map (fn (v, t) => (v, subst_e_in_t s t)) dom, subst_e_in_t s cod)
 
   fun etsubst s t =
       (case t of
@@ -85,11 +112,11 @@ struct
 
     | prsubst s (TTag (t, v)) = TTag (prsubst s t, v)
 
-    | prsubst s (TCmd (t, (pi, pp, pf), c)) = 
-        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf), ref (map (prsubspsc s) (!c)))
+    | prsubst s (TCmd (t, (pi, pp, pf))) = 
+        TCmd (prsubst s t, (prsubsps s pi, prsubsps s pp, prsubsps s pf))
 
-    | prsubst s (TThread (t, ps, c)) = 
-        TThread (prsubst s t, prsubsps s ps, ref (map (prsubspsc s) (!c)))
+    | prsubst s (TThread (t, ps)) = 
+        TThread (prsubst s t, prsubsps s ps)
     | prsubst s (TPrio ps) = 
         TPrio (prsubsps s ps)
 
@@ -110,7 +137,8 @@ struct
     | prsubst s (At (t, w)) = At (prsubst s t, wsubsw s w)
 *)
 
-  and warrow s (b, dom, cod) = (b, map (prsubst s) dom, prsubst s cod)
+  and warrow s (b, dom, cod) =
+      (b, map (fn (v, t) => (v, prsubst s t)) dom, prsubst s cod)
 
   (* w/x in w' *)
   and prsubsp (s: prio subst) x : prio =
@@ -120,9 +148,9 @@ struct
            case VM.find (s, v) of
                SOME ww => ww 
              | NONE => x)
+	| PConst _ => x
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
-        | PConst _ => x
 
   and prsubsps (s: prio subst) x : prioset =
       case x of 
@@ -130,9 +158,10 @@ struct
          | PSEvar (ref (Bound w)) => prsubsps s w
          | _ => x
 
+		    (*
   and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)
     | prsubspsc s (PSCons (ps1, ps2)) = PSCons (prsubsps s ps1, prsubsps s ps2)
-
+		    *)
   and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2))
 
   fun pbinds  E.PWild _ = false
@@ -198,8 +227,21 @@ struct
          | E.CompileWarn s => E.CompileWarn s
 (*         | E.Get (a,b) => E.Get(esubst s a, esubst s b)
  *)
+	 | E.ECmd c => E.ECmd (csubst s c)
      )
 
+  and csubst s c =
+       (case c of
+	    E.IBind (cmds, e) =>
+	    E.IBind (List.map (fn (x, e) => (x, esubst s e)) cmds, esubst s e)
+	  | E.Spawn (e, (c, loc)) =>
+	    E.Spawn (esubst s e, (csubst s c, loc))
+	  | E.Sync e => E.Sync (esubst s e)
+	  | E.Poll e => E.Poll (esubst s e)
+	  | E.Cancel e => E.Cancel (esubst s e)
+	  | E.IRet e => E.IRet (esubst s e)
+	  | E.Change e => E.Change (esubst s e)
+       )
 
   (* pattern lists as in fn; 
      just pretend it's a tuple for the sake of bindings *)

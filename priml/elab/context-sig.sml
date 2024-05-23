@@ -9,6 +9,8 @@ sig
 
     type context
 
+    type pscontext = IL.PrioSet.set IntMap.map
+
     val empty : context
 
     val ctol : context -> Layout.layout
@@ -19,13 +21,19 @@ sig
        status and world *)
     val var : context -> string -> IL.typ IL.poly * Variable.var * IL.idstatus
 
+   (* Actually fails if the variable isn't in the context rather than just
+    * assuming the variable is defined somewhere else. i.e., the right one *)
+    val var_fail : context -> string -> IL.typ IL.poly * Variable.var * IL.idstatus
+
+    val rem : context -> string -> (context * (IL.typ IL.poly * Variable.var * IL.idstatus)) option
+
     (* resolve a type/con identifer in the current context, return its kind
        and binding *)
     val con : context -> string -> IL.kind * IL.con * IL.tystatus
 
     val prio : context -> string -> IL.prio
 
-    val checkcons : context -> IL.prio -> IL.prio -> bool
+    val checkcons : pscontext -> context -> IL.prio -> IL.prio -> bool
 
     (* has_evar ctx n
        Does the context contain the free type evar n in the type of any

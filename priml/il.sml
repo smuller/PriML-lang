@@ -1,9 +1,10 @@
-
 structure IL =
 struct
 
     type intconst = IntConst.intconst
 
+    structure V = Variable
+			
     type label = string
     type var = Variable.var
     type id = string
@@ -38,34 +39,27 @@ struct
     | PVar of var
     | PConst of string
 
-    fun prcompare (PConst _, PVar _) = GREATER
-      | prcompare (PVar _, PConst _) = LESS
-      | prcompare (PEvar _, PConst _) = GREATER
-      | prcompare (PConst _, PEvar _) = LESS
-      | prcompare (PEvar _, PVar _) = GREATER
-      | prcompare (PVar _, PEvar _) = LESS
-      | prcompare (PVar v1, PVar v2) = Variable.compare (v1,v2) 
+    fun prcompare (PEvar (ref (Free _)), _) = LESS
+      | prcompare (_, PEvar (ref (Free _))) = GREATER
+      | prcompare (PEvar (ref (Bound p1)), p2) = prcompare (p1, p2)
+      | prcompare (p1, PEvar (ref (Bound p2))) = prcompare (p1, p2)
+      | prcompare (PVar v1, PVar v2) = String.compare (V.show v1, V.show v2)
+      | prcompare (PVar v1, PConst c2) = String.compare (V.show v1, c2)
+      | prcompare (PConst c1, PVar v2) = String.compare (c1, V.show v2)
       | prcompare (PConst c1, PConst c2) = String.compare (c1, c2)
-      | prcompare (PEvar (ref (Bound _)), PEvar (ref (Free _))) = GREATER
-      | prcompare (PEvar (ref (Free _)), PEvar (ref (Bound _))) = LESS
-      | prcompare (PEvar (ref (Bound w1)), PEvar (ref (Bound w2))) = prcompare (w1, w2)
-      | prcompare (PEvar (ref (Free n1)), PEvar (ref (Free n2))) = Int.compare (n1, n2)
 
     structure PrioSet = SplaySetFn (struct 
                                       type ord_key = prio
                                       val compare = prcompare
                                     end)
 
+    structure VM = Variable.Map
+    type 'a subst = 'a VM.map
+				   
     datatype prioset = 
-      PSEvar of prioset ebind ref
-    | PSSet of PrioSet.set
-
-    (* priority set constraint
-        PSSup (ps1, ps2): ps1 is a super set of ps2
-        PSCons (ps1, ps2): priorities in ps1 is less than or equal to priorities in ps2  *)
-    and psconstraint = 
-      PSSup of prioset * prioset 
-    | PSCons of prioset * prioset
+	     PSEvar of prioset ebind ref
+	     | PSSet of PrioSet.set
+	     | PSPendSub of exp subst * prioset
 
     and pconstraint = PCons of prio * prio
 
@@ -76,7 +70,7 @@ struct
       (* bool true => total 
          functions are n-ary.
          *)
-      | Arrow of bool * typ list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
+      | Arrow of bool * (var * typ) list * typ (* FIX: Arrow of bool * (string * typ) list * typ *)
       | Sum of (label * typ arminfo) list
       (* pi_n (mu  v_0 . typ_0
                and v_1 . typ_1
@@ -103,14 +97,14 @@ struct
 
       | TTag of typ * var
 
-      | Arrows of (bool * typ list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
+      | Arrows of (bool * (var * typ) list * typ) list  (* FIX: Arrows of (bool * (string * typ) list * typ) list *)
 
       (* XXX pass ref set constaints through TCmd and TThread. 
        * The correct way to handle this should be a constraint evar and unify
        * them. But this works! (for now) *)
-      (* Q: why only one (psconstraint list ref) ? *)
-      | TCmd of typ * (prioset * prioset * prioset) * (psconstraint list ref)
-      | TThread of typ * prioset * (psconstraint list ref)
+      
+      | TCmd of typ * (prioset * prioset * prioset)
+      | TThread of typ * prioset
       | TPrio of prioset (* FIX: make work !!! *)
 
       (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
@@ -158,7 +152,7 @@ struct
           pconst : pconstraint list,
           pcod   : typ,
           pbody  : exp } (* FIX: delete this *) *)
-      | PCmd of prio * typ * cmd
+      | PCmd of prioset * typ * cmd
 
     and exp =
         Value of value
@@ -170,11 +164,11 @@ struct
       (* #lab/typ e *)
       | Proj of label * typ * exp
       | Raise of typ * exp
-      (* var bound to exn value within handler *)
+      (* var bound to exn value within handler*)
       | Handle of exp * typ * var * exp
 
       | Seq of exp * exp
-      | Let of dec * exp
+      | Let of dec * exp * typ
       | Unroll of exp
       | Roll of typ * exp
 
@@ -192,13 +186,13 @@ struct
       | Primapp of Primop.primop * exp list * typ list
 
       (* sum type, object, var (for all arms but not default), 
-         branches, default.
+         branches, default, return type.
          the label/exp list need not be exhaustive.
          *)
-      | Sumcase of typ * exp * var * (label * exp) list * exp
+      | Sumcase of typ * exp * var * (label * exp) list * exp * typ
 
       (* simpler; no inner val needs to be defined. can't be exhaustive. *)
-      | Intcase of exp * (intconst * exp) list * exp
+      | Intcase of exp * (intconst * exp) list * exp * typ
 
       | Inject of typ * label * exp option
       | Cmd of prioset * cmd
@@ -227,6 +221,8 @@ struct
       | Tagtype of var
         (* tag of typ in tagtype *)
       | Newtag of var * typ * var
+      | Priority of var
+      | Order of var * var
 
     (* the kind is the number of curried arguments. 0 is kind T. *)
     withtype kind = int
@@ -239,7 +235,7 @@ struct
     fun Var v = Polyvar { tys = nil, (* prios = nil, *)
                           var = v }
     (* expand to linear search *)
-    fun Tagcase (t, obj, bound, vel, def) = 
+    fun Tagcase (t, obj, bound, vel, def, rett) = 
       let
         val vo = Variable.namedvar "tagcase"
         fun go nil = def
@@ -252,14 +248,21 @@ struct
                   no = go rest }
       in
         Let (Val (Poly ({tys=nil}, (vo, t, obj))),
-             go vel)
+             go vel,
+	     rett)
       end
 
-    fun pr_eq (PConst s1, PConst s2) = (case String.compare (s1, s2) of
+    fun string_of_prio (PConst s) = SOME s
+      | string_of_prio (PVar v) = SOME (V.show v)
+      | string_of_prio _ = NONE
+	  
+    fun pr_eq (p1, p2) =
+	case (string_of_prio p1, string_of_prio p2) of
+	    (SOME s1, SOME s2) => (case String.compare (s1, s2) of
                                             EQUAL => true
                                           | _ => false)
-      | pr_eq (PVar v1, PVar v2) = Variable.eq (v1, v2)
-      | pr_eq _ = false
+	  | _ => false
+
 
     datatype tystatus = Regular | Extensible
     datatype idstatus = 

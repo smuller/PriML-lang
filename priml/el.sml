@@ -35,6 +35,8 @@ struct
 
     | App of exp * exp * bool (* infix? *)
 
+    | LabeledArg of string * exp (* only for OCaml backend *)
+
     | Let of dec * exp
 
     | Record of (string * exp) list
@@ -118,7 +120,7 @@ struct
     (* Fix: 3 refinements for cmds *)
     (* | TCmd of typ * (rfmt * rfmt * rfmt) *)
     | TCmd of typ * rfmt
-    | TThread of typ * rfmt 
+    | TThread of typ * rfmt
     (* | TForall of ppat * typ (* FIX: delete this *) *) 
 
     | TPrio of rfmt

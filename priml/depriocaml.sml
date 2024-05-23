@@ -5,6 +5,8 @@ open EL
 
 exception unimplemented
 
+val poolvar = "__pool"
+
 fun anonfn (pats: pat list) (e as (e_, loc): exp) : exp_ =
     Let ((Fun {inline = false,
                 funs = [([], "anonfn", [(pats, NONE, e)])]}, loc),
@@ -53,6 +55,9 @@ fun deprioe ((e, loc): exp) : exp =
 and depriop loc p = (Var (Id p), loc)
 *)
 and deprioc ((c, loc) : cmd) : exp =
+    let fun apptopool f =
+	    (App ((Var (Id f), loc), (Var (Id poolvar), loc), false), loc)
+    in
     case c of
 	IBind (ses, e) =>
 	List.foldr
@@ -60,17 +65,21 @@ and deprioc ((c, loc) : cmd) : exp =
         (App (deprioe e, (Record [], #2 e), false), #2 e)
         ses
       | Spawn (p, c) =>
-        (App((App ((Var (Id "Thread.spawn"), loc),
-                   (anonfn [PWild] (deprioc c), loc), false), loc),
-             deprioe p, false), loc)
-      | Sync e => (App ((Var (Id "Thread.sync"), loc), deprioe e, false), loc)
-      | Poll e => (App ((Var (Id "Thread.poll"), loc), deprioe e, false), loc)
-      | Cancel e => (App ((Var (Id "Thread.cancel"), loc), deprioe e, false), loc)
+        (App((App (apptopool "Domainslib.Task.async",
+		   (LabeledArg ("prio", deprioe p), loc), false), loc),
+                   (anonfn [PWild] (deprioc c), loc), false), loc)
+             
+      | Sync e => (App (apptopool "Domainslib.Task.await", deprioe e, false), loc)
+      | Poll e => (App (apptopool "Domainslib.Task.poll", deprioe e, false), loc)
+      | Cancel e => (App (apptopool "Domainslib.Task.cancel", deprioe e, false), loc)
       | IRet e => deprioe e
       (* TODO: Threshold deprioc rule for Change. Should update to use the right 
       * function in Thread module for updating priority *)
       | Change p =>
-        (App ((Var (Id "Thread.change"), loc), deprioe p, false), loc)
+        (App (apptopool "Domainslib.Task.change",
+	       (LabeledArg ("prio", deprioe p), loc)
+	       , false), loc)
+    end
 
 and depriot (t: typ) =
     case t of
@@ -80,8 +89,8 @@ and depriot (t: typ) =
       | TArrow (t1, t2) => TArrow (depriot t1, depriot t2)
       | TNum _ => t
       | TCmd (t, p) => TArrow (TRec [], depriot t)
-      | TThread (t, p) => TApp ([depriot t], "Thread.t")
-      | TPrio _ => TVar "Priority.t"
+      | TThread (t, p) => TApp ([depriot t], "Domainslib.Task.t")
+      | TPrio _ => TVar "Domainslib.Priority.t"
       
       (* | TForall (_, t) => depriot t (* FIX: delete this *) *)
 
@@ -133,28 +142,28 @@ and deprioprog (Prog (tds, c)) : dec list =
       | (Order _)::tds' => deprioprog (Prog (tds', c))
       | (Fairness _)::tds' => deprioprog (Prog (tds', c))
 
-fun priotosml l (p: string) : dec =
+fun priotocaml l (p: string) : dec =
     (Val ([], PVar p,
-          (if p = "bot" then (Var (Id "Priority.bot"), l)
+          (if p = "bot" then (Var (Id "Domainslib.Priority.bot"), l)
            else
-               (App ((Var (Id "Priority.new"), l), (Record [], l), false), l)
+               (App ((Var (Id "Domainslib.Priority.new_priority"), l), (Record [], l), false), l)
           )), l)
 
-fun constosml l (s1, s2) : dec =
-    (Val ([], PWild, (App ((App ((Var (Id "Priority.new_lessthan"), l),
+fun constocaml l (s1, s2) : dec =
+    (Val ([], PWild, (App ((App ((Var (Id "Domainslib.Priority.new_lessthan"), l),
                                  (Var (Id s1), l),
                                  false), l),
                            (Var (Id s2), l),
                            false), l)),
      l)
 
-fun fairtosml l sns : dec list =
-    let fun onefair ((s, n), sml) =
-            (If ((App ((Var (Id "Priority.pe"), l),
+fun fairtocaml l sns : dec list =
+    let fun onefair ((s, n), caml) =
+            (If ((App ((Var (Id "Domainslib.Priority.pe"), l),
                        (Record [("1", (Var (Id s), l)), ("2", (Var (Id "p"), l))], l),
                        false), l),
                  (Constant (CInt n), l),
-                 sml),
+                 caml),
              l)
         val catchall =
             (Constant (CInt 0w0), l)
@@ -164,31 +173,50 @@ fun fairtosml l sns : dec list =
                          [([PVar "p"], NONE, List.foldr onefair catchall sns)])]
               },
           l),
-         (Val ([], PWild, (App ((Var (Id "Priority.installDist"), l),
+         (Val ([], PWild, (App ((Var (Id "Domainslib.Priority.installDist"), l),
                                 (Var (Id "cg__priodist"), l),
                                 false), l)),
          l)]
     end
 
+fun decstolet decs =
+    List.foldr (fn (d, e) => (Let (d, e), Pos.initpos))
+	       (Record [], Pos.initpos)
+	       decs
+    
 fun deprio p prios cons fs =
     let val l = Pos.initpos
     in
-        (List.map (priotosml l) prios) @
+        (List.map (priotocaml l) prios) @
+	(*
         [(Val ([], PWild, (App ((Var (Id "Basic.initPriorities"), l),
                                 (Record [], l),
                                 false), l)), l)] @
-        (List.map (constosml l) cons) @
-        (List.map (fn s => constosml l ("bot", s))
+	 *)
+        (List.map (constocaml l) cons) @
+        (List.map (fn s => constocaml l ("bot", s))
                   (List.filter (fn s => s <> "bot") prios)) @
-        (List.map (fn s => constosml l (s, "(Priority.top ())")) prios) @
+        (List.map (fn s => constocaml l (s, "(Domainslib.Priority.top ())")) prios) @
+	(*
         [(Val ([], PWild, (App ((Var (Id "Basic.finalizePriorities"), l),
                                 (Record [], l),
                                 false), l)), l)] @
-        (case fs of [] => [] | _ => fairtosml l fs) @
-        [(Val ([], PWild, (App ((Var (Id "Basic.init"), l),
-                                (Record [], l),
-                                false), l)), l)] @
-        (deprioprog p)
+        (case fs of [] => [] | _ => fairtocaml l fs) @
+	 *)
+        [(Val ([], PVar poolvar,
+	       (App
+		    (
+		    (App ((Var (Id "Domainslib.Task.setup_pool"), l),
+			  (LabeledArg ("num_domains", (Constant (CInt (IntConst.fromInt 4)), l)), l),
+			  false), l),
+                    (Record [], l),
+                    false), 
+		l)), l)] @
+	[(Fun {inline = false,
+	       funs = [([], "__main", [([PWild], NONE, decstolet (deprioprog p))])]
+	}, l)] @
+	[(Val ([], PWild,
+	       (App ((Var (Id ("Domainslib.Task.run " ^ poolvar)), l), (Var (Id "__main"), l), false), l)), l)]
     end
 
 end

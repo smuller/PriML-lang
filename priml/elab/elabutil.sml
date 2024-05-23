@@ -5,6 +5,7 @@ struct
     exception Elaborate of string
     structure V = Variable
     structure PSC = PSContext
+    open PSetCstrs
 
     infixr 9 `
     fun a ` b = a b
@@ -54,17 +55,17 @@ struct
         (* rename psevars in psconstraint *)
         fun psesubspsc (pscon, (psemap, pscons)) =
           case pscon of
-               IL.PSCons (ps1, ps2) =>
+              PSCons (ctx, ps1, ps2) =>
                 let val (psemap', ps1') = psesubps psemap ps1
                     val (psemap'', ps2') = psesubps psemap' ps2
                  in 
-                   (psemap'', pscons @ [IL.PSCons (ps1', ps2')])
+                   (psemap'', pscons @ [PSCons (ctx, ps1', ps2')])
                  end
-             | IL.PSSup (ps1, ps2) =>
+             | PSSup (ctx, ps1, ps2) =>
                 let val (psemap', ps1') = psesubps psemap ps1
                     val (psemap'', ps2') = psesubps psemap' ps2
                  in 
-                   (psemap'', pscons @ [IL.PSSup (ps1', ps2')])
+                   (psemap'', pscons @ [PSSup (ctx, ps1', ps2')])
                  end
       in
         List.foldl psesubspsc (psemap, []) pscons
@@ -75,34 +76,36 @@ struct
         let 
           fun psesubst_rec psemap t = 
             case t of 
-                 IL.TCmd (t', (pr1, pr2, pr3), pscons) => 
-                    let val (psemap', pscons') = psesubspscs psemap (!pscons)
-                        val (psemap', pr1') = psesubps psemap' pr1
+                IL.TCmd (t', (pr1, pr2, pr3)) =>
+		
+                    let (* val (psemap', pscons') = psesubspscs psemap (!pscons) *)
+                        val (psemap', pr1') = psesubps psemap pr1
                         val (psemap', pr2') = psesubps psemap' pr2
                         val (psemap', pr3') = psesubps psemap' pr3
                         val (psemap', t'') = psesubst_rec psemap' t'
                     in
-                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3'), ref pscons'))
+                      (psemap', IL.TCmd (t'', (pr1', pr2', pr3')))
                     end
                (* | IL.TForall (vl, cons, t') => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
                    in
                      (psemap', IL.TForall (vl, cons, t''))
                    end (* FIX: delete this *) *)
-               | IL.TThread (t', ps, pscons) => 
-                   let val (psemap', pscons') = psesubspscs psemap (!pscons)
-                       val (psemap', t'') = psesubst_rec psemap' t' 
+               | IL.TThread (t', ps) => 
+                   let (* val (psemap', pscons') = psesubspscs psemap (!pscons) *)
+                       val (psemap', t'') = psesubst_rec psemap t' 
                    in
-                     (psemap', IL.TThread (t'', ps, ref pscons'))
+                     (psemap', IL.TThread (t'', ps))
                    end
                | IL.Arrow (r, tl, t') => 
                    let val (psemap', t'') = psesubst_rec psemap t' 
-                       val (psemap', tl') = List.foldl (fn (t, (psemap, tl)) =>
-                                                          let val (psemap', t') = psesubst_rec psemap t
-                                                          in (psemap', tl @ [t'])
-                                                          end)
-                                                       (psemap, [])
-                                                       tl
+                       val (psemap', tl') = List.foldl
+						(fn ((v, t), (psemap, tl)) =>
+                                                    let val (psemap', t') = psesubst_rec psemap t
+                                                    in (psemap', tl @ [(v, t')])
+                                                    end)
+                                                (psemap, [])
+                                                tl
                    in
                      (psemap', IL.Arrow (r, tl', t''))
                    end
@@ -186,6 +189,7 @@ struct
                     raise Elaborate "type error"
                 end
 
+		    (*
     (* supertype context location message actual expected *)
     fun supertype ctx loc msg t1 t2 =
             Unify.supertype ctx t1 t2
@@ -204,7 +208,7 @@ struct
                     print "\n";
                     raise Elaborate "type error"
                 end
-
+		    *)
     (* unify context location message actual expected *)
     (* fun unifyp ctx loc msg w1 w2 =
             Unify.unifyp ctx w1 w2
@@ -226,7 +230,7 @@ struct
 
 
     fun check_constraint ctx loc p1 p2 =
-        if Context.checkcons ctx p1 p2 then
+        if Context.checkcons IntMap.empty ctx p1 p2 then
             ()
         else
             let 
@@ -313,13 +317,17 @@ struct
 *)
 
             fun got t =
+		
                 (case t of
                      IL.TRef tt => IL.TRef ` got tt
                    | IL.TVec tt => IL.TVec ` got tt
                    | IL.Sum ltl => IL.Sum ` ListUtil.mapsecond (IL.arminfo_map got) ltl
-                   | IL.Arrow (b, tl, tt) => IL.Arrow(b, map got tl, got tt)
-                   | IL.Arrows al => IL.Arrows ` map (fn (b, tl, tt) => 
-                                                      (b, map got tl, got tt)) al
+                   | IL.Arrow (b, tl, tt) =>
+		     IL.Arrow(b, map (fn (v, t) => (v, got t)) tl, got tt)
+                   | IL.Arrows al =>
+		     IL.Arrows ` map (fn (b, tl, tt) => 
+                                         (b, map (fn (v, t) => (v, got t)) tl,
+					  got tt)) al
                    | IL.TRec ltl => IL.TRec ` ListUtil.mapsecond got ltl
                    | IL.TVar v => t
                    | IL.TCont tt => IL.TCont ` got tt
@@ -330,8 +338,8 @@ struct
                    | IL.Shamrock (w, tt) => IL.Shamrock (w, got tt)
                    | IL.At (t, w) => IL.At(got t, gow w)
 *)
-                   | IL.TCmd (t, p, c) => IL.TCmd (got t, p, c)
-                   | IL.TThread (t, p, c) => IL.TThread (got t, p, c)
+                   | IL.TCmd (t, p) => IL.TCmd (got t, p)
+                   | IL.TThread (t, p) => IL.TThread (got t, p)
                    | IL.TPrio p => IL.TPrio p
                    (* | IL.TForall (v, c, t) => IL.TForall (v, c, got t) (* FIX: delete this *) *)
                    | IL.Evar er =>

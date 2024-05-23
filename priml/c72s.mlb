@@ -114,10 +114,13 @@ elab/pattern.sml
 elab/elaborate-sig.sml
 elab/elaborate.sml
 
-deprio.sml
+constraint.sml
+solve.sml
 
-print.sml
+depriocaml.sml
 
-compile.sml
+printcaml.sml
+
+compilecaml.sml
 
 c72s.sml
