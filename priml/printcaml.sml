@@ -265,6 +265,8 @@ struct
            | Exception (new, NONE) => %[$"exception", $new]
            | Exception (new, SOME t) => %[$"exception", $new,
                                           $"of", ttol t]
+	   | ExternVal _ => raise (Print "extern")
+	   | ExternType _ => raise (Print "extern")
            | Structure (id, decs) => %[$"module", $id, $"=", $"struct",
              L.listex "" "" "\n" (map dtol decs), $"end"]
            | Signature (id, decs) => %[$"signature", $id, $"=", $"sig",

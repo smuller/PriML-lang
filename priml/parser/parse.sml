@@ -697,6 +697,20 @@ struct
                  `FUN >> opt (`INLINE) && 
                    call G funs wth (fn (inl, fs) => Fun { inline = Option.isSome inl,
                                                           funs = fs }),
+
+		 `EXTERN >> `VAL >> id && (`COLON >> typ)
+		  wth (fn (i, t) => ExternVal ([], i, t)),
+		 `EXTERN >> `VAL >> tyvars && id && (`COLON >> typ)
+		  wth (fn (tv, (i, t)) => ExternVal (tv, i, t)),
+		 `EXTERN >> `VAL -- punt "expected external declaration",
+     
+		 `EXTERN >> `TYPE >> id
+		 wth (fn i => ExternType ([], i)),
+		 `EXTERN >> `TYPE >> tyvars && id
+		 wth (fn (tv, i) => ExternType (tv, i)),
+		 `EXTERN >> `TYPE -- punt "expected external declaration",
+		 `EXTERN -- punt "expected VAL or TYPE after EXTERN",
+	 
                  (* FIX: no more priority application *)
                  (* `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
                                                `RSQUARE) && (fid G)

@@ -155,14 +155,11 @@ struct
       (* just means newtag E of TO in "exn" *)
     | Exception of string * typ option
 
-    (* extern val (a, b) loop : a -> b  @ w
-       or
-       extern val (a, b) loop ~ a -> b
-       or
-       extern val (a, b) loop ~ w => (a -> b) at w
-       or
-       extern val (a, b) loop : a -> b  @ w  =  real_label_of_loop
+    (* extern val (a, b) loop : a -> b
      *)
+    | ExternVal of string list * string * typ
+    | ExternType of string list * string
+
     | Structure of string * dec list
     | Signature of string * dec list
 

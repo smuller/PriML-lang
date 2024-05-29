@@ -1129,21 +1129,9 @@ struct
 
 (*
     | E.ExternWorld (k, l) => ([ExternWorld (l, elabk k)], C.bindwlab ctx l ` elabk k)
-
-    | E.ExternVal (atvs, id, ty, wo, lo) =>
+*)
+    | E.ExternVal (atvs, id, ty) =>
           let
-            
-            (* use imported label if given, otherwise it's the same as the id *)
-            val implab = case lo of NONE => id | SOME l => l
-
-            (* might be modal or valid. *)
-            val (varsort, actx) =
-              case wo of
-                EL.Modal w => (Modal ` elabw ctx loc w, ctx)
-              | EL.Valid wid =>
-                  let val wv = V.namedvar wid
-                  in (Valid ` wv, C.bindw ctx wid wv)
-                  end
 
             fun checkdups atvs =
               ListUtil.alladjacent op <> `
@@ -1161,36 +1149,31 @@ struct
             val actx =
               foldl (fn ((s, x),c) =>
                      C.bindc c s (Typ (TVar x)) 0 
-                     Regular) actx atvs
+                     Regular) ctx atvs
 
             (* now elaborate the type. *)
             val tt = elabtex actx NONE loc ty
             val ptt =
-              Poly ({ worlds = nil (* XXX5 *),
-                      tys = map #2 atvs }, tt)
+              Poly ({ tys = map #2 atvs }, tt)
 
             val v = V.namedvar id
 
           in
-            (* XXX5 allow worlds *)
-            ( [ExternVal(Poly({worlds=nil, tys=map #2 atvs}, 
-                              (implab, v, tt, varsort)))],
-             C.bindex ctx (SOME id) ptt v Normal varsort)
+            ( [ExternVal (Poly ({ tys=map #2 atvs}, (v, tt)))],
+             C.bindex ctx (SOME id) ptt v Normal)
           end
 
-    | E.ExternType (nil, s, so) =>
+    | E.ExternType (nil, s) =>
           let
             val v = V.namedvar s
-            val lab = case so of NONE => s | SOME s' => s'
           in
-            ([ExternType (0, lab, v)],
+            ([ExternType v],
              C.bindc ctx s (Typ ` TVar v) 0 Regular)
           end
 
     (* To support extern types of higher kind, we need to support
        TPolyVar... save it for later if desired. *)
     | E.ExternType _ => error loc "extern types must have kind 0"
-*)
 
     (* some day we might add something to 'ty,' like a string list
        ref so that we can track the exception's history, or at least

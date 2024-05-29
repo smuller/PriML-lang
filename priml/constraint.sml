@@ -608,6 +608,17 @@ and consdec ctx d =
 	end
       | Tagtype a => (ctx, [], [])
       | Newtag (c, t, a) => (ctx, [], [])
+
+      | ExternVal (Poly ({tys}, (v, t))) =>
+	(C.bindv ctx (V.basename v) (Poly ({tys = tys}, t)) v,
+	 [],
+	 []
+	)
+      | ExternType v =>
+	(C.bindc ctx (V.basename v) (Typ (TVar v)) 0 Regular,
+	 [],
+	 [])
+			    
       | Priority p =>
 	let val _ = print ("IL prio dec " ^ (V.basename p) ^"\n")
 	    val ps = PSSet (PrioSet.singleton (PVar p))

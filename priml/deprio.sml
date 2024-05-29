@@ -121,6 +121,8 @@ and depriod ((d, l) : dec) : dec =
       | Newtag (s1, NONE, s2) => Newtag (s1, NONE, s2)
       | Exception (s, SOME t) => Exception (s, SOME (depriot t))
       | Exception (s, NONE) => Exception (s, NONE)
+      | ExternVal _ => Val ([], PWild, (Record [], Pos.initpos))
+      | ExternType _ => Val ([], PWild, (Record [], Pos.initpos))
       | Structure (id, decs) => Structure (id, List.map depriod decs)
       | Signature (id, decs) => Signature (id, List.map depriod decs),
      l)

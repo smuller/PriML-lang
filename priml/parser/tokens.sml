@@ -111,9 +111,9 @@ struct
       | THREAD
       | FORALL
 
+      | EXTERN
 (*
       (* ML5-specific *)
-      | EXTERN
       | EXPORT
       | GET
       | PUT
@@ -203,6 +203,7 @@ struct
       | eq (PRIORITY, PRIORITY) = true
       | eq (ORDER, ORDER) = true
       | eq (FAIRNESS, FAIRNESS) = true
+      | eq (EXTERN, EXTERN) = true
       | eq (SPAWN, SPAWN) = true
       | eq (SYNC, SYNC) = true
       | eq (POLL, POLL) = true
