@@ -167,6 +167,7 @@ struct
        ("end", END),
        ("exception", EXCEPTION),
        ("vexception", VEXCEPTION),
+       ("extern", EXTERN),
        ("fn", FN),
        ("fun", FUN),
        ("handle", HANDLE),

@@ -221,6 +221,10 @@ struct
       | Tagtype of var
         (* tag of typ in tagtype *)
       | Newtag of var * typ * var
+
+      | ExternVal of (var * typ) poly
+      | ExternType of var
+		  
       | Priority of var
       | Order of var * var
 

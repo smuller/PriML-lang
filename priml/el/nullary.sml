@@ -174,6 +174,9 @@ struct
              (G, WFun (s, ppats, pats, SOME (tul G t), nul G e))
            | WFun (s, ppats, pats, NONE, e) =>
              (G, WFun (s, ppats, pats, NONE, nul G e)) (* FIX: delete this *) *)
+	   | ExternVal (tvs, s, t) =>
+	     (G, ExternVal (tvs, s, tul G t))
+	   | ExternType (tvs, t) => (G, ExternType (tvs, t))
            | Structure (s, ds) => 
                (G, Structure (s, map (#2) ` map (dul G) ds))
            | Signature (s, ds) => 

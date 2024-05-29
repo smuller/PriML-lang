@@ -7,11 +7,16 @@ order debit_p < credit_p
 order credit_p < loop_p
 order query_p < loop_p
 
-fun getInstream () = ()
-val stdIn = ()
-fun input1 () = SOME (?a, ())
+extern val String.make : int -> char -> string
+
+extern type in_channel
+extern val stdin : in_channel
+extern val input_line : in_channel -> string
+
 fun cat (_, _) = " "
+(*
 fun str (_: char) = " "
+*)
 fun array _ = ()
 fun update (_, _, _) = ()
 fun isSpace _ = false
@@ -37,27 +42,10 @@ fun sub _ = 0
 
 fun isPrefix _ _ = true
 
-val stdin = ref (getInstream stdIn)
-
-fun inputLine () =
-    let fun iL_int line =
-            case input1 (!stdin) of
-                NONE => NONE
-              | SOME (c, is') =>
-                ((stdin := is');
-                 if c = ?\n then
-                     SOME line
-                 else
-                     iL_int (cat (line, str c)))
-    in
-        iL_int ""
-    end
-
 val accounts = array (10, 0)
 
 fun loop () =
-    case inputLine () of
-        SOME line =>
+    let val line = input_line stdin in
         let val toks = tokens isSpace line
             val c = tokens
             val acct = case fromString (nth (toks, 1))
@@ -93,7 +81,7 @@ fun loop () =
                 }
             else loop ()
         end
-      | NONE => loop ()
+	end
 
 main
 {
