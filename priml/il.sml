@@ -107,6 +107,8 @@ struct
       | TThread of typ * prioset
       | TPrio of prioset (* FIX: make work !!! *)
 
+      | TMutex of prioset
+
       (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
 
     (* type constructors. only used in elaboration *)
@@ -200,7 +202,10 @@ struct
     (*
       (* for more efficient treatment of blobs of text. *)
       | Jointext of exp list
-*)
+     *)
+
+      | NewMutex of exp
+
     and cmd =
         Bind of var * exp * cmd
       | Spawn of exp * typ * cmd
@@ -209,6 +214,7 @@ struct
       | Cancel of exp
       | Ret of exp
       | Change of exp
+      | WithMutex of exp * cmd
 
     and dec =
         Do of exp

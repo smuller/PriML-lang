@@ -113,6 +113,7 @@ fun supertypex ctx t1 t2 =
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
 	     (pscstr_sup ctx ps1 ps2) @ (supertypex ctx t1 t2)
            | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2
+	   | (TMutex ps1, TMutex ps2) => pscstr_sup ctx ps1 ps2
 	   | (Evar (ref (Bound t1)), Evar (ref (Bound t2))) =>
 	     supertypex ctx t1 t2
 	   | (Evar (ref (Bound t1)), t2) => supertypex ctx t1 t2
@@ -130,9 +131,10 @@ fun supertypex ctx t1 t2 =
     end
 
 fun subtype ctx t1 t2 =
+    (print "subtype\n";
     (supertypex ctx t2 t1)
     handle TyError s => (print s; raise (TyError s))
-	
+    )	
 fun wf_cons ctx t =
     case t of
 	TVar _ => []
@@ -175,6 +177,7 @@ fun wf_cons ctx t =
 	@ (wf_cons ctx t)
       | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
       | TPrio p => (pscstr_wf ctx p)
+      | TMutex p => pscstr_wf ctx p
 
 fun fresh t =
     case t of
@@ -206,6 +209,7 @@ fun fresh t =
 	TCmd (fresh t, (new_psevar (), new_psevar (), new_psevar ()))
       | TThread (t, _) => TThread (fresh t, new_psevar ())
       | TPrio _ => TPrio (new_psevar ())
+      | TMutex _ => TMutex (new_psevar ())
 			 
 fun consval ctx v =
     let val _ = Layout.print (Layout.mayAlign [Layout.str "consval ",
@@ -514,6 +518,13 @@ and cons ctx e : typ * (psconstraint list) =
 	    (TCmd (t, (p, midprios, endprios)),
 	     cs)
 	end
+      | NewMutex p =>
+	case basety (cons ctx p) of
+	    (TPrio psint, cs) =>
+	    (TMutex psint, cs)
+	  | (t, _) => (Layout.print (ILPrint.ttol t, print);
+		       Layout.print (Context.ctol ctx, print);
+		       raise (TyError "not a prio"))
     end
 	
 and conscmd sp ctx cmd =
@@ -589,6 +600,25 @@ and conscmd sp ctx cmd =
 	     (TRec [], ep', ep', cs)
 	   | _ => raise (TyError "not a priority")
 	)
+
+      | WithMutex (mut, c) =>
+	(* Priority protection protocol: the critical section starts at the
+	 * priority ceiling and must stay at the priority ceiling *)
+	(case basety (cons ctx mut) of
+	     (TMutex pc, cs) =>
+	     let val (t, mp, ep, cs') = conscmd pc ctx c
+		 val allp = new_psevar ()
+	     in
+		 (t, allp, sp,
+		  cs @ cs'
+		  @ (pscstr_cons ctx sp pc)
+		  @ (pscstr_sup ctx allp sp)
+		  @ (pscstr_sup ctx allp mp)
+		  @ (pscstr_eq ctx mp pc)
+		 )
+	     end
+	   | _ => raise (TyError "not a priority")
+	)
     end
 
 and consdec ctx d =
@@ -603,7 +633,7 @@ and consdec ctx d =
 	let val (t', cs) = cons ctx e in
 	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
 	     [(x, e)],
-	     cs @ (print "subtype val\n"; subtype ctx t' t)
+	     cs @ (print "subtype val\n"; subtype ctx t' t before print "done\n")
 	    )
 	end
       | Tagtype a => (ctx, [], [])

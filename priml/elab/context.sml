@@ -166,7 +166,8 @@ struct
                  | TRef t => has t
                  | TCmd (t, _) => has t
                  | TThread (t, _) => has t
-                 | TPrio _ => false) (* FIX: refinements don't have evars? *)
+                 | TPrio _ => false
+		 | TMutex _ => false) (* FIX: refinements don't have evars? *)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
       in
         SU.exists (fn (Poly({tys}, t), _, _) => has t) vars 
@@ -213,7 +214,8 @@ struct
                  | TRef t => has t
                  | TCmd (t, _) => has t
                  | TThread (t, _) => has t
-                 | TPrio _ => false)
+                 | TPrio _ => false
+		 | TMutex _ => false)
                  (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
 
       in

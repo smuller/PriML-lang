@@ -41,6 +41,14 @@ fun deprioe ((e, loc): exp) : exp =
       | ECmd c =>
         (* Wrap the expression in a thunk to preserve encapsulation *)
         anonfn [PWild] (deprioc (c, loc))
+      | NewMutex e =>
+	App ((App ((Var (Id "Domainslib.Mutex.create"), loc),
+		   (LabeledArg ("prio", deprioe e), loc),
+		   false),
+	      loc),
+	     (Record [], loc),
+	     false)
+	
       (* | PFn (ppats, pats, e) =>
         let val ee = deprioe e
         in
@@ -78,7 +86,15 @@ and deprioc ((c, loc) : cmd) : exp =
       | Change p =>
         (App (apptopool "Domainslib.Task.change",
 	       (LabeledArg ("prio", deprioe p), loc)
-	       , false), loc)
+	    , false), loc)
+      | WithMutex (e, c) =>
+	List.foldr
+	    (fn ((v, e), e') => (Let ((Val ([], PVar v, e), loc), e'), loc))
+	    (Var (Id "__ret"), loc)
+	    [("_", (App (apptopool "Domainslib.Mutex.lock", deprioe e, false), loc)),
+	     ("__ret", deprioe e),
+	     ("_", (App (apptopool "Domainslib.Mutex.unlock", deprioe e, false), loc))]
+
     end
 
 and depriot (t: typ) =
@@ -91,6 +107,7 @@ and depriot (t: typ) =
       | TCmd (t, p) => TArrow (TRec [], depriot t)
       | TThread (t, p) => TApp ([depriot t], "Domainslib.Task.t")
       | TPrio _ => TVar "Domainslib.Priority.t"
+      | TMutex _ => TVar "Domainslib.Mutex.t"
       
       (* | TForall (_, t) => depriot t (* FIX: delete this *) *)
 

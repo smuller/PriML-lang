@@ -341,6 +341,7 @@ struct
                    | IL.TCmd (t, p) => IL.TCmd (got t, p)
                    | IL.TThread (t, p) => IL.TThread (got t, p)
                    | IL.TPrio p => IL.TPrio p
+		   | IL.TMutex p => IL.TMutex p
                    (* | IL.TForall (v, c, t) => IL.TForall (v, c, got t) (* FIX: delete this *) *)
                    | IL.Evar er =>
                          (case !er of

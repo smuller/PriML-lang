@@ -73,6 +73,9 @@ struct
 
     | Handle of exp * (pat * exp) list
 
+    (* priority ceiling needs to be annotated for now *)
+    | NewMutex of exp
+
   and cmd_ =
       IBind of ((string * exp) list) * exp
     | Spawn of exp * cmd  (* Spawn of exp * cmd *)
@@ -81,6 +84,7 @@ struct
     | Cancel of exp
     | IRet of exp
     | Change of exp  (* Change of exp *)
+    | WithMutex of exp * cmd (* mutex, critical section *)
 
   and constant =
       CInt of intconst
@@ -124,6 +128,8 @@ struct
     (* | TForall of ppat * typ (* FIX: delete this *) *) 
 
     | TPrio of rfmt
+
+    | TMutex of rfmt
 
   and dec_ =
       (* wish we had refinements here. 

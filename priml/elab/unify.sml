@@ -106,6 +106,7 @@ struct
            | TCmd (t, _) => occurs r t
            | TThread (t, _) => occurs r t
            | TPrio _ => false
+	   | TMutex _ => false
            (* | TForall (_, _, t) => occurs r t (* FIX: delete this *) *)
 (*           | At (t, w) => occurs r t
            | Shamrock (_, t) => occurs r t
@@ -480,7 +481,9 @@ struct
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
              unifyex ctx eqmap t1 t2
 
-            | (TPrio ps1, TPrio ps2) => ()
+           | (TPrio ps1, TPrio ps2) => ()
+
+	   | (TMutex _, TMutex _) => ()
             
             | (Evar (ref (Bound t1)), t2) => unifyex ctx eqmap t1 t2
             | (t1, Evar (ref (Bound t2))) => unifyex ctx eqmap t1 t2
@@ -547,6 +550,8 @@ struct
            | (_, TThread _) => raise Unify "tycon mismatch (thread)"
            | (TPrio _, _) => raise Unify "tycon mismatch (prio)"
            | (_, TPrio _) => raise Unify "tycon mismatch (prio)"
+           | (TMutex _, _) => raise Unify "tycon mismatch (prio)"
+           | (_, TMutex _) => raise Unify "tycon mismatch (prio)"
            (* | (TForall _, _) => raise Unify "tycon mismatch (forall)" (* FIX: delete this *) *)
            (* | (_, TForall _) => raise Unify "tycon mismatch (forall)" (* FIX: delete this *) *)
 (*           | (At _, _) => raise Unify "tycon mismatch (at)"

@@ -40,6 +40,7 @@ struct
     | tsubst s (TCmd (t, p)) = TCmd (tsubst s t, p)
     | tsubst s (TThread (t, p)) = TThread (tsubst s t, p)
     | tsubst s (TPrio p) = TPrio p
+    | tsubst s (TMutex p) = TMutex p
     (* | tsubst s (TForall (vs, cs, t)) = TForall (vs, cs, tsubst s t) (* FIX: delete this *) *)
 (*
     | tsubst s (At (t, w)) = At (tsubst s t, w)
@@ -69,6 +70,7 @@ struct
     | subst_e_in_t s (TThread (t, p)) =
       TThread (subst_e_in_t s t, esubstprset s p)
     | subst_e_in_t s (TPrio p) = TPrio (esubstprset s p)
+    | subst_e_in_t s (TMutex p) = TPrio (esubstprset s p)
 			   
   and esubstprset s p = PSPendSub (s, p)
 
@@ -91,7 +93,8 @@ struct
          | E.TArrow (dom, cod) => E.TArrow(etsubst s dom, etsubst s cod)
          | E.TCmd (t, p) => E.TCmd (etsubst s t, p)
          | E.TThread (t, p) => E.TThread (etsubst s t, p)
-         | E.TPrio p => E.TPrio p)
+         | E.TPrio p => E.TPrio p
+	 | E.TMutex p => E.TMutex p)
          (* | E.TForall (vs, t) => E.TForall (vs, etsubst s t) (* FIX: delete this *) *)
 
 
@@ -118,7 +121,9 @@ struct
     | prsubst s (TThread (t, ps)) = 
         TThread (prsubst s t, prsubsps s ps)
     | prsubst s (TPrio ps) = 
-        TPrio (prsubsps s ps)
+      TPrio (prsubsps s ps)
+    | prsubst s (TMutex ps) =
+      TMutex (prsubsps s ps)
 
     (* | prsubst s (TForall (wvs, cs, t)) =
       let val nvs = List.map Variable.alphavary wvs
@@ -228,6 +233,7 @@ struct
 (*         | E.Get (a,b) => E.Get(esubst s a, esubst s b)
  *)
 	 | E.ECmd c => E.ECmd (csubst s c)
+	 | E.NewMutex e => E.NewMutex (esubst s e)
      )
 
   and csubst s c =
@@ -241,6 +247,7 @@ struct
 	  | E.Cancel e => E.Cancel (esubst s e)
 	  | E.IRet e => E.IRet (esubst s e)
 	  | E.Change e => E.Change (esubst s e)
+	  | E.WithMutex (e, (c, l)) => E.WithMutex (esubst s e, (csubst s c, l))
        )
 
   (* pattern lists as in fn; 

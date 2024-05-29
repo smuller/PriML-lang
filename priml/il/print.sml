@@ -140,7 +140,9 @@ struct
 
            | TTag (t, v) => %[$"tag", self t, $"=>", $(V.tostring v)]
            | Evar (ref (Bound t)) => self t
-           | Evar (ref (Free n)) => $("'a" ^ itos n))
+           | Evar (ref (Free n)) => $("'a" ^ itos n)
+	   | TMutex ps => %[$" mutex[", pstol ps, $"]"]
+	)
       end
 
     and prtol (PEvar (ref (Bound w))) = prtol w
@@ -384,7 +386,8 @@ struct
                    L.listex "[" "]" "," (map etol el)]
 *)
            | Cmd (ps, c) => L.paren (%[$"cmd[", pstol ps, $"]", $"{",ctol c, $"}"])
-           (* | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e]) (* FIX: delete this *) *)
+        (* | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e]) (* FIX: delete this *) *)
+	   | NewMutex e => L.paren (%[$"newmutex[", etol e, $"]"])
                  )
 
     and ctol c = 
@@ -398,7 +401,9 @@ struct
         | Poll e => %[$"poll", etol e]
         | Cancel e => %[$"cancel", etol e]
         | Ret e => %[$"ret", etol e]
-        | Change e => %[$"change[", etol e, $"]"])
+        | Change e => %[$"change[", etol e, $"]"]
+	| WithMutex (e, c) => %[$"withmutex", etol e, $"{", ctol c, $"}"]
+	)
 
     and dtol d =
         (case d of

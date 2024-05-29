@@ -65,6 +65,7 @@ struct
                  in Let (dd, nul GG e)
                  end
               | ECmd cmd => ECmd cmd
+	      | NewMutex e => NewMutex (nul G e)
               (* | PFn (ppats, pats, e) => PFn (ppats, pats, self e) (* FIX: delete this *) *)
               (* | PApply (e, p) => PApply (nul G e, p) (* FIX: delete this *) *)
            )
@@ -82,7 +83,8 @@ struct
            | TArrow (a,b) => TArrow (tul G a, tul G b)
            | TCmd (t, p) => TCmd (tul G t, p)
            | TThread (t, p) => TThread (tul G t, p)
-           | TPrio p => TPrio p)
+           | TPrio p => TPrio p
+	   | TMutex p => TMutex p)
            (* | TForall (pp, t) => TForall (pp, tul G t) (* FIX: delete this *) *)
 
     and pul G pat =
@@ -188,12 +190,14 @@ struct
         ((case i of
               IBind (ses, e) =>
 	      IBind (List.map (fn (s, i) => (s, nul G i)) ses, nul G e)
-          | Spawn (p, c) => Spawn (p, cul G c)
+          | Spawn (p, c) => Spawn (nul G p, cul G c)
           | Sync e => Sync (nul G e)
           | Poll e => Poll (nul G e)
           | Cancel e => Cancel (nul G e)
           | IRet e => IRet (nul G e)
-          | Change p => Change p),
+          | Change p => Change (nul G p)
+	  | WithMutex (e, c) => WithMutex (nul G e, cul G c)
+	 ),
          loc)
 
     fun nullary (Prog (tds, c)) = 

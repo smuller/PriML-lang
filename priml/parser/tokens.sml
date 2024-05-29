@@ -112,6 +112,10 @@ struct
       | FORALL
 
       | EXTERN
+
+      | NEWMUTEX
+      | WITHMUTEX
+	
 (*
       (* ML5-specific *)
       | EXPORT
@@ -219,6 +223,8 @@ struct
       | eq (LESSTHAN, LESSTHAN) = true
       | eq (LESSEQUAL, LESSEQUAL) = true
       | eq (MAIN, MAIN) = true
+      | eq (NEWMUTEX, NEWMUTEX) = true
+      | eq (WITHMUTEX, WITHMUTEX) = true
       | eq _ = false
 
 end

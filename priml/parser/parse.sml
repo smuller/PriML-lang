@@ -452,6 +452,9 @@ struct
 	       (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
                 (call G cmd)
                 wth (mk_cmd_exp Spawn), *)
+
+	       `NEWMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) wth NewMutex,
+	       
            `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
                 (call G cmd)
                 wth (mk_cmd_exp Spawn),
@@ -464,7 +467,10 @@ struct
 
                `RET >> call G exp wth (mk_cmd_exp IRet),
 
-               `CHANGE >> (`LSQUARE >> (call G exp) << `RSQUARE) wth (mk_cmd_exp Change)
+               `CHANGE >> (`LSQUARE >> (call G exp) << `RSQUARE) wth (mk_cmd_exp Change),
+
+	       `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd)
+		wth (mk_cmd_exp WithMutex)
               ]
 	  end
       and appexp G =

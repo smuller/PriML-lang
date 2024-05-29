@@ -1,0 +1,52 @@
+priority low
+priority med
+priority high
+
+order low < med
+order med < high
+
+val lowmutex = newmutex[low]
+val medmutex = newmutex[med]
+
+(* GOOD: all below the prio ceiling *)
+(*
+main
+{
+  t1 <- spawn[low] { withmutex[lowmutex] { ret 1 } };
+  spawn[low] { withmutex[lowmutex] { ret 1 }}
+}
+*)
+
+(* GOOD: all below the prio ceiling *)
+(*
+main
+{
+  t1 <- spawn[low] { withmutex[medmutex] { ret 1 } };
+  spawn[med] { withmutex[medmutex] { ret 1 }}
+}
+*)
+
+(* GOOD rejects: one over the prio ceiling *)
+(*
+main
+{
+  t1 <- spawn[low] { withmutex[lowmutex] { ret 1 } };
+  spawn[med] { withmutex[lowmutex] { ret 1 }}
+}
+*)
+
+(* GOOD rejects: increase prio in critical section *)
+(*
+main
+{
+  t1 <- spawn[low] { withmutex[lowmutex] { ret 1 } };
+  spawn[low] { withmutex[lowmutex] { change[high]; ret 1 }}
+}
+*)
+
+(* GOOD rejects: decrease prio in critical section *)
+main
+{
+  t1 <- spawn[low] { withmutex[medmutex] { ret 1 } };
+  spawn[med] { withmutex[medmutex] { change[low]; ret 1 }}
+}

@@ -129,7 +129,9 @@ struct
                TCmd (elabtex ctx prefix loc t, (ps, Unify.new_psevar (), Unify.new_psevar ()))
            end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)))
-       | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p))))
+       | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p)))
+       | E.TMutex p => TMutex (PSSet (PrioSet.singleton (elabpr ctx loc p)))
+      )
 				     
        (* | E.TForall (E.PPVar s, t) =>
          let val v = V.namedvar s
@@ -732,6 +734,14 @@ struct
                 | _ => error loc "not a forall"
           end (* FIX: delete this *) *)
 
+	| E.NewMutex e =>
+          let val (pe, pt) = elab ctx e
+	  in
+	      case pt of
+		  TPrio psint => (NewMutex pe, TMutex psint)
+		| _ => error loc "newmutex priority"
+	  end
+
   (* context, start refinement, (instruction, location) *)
   and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
       case i of
@@ -866,6 +876,19 @@ struct
           
         *)
         | E.IBind is => elabbind ctx pr is
+
+	| E.WithMutex (mut, c) =>
+	  let val (em, et) = elab ctx mut
+	  in
+	      case et of
+		  TMutex pc =>
+		  let
+		      val (ec, t, (pr1, pr2), cc) = elabcmd ctx pr c
+		  in
+		      (WithMutex (em, ec), t, (pr1, pr2), cc)
+		  end
+		| _ => error loc "withmutex mutex"
+	  end
 
   (* FIX: binding with first class priorities *)
   and elabbind ctx (pr: IL.prioset) (is, li) =
