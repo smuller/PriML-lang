@@ -42,8 +42,8 @@ fun deprioe ((e, loc): exp) : exp =
         (* Wrap the expression in a thunk to preserve encapsulation *)
         anonfn [PWild] (deprioc (c, loc))
       | NewMutex e =>
-	App ((App ((Var (Id "Domainslib.Mutex.create"), loc),
-		   (LabeledArg ("prio", deprioe e), loc),
+	App ((App ((Var (Id "Domainslib.Task.Mutex.create"), loc),
+		   (LabeledArg ("ceil", deprioe e), loc),
 		   false),
 	      loc),
 	     (Record [], loc),
@@ -91,9 +91,9 @@ and deprioc ((c, loc) : cmd) : exp =
 	List.foldr
 	    (fn ((v, e), e') => (Let ((Val ([], PVar v, e), loc), e'), loc))
 	    (Var (Id "__ret"), loc)
-	    [("_", (App (apptopool "Domainslib.Mutex.lock", deprioe e, false), loc)),
-	     ("__ret", deprioe e),
-	     ("_", (App (apptopool "Domainslib.Mutex.unlock", deprioe e, false), loc))]
+	    [("_", (App (apptopool "Domainslib.Task.Mutex.lock", deprioe e, false), loc)),
+	     ("__ret", deprioc c), (*(App (deprioc c, (Record [], #2 c), false), loc)),*)
+	     ("_", (App (apptopool "Domainslib.Task.Mutex.unlock", deprioe e, false), loc))]
 
     end
 
@@ -107,7 +107,7 @@ and depriot (t: typ) =
       | TCmd (t, p) => TArrow (TRec [], depriot t)
       | TThread (t, p) => TApp ([depriot t], "Domainslib.Task.t")
       | TPrio _ => TVar "Domainslib.Priority.t"
-      | TMutex _ => TVar "Domainslib.Mutex.t"
+      | TMutex _ => TVar "Domainslib.Task.Mutex.t"
       
       (* | TForall (_, t) => depriot t (* FIX: delete this *) *)
 
@@ -155,7 +155,10 @@ and depriod ((d, l) : dec) : dec =
 
 and deprioprog (Prog (tds, c)) : dec list =
     case tds of
-        [] => [(Val ([], PWild, deprioc c), Pos.initpos)]
+        [] =>
+	[(Fun {inline = false,
+	       funs = [([], "__main", [([PWild], NONE, deprioc c)])]
+	}, Pos.initpos)]
       | (Dec d)::tds' => (depriod d)::(deprioprog (Prog (tds', c)))
       | (Priority _)::tds' => deprioprog (Prog (tds', c))
       | (Order _)::tds' => deprioprog (Prog (tds', c))
@@ -212,10 +215,18 @@ fun deprio p prios cons fs =
                                 (Record [], l),
                                 false), l)), l)] @
 	 *)
+
+
+	(* XXX constraints temporarily disabled
         (List.map (constocaml l) cons) @
         (List.map (fn s => constocaml l ("bot", s))
                   (List.filter (fn s => s <> "bot") prios)) @
         (List.map (fn s => constocaml l (s, "(Domainslib.Priority.top ())")) prios) @
+
+	 *)
+
+
+
 	(*
         [(Val ([], PWild, (App ((Var (Id "Basic.finalizePriorities"), l),
                                 (Record [], l),
@@ -226,14 +237,17 @@ fun deprio p prios cons fs =
 	       (App
 		    (
 		    (App ((Var (Id "Domainslib.Task.setup_pool"), l),
-			  (LabeledArg ("num_domains", (Constant (CInt (IntConst.fromInt 4)), l)), l),
+			  (LabeledArg ("num_domains", (Constant (CInt (IntConst.fromInt 8)), l)), l),
 			  false), l),
                     (Record [], l),
                     false), 
 		l)), l)] @
+	(deprioprog p)  @
+	    (*
 	[(Fun {inline = false,
 	       funs = [([], "__main", [([PWild], NONE, decstolet (deprioprog p))])]
 	}, l)] @
+	     *)
 	[(Val ([], PWild,
 	       (App ((Var (Id ("Domainslib.Task.run " ^ poolvar)), l), (Var (Id "__main"), l), false), l)), l)]
     end

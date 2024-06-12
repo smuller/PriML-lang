@@ -109,7 +109,7 @@ struct
         (case t of
            (* should print these right-associatively *)
              TVar v => L.str v
-           | TApp (ts, s) => L.paren(L.seq ((List.map self ts) @ [$s]))
+           | TApp (ts, s) => L.paren(L.listex "" "" " " ((List.map self ts) @ [$s]))
            | TRec nil => $"unit"
            | TRec ltl => recordortuplet self ":" "(" ")" " *" ltl
            | TArrow (dom, cod) =>
@@ -164,7 +164,7 @@ struct
            | Vector es => raise (Print "vector")
 
            | Proj (l, t, e) => 
-                 %[L.seq[$("#" ^ l), $" ", etol e]]
+                 %[L.seq[L.paren(etol e), $".", $l]]
 
            | Andalso (e1, e2) => L.paren(%[etol e1, $" && ", etol e2])
            | Orelse (e1, e2) => L.paren(%[etol e1, $" || ", etol e2])
@@ -244,6 +244,10 @@ struct
                                (map (fn (s, SOME t) => %[$s, $" of ", ttol t]
                                     | (s, NONE) => $s) sts)]
 
+(* Small problem outputting OCaml: OCaml differentiates between let-bindings
+ * and definitions. We'll output declarations at the top level as definitions.
+ * This means there'll  be an OCaml compile error if you try to, e.g., declare
+ * a type locally. *)
     and dtol (d, _) : L.layout =
         (case d of
              Val (tys, p, e) =>
@@ -275,8 +279,35 @@ struct
            | SigVal _ => raise (Print "does sigval even get used?")
         )
 
-    and tdtol d =
-	%[$"let", dtol d]
+    and tdtol (d, _) =
+	case d of
+	    Val (tys, p, e) =>
+	    %[$"let ", listnotnone "(" ")" "," (map op$ tys),
+	      ptol p, $"=", etol e]
+	  | Do e => etol e
+	  | Type (ss, s, t) =>
+	    %[$"type ", listnotnone "(" ")" "," (map op$ ss), $s, $" = ", ttol t]
+	  | Fun {inline = inline, funs = f::funs} =>
+	    %[$"let ", funtol true inline f,
+	      L.listex "" "" "\n" (map (funtol false inline) funs)]
+	  | Fun _ => raise (Print "function with no functions?")
+	  | Datatype (tys, cons) =>
+	    %[$"type ", listnotnone "(" ")" ", " (map op$ tys),
+	      L.listex "" "" "" (map contol cons)]
+	  | Tagtype s => raise (Print "tagtype")
+	  | Newtag _ => raise (Print "newtag")
+	  | Exception (new, NONE) => %[$"exception", $new]
+	  | Exception (new, SOME t) => %[$"exception", $new,
+					 $"of", ttol t]
+	  | ExternVal _ => raise (Print "extern")
+	  | ExternType _ => raise (Print "extern")
+	  | Structure (id, decs) => %[$"module", $id, $"=", $"struct",
+				      L.listex "" "" "\n" (map dtol decs), $"end"]
+	  | Signature (id, decs) => %[$"signature", $id, $"=", $"sig",
+				      L.listex "" "" "\n" (map dtol decs), $"end"]
+	  | SigType _ => raise (Print "does sigtype even get used?")
+	  | SigVal _ => raise (Print "does sigval even get used?")
+
 	
     and ptol p =
         case p of
