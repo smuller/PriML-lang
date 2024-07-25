@@ -40,7 +40,13 @@ extern val at_exit : (unit -> unit) -> unit
 extern val 'a List.iter : ('a -> unit) -> 'a list -> unit
 extern val 'a List.length : 'a list -> int
 extern val 'a List.nth : 'a list -> int -> 'a
-
+extern val 'a List.rev : 'a list -> 'a list
+extern val 'a List.filter : ('a -> bool) -> 'a list -> 'a list
+extern val 'a List.flatten : 'a list list -> 'a list
+extern val 'a List.append : 'a list -> 'a list -> 'a list
+extern val ('a, 'b) List.map : ('a -> 'b) -> 'a list -> 'b list
+extern val 'a List.sort_uniq : ('a -> 'a -> int) -> 'a list -> 'a list
+							   
 extern val ^ : string * string -> string
 extern val string_of_int : int -> string
 extern val String.length : string -> int
@@ -56,22 +62,36 @@ extern val Time.tm_wday : tm -> int
 extern val Time.tm_mon : tm -> int
 extern val Time.tm_year : tm -> int
 extern val Time.sleep : int -> unit
-				    
+extern val Time.tsminus : float -> float -> float
+extern val Time.tsless : float -> int -> bool
+						
 extern val Printf.printf : string -> unit
 extern val Time.print : string -> unit
 
+extern type Lib.host
+extern val Lib.host_compare : Lib.host -> Lib.host -> int
+extern val Lib.string_of_host : Lib.host -> string
+extern val Lib.host_of_sockaddr : Unix.sockaddr -> Lib.host
+						     
 extern type int_atomic
 extern val Atomic.make : int -> int_atomic
 extern val Atomic.incr : int_atomic -> unit
 extern val Atomic.decr : int_atomic -> unit
 extern val Atomic.get : int_atomic -> int
 
-extern type ts_list_hashtbl
-extern val Hashtbl.create_ts_list : int -> ts_listhashtbl
-extern val Hashtbl.
+extern type Lib.ts_list_hashtbl
+extern val Lib.TSHashtbl.create : int -> Lib.ts_list_hashtbl
+extern val Lib.TSHashtbl.add : Lib.ts_list_hashtbl -> Lib.host -> float -> unit
+extern val Lib.TSHashtbl.find_all : Lib.ts_list_hashtbl -> Lib.host -> float list
+
+extern type Lib.unit_hashtbl
+extern val Lib.UHashtbl.create : int -> Lib.unit_hashtbl
+extern val Lib.UHashtbl.add : Lib.unit_hashtbl -> Lib.host -> unit -> unit
+extern val Lib.UHashtbl.mem : Lib.unit_hashtbl -> Lib.host -> bool
+
 
 exception Invalid_argument of string
-					   
+				   
 priority low_hash_p
 priority accept_p
 priority high_hash_p
@@ -85,17 +105,24 @@ val _ = Printf.printf "Hi!\n%!"
 
 type request =
      {page : string,
-      host : Unix.sockaddr,
+      host : Lib.host,
       ts   : float}
-	
+
 val socks = ref nil
 val conns = Atomic.make 0
 val reqs : request list ref = ref nil
-val conns_hashtbl : ts_list_hashtbl
+val conns_hashtbl : Lib.ts_list_hashtbl = Lib.TSHashtbl.create 100
+val bad_hashtbl : Lib.unit_hashtbl = Lib.UHashtbl.create 100
 
-val conns_cutoff = 10
+(* Parameters *)
+val conns_cutoff = 10 (* Number of connections for switching priority *)
+val req_threshold = 5 (* A host is bad if it has more than this many reqs *)
+val time_window = 5 (* over this many seconds *)
+val hosts_par_threshold = 10 (* Hosts to process sequentially for tracking *)
 
 val request_mut = newmutex[serve_p]
+val bad_mut = newmutex[serve_p]
+
 
 fun close sock = (Unix.shutdown sock) Unix.SHUTDOWN_ALL
 
@@ -119,61 +146,6 @@ fun accept sock =
 
 val _ = at_exit (fn () => List.iter (fn f => f ()) (!socks))
 
-	(*
-
-val reqbuf = ref nil
-val stats = ref nil
-
-(* Sequential base case for fib *)
-fun seqfib n =
-    if le (n, 1) then 1
-    else let val (r1, r2) = (seqfib (minus (n, 1)), seqfib (minus (n, 2)))
-         in plus (r1, r2)
-         end
-
-(* Priority-polymorphic parallel fib *)
-fun[w] fib n =
-         let fun fib_int n : int cmd[w] =
-                 if le (n, 1) then cmd[w] {ret 1}
-                 else if le (n, 20) then cmd[w] {ret (seqfib n)}
-                 else
-                     cmd[w]
-                        { bt <- spawn[w] { fib_int (minus (n, 1)) };
-                          a <- fib_int (minus (n, 2));
-                          b <- sync bt;
-                          plus (a, b)}
-         in
-             cmd[w]
-             {
-               f <- fib_int n;
-               print (cat (Int.toString f, "\n"))
-             }
-         end
-
-fun statloop () =
-    let fun update_stats (r, ss) =
-            if List.exists (fn {page, views} => eq (page, r)) ss then
-                List.map (fn {page, views} =>
-                             if eq (page, r) then
-                                 {page = page, views = plus (views, 1)}
-                             else
-                                 {page = page, views = views})
-                     ss
-            else
-                cons ({page = r, views = 1}, ss)
-        fun comp_stats rs ss =
-            List.foldl update_stats ss rs
-        val reqs = !reqbuf
-        val stats' = comp_stats reqs nil
-    in
-        upd (stats, stats');
-        cmd[stat_p]
-           { ret ([stat_p]fib 42);
-             statloop ()
-           }
-    end
-	 *)
-
 fun parse_request s =
     let val tokens = String.split_on_char ?  s
 	val url = List.nth tokens 1
@@ -182,19 +154,6 @@ fun parse_request s =
 	SOME (List.nth urltokens (List.length urltokens - 1))
     end
 
-    (*
-type tm = {
-  tm_sec : int,
-  tm_min : int,
-  tm_hour : int,
-  tm_mday : int,
-  tm_mon : int,
-  tm_year : int,
-  tm_wday : int,
-  tm_yday : int,
-  tm_isdst : bool
-}
-*)
 	  
 fun format_date tm =
     (case (Time.tm_wday tm) of
@@ -256,24 +215,7 @@ fun build_404 () =
 
 val dummy_page =
     "<html><head><title>Dummy page</title></head><body>Hi!</body></html>"
-(*
-fun build_stat_page () =
-    let fun build_row {page, views} =
-            cat ("<tr><td>", cat (page, cat ("</td><td>", cat(Int.toString views,
-            "</td></tr>\n"))))
-    in
-        cat ("<html><head><title>Server Statistics</title></head>\n",
-        cat ("<body>\n",
-        cat ("<h1>Server statistics</h1>\n", (* as of " ^
-        (Date.fmt "%a, %d %b %Y %H:%M:%S %Z"
-                  (Date.fromTimeLocal (Time.now ()))) ^ "</h1>\n" ^ *)
-        cat ("<table border=1>\n",
-        cat ("<tr><td>Page</td><td>Views</tr>\n",
-        cat ((List.foldl cat "" (List.map build_row (!stats))),
-        cat ("</table>",
-        "</body></html>")))))))
-    end
- *)
+
 
 fun readfile f =
   let val chan = open_in f
@@ -339,7 +281,8 @@ fun inploop addr sock =
 			     {
 			      withmutex[request_mut]
 				       { ret (reqs := {page = filename,
-						       host = addr}::(!reqs)) };
+						       host = addr,
+						       ts = Unix.time ()}::(!reqs)) };
 			      ret (Printf.printf "Added\n%!")
 			     }
 			)
@@ -360,39 +303,120 @@ fun inploop addr sock =
 fun acceptloop sock =
     (let val _ = Printf.printf "acceptloop\n%!"
 	 val (s, a) = Unix.accept sock
-	 val _ = Atomic.incr conns
-	 val _ = Printf.printf "accepted: "
-	 val _ = Time.print (string_of_int (Atomic.get conns))
-	 val _ = Printf.printf " connections\n%!"
-         val _ = addtosocks s
+	 val h = Lib.host_of_sockaddr a
      in
          cmd
              {
-              spawn[serve_p] { inploop a s };
-              acceptloop sock
+	       bad <- withmutex[bad_mut] { ret (Lib.UHashtbl.mem bad_hashtbl h)};
+	       if bad then
+		   cmd {
+		       ret (Printf.printf "rejected\n%!");
+		       acceptloop sock
+		   }
+	       else
+		   cmd {
+		       ret (Atomic.incr conns;
+			    Printf.printf "accepted: ";
+			    Time.print (string_of_int (Atomic.get conns));
+			    Printf.printf " connections\n%!";
+			    addtosocks s);
+		       spawn[serve_p] { inploop h s };
+		       acceptloop sock
+		   }
              }
      end)
+
+fun take n l =
+    let fun take_rec a n l =
+	    (if n <= 0 then (List.rev a, l)
+	    else
+		(case l of
+		    nil => (List.rev a, nil)
+		  | h::t => take_rec (h::a) (n - 1) t
+		)
+	    )
+    in
+	take_rec nil n l
+    end
+
+fun process_one_host host =
+    let val _ = Printf.printf "processing "
+	val _ = Time.print (Lib.string_of_host host)
+	val _ = Printf.printf "\n%!"
+	val reqs = Lib.TSHashtbl.find_all conns_hashtbl host
+	val now = Unix.time ()
+	val recent = List.filter
+			 (fn ts' => Time.tsless
+					(Time.tsminus now ts')
+					time_window)
+			 reqs
+	val _ = Time.print (string_of_int (List.length recent))
+	val _ = Printf.printf "\n%!"
+    in
+	if List.length recent > req_threshold then
+	    host::nil
+	else
+	    nil
+    end
+
+fun process_hosts hosts =
+    let fun touch_all l futs =
+	    case futs of
+		nil => cmd { ret l }
+	     |  f::t => cmd { v <- sync f;
+			      touch_all (List.append v l) t}
+	fun spawn_futs futs hosts =
+	    case take hosts_par_threshold hosts of
+		(nil, _) => touch_all nil futs
+	      | (l, rest) =>
+		cmd { t <- spawn[if Atomic.get conns > conns_cutoff
+				 then high_hash_p else low_hash_p]
+			{ ret (List.flatten (List.map process_one_host l)) };
+		      spawn_futs (t::futs) rest
+		    }
+    in
+	spawn_futs nil hosts
+    end
 
 fun trackloop _ =
     cmd {
     change[if Atomic.get conns > conns_cutoff
            then high_hash_p else low_hash_p];
-    ret (Printf.printf "checking\n%!");
+    (* ret (Printf.printf "checking\n%!"); *)
       new_reqs <- withmutex[request_mut]
 	       {
 		new_reqs <- ret (!reqs);
 		ret (reqs := nil);
-		ret (Printf.printf "checked1\n%!");
+		(* ret (Printf.printf "checked1\n%!"); *)
 		(* ret (Time.sleep 10); *)
 		ret new_reqs
 	       };
+
+      (* Add new requests to hash table *)
+      ret (List.iter (fn {page, host, ts} => Lib.TSHashtbl.add conns_hashtbl host ts)
+		     new_reqs);
+
+      hosts <- cmd { ret (List.sort_uniq
+			  Lib.host_compare
+			  (List.map (fn {page, host, ts} => host) new_reqs)) };
+      (* Process new hosts in parallel.
+       * NOTE: This results in concurrent hash table *reads*, which is
+       * safe as of the current code. *)
+      bad_hosts <- process_hosts hosts;
+      withmutex[bad_mut]
+	       {
+		 ret (List.iter (fn h => Lib.UHashtbl.add bad_hashtbl h ()) bad_hosts)
+	       };
+      
       (* ret (Time.sleep 100);  *)
       (* ret (Printf.printf "checked\n%!"); *)
+      
       ret (if List.length new_reqs >= 1 then (Time.print (string_of_int (List.length new_reqs));
 	   Printf.printf " new requests\n%!") else ());
+      
       trackloop ()
     }
-	
+
 main
 {
  ret (Printf.printf "main\n%!");
