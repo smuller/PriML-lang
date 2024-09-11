@@ -422,8 +422,7 @@ main
  ret (Printf.printf "main\n%!");
  sock <- ret (open_conn ());
  ret (Printf.printf "listening...\n%!");
- t <- spawn[if Atomic.get conns > conns_cutoff
-		then high_hash_p else low_hash_p] { trackloop () };
+ t <- spawn[low_hash_p] { trackloop () };
  l <- spawn[accept_p] { acceptloop sock };
  sync l
 }

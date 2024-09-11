@@ -566,13 +566,17 @@ and conscmd sp ctx cmd =
       | Spawn (p, _, m) =>
 	(case basety (cons ctx p) of
 	     (TPrio psint, cs) =>
-	     let val (t, mp, ep, cs') = conscmd psint ctx m
+	     let (* Don't prematurely specialize the start priority, as we
+		  * may add to it *)
+		 val spawnprio = new_psevar ()
+		 val (t, mp, ep, cs') = conscmd spawnprio ctx m
 		 val pp' = new_psevar ()
 	     in
 		 (TThread (t, pp'),
 		  sp,
 		  sp,
 		  cs @ cs'
+		  @ (pscstr_sup ctx spawnprio psint)
 		  @ (pscstr_gen ctx psint pp' mp)
 		 )
 	     end
