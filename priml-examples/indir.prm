@@ -1,0 +1,26 @@
+priority p1
+priority p2
+order p1 < p2
+
+fun process_hosts p hosts =
+    let fun touch_all futs =
+	    case futs of
+		nil => cmd { ret 0 }
+	      |  f::t => cmd { v <- sync f;
+			      touch_all t}
+	fun spawn_futs futs hosts =
+	    case hosts of
+		nil => touch_all futs
+	      | l::rest =>
+		cmd { t <- spawn[p] { ret 0 };
+		      spawn_futs (t::futs) rest
+		    }
+    in
+	spawn_futs nil hosts
+    end
+
+main {
+  p <- ret (if 1 > 0 then p1 else p2);
+  change[p];
+  process_hosts  p (1::2::nil)
+  }

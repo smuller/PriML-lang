@@ -71,4 +71,4 @@ val () = StringUtil.writefile "temp.ml" s
 val _ = CompileCaml.compile "temp.ml" [] morefiles output moreopts
         handle CompileCaml.Compile s => (print ("primlc: " ^ s ^ "\n");
                                      OS.Process.exit OS.Process.failure)
-val _ = OS.Process.system ("rm temp.ml")
+(* val _ = OS.Process.system ("rm temp.ml") *)

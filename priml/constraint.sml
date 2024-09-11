@@ -307,11 +307,14 @@ fun consval ctx v =
 			ctx
 			(#arg f, #dom f)
 		in
-		    #2 (cons ctx' (#body f))
+		   cons ctx' (#body f)
 		end
+	    val tscs = List.map consf fs
+	    val (ts, cs) = ListPair.unzip tscs
 	in
-	(Arrows (List.map (fn f => (false, ListPair.zip (#arg f, #dom f), #cod f)) fs),
-	 List.concat (List.map consf fs)
+	    
+	(Arrows (ListPair.map (fn (f, t) => (false, ListPair.zip (#arg f, #dom f), t)) (fs, ts)),
+	 List.concat cs
 	)
 	end
       | FSel (n, fs) =>
@@ -429,7 +432,15 @@ and cons ctx e : typ * (psconstraint list) =
 	end
 
       (* tag v with t *)
-      | Tag (e, et) => (TRec [], []) (* XXX *)
+(*
+      | Tag (e, Value (Polyvar {var = tag, ...})) =>
+	(print ("Looking up " ^ (V.basename tag) ^ "\n");
+	 case C.con ctx (V.basename tag) of
+	     (_, Typ (Arrow (_, _, t)), _) => (t, [])
+	   | _ => raise (TyError "Invalid tag")
+	)
+*)
+      | Tag _ => (TVar (V.namedvar "exn"), []) (* XXX *)
 
       | Untag _ => (TRec [], []) (* XXX *)
 
@@ -479,6 +490,7 @@ and cons ctx e : typ * (psconstraint list) =
 			     end)
 			 branches)
 	    val (dty, dcs) = cons ctx def
+	    val _ = print "Subtyping for branches"
 	    val subtycs =
 		List.concat
 		    (List.map (supertypex ctx F) (dty::tys))
@@ -539,7 +551,7 @@ and conscmd sp ctx cmd =
 		 val p = new_psevar ()
 		 val (t', mp', ep', cs') = conscmd endprios ctx' m
 	     in
-		 (t', mp', ep',
+		 (t', p, ep',
 		  cs @ cs'
 		  @ (wf_cons ctx t')
 		  @ (pscstr_wf ctx mp')
