@@ -359,38 +359,42 @@ fun process_one_host host =
 	    nil
     end
 
-fun process_hosts hosts =
+
+fun process_hosts p hosts =
     let fun touch_all l futs =
 	    case futs of
 		nil => cmd { ret l }
-	     |  f::t => cmd { v <- sync f;
+	      |  f::t => cmd { v <- sync f;
 			      touch_all (List.append v l) t}
 	fun spawn_futs futs hosts =
 	    case take hosts_par_threshold hosts of
 		(nil, _) => touch_all nil futs
 	      | (l, rest) =>
-		cmd { t <- spawn[if Atomic.get conns > conns_cutoff
-				 then high_hash_p else low_hash_p]
+		cmd { t <- spawn[p]
 			{ ret (List.flatten (List.map process_one_host l)) };
 		      spawn_futs (t::futs) rest
 		    }
     in
-	spawn_futs nil hosts
+	cmd {
+	  change[p];
+	  spawn_futs nil hosts
+	}
     end
 
 fun trackloop _ =
     cmd {
-    change[if Atomic.get conns > conns_cutoff
-           then high_hash_p else low_hash_p];
+    p <- ret (if Atomic.get conns > conns_cutoff
+		then high_hash_p else low_hash_p);
+    change[p];
     (* ret (Printf.printf "checking\n%!"); *)
-      new_reqs <- withmutex[request_mut]
-	       {
-		new_reqs <- ret (!reqs);
-		ret (reqs := nil);
-		(* ret (Printf.printf "checked1\n%!"); *)
-		(* ret (Time.sleep 10); *)
-		ret new_reqs
-	       };
+    new_reqs <- withmutex[request_mut]
+	     {
+	      new_reqs <- ret (!reqs);
+	      ret (reqs := nil);
+	      (* ret (Printf.printf "checked1\n%!"); *)
+	      (* ret (Time.sleep 10); *)
+	      ret new_reqs
+	     };
 
       (* Add new requests to hash table *)
       ret (List.iter (fn {page, host, ts} => Lib.TSHashtbl.add conns_hashtbl host ts)
@@ -402,18 +406,14 @@ fun trackloop _ =
       (* Process new hosts in parallel.
        * NOTE: This results in concurrent hash table *reads*, which is
        * safe as of the current code. *)
-      bad_hosts <- process_hosts hosts;
-      withmutex[bad_mut]
-	       {
-		 ret (List.iter (fn h => Lib.UHashtbl.add bad_hashtbl h ()) bad_hosts)
-	       };
-      
-      (* ret (Time.sleep 100);  *)
-      (* ret (Printf.printf "checked\n%!"); *)
-      
-      ret (if List.length new_reqs >= 1 then (Time.print (string_of_int (List.length new_reqs));
-	   Printf.printf " new requests\n%!") else ());
-      
+
+    bad_hosts <- process_hosts p hosts;
+
+    withmutex[bad_mut]
+	     {
+	      ret (List.iter (fn h => Lib.UHashtbl.add bad_hashtbl h ()) bad_hosts)
+	     };
+
       trackloop ()
     }
 
@@ -422,7 +422,7 @@ main
  ret (Printf.printf "main\n%!");
  sock <- ret (open_conn ());
  ret (Printf.printf "listening...\n%!");
- t <- spawn[high_hash_p] { trackloop () };
+ t <- spawn[low_hash_p] { trackloop () };
  l <- spawn[accept_p] { acceptloop sock };
  sync l
 }

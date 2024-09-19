@@ -16,7 +16,7 @@ val opts = []
 
 
 fun build_cmd out src morefiles packages opts =
-    "ocamlfind " ^ ocamlc
+    "ocamlfind " ^ ocamlc ^ " "
     ^ (String.concatWith " " opts) ^ " "
     ^ " -o " ^ out
     ^ " -linkpkg -thread -package " ^ (String.concatWith " " packages)

@@ -32,7 +32,7 @@ fun solve_psetcstrs pscstrs =
              print);
         print "\n"
     end
-    handle PSConstraints s =>
-	   (print s; raise Elaborate ("psconstraint solver: " ^ s))
+    (*handle PSConstraints s =>
+	   (print s; raise Elaborate ("psconstraint solver: " ^ s)) *)
 
 end
