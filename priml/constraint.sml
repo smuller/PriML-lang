@@ -341,10 +341,24 @@ and cons ctx e : typ * (psconstraint list) =
 				    (fn (argty, (_, party)) =>
 					subtype ctx argty party)
 				    (argtys, dom)
-		    val substs = ListPair.map (fn ((x, _), arg) => (x, arg))
-					      (dom, eargs)
+		    val substs =
+			ListPair.map
+			    (fn ((x, _), (arg, argt)) =>
+				case (arg, argt) of
+				    (Value (Polyvar {var, ...}), _) =>
+				    (* Just sub in the var *)
+				    (x, SubstVar var)
+				  | (_, TPrio s) => 
+				    (* Going to lose some precision here,
+				     * but at least sub in the refinement *)
+				    (x, SubstSet s)
+				  | _ =>
+				    (* The arg isn't a priority, so it's not
+				     * dependent anyway. *)
+				    (x, DontSubst))
+			    (dom, ListPair.zip (eargs, argtys))
 		in
-		    (Subst.subst_e_in_t (Subst.fromlist substs) cod,
+		    (Subst.subst_var_or_t_in_t (Subst.fromlist substs) cod,
 		     List.concat (cs::(css @ subcs)))
 		end
 	      | _ => raise (TyError "not an arrow")
@@ -401,7 +415,7 @@ and cons ctx e : typ * (psconstraint list) =
 	    val _ = print "subtype let\n"
 	    val subcs = subtype ctx' F2 F
 	in
-	    (Subst.subst_e_in_t (Subst.fromlist subs) F,
+	    (Subst.subst_var_or_t_in_t (Subst.fromlist subs) F,
 	     cs @ cs' @ subcs @ (wf_cons ctx F))
 	end
 	    
@@ -632,7 +646,16 @@ and consdec ctx d =
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
 	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
-	     [(x, e)],
+	     (case (e, t) of
+		 (Value (Polyvar {var, ...}), _) =>
+		 (* Just sub in the var *)
+		 [(x, SubstVar var)]
+	       | (_, TPrio s) => 
+		 (* Going to lose some precision here,
+		  * but at least sub in the refinement *)
+		 [(x, SubstSet s)]
+	       | _ => [])
+	     ,
 	     cs @ (print "subtype val\n"; subtype ctx t' t before print "done\n")
 	    )
 	end

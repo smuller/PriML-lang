@@ -59,9 +59,13 @@ struct
     datatype prioset = 
 	     PSEvar of prioset ebind ref
 	     | PSSet of PrioSet.set
-	     | PSPendSub of exp subst * prioset
+	     | PSPendSub of arg_subst subst * prioset
+						  
+	 (* and pconstraint = PCons of prio * prio *)
 
-    and pconstraint = PCons of prio * prio
+	 and arg_subst = SubstVar of var
+		       | SubstSet of prioset
+		       | DontSubst
 
     (* types : classifiers for values *)
     and typ =

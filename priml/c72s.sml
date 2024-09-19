@@ -20,8 +20,8 @@ exception Input of string
 
 val (src, output, morefiles, moreopts) =
     (case CommandLine.arguments () of
-        src::output::morefiles::moreopts =>
-        (src, output, morefiles, moreopts)
+        src::output::morefiles =>
+        (src, output, String.concatWith " " morefiles, [])
       | src::output::[] =>
         (src, output, "", [])
       | _ => raise (Input "primlc: usage: ./primlc source output [more files] [more options]"))

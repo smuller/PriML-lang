@@ -74,28 +74,7 @@ struct
         true
         s2
 
-    fun sub_in_set sub set =
-	VM.foldli
-	(fn (x, e, set) =>
-	    case e of
-		Value (Polyvar {var, ...}) =>
-		PrioSet.map
-		(fn p => if pr_eq (p, PVar x)
-			 then (PVar var)
-			 else p
-		)
-		set
-	      | Value (Polyuvar {var, ...}) =>
-		PrioSet.map
-		(fn p => if pr_eq (p, PVar x)
-			 then (PVar var)
-			 else p
-		)
-		set
-	      | _ => set
-	)
-	set
-	sub
+    
 
     fun baseps ps =
 	case ps of
@@ -150,13 +129,7 @@ struct
       | inst_ps ctx ps = ps
 	    *)
 
-    fun sub_in_ps s ps =
-	case ps of
-	    PSEvar (ref (Bound ps)) => sub_in_ps s ps
-	  | PSEvar (ref _) => ps
-	  | PSSet set => PSSet (sub_in_set s set)
-	  | PSPendSub (sub, ps) =>
-	    sub_in_ps s (sub_in_ps sub ps)
+    
 
 		      (*
     fun dosub ps =
@@ -196,7 +169,14 @@ struct
 	^ "(" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
         ^ Layout.tostring (ILPrint.pstol (PSSet s2))
 
-
+    fun error_msg1 ctx (ps1, s1) =
+	(case ctx of
+	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
+			 ^ ") =>"
+	   | NONE => ""
+	)
+        ^ Layout.tostring (ILPrint.pstol ps1)
+        ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ")"
 		      
     fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
       let 
@@ -206,7 +186,7 @@ struct
               case ps of 
 		  PSSet s => s
 		| PSPendSub (es, ps) =>
-		  sub_in_set es (get_set ps)
+		  Context.sub_in_set es (get_set ps)
 		| PSEvar (ref (Bound ps)) => get_set ps
 		| PSEvar (ref (Free i)) => 
 		  (case (IM.find (psctx, i)) of
@@ -236,8 +216,10 @@ struct
 			   ("superset violated: " 
 			    ^ (error_msg_set NONE (ps1, get_set ps) s2)))
 
-          (* solve priority set system from PSSup (s1, s2) constraints, skip PSCons.
-         * If s1 is not the superset of s2, add every priorities in s2 to s1. *)
+          (* solve priority set system from PSSup (s1, s2) constraints, 
+	   * skip PSCons and SWellFormed (for now).
+           * If s1 is not the superset of s2, add every priorities in s2 to s1.
+	   *)
           fun solve (cstr, psctx) =
           case cstr of 
             PSCons _ => psctx
@@ -275,7 +257,7 @@ struct
               case ps of 
 		  PSSet s => s
 		| PSPendSub (es, ps) =>
-		  sub_in_set es (get_set ps)
+		  Context.sub_in_set es (get_set ps)
 		| PSEvar (ref (Bound ps)) => get_set ps
 		| PSEvar (ref (Free i)) => 
 		  (case (IM.find (psctx, i)) of
@@ -311,7 +293,27 @@ struct
                     ("priority set constraint violated: "
                      ^ (error_msg (SOME ctx) (ps1, s1) (ps2, s2)))))
             end
-	  | check (PSWellformed _) = () (* XXX *)
+	  | check (PSWellformed (ctx, set)) =
+	    let val s = inst_set ctx get_set (get_set set)
+	    in
+		if PrioSet.exists
+		       (fn PEvar _ =>
+			   raise (PSConstraints "shouldn't happen")
+		       | PVar v =>
+			 ((Context.var_fail ctx (V.basename v); false)
+			  handle Context.Absent _ => true)
+		       | PConst s => 
+			 ((Context.var_fail ctx s; false)
+			  handle Context.Absent _ => true)
+		       )
+		       s
+		then
+		    raise
+			(PSConstraints
+			     ("well-formedness constraint violated: "
+			      ^ (error_msg1 (SOME ctx) (set, s))))
+		else ()
+	    end
       in 
         List.app check pscstrs 
       end

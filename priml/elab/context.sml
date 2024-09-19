@@ -380,6 +380,43 @@ struct
             dbs = dbs,
             sign = sign } *) (* FIX: delete priority variables *)
 
+    fun sub_set_in_set ps x set =
+	case ps of
+	    IL.PSEvar (ref (IL.Free _)) => set
+	  | IL.PSEvar (ref (IL.Bound ps)) => sub_set_in_set ps x set
+	  | IL.PSSet ps => IL.PrioSet.union
+			    (ps,
+			     (IL.PrioSet.delete (set, IL.PVar x)))
+	  | IL.PSPendSub (sub, ps) =>
+	    sub_set_in_set (sub_in_ps sub ps) x set
+	    
+	
+    and sub_in_set (sub : IL.arg_subst VM.map) set =
+	VM.foldli
+	(fn (x, a, set) =>
+	    case a of
+		IL.SubstVar var =>
+		IL.PrioSet.map
+		(fn p => if IL.pr_eq (p, IL.PVar x)
+			 then (IL.PVar var)
+			 else p
+		)
+		set
+	      | IL.SubstSet newset =>
+		sub_set_in_set newset x set
+	      | IL.DontSubst => set
+	)
+	set
+	sub
+
+    and sub_in_ps s ps =
+	case ps of
+	    IL.PSEvar (ref (IL.Bound ps)) => sub_in_ps s ps
+	  | IL.PSEvar (ref _) => ps
+	  | IL.PSSet set => IL.PSSet (sub_in_set s set)
+	  | IL.PSPendSub (sub, ps) =>
+	    sub_in_ps s (sub_in_ps sub ps)
+	    
           (* Kind of inefficient, but we do a DFS at every check *)
     fun checkcons psctx (ctx as C { tpcons, ...}) p1 p2 =
 	let fun checkcons checked psctx (ctx as C { tpcons, ...}) p1 p2 =
@@ -395,28 +432,7 @@ struct
 		     (print "stopping\n"; NEUTRAL)
 		else
             let
-	    fun sub_in_set sub set =
-		VM.foldli
-		    (fn (x, e, set) =>
-			case e of
-			    IL.Value (IL.Polyvar {var, ...}) =>
-			    IL.PrioSet.map
-				(fn p => if IL.pr_eq (p, IL.PVar x)
-					 then (IL.PVar var)
-					 else p
-				)
-				set
-			  | IL.Value (IL.Polyuvar {var, ...}) =>
-			    IL.PrioSet.map
-				(fn p => if IL.pr_eq (p, IL.PVar x)
-					 then (IL.PVar var)
-					 else p
-				)
-				set
-			  | _ => set
-		    )
-		    set
-		    sub
+		
 	    fun get_set psctx ps = 
 		case ps of 
 		    IL.PSSet s => s
@@ -504,7 +520,7 @@ struct
 	      | NO => false
 	      | NEUTRAL => false
 	end
-
+	    
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
         if checkcons IM.empty ctx p2 p1 then
