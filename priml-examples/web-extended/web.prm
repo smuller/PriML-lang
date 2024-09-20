@@ -382,9 +382,11 @@ fun process_hosts p hosts =
     end
 
 fun trackloop _ =
+    let val p = if Atomic.get conns > conns_cutoff
+		then high_hash_p else low_hash_p
+    in
     cmd {
-    p <- ret (if Atomic.get conns > conns_cutoff
-		then high_hash_p else low_hash_p);
+    (* p <- ret (); *)
     change[p];
     (* ret (Printf.printf "checking\n%!"); *)
     new_reqs <- withmutex[request_mut]
@@ -416,6 +418,7 @@ fun trackloop _ =
 
       trackloop ()
     }
+    end
 
 main
 {

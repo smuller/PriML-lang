@@ -293,8 +293,8 @@ struct
                     ("priority set constraint violated: "
                      ^ (error_msg (SOME ctx) (ps1, s1) (ps2, s2)))))
             end
-	  | check (PSWellformed (ctx, set)) =
-	    let val s = inst_set ctx get_set (get_set set)
+	  | check (PSWellformed (ctx, ps)) =
+	    let val s = inst_set ctx get_set (get_set ps)
 	    in
 		if PrioSet.exists
 		       (fn PEvar _ =>
@@ -311,7 +311,7 @@ struct
 		    raise
 			(PSConstraints
 			     ("well-formedness constraint violated: "
-			      ^ (error_msg1 (SOME ctx) (set, s))))
+			      ^ (error_msg1 (SOME ctx) (ps, s))))
 		else ()
 	    end
       in 

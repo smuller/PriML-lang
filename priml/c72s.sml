@@ -61,6 +61,9 @@ val (idl, prios, cons, fs, il) = Elaborate.elaborate el'
 val pscons = Constraint.consprog (idl, prios, cons, fs, il)
 
 val _ = Solve.solve_psetcstrs pscons (* (List.map PSetCstrs.dosub_cstr pscons) *)
+	handle PSetCstrs.PSConstraints s =>
+	       (print s;
+		OS.Process.exit OS.Process.failure)
 					
 val dp = DePrio.deprio el prios cons fs
 

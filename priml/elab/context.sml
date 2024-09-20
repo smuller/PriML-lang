@@ -386,7 +386,8 @@ struct
 	  | IL.PSEvar (ref (IL.Bound ps)) => sub_set_in_set ps x set
 	  | IL.PSSet ps => IL.PrioSet.union
 			    (ps,
-			     (IL.PrioSet.delete (set, IL.PVar x)))
+			     (IL.PrioSet.delete (set, IL.PVar x))
+			     handle NotFound => set)
 	  | IL.PSPendSub (sub, ps) =>
 	    sub_set_in_set (sub_in_ps sub ps) x set
 	    

@@ -411,17 +411,31 @@ and cons ctx e : typ * (psconstraint list) =
 	    (t2, cons1 @ cons2)
 	end
 
-      | Let (d, ebody, t) => 
+      | Let (d, ebody, t) =>
+	(*
 	let val F = fresh t
 	    val (ctx', subs, cs) = consdec ctx d
 	    val (F2, cs') = cons ctx' ebody
 	    val _ = print "subtype let\n"
+	    val _ = print ((Int.toString (List.length subs)) ^ " subs")
 	    val subcs = subtype ctx' F2 F
+	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
 	in
-	    (Subst.subst_var_or_t_in_t (Subst.fromlist subs) F,
-	     cs @ cs' @ subcs @ (wf_cons ctx F))
+	    (t',
+	     cs @ cs' @ subcs @ (wf_cons ctx t'))
 	end
-	    
+	*)
+	(* This differs from the Liquid Types paper, but seems OK *)
+	let val (ctx', subs, cs) = consdec ctx d
+	    val (F, cs') = cons ctx' ebody
+	    val _ = print "subtype let\n"
+	    val _ = print ((Int.toString (List.length subs)) ^ " subs")
+	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
+	in
+	    (t', cs @ cs')
+	end
+
+	
       | Unroll e =>
 	(case basety (cons ctx e) of
 	     (Mu (n, arms), cs) =>
@@ -662,15 +676,23 @@ and consdec ctx d =
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
 	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
-	     (case (e, t) of
-		 (Value (Polyvar {var, ...}), _) =>
+	     (print "collecting subs for ";
+	      print (V.basename x);
+	      print "\n";
+	      print "type: ";
+	      print (Layout.tostring (ILPrint.ttol t));
+	      print "\n";
+	      case (e, t') of
+		  (Value (Polyvar {var, ...}), _) =>
+		  (print "substvar\n";
 		 (* Just sub in the var *)
-		 [(x, SubstVar var)]
-	       | (_, TPrio s) => 
+		 [(x, SubstVar var)])
+	       | (_, TPrio s) =>
+		 (print "substset\n";
 		 (* Going to lose some precision here,
 		  * but at least sub in the refinement *)
-		 [(x, SubstSet s)]
-	       | _ => [])
+		 [(x, SubstSet s)])
+	       | _ => (print "dontsubst\n"; []))
 	     ,
 	     cs @ (print "subtype val\n"; subtype ctx t' t before print "done\n")
 	    )
