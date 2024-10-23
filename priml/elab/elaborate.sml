@@ -673,10 +673,11 @@ struct
                             @ cc)
 							       *)
           in
-              Layout.print
-                    (Layout.listex "[" "]" "," 
-                    (map PSetCstrs.psctol (!cc')), print);
-              print "\n ECmd \n";
+	      verb (fn () => (
+			Layout.print
+			    (Layout.listex "[" "]" "," 
+					   (map PSetCstrs.psctol (!cc')), print);
+			print "\n ECmd \n"));
               (Cmd (pp, ec), TCmd (t, ((* pr1, *) pp, pr2, pr3)))
           end
 
@@ -919,6 +920,7 @@ struct
                 (* print "\n (tint) \n";
                 Layout.print
                     (ILPrint.ttol tint, print); *)
+	       verb (fn () => (
                 print "\n";
                 print "(pr, pr2, pr3)";
                 print "\n";
@@ -929,7 +931,7 @@ struct
                 Layout.print
                         (Layout.listex "[" "]" "," 
                         (map ILPrint.psctol (cc)), print); *)
-                print "\n bind 1 end \n";
+                print "\n bind 1 end \n"));
                 (Bind (v, ii, Ret (Value (Var v))), tint, ((* pr, *) pr2, pr3), cc)
            end)
         | (s, i as (_, loc))::rest =>
@@ -976,7 +978,7 @@ struct
                 (* print "\n (tint) \n";
                 Layout.print
                     (ILPrint.ttol tint, print); *)
-                print "\n";
+                verb (fn () => (print "\n";
                 print ("bind var: " ^ s);
                 print "\n";
                 print "(pr, pr2, pr3, pr4, pr5, pr6, pr7)";
@@ -988,7 +990,7 @@ struct
                 Layout.print
                         (Layout.listex "[" "]" "," 
                         (map ILPrint.psctol (cc')), print); *)
-                print "\n bind 2 end \n\n";
+                print "\n bind 2 end \n\n"));
                 (Bind (v, ii, cmd), t', ((* pr, *) pr7, pr6), cc')
            end)
 
@@ -1367,7 +1369,7 @@ struct
               fun gen_arminfo (n, NONE) = (n, NonCarrier)
                 | gen_arminfo (n, SOME t) = 
                   let
-		      val _ = print ("checking: " ^ n ^ "\n")
+		      val _ = verbprint ("checking: " ^ n ^ "\n")
                       val tt = elabt actx loc t
                   in
                   (* PERF this is very conservative now
@@ -2095,7 +2097,7 @@ struct
           in
               (ids, [], ctx)
           end
-        | E.Priority s => (print ("binding " ^ s ^ "\n"); 
+        | E.Priority s => (verbprint ("binding " ^ s ^ "\n"); 
             (* ([], [], C.bindplab ctx s) *)
 
             (* FIX: add priority_name : TPrio {priority_name} (ref []) *)

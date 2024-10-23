@@ -695,10 +695,10 @@ struct
                                    in
                                        unify(*supertype*) ctx loc 
                                           "tag pattern return" rett rt;
-                                       Layout.print 
+                                       debugdo (fn () => Layout.print 
                                          (Layout.listex "[" "]" "," 
-                                         (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                                       print "\n ___ \n";
+                                         (map PSetCstrs.psctol (!Unify.global_cstrs)), print));
+                                       dprint "\n ___ \n";
                                        (vtag, re)
                                    end
                              | _ => raise Pattern 
@@ -724,11 +724,13 @@ struct
                        in
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "tagcase arg" (#1 (evarize opt)) cod;
-                           unify(*supertype*) nctx loc "tagcase default" rett dt; 
+                           unify(*supertype*) nctx loc "tagcase default" rett dt;
+			   debugdo
+			       (fn () => (
                            Layout.print 
                                 (Layout.listex "[" "]" "," 
                                 (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                           print "\n tagcase default \n";
+                           print "\n tagcase default \n"));
 
                            (I.Tagcase (cod, 
                                        I.Value objv,
@@ -804,13 +806,14 @@ struct
                                           (* elaborate the inside *)
                                           val (re, rt) = elm nctx cols oe ndef
                                         in
-					    print "start (nullary) sum pattern return \n";
+					    dprint "start (nullary) sum pattern return \n";
                                           unify(*supertype*) ctx loc 
-                                             "(nullary) sum pattern return" rett rt;
+                                               "(nullary) sum pattern return" rett rt;
+					  debugdo (fn () => (
                                           Layout.print 
                                                 (Layout.listex "[" "]" "," 
                                                 (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                                            print "\n (nullary) sum pattern return \n";
+                                            print "\n (nullary) sum pattern return \n"));
                                           (l, re)
                                         end
                                     | _ => raise Pattern "(nullary-pat)mu didn't contain sum")
@@ -878,13 +881,13 @@ struct
                                                val (re, rt) = elm nctx cols ne ndef
                                            in
                                            (* FIX: turn unifying into supertyping *)
-                                               print "start sum pattern return \n";
+                                               dprint "start sum pattern return \n";
                                                unify(*supertype*) ctx loc 
                                                   "sum pattern return" rett rt;
-                                               Layout.print 
+                                               debugdo (fn () => (Layout.print 
                                                     (Layout.listex "[" "]" "," 
                                                     (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                                                print "\n sum pattern return \n";
+                                                print "\n sum pattern return \n"));
                                                (l, re)
                                            end)
                                     | _ => raise Pattern "mu bod not sum?")
@@ -925,10 +928,11 @@ struct
                            (* unify object with codomain of constructors. *)
                            unify nctx loc "sum arg" (#1 (evarize opt)) cod;
                            unify(*supertype*) nctx loc "sum default" rett dt; (* FIX: turn unifying into supertyping *)
-                           Layout.print 
+
+			   debugdo (fn () => (Layout.print 
                                 (Layout.listex "[" "]" "," 
                                 (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                            print "\n sum default \n";
+                            print "\n sum default \n"));
 
                            (* a nice optimization is, if the
                               case is exhaustive, then lose the 
@@ -1392,10 +1396,11 @@ struct
                        let 
                          val t = elabt ctx loc tt
                        in unify(*supertype*) ctx loc "pattern constraint" t tv;
+			  debugdo (fn () => (
                           Layout.print 
                                 (Layout.listex "[" "]" "," 
                                 (map PSetCstrs.psctol (!Unify.global_cstrs)), print);
-                            print "\n pattern constraint \n";
+                            print "\n pattern constraint \n"));
                           one (pp, e)
                        end
 

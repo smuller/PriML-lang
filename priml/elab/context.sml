@@ -426,11 +426,11 @@ struct
 		 * we still check if we've been here before.
 		 * The state is a pair of (p1, p2). We only stop if
 		 * we've seen both before. *)
-		(print ("checkcons " ^
+		(verb (fn () => print ("checkcons " ^
 			       (Layout.tostring (ILPrint.prtol p1)) ^ " <= "
-			       ^ (Layout.tostring (ILPrint.prtol p2)) ^ "\n");
+			       ^ (Layout.tostring (ILPrint.prtol p2)) ^ "\n"));
 		 if PrioPairSet.member (checked, (p1, p2)) then
-		     (print "stopping\n"; NEUTRAL)
+		     (verbprint "stopping\n"; NEUTRAL)
 		else
             let
 		
@@ -489,7 +489,7 @@ struct
 		    (* If p1 = PVar x and x : prio[p1', ..., pn']
 		     * and p2 = PVar x' and x' : prio[p1'', ..., pn''] 
 		     * check {p1', ..., pn'} x {p1'', ..., pn''} *)
-		    let val _ = print "(\n"
+		    let val _ = verbprint "(\n"
 			val s1 = inst_prio psctx ctx p1
 			val s2 = inst_prio psctx ctx p2
 			val s1 =
@@ -511,7 +511,7 @@ struct
 			    (crossprod
 				 (IL.PrioSet.listItems s1,
 				  IL.PrioSet.listItems s2))
-			before print ")\n"
+			before verbprint ")\n"
 		    end
             end
 	    end)

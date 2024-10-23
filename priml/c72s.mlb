@@ -47,6 +47,8 @@ $(LIB7)/algo/toposort.sml
 $(LIB7)/text/stringonce-sig.sml
 $(LIB7)/text/stringonce.sml
 
+debug.sml
+
 util/des-sig.sml
 util/des.sml
 util/ml5util.sml

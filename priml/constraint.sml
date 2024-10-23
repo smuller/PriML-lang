@@ -25,10 +25,11 @@ fun basety_plain t =
       | _ => t
 
 fun supertypex ctx t1 t2 =
-    let val _ = Layout.print (Layout.listex
+    let val _ =
+	    verb (fn () => Layout.print (Layout.listex
 				  "supertype (" ")\n" ","
 				  (map ILPrint.ttol [t1, t2]),
-			      print)
+			      print))
     in
         (case (t1, t2) of
              (TVar v1, TVar v2) => []
@@ -131,7 +132,7 @@ fun supertypex ctx t1 t2 =
     end
 
 fun subtype ctx t1 t2 =
-    (print "subtype\n";
+    (verbprint "subtype\n";
     (supertypex ctx t2 t1)
     handle TyError s => (print s; raise (TyError s))
     )	
@@ -212,9 +213,12 @@ fun fresh t =
       | TMutex _ => TMutex (new_psevar ())
 			 
 fun consval ctx v =
-    let val _ = Layout.print (Layout.mayAlign [Layout.str "consval ",
+    let val _ =
+	    verb (fn () => Layout.print (Layout.mayAlign [Layout.str "consval ",
 					       ILPrint.vtol v,
-					       Layout.str "\n"], print) in
+					       Layout.str "\n"], print)
+		 )
+    in
     case v of
 	Polyvar {tys, var} =>
 	let val (t, cs) =
@@ -231,11 +235,12 @@ fun consval ctx v =
 	     end
 	)
 	in
+	    verb (fn () =>
 	    Layout.print (Layout.mayAlign [Layout.str "type of ",
 					   Layout.str (V.show var),
 					   Layout.str ": ",
 					   ILPrint.ttol t],
-			  print);
+			  print));
 	    (t, cs)
 	end
       | Polyuvar {tys, var} =>
@@ -253,11 +258,12 @@ fun consval ctx v =
 	     end
 	)
 	in
+	    verb (fn () =>
 	    Layout.print (Layout.mayAlign [Layout.str "type of ",
 					   Layout.str (V.show var),
 					   Layout.str ": ",
 					   ILPrint.ttol t],
-			  print);
+			  print));
 	    (t, cs)
 	end
       | MLVal _ => raise (PriorityErr "what's an mlval?")
@@ -329,9 +335,12 @@ fun consval ctx v =
 end
 	    
 and cons ctx e : typ * (psconstraint list) =
-    let val _ = Layout.print (Layout.mayAlign [Layout.str "cons ",
+    let val _ =
+	    verb (fn () =>
+		     Layout.print (Layout.mayAlign [Layout.str "cons ",
 					       ILPrint.etol e,
-					       Layout.str "\n"], print) in
+					       Layout.str "\n"], print))
+    in
     case e of
 	Value v => consval ctx v
       | App (efun, eargs) =>
@@ -428,8 +437,8 @@ and cons ctx e : typ * (psconstraint list) =
 	(* This differs from the Liquid Types paper, but seems OK *)
 	let val (ctx', subs, cs) = consdec ctx d
 	    val (F, cs') = cons ctx' ebody
-	    val _ = print "subtype let\n"
-	    val _ = print ((Int.toString (List.length subs)) ^ " subs")
+	    val _ = verbprint "subtype let\n"
+	    val _ = verb (fn () => print ((Int.toString (List.length subs)) ^ " subs"))
 	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
 	in
 	    (t', cs @ cs')
@@ -493,7 +502,7 @@ and cons ctx e : typ * (psconstraint list) =
 		  | _ => raise (TyError "not a sum type")
 	    val F = fresh rett
 	    val (_, cs) = cons ctx ecase
-	    val _ = print "Done checking ecase\n"
+	    val _ = verbprint "Done checking ecase\n"
 	    fun getarm arms l =
 		case arms of
 		    [] => raise (TyError "sum arm not found")
@@ -506,9 +515,9 @@ and cons ctx e : typ * (psconstraint list) =
 			     let val ctx' =
 				     case getarm l of
 					 NonCarrier =>
-					 (print "Not a carrier"; ctx)
+					 (verbprint "Not a carrier"; ctx)
 				       | Carrier {carried, ...} =>
-					 (print ("Adding " ^ (V.basename branchvar));
+					 (verbprint ("Adding " ^ (V.basename branchvar));
 					 C.bindv ctx
 					       (V.basename branchvar)
 					       (mkpoly carried)
@@ -518,7 +527,7 @@ and cons ctx e : typ * (psconstraint list) =
 			     end)
 			 branches)
 	    val (dty, dcs) = cons ctx def
-	    val _ = print "Subtyping for branches"
+	    val _ = verbprint "Subtyping for branches"
 	    val subtycs =
 		List.concat
 		    (List.map (supertypex ctx F) (dty::tys))
@@ -568,9 +577,10 @@ and cons ctx e : typ * (psconstraint list) =
     end
 	
 and conscmd sp ctx cmd =
-    let val _ = Layout.print (Layout.mayAlign [Layout.str "cons ",
+    let val _ = verb (fn () => Layout.print (Layout.mayAlign [Layout.str "cons ",
 					       ILPrint.ctol cmd,
-					       Layout.str "\n"], print) in
+					       Layout.str "\n"], print))
+    in
     case cmd of
 	Bind (x, e, m) =>
 	(case basety (cons ctx e) of
@@ -666,7 +676,7 @@ and conscmd sp ctx cmd =
     end
 
 and consdec ctx d =
-    let val _ = Layout.print (C.ctol ctx, print)
+    let val _ = verb (fn () => Layout.print (C.ctol ctx, print))
     in
     case d of
 	Do e =>
@@ -676,25 +686,25 @@ and consdec ctx d =
       | Val (Poly ({tys}, (x, t, e))) =>
 	let val (t', cs) = cons ctx e in
 	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
-	     (print "collecting subs for ";
+	     (verb (fn () => (print "collecting subs for ";
 	      print (V.basename x);
 	      print "\n";
 	      print "type: ";
 	      print (Layout.tostring (ILPrint.ttol t));
-	      print "\n";
+	      print "\n"));
 	      case (e, t') of
 		  (Value (Polyvar {var, ...}), _) =>
-		  (print "substvar\n";
+		  (verbprint "substvar\n";
 		 (* Just sub in the var *)
 		 [(x, SubstVar var)])
 	       | (_, TPrio s) =>
-		 (print "substset\n";
+		 (verbprint "substset\n";
 		 (* Going to lose some precision here,
 		  * but at least sub in the refinement *)
 		 [(x, SubstSet s)])
-	       | _ => (print "dontsubst\n"; []))
+	       | _ => (verbprint "dontsubst\n"; []))
 	     ,
-	     cs @ (print "subtype val\n"; subtype ctx t' t before print "done\n")
+	     cs @ (verbprint "subtype val\n"; subtype ctx t' t before verbprint "done\n")
 	    )
 	end
       | Tagtype a => (ctx, [], [])
@@ -711,14 +721,14 @@ and consdec ctx d =
 	 [])
 			    
       | Priority p =>
-	let val _ = print ("IL prio dec " ^ (V.basename p) ^"\n")
+	let val _ = verbprint ("IL prio dec " ^ (V.basename p) ^"\n")
 	    val ps = PSSet (PrioSet.singleton (PVar p))
 	    val ctx' = C.bindv ctx (V.basename p) (mkpoly (TPrio ps)) p
 	in
 	    (ctx', [], [])
 	end
       | Order (p1, p2) =>
-	let val _ = print ("IL order dec " ^ (V.show p1) ^ " < " ^ (V.show p2) ^ "\n")
+	let val _ = verbprint ("IL order dec " ^ (V.show p1) ^ " < " ^ (V.show p2) ^ "\n")
 	in
 	(C.bindpcons ctx (PVar p1, PVar p2),
 	 [],

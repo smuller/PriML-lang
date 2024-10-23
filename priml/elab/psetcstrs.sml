@@ -229,8 +229,8 @@ struct
                 val s2 = inst_set ctx get_set (get_set ps2) *)
 		val s1 = get_set ps1
 		val s2 = get_set ps2
-		val _ = print (error_msg NONE (ps1, s1) (ps2, s2))
-		val _ = print "\n"
+		val _ = verb (fn () => print (error_msg NONE (ps1, s1) (ps2, s2)))
+		val _ = verbprint "\n"
 	    in
 		if check_sup (s1, s2) then psctx
 		else make_sup (psctx, ps1, PrioSet.union(s1, s2))
