@@ -122,7 +122,7 @@ struct
          (":=", P.PSet, quant(a, mono
                                      (IL.Arrow(false,
 					       [(Variable.namedvar "_", IL.TRec [("1", IL.TRef (IL.TVar a)), ("2", IL.TVar a)])],
-                                           tuple nil))))
+                                               tuple nil))))
 	]
     (*
          (* XXX should really be exn cont, but there's no way to
@@ -207,6 +207,13 @@ struct
     val initial = foldl (fn ((s, c, t), ctx) =>
                          Context.bindex ctx (SOME s) c (namedvar s) t)
                         initialec vals
+
+    val initial = Context.bindv
+		      initial
+		      botname
+		      (mono (IL.TPrio (IL.PSSet (IL.PrioSet.singleton
+						     (IL.PConst "bot")))))
+		      (namedvar botname)
 
     (* also, assume some types are mobile *)
 (*

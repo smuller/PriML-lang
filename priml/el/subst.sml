@@ -48,29 +48,29 @@ struct
     | tsubst s (TAddr w) = TAddr w
  *)
 
-  and subst_e_in_t (s: exp subst) (TVar v) = TVar v
-    | subst_e_in_t s (TRec ltl) = TRec (ListUtil.mapsecond (subst_e_in_t s) ltl)
-    | subst_e_in_t s (Arrow a) = Arrow (etarrow s a)
-    | subst_e_in_t s (Sum ltl) = Sum (ListUtil.mapsecond (arminfo_map (subst_e_in_t s)) ltl)
-    | subst_e_in_t s (Mu (i, vtl)) =
-      Mu (i, ListUtil.mapsecond (subst_e_in_t s) vtl)
-    | subst_e_in_t s (Evar(ref (Bound t))) = subst_e_in_t s t
-    | subst_e_in_t s (x as (Evar _)) = x
+  and subst_var_or_t_in_t (s: arg_subst subst) (TVar v) = TVar v
+    | subst_var_or_t_in_t s (TRec ltl) = TRec (ListUtil.mapsecond (subst_var_or_t_in_t s) ltl)
+    | subst_var_or_t_in_t s (Arrow a) = Arrow (etarrow s a)
+    | subst_var_or_t_in_t s (Sum ltl) = Sum (ListUtil.mapsecond (arminfo_map (subst_var_or_t_in_t s)) ltl)
+    | subst_var_or_t_in_t s (Mu (i, vtl)) =
+      Mu (i, ListUtil.mapsecond (subst_var_or_t_in_t s) vtl)
+    | subst_var_or_t_in_t s (Evar(ref (Bound t))) = subst_var_or_t_in_t s t
+    | subst_var_or_t_in_t s (x as (Evar _)) = x
 
-    | subst_e_in_t s (TRef t) = TRef (subst_e_in_t s t)
+    | subst_var_or_t_in_t s (TRef t) = TRef (subst_var_or_t_in_t s t)
 
-    | subst_e_in_t s (TVec t) = TVec (subst_e_in_t s t)
-    | subst_e_in_t s (TCont t) = TCont (subst_e_in_t s t)
+    | subst_var_or_t_in_t s (TVec t) = TVec (subst_var_or_t_in_t s t)
+    | subst_var_or_t_in_t s (TCont t) = TCont (subst_var_or_t_in_t s t)
 
-    | subst_e_in_t s (TTag (t, v)) = TTag (subst_e_in_t s t, v)
-    | subst_e_in_t s (Arrows l) = Arrows (map (etarrow s) l)
-    | subst_e_in_t s (TCmd (t, (p1, p2, p3))) =
-      TCmd (subst_e_in_t s t,
+    | subst_var_or_t_in_t s (TTag (t, v)) = TTag (subst_var_or_t_in_t s t, v)
+    | subst_var_or_t_in_t s (Arrows l) = Arrows (map (etarrow s) l)
+    | subst_var_or_t_in_t s (TCmd (t, (p1, p2, p3))) =
+      TCmd (subst_var_or_t_in_t s t,
 	    (esubstprset s p1, esubstprset s p2, esubstprset s p3))
-    | subst_e_in_t s (TThread (t, p)) =
-      TThread (subst_e_in_t s t, esubstprset s p)
-    | subst_e_in_t s (TPrio p) = TPrio (esubstprset s p)
-    | subst_e_in_t s (TMutex p) = TPrio (esubstprset s p)
+    | subst_var_or_t_in_t s (TThread (t, p)) =
+      TThread (subst_var_or_t_in_t s t, esubstprset s p)
+    | subst_var_or_t_in_t s (TPrio p) = TPrio (esubstprset s p)
+    | subst_var_or_t_in_t s (TMutex p) = TPrio (esubstprset s p)
 			   
   and esubstprset s p = PSPendSub (s, p)
 
@@ -78,7 +78,7 @@ struct
       (b, map (fn (v, t) => (v, tsubst s t)) dom, tsubst s cod)
 
   and etarrow s (b, dom, cod) =
-      (b, map (fn (v, t) => (v, subst_e_in_t s t)) dom, subst_e_in_t s cod)
+      (b, map (fn (v, t) => (v, subst_var_or_t_in_t s t)) dom, subst_var_or_t_in_t s cod)
 
   fun etsubst s t =
       (case t of
@@ -167,7 +167,7 @@ struct
   and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)
     | prsubspsc s (PSCons (ps1, ps2)) = PSCons (prsubsps s ps1, prsubsps s ps2)
 		    *)
-  and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2))
+(*  and prsubsc s (PCons (p1, p2)) = (PCons (prsubsp s p1, prsubsp s p2)) *)
 
   fun pbinds  E.PWild _ = false
     | pbinds (E.PAs (i, p)) v = i = v orelse pbinds p v

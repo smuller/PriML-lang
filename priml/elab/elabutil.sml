@@ -30,11 +30,13 @@ struct
         print ("Warning at " ^ Pos.toString loc ^ ": " ^ s ^ "\n")
       end
 
+	  (*
     fun psubst1 w v t = Subst.prsubst ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) t
     fun psubsc1 w v c =
         ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
          Subst.prsubsc ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) c)
-
+	  *)
+	  
     (* rename psevar in priority set *)
     fun psesubps psemap ps =  
       case ps of 
@@ -228,7 +230,7 @@ struct
                     raise Elaborate "type error"
                 end *)
 
-
+(*
     fun check_constraint ctx loc p1 p2 =
         if Context.checkcons IntMap.empty ctx p1 p2 then
             ()
@@ -245,7 +247,7 @@ struct
                 print "\n";
                 raise (Elaborate "constraint violated ")
             end
-
+*)
 
     local open Primop Podata
     in

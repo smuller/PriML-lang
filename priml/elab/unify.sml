@@ -61,8 +61,8 @@ struct
       let val e = new_ebind ()
       in
         all_psevars := e :: !all_psevars;
-        let val IL.Free i = !e in print (Int.toString i) end;
-        print "\n";
+        let val IL.Free i = !e in verbprint (Int.toString i) end;
+        verbprint "\n";
         IL.PSEvar e
       end
     
@@ -376,10 +376,11 @@ struct
                else wset r w1 *)
 
     fun unifyex ctx eqmap t1 t2 =
-	let val _ = Layout.print (Layout.listex
+	let val _ =
+		verb (fn () => Layout.print (Layout.listex
 				      "unify (" ")\n" ","
 				      (map ILPrint.ttol [t1, t2]),
-				  print)
+				  print))
 	in
         (case (t1, t2) of
              (TVar v1, TVar v2) =>

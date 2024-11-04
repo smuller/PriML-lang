@@ -20,10 +20,12 @@ sig
     (* val unifyp : Context.context -> Pos.pos -> string -> 
                     IL.prio -> IL.prio -> unit *)
 
+					    (*
     (* check_constraint context location p1 <= p2 *)
     val check_constraint : Context.context -> Pos.pos ->
                            IL.prio -> IL.prio -> unit
-
+					    *)
+					    
     (* int to string *)
     val itos : int -> string
 
@@ -62,10 +64,10 @@ sig
     (* same, but list of types (result will have the same length) *)
     val evarizes : IL.typ list IL.poly -> IL.typ list * IL.typ list
 
-
+(*
     val psubst1 : IL.prio -> Variable.var -> IL.typ -> IL.typ
     val psubsc1 : IL.prio -> Variable.var -> IL.pconstraint -> IL.pconstraint
-
+*)
     val psesubst : IL.typ -> IL.typ
 
     val unroll : Pos.pos -> IL.typ -> IL.typ

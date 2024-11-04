@@ -4,6 +4,7 @@ struct
 open EL
 
 exception unimplemented
+exception CyclicPriorities
 
 val poolvar = "__pool"
 
@@ -205,11 +206,53 @@ fun decstolet decs =
     List.foldr (fn (d, e) => (Let (d, e), Pos.initpos))
 	       (Record [], Pos.initpos)
 	       decs
-    
+
+fun to_total prios cons =
+    let val nbrs : string list StringMap.map =
+	    List.foldl (fn ((p1, p2), nbrs) =>
+			   case StringMap.find (nbrs, p1) of
+			       SOME l => StringMap.insert (nbrs, p1, p2::l)
+			    |  NONE => StringMap.insert (nbrs, p1, [p2])
+		       )
+		       (StringMap.insert (StringMap.empty,
+					  "bot",
+					  (List.filter
+					       (fn p => String.compare
+							    (p, "bot") <>
+						   EQUAL)
+					       prios))
+		       )
+		       cons
+	val perm_visited = ref StringSet.empty
+	val order = ref []
+	fun toposort temp_visited p =
+	    if StringSet.member (!perm_visited, p) then
+		()
+	    else if StringSet.member (temp_visited, p) then
+		raise CyclicPriorities
+	    else
+		let val p_nbrs =
+			case StringMap.find (nbrs, p) of
+			    SOME l => l
+			  | NONE => []
+		in
+		    List.app (toposort (StringSet.add (temp_visited, p)))
+			     p_nbrs;
+		    order := p::(!order);
+		    perm_visited := StringSet.add (!perm_visited, p)
+		end
+    in
+	toposort StringSet.empty "bot";
+	List.app (toposort StringSet.empty) prios;
+	!order
+    end
+	    
+
+	
 fun deprio p prios cons fs =
     let val l = Pos.initpos
     in
-        (List.map (priotocaml l) prios) @
+        (List.map (priotocaml l) (to_total prios cons)) @
 	(*
         [(Val ([], PWild, (App ((Var (Id "Basic.initPriorities"), l),
                                 (Record [], l),

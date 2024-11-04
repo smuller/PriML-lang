@@ -41,7 +41,6 @@ struct
         end
 
     exception NoMu
-  
 
     fun worldstys nil = L.empty
       | worldstys t =
@@ -154,17 +153,22 @@ struct
       | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
       | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
       | pstol (PSPendSub (s, ps)) = %[L.listex "[" "]" ","
-				      (map (fn (x, e) =>
-					       %[etol e, $"/", $(V.show x)]
-					   )
-				       (VM.listItemsi s))
+				      (map (fn (x, s) => asubst_to_l x s)
+					   (VM.listItemsi s))
 				    , pstol ps]
 	
 
 				    (*
     and psctol (PSSup (ps1, ps2)) = %[$"sup", L.paren(%[pstol ps1, $",", pstol ps2])]
       | psctol (PSCons (ps1, ps2)) = %[$"cons", L.paren(%[pstol ps1, $",", pstol ps2])]
-*)
+				    *)
+    and asubst_to_l x sub =
+	case sub of
+	    SubstVar y => L.seq [$(V.show y), $"/", $(V.show x)]
+	  | SubstSet ps => L.seq [pstol ps, $"/", $(V.show x)]
+	  | DontSubst => L.seq []
+
+				     
     (* <t> *)
     and bttol t = if !iltypes then L.seq[$"<", ttol t, $">"]
                   else $""
