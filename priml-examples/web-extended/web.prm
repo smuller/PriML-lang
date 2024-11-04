@@ -92,14 +92,14 @@ extern val Lib.UHashtbl.mem : Lib.unit_hashtbl -> Lib.host -> bool
 
 exception Invalid_argument of string
 				   
-priority low_hash_p
+priority low_class_p
 priority accept_p
-priority high_hash_p
+priority high_class_p
 priority serve_p
 
-order low_hash_p < accept_p
-order accept_p < high_hash_p
-order high_hash_p < serve_p
+order low_class_p < accept_p
+order accept_p < high_class_p
+order high_class_p < serve_p
 
 val _ = Printf.printf "Hi!\n%!"
 
@@ -121,7 +121,7 @@ val time_window = 5 (* over this many seconds *)
 val hosts_par_threshold = 10 (* Hosts to process sequentially for tracking *)
 
 val request_mut = newmutex[serve_p]
-val bad_mut = newmutex[serve_p]
+val bad_mut = newmutex[accept_p]
 
 
 fun close sock = (Unix.shutdown sock) Unix.SHUTDOWN_ALL
@@ -384,7 +384,7 @@ fun process_hosts p hosts =
 fun trackloop _ =
     cmd {
     p <- ret (if Atomic.get conns > conns_cutoff
-		then high_hash_p else low_hash_p);
+		then high_class_p else low_class_p);
     change[p];
     (* ret (Printf.printf "checking\n%!"); *)
     new_reqs <- withmutex[request_mut]
@@ -422,7 +422,7 @@ main
  ret (Printf.printf "main\n%!");
  sock <- ret (open_conn ());
  ret (Printf.printf "listening...\n%!");
- t <- spawn[low_hash_p] { trackloop () };
+ t <- spawn[low_class_p] { trackloop () };
  l <- spawn[accept_p] { acceptloop sock };
  sync l
 }
