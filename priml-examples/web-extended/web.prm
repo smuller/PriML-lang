@@ -383,7 +383,7 @@ fun process_hosts p hosts =
 
 fun trackloop _ =
     let val p = if Atomic.get conns > conns_cutoff
-		then high_hash_p else low_hash_p
+		then high_class_p else low_class_p
     in
     cmd {
     (* p <- ret (); *)
