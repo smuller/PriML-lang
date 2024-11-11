@@ -369,9 +369,11 @@ and cons ctx e : typ * (psconstraint list) =
 				     * dependent anyway. *)
 				    (x, DontSubst))
 			    (dom, ListPair.zip (eargs, argtys))
+		    val t =
+			Subst.subst_var_or_t_in_t (Subst.fromlist substs) cod
 		in
-		    (Subst.subst_var_or_t_in_t (Subst.fromlist substs) cod,
-		     List.concat (cs::(css @ subcs)))
+		    (t,
+		     (wf_cons ctx t) @ List.concat (cs::(css @ subcs)))
 		end
 	      | _ => raise (TyError "not an arrow")
 	end
@@ -435,15 +437,15 @@ and cons ctx e : typ * (psconstraint list) =
 	end
 	*)
 	(* This differs from the Liquid Types paper, but seems OK *)
+	(* Maybe---with the fix? *)
 	let val (ctx', subs, cs) = consdec ctx d
 	    val (F, cs') = cons ctx' ebody
 	    val _ = verbprint "subtype let\n"
 	    val _ = verb (fn () => print ((Int.toString (List.length subs)) ^ " subs"))
 	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
 	in
-	    (t', cs @ cs')
+	    (t', (wf_cons ctx t') @ cs @ cs')
 	end
-
 	
       | Unroll e =>
 	(case basety (cons ctx e) of
@@ -588,13 +590,26 @@ and conscmd sp ctx cmd =
 	     let val ctx' = C.bindv ctx (V.basename x) (mkpoly t) x
 		 val p = new_psevar ()
 		 val (t', mp', ep', cs') = conscmd endprios ctx' m
+
+		 val subst =
+		     case t of
+			 TPrio s =>
+			 (* Going to lose some precision here,
+			  * but at least sub in the refinement *)
+			 (x, SubstSet s)
+		       | _ =>
+			 (* The arg isn't a priority, so it's not
+			  * dependent anyway. *)
+			 (x, DontSubst)
+		 val t' = Subst.subst_var_or_t_in_t (Subst.fromlist [subst]) t'
 	     in
 		 (t', p, ep',
 		  cs @ cs'
 		  @ (wf_cons ctx t')
 		  @ (pscstr_wf ctx mp')
 		  @ (pscstr_wf ctx ep')
-		  @ (pscstr_eq ctx startprios sp)
+		  (* @ (pscstr_eq ctx startprios sp) *)
+		  @ (pscstr_sup ctx startprios sp)
 		  @ (pscstr_sup ctx p midprios)
 		  @ (pscstr_sup ctx p mp')
 		 )

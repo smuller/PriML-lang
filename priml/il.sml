@@ -267,7 +267,7 @@ struct
       end
 
     fun string_of_prio (PConst s) = SOME s
-      | string_of_prio (PVar v) = SOME (V.show v)
+      | string_of_prio (PVar v) = SOME (V.basename v)
       | string_of_prio _ = NONE
 	  
     fun pr_eq (p1, p2) =

@@ -48,6 +48,12 @@ struct
     | tsubst s (TAddr w) = TAddr w
  *)
 
+  and filter_out_setsubs (s: arg_subst subst) =
+      VM.filter
+	  (fn SubstSet _ => false
+	  | _ => true)
+	  s
+				   
   and subst_var_or_t_in_t (s: arg_subst subst) (TVar v) = TVar v
     | subst_var_or_t_in_t s (TRec ltl) = TRec (ListUtil.mapsecond (subst_var_or_t_in_t s) ltl)
     | subst_var_or_t_in_t s (Arrow a) = Arrow (etarrow s a)
@@ -57,7 +63,9 @@ struct
     | subst_var_or_t_in_t s (Evar(ref (Bound t))) = subst_var_or_t_in_t s t
     | subst_var_or_t_in_t s (x as (Evar _)) = x
 
-    | subst_var_or_t_in_t s (TRef t) = TRef (subst_var_or_t_in_t s t)
+    | subst_var_or_t_in_t s (TRef t) = 
+      (*invariant*)
+      TRef (subst_var_or_t_in_t (filter_out_setsubs s) t)
 
     | subst_var_or_t_in_t s (TVec t) = TVec (subst_var_or_t_in_t s t)
     | subst_var_or_t_in_t s (TCont t) = TCont (subst_var_or_t_in_t s t)
@@ -66,7 +74,8 @@ struct
     | subst_var_or_t_in_t s (Arrows l) = Arrows (map (etarrow s) l)
     | subst_var_or_t_in_t s (TCmd (t, (p1, p2, p3))) =
       TCmd (subst_var_or_t_in_t s t,
-	    (esubstprset s p1, esubstprset s p2, esubstprset s p3))
+	    ((* contravariant *) esubstprset (filter_out_setsubs s) p1,
+	     esubstprset s p2, esubstprset s p3))
     | subst_var_or_t_in_t s (TThread (t, p)) =
       TThread (subst_var_or_t_in_t s t, esubstprset s p)
     | subst_var_or_t_in_t s (TPrio p) = TPrio (esubstprset s p)
@@ -78,7 +87,10 @@ struct
       (b, map (fn (v, t) => (v, tsubst s t)) dom, tsubst s cod)
 
   and etarrow s (b, dom, cod) =
-      (b, map (fn (v, t) => (v, subst_var_or_t_in_t s t)) dom, subst_var_or_t_in_t s cod)
+      (b,
+       (* contravariant *)
+       map (fn (v, t) => (v, subst_var_or_t_in_t (filter_out_setsubs s) t)) dom,
+       subst_var_or_t_in_t s cod)
 
   fun etsubst s t =
       (case t of

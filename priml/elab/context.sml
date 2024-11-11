@@ -380,13 +380,16 @@ struct
             dbs = dbs,
             sign = sign } *) (* FIX: delete priority variables *)
 
+    fun delete (set, p) =
+	IL.PrioSet.filter (fn p' => not (IL.pr_eq (p, p'))) set
+	    
     fun sub_set_in_set ps x set =
 	case ps of
 	    IL.PSEvar (ref (IL.Free _)) => set
 	  | IL.PSEvar (ref (IL.Bound ps)) => sub_set_in_set ps x set
 	  | IL.PSSet ps => IL.PrioSet.union
 			    (ps,
-			     (IL.PrioSet.delete (set, IL.PVar x))
+			     (delete (set, IL.PVar x))
 			     handle NotFound => set)
 	  | IL.PSPendSub (sub, ps) =>
 	    sub_set_in_set (sub_in_ps sub ps) x set

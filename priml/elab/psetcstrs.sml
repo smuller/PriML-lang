@@ -101,10 +101,13 @@ struct
 	    )
 
     and inst_set ctx get_set set =
+	set
+	    (* XXX
 	PrioSet.foldl
 	    (fn (p, set) => PrioSet.union (set, inst_prio ctx get_set p))
 	    PrioSet.empty
 	    set
+*)
 	(*
 	let val ps = new_psevar ()
 	in
@@ -182,12 +185,12 @@ struct
       let 
         (* retrieve priority of psevar in pscontext. 
          * If psevar is not in pscontext with empty set as the value. *)
-	  fun get_set ps = 
+	  fun get_set psctx ps = 
               case ps of 
 		  PSSet s => s
 		| PSPendSub (es, ps) =>
-		  Context.sub_in_set es (get_set ps)
-		| PSEvar (ref (Bound ps)) => get_set ps
+		  Context.sub_in_set es (get_set psctx ps)
+		| PSEvar (ref (Bound ps)) => get_set psctx ps
 		| PSEvar (ref (Free i)) => 
 		  (case (IM.find (psctx, i)) of
                        SOME s => s
@@ -214,7 +217,7 @@ struct
 		  raise 
 		      (PSConstraints 
 			   ("superset violated: " 
-			    ^ (error_msg_set NONE (ps1, get_set ps) s2)))
+			    ^ (error_msg_set NONE (ps1, get_set psctx ps) s2)))
 
           (* solve priority set system from PSSup (s1, s2) constraints, 
 	   * skip PSCons and SWellFormed (for now).
@@ -227,13 +230,21 @@ struct
           | PSSup (ctx, ps1, ps2) =>
 	    let (*val s1 = inst_set ctx get_set (get_set ps1)
                 val s2 = inst_set ctx get_set (get_set ps2) *)
-		val s1 = get_set ps1
-		val s2 = get_set ps2
+		val s1 = get_set psctx  ps1
+		val s2 = get_set psctx ps2
+		val _ = verb (fn () => print (error_msg NONE (ps1, s1) (ps2, s2)))
+		val _ = verbprint "\n"
+		val psctx =
+		    if check_sup (s1, s2) then psctx
+		    else
+			(verbprint "make_sup\n";
+			 make_sup (psctx, ps1, PrioSet.union(s1, s2)))
+		val s1 = get_set psctx  ps1
+		val s2 = get_set psctx ps2
 		val _ = verb (fn () => print (error_msg NONE (ps1, s1) (ps2, s2)))
 		val _ = verbprint "\n"
 	    in
-		if check_sup (s1, s2) then psctx
-		else make_sup (psctx, ps1, PrioSet.union(s1, s2))
+		psctx
 	    end
 
 	  | PSWellformed _ => psctx (* XXX *)
@@ -273,7 +284,9 @@ struct
         *)
 
         (* helper function to check set constraint *)
-        fun check (PSSup (ctx, ps1, ps2)) = 
+          fun check (PSSup (ctx, ps1, ps2)) =
+	      ()
+		  (*
             let val s1 = inst_set ctx get_set (get_set ps1)
                 val s2 = inst_set ctx get_set (get_set ps2)
             in
@@ -283,6 +296,7 @@ struct
                     ("superset violated: " 
                      ^ (error_msg NONE (ps1, s1) (ps2, s2)))))
             end
+*)
           | check (PSCons (ctx, ps1, ps2)) =
             let val s1 = get_set ps1
                 val s2 = get_set ps2
@@ -294,17 +308,19 @@ struct
                      ^ (error_msg (SOME ctx) (ps1, s1) (ps2, s2)))))
             end
 	  | check (PSWellformed (ctx, ps)) =
-	    let val s = inst_set ctx get_set (get_set ps)
+	    let val s = get_set ps
+		(* val s = inst_set ctx get_set (get_set ps) *)
 	    in
 		if PrioSet.exists
 		       (fn PEvar _ =>
 			   raise (PSConstraints "shouldn't happen")
 		       | PVar v =>
 			 ((Context.var_fail ctx (V.basename v); false)
-			  handle Context.Absent _ => true)
+			  handle Context.Absent _ =>
+				 (verbprint ("not found: " ^ (Variable.basename v)); true))
 		       | PConst s => 
 			 ((Context.var_fail ctx s; false)
-			  handle Context.Absent _ => true)
+			  handle Context.Absent _ => (verbprint ("not found: " ^ s); true))
 		       )
 		       s
 		then
