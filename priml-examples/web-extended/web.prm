@@ -93,9 +93,9 @@ extern val Lib.UHashtbl.mem : Lib.unit_hashtbl -> Lib.host -> bool
 exception Invalid_argument of string
 				   
 priority low_hash_p
-priority accept_p
-priority high_hash_p
 priority serve_p
+priority high_hash_p
+priority accept_p
 
 order low_hash_p < accept_p
 order accept_p < high_hash_p
@@ -360,7 +360,7 @@ fun process_one_host host =
     end
 
 
-fun process_hosts p hosts =
+fun process_hosts parg hosts =
     let fun touch_all l futs =
 	    case futs of
 		nil => cmd { ret l }
@@ -370,13 +370,13 @@ fun process_hosts p hosts =
 	    case take hosts_par_threshold hosts of
 		(nil, _) => touch_all nil futs
 	      | (l, rest) =>
-		cmd { t <- spawn[p]
+		cmd { t <- spawn[parg]
 			{ ret (List.flatten (List.map process_one_host l)) };
 		      spawn_futs (t::futs) rest
 		    }
     in
 	cmd {
-	  change[p];
+	  change[parg];
 	  spawn_futs nil hosts
 	}
     end
