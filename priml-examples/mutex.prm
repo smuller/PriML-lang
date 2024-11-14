@@ -18,13 +18,13 @@ main
 *)
 
 (* GOOD: all below the prio ceiling *)
-(*
+
 main
 {
   t1 <- spawn[low] { withmutex[medmutex] { ret 1 } };
   spawn[med] { withmutex[medmutex] { ret 1 }}
 }
-*)
+
 
 (* GOOD rejects: one over the prio ceiling *)
 (*
@@ -45,8 +45,10 @@ main
 *)
 
 (* GOOD rejects: decrease prio in critical section *)
+(*
 main
 {
   t1 <- spawn[low] { withmutex[medmutex] { ret 1 } };
   spawn[med] { withmutex[medmutex] { change[low]; ret 1 }}
 }
+*)

@@ -23,7 +23,7 @@ order D < A
 
 
 
-PRESENT
+(* PRESENT *)
 
 
 (* Priorities *)
@@ -34,12 +34,12 @@ PRESENT
 *)
 
 fun choose_thread 
-    (n : int) 
+    (n : int) td1 td2 (*
     (td1 : 'a thread[B, C]) 
-    (td2 : 'a thread[D, E]) 
+    (td2 : 'a thread[D, E]) *) 
 =
     if n > 8 then td1 else td2
-    : 'a thread[B, C, D, E]
+    (* : 'a thread[B, C, D, E] *)
 
 main {
     td1 <- spawn[B] { ret 5 };

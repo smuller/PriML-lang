@@ -10,8 +10,8 @@ order B < A
 
 
 val ranking = 
-    [(0, bot), (1, C), (2, B), (3, A)]
-    : (int * prio{A, B, C, bot})
+    (0, bot)::(1, C)::(2, B)::(3, A)::nil
+    (* : (int * prio{A, B, C, bot}) *)
 
 
 
@@ -50,7 +50,7 @@ fun decrease_prio (td : 'a thread['rfn]) =
                     x <- sync td;
                     ret x
                 }
-                : 'a thread['ranking_rfn])
+                (*: 'a thread['ranking_rfn]*))
     : 'a thread['ranking_rfn]
     
 
