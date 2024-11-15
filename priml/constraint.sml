@@ -373,7 +373,7 @@ and cons ctx e : typ * (psconstraint list) =
 			Subst.subst_var_or_t_in_t (Subst.fromlist substs) cod
 		in
 		    (t,
-		     (wf_cons ctx t) @ List.concat (cs::(css @ subcs)))
+		     List.concat (cs::(css @ subcs)))
 		end
 	      | _ => raise (TyError "not an arrow")
 	end
@@ -444,7 +444,7 @@ and cons ctx e : typ * (psconstraint list) =
 	    val _ = verb (fn () => print ((Int.toString (List.length subs)) ^ " subs"))
 	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
 	in
-	    (t', (wf_cons ctx t') @ cs @ cs')
+	    (t', cs @ cs')
 	end
 	
       | Unroll e =>

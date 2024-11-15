@@ -65,7 +65,8 @@ struct
 
     | subst_var_or_t_in_t s (TRef t) = 
       (*invariant*)
-      TRef (subst_var_or_t_in_t (filter_out_setsubs s) t)
+    (* TRef (subst_var_or_t_in_t (filter_out_setsubs s) t) *)
+      TRef (subst_var_or_t_in_t s t)
 
     | subst_var_or_t_in_t s (TVec t) = TVec (subst_var_or_t_in_t s t)
     | subst_var_or_t_in_t s (TCont t) = TCont (subst_var_or_t_in_t s t)
@@ -74,7 +75,7 @@ struct
     | subst_var_or_t_in_t s (Arrows l) = Arrows (map (etarrow s) l)
     | subst_var_or_t_in_t s (TCmd (t, (p1, p2, p3))) =
       TCmd (subst_var_or_t_in_t s t,
-	    ((* contravariant *) esubstprset (filter_out_setsubs s) p1,
+	    ((* contravariant *) esubstprset s p1,
 	     esubstprset s p2, esubstprset s p3))
     | subst_var_or_t_in_t s (TThread (t, p)) =
       TThread (subst_var_or_t_in_t s t, esubstprset s p)
@@ -89,7 +90,7 @@ struct
   and etarrow s (b, dom, cod) =
       (b,
        (* contravariant *)
-       map (fn (v, t) => (v, subst_var_or_t_in_t (filter_out_setsubs s) t)) dom,
+       map (fn (v, t) => (v, subst_var_or_t_in_t s t)) dom,
        subst_var_or_t_in_t s cod)
 
   fun etsubst s t =
