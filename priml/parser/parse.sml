@@ -459,6 +459,14 @@ struct
                 (call G cmd)
                 wth (mk_cmd_exp Spawn),
 
+	       (* Would be nice to have this syntax without the square
+		* brackets but it'd take some refactoring.
+               `SPAWN >> (call G exp) &&
+                (call G cmd)
+                wth (mk_cmd_exp Spawn),
+		*)
+
+	       
                `SYNC >> call G exp wth (mk_cmd_exp Sync),
 
                `POLL >> call G exp wth (mk_cmd_exp Poll),
@@ -469,8 +477,15 @@ struct
 
                `CHANGE >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth (mk_cmd_exp Change),
 
+	       (* `CHANGE >> ("expected prio" ** (call G exp)) wth (mk_cmd_exp Change), *)
+
 	       `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd)
 		wth (mk_cmd_exp WithMutex)
+
+	       (*
+	       `WITHMUTEX >> (call G exp) && (call G cmd)
+		wth (mk_cmd_exp WithMutex)
+		*)
               ]
 	  end
       and appexp G =
