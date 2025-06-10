@@ -3,18 +3,20 @@
    Carnegie Mellon University
    Pittsburgh, PA 15213 *)
 
-structure BasicParsing : BASIC_PARSING =
+structure BasicParsing (I : PARSING_INFO) : BASIC_PARSING
+						where type info = I.info =
   (* LL-style parsing combinators. *)
 struct
 
-  type pos = Pos.pos
+  type pos = I.info
+  type info = pos
   type 't stream = ('t * pos) Stream.stream
 
   type ('a,'t) parser = pos * 't stream -> 'a * pos * pos * 't stream
 
   infix  2 -- ##
 
-  exception Fail of pos
+  exception Fail of Pos.pos
 
   (* Primitive Parsers *)
 
@@ -24,18 +26,18 @@ struct
   fun done x (pos,ts) =
         case Stream.force ts of
             Stream.Nil => (x, pos, pos, ts)
-          | Stream.Cons _ => raise Fail (Pos.rightedge pos)
+          | Stream.Cons _ => raise Fail (Pos.rightedge (I.pos_of pos))
 
   fun any (pos,ts) =
         case Stream.force ts of
-            Stream.Nil => raise Fail (Pos.rightedge pos)
+            Stream.Nil => raise Fail (Pos.rightedge (I.pos_of pos))
           | Stream.Cons ((x, pos), ts) => (x, pos, pos, ts)
                    
   fun (p -- q) (pos,ts) =
         let val (x,posx,pos,ts) = p (pos,ts)
             val (y,posy,pos,ts) = q x (pos,ts)
         in
-            (y, Pos.union (posx,posy),pos,ts)
+            (y, I.from_pos (Pos.union (posx,posy)),pos,ts)
         end
 
   fun (p ## q) (pos,ts) =

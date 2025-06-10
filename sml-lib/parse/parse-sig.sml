@@ -1,6 +1,17 @@
+signature PARSE_INFO =
+sig
+    type info
+
+    val from_pos : Pos.pos -> info
+    val update_pos : info * Pos.pos -> info
+    val pos_of : info -> Pos.pos
+end
+
 
 signature BASIC_PARSING =
 sig
+
+    type info
 
     (* Parser with token type 't, result type 'a *)
     type ('a,'t) parser
@@ -18,14 +29,14 @@ sig
     (* sequential successful composition of parsers *)
     val -- : ('a,'t) parser * ('a -> ('b,'t) parser) -> ('b,'t) parser
     (* sequential failing composition of parsers *)
-    val ## : ('a,'t) parser * (Pos.pos -> ('a,'t) parser) ->
+    val ## : ('a,'t) parser * (info -> ('a,'t) parser) ->
               ('a,'t) parser
 
     (* grab position *)
-    val !! : ('a,'t) parser  -> ('a * Pos.pos,'t) parser
+    val !! : ('a,'t) parser  -> ('a * info,'t) parser
 
     (* get position *)
-    val get : (Pos.pos -> ('a, 't) parser) -> ('a, 't) parser
+    val get : (info -> ('a, 't) parser) -> ('a, 't) parser
 
     (* to handle mutually-recursive parsers *)
     val $ : (unit -> ('a,'t) parser) -> ('a,'t) parser
@@ -38,18 +49,18 @@ sig
                       ('b,'t) parser
 
     (* parse this stream before reading any other input *)
-    val push : ('t * Pos.pos) Stream.stream ->
+    val push : ('t * info) Stream.stream ->
                 ('a,'t) parser -> ('a, 't) parser
 
     (* parse a stream *)
-    val parse : ('a,'t) parser -> ('t * Pos.pos) Stream.stream ->
+    val parse : ('a,'t) parser -> ('t * info) Stream.stream ->
                  'a option
 
     (* transform p s
 
        parses consecutive maximal prefixes of s with p as many times
        as possible, outputting the results as a stream *)
-    val transform : ('a,'t) parser -> ('t * Pos.pos) Stream.stream ->
+    val transform : ('a,'t) parser -> ('t * info) Stream.stream ->
                      'a Stream.stream
 
 end
@@ -80,7 +91,7 @@ sig
   val return   : ('b,'t) parser * 'a -> ('a,'t) parser
 
   (* apply function to failure position *)
-  val guard    : ('a,'t) parser * (Pos.pos -> 'b) -> ('a,'t) parser
+  val guard    : ('a,'t) parser * (info -> 'b) -> ('a,'t) parser
 
   (* n-ary sequential composition *)
   val seq      : ('a,'t) parser list -> ('a list,'t) parser

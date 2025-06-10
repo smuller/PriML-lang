@@ -83,7 +83,7 @@ struct
 
   exception Impossible 
 
-  fun **(s, p) = p ## (fn pos => raise Parse ("@" ^ Pos.toString pos ^ ": " ^ s))
+  fun **(s, p) = p ## (fn i => raise Parse ("@" ^ Pos.toString i.pos ^ ": " ^ s))
   infixr 4 **
 
   (* as `KEYWORD -- punt "expected KEYWORD KEYWORD2" *)
@@ -91,6 +91,12 @@ struct
 
   val namedstring = ML5pghUtil.newstr
   val itos = Int.toString
+
+  fun inf l =
+      { pos = l,
+	live = ref [],
+	loans = ref []
+      }
 
   (* look in every include path for this file *)
   fun tryopenwith func f =
@@ -491,9 +497,9 @@ struct
       and appexp G =
           let
               fun mkinfix (s, x as (_,l), y) = 
-                  (App((Var (Id s),l), (Record[("1",x),("2",y)],l), true),l)
+                  (App((Var (Id s), l), (Record[("1",x),("2",y)], l), true), l)
               fun mark ass prec f = 
-                  Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y),l))))
+                  Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y), l))))
 
               val par =
                   alt [expid when (LU.Alist.get op= G)
