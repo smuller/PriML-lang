@@ -76,6 +76,9 @@ struct
     (* priority ceiling needs to be annotated for now *)
     | NewMutex of exp
 
+       (* priority is annotated *)
+    | NewCV of exp
+
   and cmd_ =
       IBind of ((string * exp) list) * exp
     | Spawn of exp * cmd  (* Spawn of exp * cmd *)
@@ -85,6 +88,9 @@ struct
     | IRet of exp
     | Change of exp  (* Change of exp *)
     | WithMutex of exp * cmd (* mutex, critical section *)
+    | Wait of exp (* CV wait *)
+    | Signal of exp (* CV signal *)
+    | Promote of exp * exp (* promote e1 to e2 *)
 
   and constant =
       CInt of intconst
@@ -130,6 +136,7 @@ struct
     | TPrio of rfmt
 
     | TMutex of rfmt
+    | TCondVar of rfmt
 
   and dec_ =
       (* wish we had refinements here. 
