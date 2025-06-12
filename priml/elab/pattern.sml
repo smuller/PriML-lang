@@ -111,9 +111,10 @@ struct
          (elab : Context.context (* -> IL.world *) -> EL.exp -> IL.exp * IL.typ)
          (elabt : Context.context -> Pos.pos -> EL.typ -> IL.typ)
          (ctx : Context.context)
-         (loc : Pos.pos) obs columns es def =
-   let
-    fun % e_ = (e_, loc)
+         (inf : E.node_info) obs columns es def =
+      let
+	  val loc = #pos inf
+    fun % e_ = (e_, inf)
 
     (* mark a clean column with its sort *)
     fun markcolumn c =
@@ -671,7 +672,7 @@ struct
 
                                      (* clean new column. *)
                                      val (ncol, ne) =
-                                         clean nctx loc elabt insidee
+                                         clean nctx inf elabt insidee
                                              ruledom ocol oe
 
                                      val rest = ListUtil.transpose rest
@@ -859,7 +860,7 @@ struct
 
                                                (* clean new column. *)
                                                val (ncol, ne) =
-                                                   clean nctx loc elabt insides
+                                                   clean nctx inf elabt insides
                                                           ruledom ocol oe
 
                                                val rest = ListUtil.transpose rest
@@ -1247,7 +1248,7 @@ struct
                      val newcols =
                          map (fn (l, col) => (l, col, Unify.new_evar ())) newcols
 
-                     val (obje, objt) = elab ctx (E.Var (E.Id obj), loc)
+                     val (obje, objt) = elab ctx (E.Var (E.Id obj), inf)
 
                      fun recurse nil (nctx, ncols, nes) =
                          elm nctx ncols nes def
@@ -1259,7 +1260,7 @@ struct
 
                              (* clean column *)
                              val (col, nes) = 
-                                 clean nc loc elabt ss t col oes
+                                 clean nc inf elabt ss t col oes
 
                              val (ee, tt) = 
                                  recurse rest 
@@ -1316,12 +1317,15 @@ struct
      variables to be shadowed in a pattern row. *)
 
 
-  and elaborate user elab elabt (* elabw *) (ctx : C.context) (* (here : IL.world) *) loc
+  and elaborate user
+		(elab : Context.context (* -> IL.world *) -> EL.exp -> IL.exp * IL.typ)
+		elabt (* elabw *) (ctx : C.context) (* (here : IL.world) *)
+		(info: E.node_info)
                   (obs : string list, 
                    m   : (E.pat list * E.exp) list,
                    def : unit -> E.exp) =
       let
-
+	  val loc = #pos info
           val _ = debugdo
           (fn () =>
            let in
@@ -1348,14 +1352,14 @@ struct
           val es = map #2 m
 
           val tvs = map (fn ob => 
-                         let val (_, tt) = elab ctx (E.Var (E.Id ob), loc)
+                         let val (_, tt) = elab ctx (E.Var (E.Id ob), info)
                          in tt
                          end) obs
 
           val (columns, es) = 
               (ListUtil.foldl3
                (fn ((pl, tv, ob), (cols, es)) => 
-                let val  (ccs, ees) = clean ctx loc elabt ob tv pl es
+                let val  (ccs, ees) = clean ctx info elabt ob tv pl es
                 in (ccs :: cols, ees)
                 end) (nil, es) columns tvs obs)
               handle ListUtil.ListUtil => 
@@ -1368,7 +1372,7 @@ struct
           length tvs = length columns
              orelse raise Pattern "wrong number of pattern columns for args";
 
-          elabmatrix user elab elabt ctx loc obs columns es def
+          elabmatrix user elab elabt ctx info obs columns es def
 
       end
 
@@ -1379,17 +1383,18 @@ struct
 
      Return the new column and the new list of expressions.
      *)
-  and clean ctx loc elabt a tv pl (es : EL.exp list) 
+  and clean ctx (info: E.node_info) elabt a tv pl (es : EL.exp list) 
         : (EL.pat list * EL.exp list) =
       let
+	  val loc = #pos info
           fun one (p, e) =
               (case p of
                    E.PAs (s, pp) =>
                        let in
                            dprint ("cleaning " ^ s ^ "...\n");
                            one (pp, (E.Let((E.Val (nil, E.PVar s, 
-                                                   (E.Var (E.Id a), loc)), 
-                                            loc), e), loc))
+                                                   (E.Var (E.Id a), info)), 
+                                            info), e), info))
                        end
                  | E.PVar s => one (E.PAs (s, E.PWild), e)
                  | E.PConstrain (pp, tt) =>

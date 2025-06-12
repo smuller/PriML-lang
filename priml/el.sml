@@ -26,7 +26,14 @@ struct
 	 live  : liveness_info option ref,
 	 loans : loans_info option ref
        }
-		
+
+  fun info_of_pos l =
+      { pos = l,
+	live = ref NONE,
+	loans = ref NONE
+      }
+
+	   
   datatype longid =
       Id of id
     | Path of id * longid

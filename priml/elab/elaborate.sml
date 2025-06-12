@@ -189,7 +189,9 @@ struct
 
   and value (v, t) = (Value v, t)
 
-  and elab ctx ((e, loc) : EL.exp) =
+  and elab ctx ((e, info) : EL.exp) =
+      let val loc = #pos info
+      in
       case e of
           E.Seq (e1, e2) => 
               let val (e1, e1t) = elab ctx e1
@@ -303,7 +305,7 @@ struct
                           a
                       end *)
 
-                   fun $x = (x, loc)
+                   fun $x = (x, info)
                    val n = 0w1 + Word32.fromInt (length rest)
                    val arr = newstr "arr"
 
@@ -508,25 +510,25 @@ struct
                end
 
         | E.Andalso (a,b) =>
-               elab ctx (E.If (a, b, Initial.falseexp loc), loc)
+               elab ctx (E.If (a, b, Initial.falseexp loc), info)
 
         | E.Orelse (a,b) =>
-               elab ctx (E.If (a, Initial.trueexp loc, b), loc)
+               elab ctx (E.If (a, Initial.trueexp loc, b), info)
 
         | E.Andthen (a, b) => 
-               elab ctx (E.If (a, (E.Seq (b, (E.Record nil, loc)), loc),
-                                    (E.Record nil, loc)), loc)
+               elab ctx (E.If (a, (E.Seq (b, (E.Record nil, info)), info),
+                                    (E.Record nil, info)), info)
 
         | E.Otherwise (a, b) => 
                elab ctx (E.If (a, 
-                                    (E.Record nil, loc),
-                                    (E.Seq (b, (E.Record nil, loc)), loc)), loc)
+                                    (E.Record nil, info),
+                                    (E.Seq (b, (E.Record nil, info)), info)), info)
 
         | E.If (cond, tt, ff) =>
                elab ctx
                (E.Case ([cond],
                         [([Initial.truepat], tt),
-                         ([Initial.falsepat], ff)], NONE), loc)
+                         ([Initial.falsepat], ff)], NONE), info)
 
         | E.Case (es, m, default) =>
                let 
@@ -538,17 +540,17 @@ struct
                        val warnstring = 
                          ("maybe inexhaustive match(case) at " ^ ltos loc)
 
-                       val rexp = (EL.Raise (Initial.matchexp loc), loc)
+                       val rexp = (EL.Raise (Initial.matchexp loc), info)
                      in
                        if !warnmatch
-                       then (EL.Seq((EL.CompileWarn warnstring, loc),
-                                    rexp), loc)
+                       then (EL.Seq((EL.CompileWarn warnstring, info),
+                                    rexp), info)
                        else rexp
                      end
 
                    (* force case args to be variables, if they aren't. *)
                    fun force nil nc acc =
-                            Pattern.elaborate true elab elabt nc loc
+                            Pattern.elaborate true elab elabt nc info
                                  (rev acc, m, def)
                      | force ((E.Var (E.Id v), _)::rest) nc acc = 
                             force rest nc (v::acc)
@@ -630,12 +632,12 @@ struct
 
                     (* re-raise exception if nothing matches *)
                     fun def () =
-                        (EL.Raise (EL.Var (E.Id es), loc), loc)
+                        (EL.Raise (EL.Var (E.Id es), info), info)
                         
                     (* XXX5 and world.. 
                        (this DOES include the world, right? -  6 Sep 2007) *)
                     val (match, mt) = 
-                        Pattern.elaborate true elab elabt mctx loc
+                        Pattern.elaborate true elab elabt mctx info
                            ([es], ListUtil.mapfirst ListUtil.list pel, def)
                 in
                     unify ctx loc "handle" tt mt;
@@ -648,7 +650,7 @@ struct
 
         (* makes slightly nicer code
            (nb, means that sequence-unit applies to do as well) *)
-        | E.Let ((E.Do e, loc), e2) => elab ctx (E.Seq(e, e2), loc)
+        | E.Let ((E.Do e, inf), e2) => elab ctx (E.Seq(e, e2), inf)
 
         | E.Let (d, e) =>
                let
@@ -665,7 +667,7 @@ struct
                   (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
                       | NONE => Unify.new_psevar ()) *)
-              val (ec, t, ((* pr1, *) pr2, pr3), cc) = elabcmd ctx pp (c, loc)
+              val (ec, t, ((* pr1, *) pr2, pr3), cc) = elabcmd ctx pp (c, info)
 	      val cc' = ref []
 							       (*
               val cc' = ref ((pscstr_gen (* pr1 *) pp pr2 pr3) 
@@ -742,9 +744,11 @@ struct
 		  TPrio psint => (NewMutex pe, TMutex psint)
 		| _ => error loc "newmutex priority"
 	  end
-
+      end
   (* context, start refinement, (instruction, location) *)
-  and elabcmd ctx (pr: IL.prioset) ((i, loc): E.cmd) =
+  and elabcmd ctx (pr: IL.prioset) ((i, info): E.cmd) =
+      let val loc = #pos info
+      in
       case i of
           E.Spawn (e, c) => (* raise unimplemented *)
           let val (pe, pt) = elab ctx e
@@ -890,14 +894,15 @@ struct
 		  end
 		| _ => error loc "withmutex mutex"
 	  end
-
+      end
   (* FIX: binding with first class priorities *)
   and elabbind ctx (pr: IL.prioset) (is, li) =
       case is of
           [] =>
           (* Treat the last instruction as just another binding and return its
              value. May introduce an unnecessary binding, but oh well. *)
-          (let val (_, loc) = li
+          (let val (_, info) = li
+	       val loc = #pos info
                val dvar = "retval__"
                val v = V.namedvar dvar
                val (ii, t) = elab ctx li
@@ -934,9 +939,10 @@ struct
                 print "\n bind 1 end \n"));
                 (Bind (v, ii, Ret (Value (Var v))), tint, ((* pr, *) pr2, pr3), cc)
            end)
-        | (s, i as (_, loc))::rest =>
+        | (s, i as (_, info))::rest =>
           (* Bind the elaborated instruction in the elaborated remainder *)
-          (let val v = V.namedvar s
+          (let val loc = #pos info
+	       val v = V.namedvar s
                val (ii, t) = elab ctx i
 
                (* val _ = 
@@ -1001,8 +1007,9 @@ struct
   and elabf ctx 
             (arg : string)
             (clauses : (EL.pat list * EL.typ option * EL.exp) list) 
-            loc =
-      let in
+            info =
+      let val loc = #pos info
+      in
           (* ensure clauses all have the same length *)
           ListUtil.allpairssym (fn ((a, _, _), (b, _, _)) =>
                                 length a = length b) clauses
@@ -1039,18 +1046,18 @@ struct
               let
                   (* base case *)
                   val (exp, tt) = 
-                      Pattern.elaborate true elab elabt ctx loc
+                      Pattern.elaborate true elab elabt ctx info
                          ([arg],
                           [([pat], e)],
                           (fn () =>
                            let 
                              val warnstring = 
                                ("maybe inexhaustive match(fun) at " ^ ltos loc)
-                             val rexp = (EL.Raise (Initial.matchexp loc), loc)
+                             val rexp = (EL.Raise (Initial.matchexp loc), info)
                            in
                              if !warnmatch
-                             then (EL.Seq((EL.CompileWarn warnstring, loc),
-                                          rexp), loc)
+                             then (EL.Seq((EL.CompileWarn warnstring, info),
+                                          rexp), info)
                              else rexp
                            end))
               in
@@ -1063,7 +1070,7 @@ struct
                   (exp, tt)
               end
           | nil => (* raise Elaborate "impossible: *no* clauses in fn" *)
-                   elab ctx (EL.Raise (Initial.matchexp loc), loc)
+                   elab ctx (EL.Raise (Initial.matchexp loc), info)
           | _ =>
                let
                    (* we already have an arg since we're inside the
@@ -1087,9 +1094,9 @@ struct
                           body constraints on its outside *)
                        (* XXX5 
                           allow world constraints *)
-                       foldr (fn (t, e) => (E.Constrain(e, t), loc)) 
-                             (E.Case (map (fn a => (E.Var (E.Id a), loc)) args, 
-                                      columns, NONE), loc)
+                       foldr (fn (t, e) => (E.Constrain(e, t), info)) 
+                             (E.Case (map (fn a => (E.Var (E.Id a), info)) args, 
+                                      columns, NONE), info)
                              constraints
                      | buildf (x::rest) =
                        let
@@ -1098,16 +1105,16 @@ struct
                          (* XXX inline? *)
                            (E.Let((E.Fun { inline = false, 
                                            funs = [(nil, fc, [([E.PVar x], NONE,
-                                                               buildf rest)])] }, loc),
-                                  (E.Var (E.Id fc), loc)),
-                            loc)
+                                                               buildf rest)])] }, info),
+                                  (E.Var (E.Id fc), info)),
+                            info)
                        end
                in
                    elab ctx ` buildf ` tl args
                end)
 
       end handle Pattern.Pattern s => 
-            error loc ("Pattern compilation failed: " ^ s)
+            error (#pos info) ("Pattern compilation failed: " ^ s)
 
   and elabds ctx nil = (nil, ctx)
     | elabds ctx ((d : EL.dec) :: rest) =
@@ -1124,8 +1131,10 @@ struct
 *)
 
   (* return an il.dec list, and a new context *)
-  and elabd ctx ((d, loc) : EL.dec) 
-    : IL.dec list * C.context =  
+  and elabd ctx ((d, info) : EL.dec) 
+      : IL.dec list * C.context =
+      let val loc = #pos info
+      in
     case d of
       E.Do e => 
         let val (ee, tt) = elab ctx e
@@ -1203,7 +1212,7 @@ struct
     (* some day we might add something to 'ty,' like a string list
        ref so that we can track the exception's history, or at least
        a string with its name and raise point. *)
-    | E.Exception (e, ty) => elabd ctx (E.Newtag(e, ty, Initial.exnname), loc)
+    | E.Exception (e, ty) => elabd ctx (E.Newtag(e, ty, Initial.exnname), info)
 
     (* A tag can be declared to be modal or valid. If it's valid, it must have
        a mobile body. *)
@@ -1624,7 +1633,7 @@ struct
                       val xv = V.namedvar x
                       val nc = C.bindv c x (mono dom) xv
 
-                      val (exp, tt) = elabf nc x clauses loc
+                      val (exp, tt) = elabf nc x clauses info
                   in
                       unify c loc "fun body/codomain" tt cod;
                       (f, vv, xv, dom, cod, exp)
@@ -1871,7 +1880,7 @@ struct
           end
 
     (* anything but a variable is syntactic sugar. *)
-    | E.Val (tyvars, E.PWild, exp) => elabd ctx (E.Val (tyvars, E.PVar ` newstr "wild", exp), loc)
+    | E.Val (tyvars, E.PWild, exp) => elabd ctx (E.Val (tyvars, E.PVar ` newstr "wild", exp), info)
 
     | E.Val (tyvars, E.PAs (v, p), exp) =>
             let
@@ -1883,13 +1892,13 @@ struct
                  val p = x
                  *)
 
-              val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), loc)
-              val (decls2, ctx) = elabd ctx (E.Val (tyvars, p, (E.Var (E.Id v), loc)), loc)
+              val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), info)
+              val (decls2, ctx) = elabd ctx (E.Val (tyvars, p, (E.Var (E.Id v), info)), info)
             in
               (decls @ decls2, ctx)
             end
     | E.Val (tyvars, E.PConstrain (p, t), exp) =>
-            elabd ctx (E.Val (tyvars, p, (E.Constrain(exp, t), loc)), loc)
+            elabd ctx (E.Val (tyvars, p, (E.Constrain(exp, t), info)), info)
     | E.Val (_, E.PApp _, _) => error loc "app patterns are refutable"
     | E.Val (_, E.PConstant _, _) => error loc "constant patterns are refutable"
     | E.Val (_, E.PWhen _, _) => error loc "when patterns are refutable"
@@ -1907,12 +1916,12 @@ struct
                  *)
               val t = E.TNum ` length spl
               val v = newstr "brec"
-              val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), loc)
+              val (decls, ctx) = elabd ctx (E.Val (tyvars, E.PVar v, exp), info)
 
               fun projs ctx nil = (nil, ctx)
                 | projs ctx ((l, p) :: rest) = 
                 let
-                    val (decls, ctx) = elabd ctx (E.Val (tyvars, p, (E.Proj(l, t, (E.Var (E.Id v), loc)), loc)), loc)
+                    val (decls, ctx) = elabd ctx (E.Val (tyvars, p, (E.Proj(l, t, (E.Var (E.Id v), info)), info)), info)
                   val (decls2, ctx) = projs ctx rest
                 in
                   (decls @ decls2, ctx)
@@ -2019,7 +2028,7 @@ struct
                  orelse error loc "duplicate tyvars in type dec";
               ([], C.bindc ctx tv (Lambda conf) kind Regular)
           end
-
+      end
     
 (*
   fun elabx ctx export =

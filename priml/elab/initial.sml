@@ -242,7 +242,7 @@ struct
                        
     fun wrap (EL.Prog(ds, c)) =
         let val loc = Pos.initposex "prelude"
-            fun %x = (x, loc)
+            fun %x = (x, EL.info_of_pos loc)
             val decbool =
                 EL.Dec (%(EL.Datatype 
                               (nil, [(boolname, 
@@ -287,8 +287,8 @@ struct
           EL.Prog(impexns :: decbool (* :: deceq *) :: decopt :: declist :: ds, c)
         end
 
-    fun trueexp loc = (EL.Var (EL.Id truename), loc)
-    fun falseexp loc = (EL.Var (EL.Id falsename), loc)
+    fun trueexp loc = (EL.Var (EL.Id truename), EL.info_of_pos loc)
+    fun falseexp loc = (EL.Var (EL.Id falsename), EL.info_of_pos loc)
 
     val trueexpil  = IL.Roll(ilbool, IL.Inject(ilboolsum, truename,  NONE))
     val falseexpil = IL.Roll(ilbool, IL.Inject(ilboolsum, falsename, NONE))
@@ -297,7 +297,7 @@ struct
     val falsepat = EL.PApp (falsename, NONE)
 
     fun matchexp loc = (* (EL.Var matchname, loc) *)
-                             (EL.App ((EL.Var (EL.Id matchname), loc),
-                                (EL.Record nil, loc), false), loc)
+                             (EL.App ((EL.Var (EL.Id matchname), EL.info_of_pos loc),
+                                (EL.Record nil, EL.info_of_pos loc), false), EL.info_of_pos loc)
 
 end
