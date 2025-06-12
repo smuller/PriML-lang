@@ -83,8 +83,9 @@ struct
 
   exception Impossible 
 
-  fun **(s, p) = p ## (fn pos => raise Parse ("@" ^ Pos.toString pos ^ ": " ^ s))
+  fun **(s, p) = p ## (fn i => raise Parse ("@" ^ Pos.toString i ^ ": " ^ s))
   infixr 4 **
+
 
   (* as `KEYWORD -- punt "expected KEYWORD KEYWORD2" *)
   fun punt msg _ = msg ** fail
@@ -92,6 +93,10 @@ struct
   val namedstring = ML5pghUtil.newstr
   val itos = Int.toString
 
+
+  fun !!! (p : ('a, 't) parser) : ('a * node_info, 't) parser =
+      (!! p) wth (fn (e, p) => (e, info_of_pos p))
+	  
   (* look in every include path for this file *)
   fun tryopenwith func f =
       let
@@ -491,9 +496,9 @@ struct
       and appexp G =
           let
               fun mkinfix (s, x as (_,l), y) = 
-                  (App((Var (Id s),l), (Record[("1",x),("2",y)],l), true),l)
+                  (App((Var (Id s), l), (Record[("1",x),("2",y)], l), true), l)
               fun mark ass prec f = 
-                  Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y),l))))
+                  Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y), l))))
 
               val par =
                   alt [expid when (LU.Alist.get op= G)
@@ -506,14 +511,14 @@ struct
                        `ORELSE return mark Right ~200 Orelse,
                        `ANDTHEN return mark Right ~300 Andthen,
                        `OTHERWISE return mark Right ~300 Otherwise,
-                       !!(call G atomexp) wth Atm]
+                       !!!(call G atomexp) wth Atm]
           in
               parsefixityadj par Left (fn (a,b as (_,l)) =>
                                        (App (a, b, false),l)) wth #1
           end
 
       and handlexp G =
-          !! (call G appexp) && opt (`HANDLE && call G matching)
+          !!! (call G appexp) && opt (`HANDLE && call G matching)
                      wth (fn (a,SOME (_,m)) => Handle (a, m)
                            | ((a,_), NONE) => a)
 
@@ -522,14 +527,14 @@ struct
 
       (* XXX use repeat to allow e : t : t : t *)
       and constrainexp G =
-          !! (call G handlexp) && opt (`COLON >> typ)
+          !!! (call G handlexp) && opt (`COLON >> typ)
                      wth (fn (a,SOME c) => Constrain (a, c)
                            | ((a, _),NONE) => a)
 
       and exp G = 
           (* can only write cases with one object, though the
              ast allows multiple *)
-          !!( alt [`CASE >> "expected EXP OF MATCHING after CASE" **
+          !!! ( alt [`CASE >> "expected EXP OF MATCHING after CASE" **
                    (call G exp && `OF && call G matching
                       wth (fn (obj,(_,pel)) => Case([obj], 
                                                     map (fn (p,e) =>
@@ -576,7 +581,7 @@ struct
                     `ELSE && "expected EXP after ELSE" ** call G exp 
                       wth (fn (e as (_,l),(_,(t,(_,f)))) => If (e,t,f))),
 
-                   !!(`FN) && (separate0 (repeat1 (call G mapat) && 
+                   !!!(`FN) && (separate0 (repeat1 (call G mapat) && 
                                           (`DARROW return NONE) && 
                                           call G exp) (`BAR))
                       wth (fn ((_, l), s) => 
@@ -669,7 +674,7 @@ struct
               ]
 
       and regulardec G =
-         !!(alt [$bindword && (call G pat suchthat irrefutable) && `EQUALS && 
+         !!!(alt [$bindword && (call G pat suchthat irrefutable) && `EQUALS && 
                    call G exp
                    wth (fn (b, (pat, (_, e))) => Val (nil, pat, e)),
                  $bindword && tyvars && (call G pat suchthat irrefutable) && 
@@ -747,7 +752,7 @@ struct
                 ])
 
       and sigdec G = 
-          !!(alt [
+          !!!(alt [
             `TYPE >> id wth (fn i => SigType (nil, i)),
             `TYPE >> tyvars && id wth (fn (tv, i) => SigType (tv, i)),
             `TYPE -- punt "expected ID after TYPE",
@@ -760,7 +765,7 @@ struct
 
       and cmd G =
           "expected LBRACE (inst;)*inst RBRACE" **
-          !!(`LBRACE >>
+          !!!(`LBRACE >>
             ((repeat ((id && (`LARROW >> call G exp << `SEMICOLON)) ||
                      (call G exp << `SEMICOLON wth (fn i => ("ign__", i))))) &&
                  ("expected exp" ** call G exp))

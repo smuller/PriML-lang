@@ -18,6 +18,22 @@ struct
   type psconstraint = unit (* XXX *)
   type id = string
 
+  type liveness_info = id list
+  type loans_info = unit list (* XXX update with loan representation *)
+
+  type node_info =
+       { pos   : Pos.pos,
+	 live  : liveness_info option ref,
+	 loans : loans_info option ref
+       }
+
+  fun info_of_pos l =
+      { pos = l,
+	live = ref NONE,
+	loans = ref NONE
+      }
+
+	   
   datatype longid =
       Id of id
     | Path of id * longid
@@ -199,8 +215,8 @@ struct
 
 *)
 
-  withtype exp = exp_ * Pos.pos
-  and dec = dec_ * Pos.pos
-  and cmd = cmd_ * Pos.pos
+  withtype exp = exp_ * node_info
+  and dec = dec_ * node_info
+  and cmd = cmd_ * node_info
 
 end

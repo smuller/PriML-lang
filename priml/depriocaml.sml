@@ -148,8 +148,8 @@ and depriod ((d, l) : dec) : dec =
       | Newtag (s1, NONE, s2) => Newtag (s1, NONE, s2)
       | Exception (s, SOME t) => Exception (s, SOME (depriot t))
       | Exception (s, NONE) => Exception (s, NONE)
-      | ExternVal _ => Val ([], PWild, (Record [], Pos.initpos))
-      | ExternType _ => Val ([], PWild, (Record [], Pos.initpos))
+      | ExternVal _ => Val ([], PWild, (Record [], EL.info_of_pos Pos.initpos))
+      | ExternType _ => Val ([], PWild, (Record [], EL.info_of_pos Pos.initpos))
       | Structure (id, decs) => Structure (id, List.map depriod decs)
       | Signature (id, decs) => Signature (id, List.map depriod decs),
      l)
@@ -159,7 +159,7 @@ and deprioprog (Prog (tds, c)) : dec list =
         [] =>
 	[(Fun {inline = false,
 	       funs = [([], "__main", [([PWild], NONE, deprioc c)])]
-	}, Pos.initpos)]
+	}, EL.info_of_pos Pos.initpos)]
       | (Dec d)::tds' => (depriod d)::(deprioprog (Prog (tds', c)))
       | (Priority _)::tds' => deprioprog (Prog (tds', c))
       | (Order _)::tds' => deprioprog (Prog (tds', c))
@@ -203,8 +203,8 @@ fun fairtocaml l sns : dec list =
     end
 
 fun decstolet decs =
-    List.foldr (fn (d, e) => (Let (d, e), Pos.initpos))
-	       (Record [], Pos.initpos)
+    List.foldr (fn (d, e) => (Let (d, e), EL.info_of_pos Pos.initpos))
+	       (Record [], EL.info_of_pos Pos.initpos)
 	       decs
 
 fun to_total prios cons =
@@ -250,7 +250,7 @@ fun to_total prios cons =
 
 	
 fun deprio p prios cons fs =
-    let val l = Pos.initpos
+    let val l = EL.info_of_pos Pos.initpos
     in
         (List.map (priotocaml l) (to_total prios cons)) @
 	(*
