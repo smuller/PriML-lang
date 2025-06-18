@@ -107,7 +107,9 @@ struct
        | E.TCmd (t, p) => E.TCmd (etsubst s t, p)
        | E.TThread (t, p) => E.TThread (etsubst s t, p)
        | E.TPrio p => E.TPrio p
-       | E.TMutex p => E.TMutex p)
+       | E.TMutex p => E.TMutex p
+       | E.TCondVar p => E.TCondVar p
+      )
        (* | E.TForall (vs, t) => E.TForall (vs, etsubst s t) (* FIX: delete this *) *)
 
 
@@ -248,7 +250,8 @@ struct
        *)
        | E.ECmd c => E.ECmd (csubst s c)
        | E.NewMutex e => E.NewMutex (esubst s e)
-     )
+       | E.NewCV e => E.NewCV (esubst s e)
+      )
 
   and csubst s c =
       (case c of
@@ -262,6 +265,9 @@ struct
        | E.IRet e => E.IRet (esubst s e)
        | E.Change e => E.Change (esubst s e)
        | E.WithMutex (e, (c, l)) => E.WithMutex (esubst s e, (csubst s c, l))
+       | E.Signal e => E.Signal (esubst s e)
+       | E.Wait e => E.Wait (esubst s e)
+       | E.Promote (el, er) => E.Promote (esubst s el, esubst s er)
       )
 
   (* pattern lists as in fn;

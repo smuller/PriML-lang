@@ -66,6 +66,7 @@ struct
                 end
             | ECmd cmd => ECmd cmd
             | NewMutex e => NewMutex (nul G e)
+            | NewCV e => NewCV (nul G e)
             (* | PFn (ppats, pats, e) => PFn (ppats, pats, self e) (* FIX: delete this *) *)
             (* | PApply (e, p) => PApply (nul G e, p) (* FIX: delete this *) *)
            )
@@ -85,6 +86,7 @@ struct
          | TThread (t, p) => TThread (tul G t, p)
          | TPrio p => TPrio p
          | TMutex p => TMutex p
+         | TCondVar p => TCondVar p
          (* | TForall (pp, t) => TForall (pp, tul G t) (* FIX: delete this *) *)
         )
 
@@ -186,6 +188,7 @@ struct
               (G, Structure (s, map (#2) ` map (dul G) ds))
           | Signature (s, ds) =>
               (G, Signature (s, map (#2) ` map (dul G) ds))
+          (* FIXME: mlton reports missing `SigType _ | SigVal _` patterns *)
         )
         end
 
@@ -200,6 +203,9 @@ struct
           | IRet e => IRet (nul G e)
           | Change p => Change (nul G p)
           | WithMutex (e, c) => WithMutex (nul G e, cul G c)
+          | Signal e => Signal (nul G e)
+          | Wait e => Wait (nul G e)
+          | Promote (el, er) => Promote (nul G el, nul G er)
          ),
         loc)
 
