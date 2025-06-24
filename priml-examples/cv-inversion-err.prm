@@ -38,7 +38,7 @@ fun[low] foo cv res =
 (*
 fun[low] foo (cv: cv[high]) (res: int ref) =
     (* FIXME: how to reassign value to mutable variable? *)
-    res := res + 1;
+    res = res + 1;
     signal cv; (* ill-typed *)
  *)
 
