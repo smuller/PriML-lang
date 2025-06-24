@@ -1,0 +1,53 @@
+(* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * simple priority inversion example
+ * ---
+ *
+ * shows how the PriML compiler will raise a type error if passing a condition
+ * variable causes a priority inversion.
+ *
+ * code translated from the C-family example (Fig. 2) given in _pldi23_:
+ *
+ * ```
+ * void <Low>f(CV<High> cv, int *result) {
+ *   ...
+ *   *result = ...;
+ *   signal(cv); //ill-typed
+ * }
+ *
+ * void <High>main() {
+ *   CV<High> cv = new CV<High>();
+ *   int result = 0;
+ *   spawn<Low>(f(CV, &result));
+ *   ...
+ *   wait(cv);
+ * }
+ * ```
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *)
+
+priority high
+priority low
+order low < high
+
+fun[low] foo cv res =
+    res := res + 1;
+    signal cv;
+
+(* FIXME: or should we add inline types to fn signature? *)
+(* FIXME: how to specify arg type as a condition variable? *)
+(* FIXME: is `int ref` the correct way to specify res is a refererence? *)
+(*
+fun[low] foo (cv: cv[high]) (res: int ref) =
+    (* FIXME: how to reassign value to mutable variable? *)
+    res := res + 1;
+    signal cv; (* ill-typed *)
+ *)
+
+main {
+    cmd {
+        cv <- newcv[high];
+        (* FIXME: is this the correct way to init res as a reference to an int? *)
+        res <- ref 1;
+        spawn[low] { foo cv res };
+        ret res
+    }
+}
