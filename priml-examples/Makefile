@@ -67,5 +67,8 @@ fib_term: fib_term.prm
 web: web-src/web.prm
 	$(PRIML) web-src/web.prm web
 
+cv_inversion_err: cv-inversion-err.prm
+	$(PRIML) cv-inversion-err.prm cv_inversion_err
+
 clean:
-	rm -f bank email fibserv fibserv-fair fib_term web
+	rm -f bank email fibserv fibserv-fair fib_term web cv_inversion_err
