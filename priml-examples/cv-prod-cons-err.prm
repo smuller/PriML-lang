@@ -41,19 +41,53 @@ priority high
 priority low
 order low < high
 
-(* FIXME: what is the equivalent type to use for Buffer? *)
-fun[high] prod (cv: cv[high]) (buf: ref Buffer) =
-    ...
+(* prod
+ * ---
+ *
+ * increments a number and pushes it to a queue, then signals before looping
+ *)
+(* FIXME: how to specify queue as a reference to a list of ints *)
+fun[high] prod (cv: cv[high]) (queue: ref int list) =
+    let fun loop c q n =
+        q = n :: q;
+        signal cv;
+        loop cv queue (n + 1)
+    in loop cv queue 1
+    end
 
-fun[high] cons (cv: cv[high]) (buf: ref Buffer) =
-    ...
+(* cons
+ * ---
+ *
+ * if queue is empty, waits for signal before looping;
+ * otherwise pops top item & prints that it was received before looping
+ *)
+fun[high] cons (cv: cv[high]) (queue: ref int list) =
+    let fun loop c q =
+        case q of
+            []    => 
+                cmd {
+                    wait cv
+                    loop c q
+                }
+          | x::xs =>
+                let val _ = print (cat ("Received ", cat (Int.toString x), "\n"))
+                in loop c q
+    in loop cv queue
 
-main {
+(* exec
+ * ---
+ *
+ * initializes cv & queue, then spawns prod & cons threads.
+ * contains priority inversion.
+ *)
+fun[low] exec =
     cmd {
         cv <- newcv[high];
-        (* FIXME: how to initialize a Buffer (or equivalent type)? *)
-        buf <- ref ...;
-        spawn[high] { cons cv buf };
-        spawn[high] { prod cv buf }; (* ill-typed *)
+        queue <- ref [];
+        spawn[high] { cons cv queue };
+        spawn[high] { prod cv queue }; (* ill-typed *)
     }
+
+main {
+    exec
 }
