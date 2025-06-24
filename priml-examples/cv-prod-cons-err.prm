@@ -9,30 +9,30 @@
  * > inversion (and a type error, in our full system)
  *
  * ```
- * void<High>prod(CV<High>cv,Buffer*buf){
- *   while(true){
+ * void <High>prod(CV<High> cv, Buffer *buf){
+ *   while(true) {
  *     ...
- *     append(buf,x);
+ *     append(buf, x);
  *     signal(cv);
  *   }
  * }
  * 
- * void<High>cons(CV<High>cv,Buffer*buf){
- *   while(true){
- *     ifempty(buffer){
+ * void <High>cons(CV<High> cv, Buffer *buf){
+ *   while(true) {
+ *     if empty(buffer){
  *       wait(cv);
  *     }
- *     x=pop(buf);
+ *     x = pop(buf);
  *     ...
  *   }
  * }
  * 
- * void<Low>main(){
- *   CV<High>cv=newCV();
- *   Buffer*buf;
+ * void <Low>main(){
+ *   CV<High>cv = new CV();
+ *   Buffer *buf;
  *   
- *   spawn<High>(cons(cv,buf));
- *   spawn<High>(prod(cv,buf)); //ill-typed
+ *   spawn<High>(cons(cv, buf));
+ *   spawn<High>(prod(cv, buf)); // ill-typed
  * }
  * ```
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *)
