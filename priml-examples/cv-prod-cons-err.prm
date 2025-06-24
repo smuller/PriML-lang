@@ -1,0 +1,59 @@
+(* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * producer consumer priority inversion error example
+ * ---
+ *
+ * description quoted & code translated from the C-family example (Fig. 3)
+ * given in _pldi23_:
+ *
+ * > Initial attempt at the producer-consumer program, which has a priority
+ * > inversion (and a type error, in our full system)
+ *
+ * ```
+ * void<High>prod(CV<High>cv,Buffer*buf){
+ *   while(true){
+ *     ...
+ *     append(buf,x);
+ *     signal(cv);
+ *   }
+ * }
+ * 
+ * void<High>cons(CV<High>cv,Buffer*buf){
+ *   while(true){
+ *     ifempty(buffer){
+ *       wait(cv);
+ *     }
+ *     x=pop(buf);
+ *     ...
+ *   }
+ * }
+ * 
+ * void<Low>main(){
+ *   CV<High>cv=newCV();
+ *   Buffer*buf;
+ *   
+ *   spawn<High>(cons(cv,buf));
+ *   spawn<High>(prod(cv,buf)); //ill-typed
+ * }
+ * ```
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *)
+
+priority high
+priority low
+order low < high
+
+(* FIXME: what is the equivalent type to use for Buffer? *)
+fun[high] prod (cv: cv[high]) (buf: ref Buffer) =
+    ...
+
+fun[high] cons (cv: cv[high]) (buf: ref Buffer) =
+    ...
+
+main {
+    cmd {
+        cv <- newcv[high];
+        (* FIXME: how to initialize a Buffer (or equivalent type)? *)
+        buf <- ref ...;
+        spawn[high] { cons cv buf };
+        spawn[high] { prod cv buf }; (* ill-typed *)
+    }
+}
