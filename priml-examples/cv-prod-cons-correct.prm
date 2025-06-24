@@ -66,7 +66,7 @@ fun cons (cv: cv[high]) (queue: ref int list) =
         case q of
             []    => 
                 cmd {
-                    wait cv
+                    wait cv;
                     loop c q
                 }
           | x::xs =>
