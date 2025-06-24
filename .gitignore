@@ -1,3 +1,10 @@
 *~
 primlc
 priml/c72s
+*.swp
+*.swo
+millet.toml
+priml-examples/**/*.cmi
+priml-examples/**/*.cmo
+priml-examples/**/temp.ml
+.scripts/

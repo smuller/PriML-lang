@@ -115,7 +115,14 @@ struct
 
       | NEWMUTEX
       | WITHMUTEX
-	
+
+      (* condition variables *)
+      | NEWCV
+      | SIGNAL
+      | WAIT
+      | PROMOTE
+      | TO
+
 (*
       (* ML5-specific *)
       | EXPORT
@@ -225,6 +232,10 @@ struct
       | eq (MAIN, MAIN) = true
       | eq (NEWMUTEX, NEWMUTEX) = true
       | eq (WITHMUTEX, WITHMUTEX) = true
+      | eq (NEWCV, NEWCV) = true
+      | eq (SIGNAL, SIGNAL) = true
+      | eq (WAIT, WAIT) = true
+      | eq (PROMOTE, PROMOTE) = true
       | eq _ = false
 
 end

@@ -446,32 +446,34 @@ struct
                (* `CMD >> (call G cmd)
                 wth (fn (m, _) => ECmd m), *)
 
-	       `CMD >> (call G cmd)
-                wth (fn (m, _) => ECmd m),
+               `CMD >> (call G cmd)
+                      wth (fn (m, _) => ECmd m),
 
                (* FIX: no more priority application *)
                (* (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
-						 wth (fn (p, e) => PApply (e, p)), *)
+                   wth (fn (p, e) => PApply (e, p)), *)
 
-           (* FIX: change "spawn[p] {m}" to "spawn[e] {m}" *)
-	       (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
-                (call G cmd)
-                wth (mk_cmd_exp Spawn), *)
+               (* FIX: change "spawn[p] {m}" to "spawn[e] {m}" *)
+               (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
+                      (call G cmd)
+                      wth (mk_cmd_exp Spawn), *)
 
-	       `NEWMUTEX >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewMutex,
-	       
-           `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
-                (call G cmd)
-                wth (mk_cmd_exp Spawn),
+               `NEWCV >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewCV,
 
-	       (* Would be nice to have this syntax without the square
-		* brackets but it'd take some refactoring.
-               `SPAWN >> (call G exp) &&
-                (call G cmd)
-                wth (mk_cmd_exp Spawn),
-		*)
+               `NEWMUTEX >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewMutex,
+               
+               `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
+                    (call G cmd)
+                    wth (mk_cmd_exp Spawn),
 
-	       
+               (* Would be nice to have this syntax without the square
+                * brackets but it'd take some refactoring.
+                     `SPAWN >> (call G exp) &&
+                      (call G cmd)
+                      wth (mk_cmd_exp Spawn),
+                *)
+
+               
                `SYNC >> call G exp wth (mk_cmd_exp Sync),
 
                `POLL >> call G exp wth (mk_cmd_exp Poll),
@@ -482,15 +484,20 @@ struct
 
                `CHANGE >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth (mk_cmd_exp Change),
 
-	       (* `CHANGE >> ("expected prio" ** (call G exp)) wth (mk_cmd_exp Change), *)
+               (* `CHANGE >> ("expected prio" ** (call G exp)) wth (mk_cmd_exp Change), *)
 
-	       `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd)
-		wth (mk_cmd_exp WithMutex)
+               `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd) wth (mk_cmd_exp WithMutex),
+               (*
+               `WITHMUTEX >> (call G exp) && (call G cmd)
+                wth (mk_cmd_exp WithMutex)
+               *)
 
-	       (*
-	       `WITHMUTEX >> (call G exp) && (call G cmd)
-		wth (mk_cmd_exp WithMutex)
-		*)
+               `WAIT >> (call G exp) wth (mk_cmd_exp Wait),
+
+               `SIGNAL >> (call G exp) wth (mk_cmd_exp Signal),
+
+               `PROMOTE >> ((call G exp) << `TO) && (call G exp) wth (mk_cmd_exp Promote)
+
               ]
 	  end
       and appexp G =
