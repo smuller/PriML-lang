@@ -47,8 +47,7 @@ order low < high
  *
  * increments a number and pushes it to a queue, then signals before looping
  *)
-(* FIXME: how to specify queue as a reference to a list of ints *)
-fun[high] prod (cv: cv[low]) (queue: ref int list) =
+fun prod (cv: cv[low]) (queue: int list ref) =
     let fun loop c q n =
         q = n :: q;
         signal cv;
@@ -62,7 +61,7 @@ fun[high] prod (cv: cv[low]) (queue: ref int list) =
  * if queue is empty, waits for signal before looping;
  * otherwise pops top item & prints that it was received before looping
  *)
-fun[high] cons (cv: cv[high]) (queue: ref int list) =
+fun cons (cv: cv[high]) (queue: ref int list) =
     let fun loop c q =
         case q of
             []    => 
@@ -75,13 +74,12 @@ fun[high] cons (cv: cv[high]) (queue: ref int list) =
                 in loop c q
     in loop cv queue
 
-(* exec
+(* main
  * ---
  *
  * initializes cv & queue, then spawns prod & cons threads.
- * contains priority inversion.
  *)
-fun[low] exec =
+main {
     cmd {
         cv <- newcv[low];
         queue <- ref [];
@@ -89,8 +87,5 @@ fun[low] exec =
         cv2 <- promote cv to high
         (* would now be ill-typed to spawn prod *)
         spawn[high] { cons cv2 queue };
-    }
-
-main {
-    exec
+    };
 }

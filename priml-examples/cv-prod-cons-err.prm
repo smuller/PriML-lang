@@ -46,8 +46,7 @@ order low < high
  *
  * increments a number and pushes it to a queue, then signals before looping
  *)
-(* FIXME: how to specify queue as a reference to a list of ints *)
-fun[high] prod (cv: cv[high]) (queue: ref int list) =
+fun prod (cv: cv[high]) (queue: int list ref) =
     let fun loop c q n =
         q = n :: q;
         signal cv;
@@ -61,33 +60,30 @@ fun[high] prod (cv: cv[high]) (queue: ref int list) =
  * if queue is empty, waits for signal before looping;
  * otherwise pops top item & prints that it was received before looping
  *)
-fun[high] cons (cv: cv[high]) (queue: ref int list) =
+fun cons (cv: cv[high]) (queue: ref int list) =
     let fun loop c q =
         case q of
             []    => 
                 cmd {
                     wait cv
                     loop c q
-                }
+                };
           | x::xs =>
                 let val _ = print (cat ("Received ", cat (Int.toString x), "\n"))
                 in loop c q
     in loop cv queue
 
-(* exec
+(* main
  * ---
  *
  * initializes cv & queue, then spawns prod & cons threads.
  * contains priority inversion.
  *)
-fun[low] exec =
+main {
     cmd {
         cv <- newcv[high];
         queue <- ref [];
         spawn[high] { cons cv queue };
         spawn[high] { prod cv queue }; (* ill-typed *)
     }
-
-main {
-    exec
 }

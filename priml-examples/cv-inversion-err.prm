@@ -28,19 +28,9 @@ priority high
 priority low
 order low < high
 
-fun[low] foo cv res =
+fun foo (cv: cv[high]) (res: int ref) =
     res := res + 1;
-    signal cv;
-
-(* FIXME: or should we add inline types to fn signature? *)
-(* FIXME: how to specify arg type as a condition variable? *)
-(* FIXME: is `int ref` the correct way to specify res is a refererence? *)
-(*
-fun[low] foo (cv: cv[high]) (res: int ref) =
-    (* FIXME: how to reassign value to mutable variable? *)
-    res = res + 1;
     signal cv; (* ill-typed *)
- *)
 
 main {
     cmd {
