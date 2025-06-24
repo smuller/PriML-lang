@@ -67,11 +67,14 @@ fib_term: fib_term.prm
 web: web-src/web.prm
 	$(PRIML) web-src/web.prm web
 
-cv_prod_cons_err: cv-inversion-err.prm
-	$(PRIML) cv_prod_cons_err.prm cv_prod_cons_err
+cv_prod_cons: cv-prod-cons-correct.prm
+	$(PRIML) cv-prod-cons-correct.prm cv_prod_cons
+
+cv_prod_cons_err: cv-prod-cons-err.prm
+	$(PRIML) cv-prod-cons-err.prm cv_prod_cons_err
 
 cv_inversion_err: cv-inversion-err.prm
 	$(PRIML) cv-inversion-err.prm cv_inversion_err
 
 clean:
-	rm -f bank email fibserv fibserv-fair fib_term web cv_inversion_err cv_prod_cons_err
+	rm -f bank email fibserv fibserv-fair fib_term web cv_inversion_err cv_prod_cons_err cv_prod_cons
