@@ -33,11 +33,8 @@ fun foo (cv: cv[high]) (res: int ref) =
     signal cv; (* ill-typed *)
 
 main {
-    cmd {
-        cv <- newcv[high];
-        (* FIXME: is this the correct way to init res as a reference to an int? *)
-        res <- ref 1;
-        spawn[low] { foo cv res };
-        ret res
-    }
+    cv <- newcv[high];
+    res <- ref 1;
+    t <- spawn[low] { foo cv res };
+    sync t
 }

@@ -80,12 +80,11 @@ fun cons (cv: cv[high]) (queue: ref int list) =
  * initializes cv & queue, then spawns prod & cons threads.
  *)
 main {
-    cmd {
-        cv <- newcv[low];
-        queue <- ref [];
-        spawn[high] { prod cv queue };
-        cv2 <- promote cv to high
-        (* would now be ill-typed to spawn prod *)
-        spawn[high] { cons cv2 queue };
-    };
+    cv <- newcv[low];
+    queue <- ref [];
+    p <- spawn[high] { prod cv queue };
+    cv2 <- promote cv to high
+    (* would now be ill-typed to spawn prod *)
+    c <- spawn[high] { cons cv2 queue };
+    sync c
 }

@@ -80,10 +80,9 @@ fun cons (cv: cv[high]) (queue: ref int list) =
  * contains priority inversion.
  *)
 main {
-    cmd {
-        cv <- newcv[high];
-        queue <- ref [];
-        spawn[high] { cons cv queue };
-        spawn[high] { prod cv queue }; (* ill-typed *)
-    }
+    cv <- newcv[high];
+    queue <- ref [];
+    c <- spawn[high] { cons cv queue };
+    p <- spawn[high] { prod cv queue }; (* ill-typed *)
+    sync p
 }
