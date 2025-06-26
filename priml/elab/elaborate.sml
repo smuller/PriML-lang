@@ -130,7 +130,7 @@ struct
            end
        | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)))
        | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p)))
-       | E.TMutex p => TMutex (PSSet (PrioSet.singleton (elabpr ctx loc p)))
+       | E.TCondVar p => TCondVar (PSSet (PrioSet.singleton (elabpr ctx loc p)))
       )
 				     
        (* | E.TForall (E.PPVar s, t) =>
@@ -894,6 +894,40 @@ struct
 		  end
 		| _ => error loc "withmutex mutex"
 	  end
+
+	| E.Wait cv =>
+	  let val (e, et) = elab ctx cv
+	  in
+	      case et of
+		  TCondVar pc =>
+		  (* XXX need to add liveness constraints *)
+		  (Wait e, TRec [], (pr, pr), [])
+		| _ => error loc "expects CV type"
+	  end
+
+	| E.Signal cv =>
+	  let val (e, et) = elab ctx cv
+	  in
+	      case et of
+		  TCondVar pc =>
+		  (* XXX need to add liveness constraints *)
+		  (Signal e, TRec [], (pr, pr), [])
+		| _ => error loc "expects CV type"
+	  end
+
+	| E.Promote (cv, newp) =>
+	  let val (cve, cvt) = elab ctx cv
+	      val (pe, pt) = elab ctx newp
+	      val psint = Unify.new_psevar ()
+              val _ = unify ctx loc "promote argument" (TPrio (psint)) pt
+	  in
+	      case cvt of
+		  TCondVar pc =>
+		  (* XXX need to add liveness constraints *)
+		  (Promote (cve, pe), TCondVar psint, (pr, pr), [])
+		| _ => error loc "expects CV type"
+	  end
+	      
       end
   (* FIX: binding with first class priorities *)
   and elabbind ctx (pr: IL.prioset) (is, li) =

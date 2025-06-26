@@ -112,6 +112,7 @@ struct
       | TPrio of prioset (* FIX: make work !!! *)
 
       | TMutex of prioset
+      | TCondVar of prioset
 
       (* | TForall of var list * (pconstraint list) * typ (* FIX: delete this *) *)
 
@@ -219,6 +220,9 @@ struct
       | Ret of exp
       | Change of exp
       | WithMutex of exp * cmd
+      | Wait of exp
+      | Signal of exp
+      | Promote of exp * exp
 
     and dec =
         Do of exp

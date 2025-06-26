@@ -115,6 +115,7 @@ fun supertypex ctx t1 t2 =
 	     (pscstr_sup ctx ps1 ps2) @ (supertypex ctx t1 t2)
            | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2
 	   | (TMutex ps1, TMutex ps2) => pscstr_sup ctx ps1 ps2
+	   | (TCondVar ps1, TCondVar ps2) => pscstr_sup ctx ps1 ps2
 	   | (Evar (ref (Bound t1)), Evar (ref (Bound t2))) =>
 	     supertypex ctx t1 t2
 	   | (Evar (ref (Bound t1)), t2) => supertypex ctx t1 t2
@@ -179,6 +180,7 @@ fun wf_cons ctx t =
       | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
       | TPrio p => (pscstr_wf ctx p)
       | TMutex p => pscstr_wf ctx p
+      | TCondVar p => pscstr_wf ctx p
 
 fun fresh t =
     case t of
@@ -211,6 +213,7 @@ fun fresh t =
       | TThread (t, _) => TThread (fresh t, new_psevar ())
       | TPrio _ => TPrio (new_psevar ())
       | TMutex _ => TMutex (new_psevar ())
+      | TCondVar _ => TCondVar (new_psevar ())
 			 
 fun consval ctx v =
     let val _ =
@@ -688,6 +691,26 @@ and conscmd sp ctx cmd =
 	     end
 	   | _ => raise (TyError "not a priority")
 	)
+
+      | Wait cv =>
+	(case basety (cons ctx cv) of
+	     (TCondVar pc, cs) => (TRec [], sp, sp, cs)
+	   | _ => raise (TyError "not a CV")
+	)
+
+      | Signal cv =>
+	(case basety (cons ctx cv) of
+	     (TCondVar pc, cs) => (TRec [], sp, sp, cs)
+	   | _ => raise (TyError "not a CV")
+	)
+
+      | Promote (cv, p') =>
+	(case (basety (cons ctx cv), basety (cons ctx p')) of
+	     ((TCondVar pc, cs), (TPrio p', cs')) =>
+	     (TCondVar p', sp, sp, (pscstr_cons ctx pc p') @ cs @ cs')
+	   | _ => raise (TyError "not a CV")
+	)
+			
     end
 
 and consdec ctx d =
