@@ -142,8 +142,6 @@ struct
 
   fun prio () = id
 
-  fun rfmt () = id
-
   fun pconstraint () =
       separate ("expected prio <= prio" **
                      (id && (`LESSEQUAL >> id))) (`CAND)
@@ -154,6 +152,10 @@ struct
                ((call G pconstraint) && (`CAND >> (call G pconstraint)))
                    wth CAnd
               ] *)
+
+  fun rfmt () = id (*
+      alt [id wth (fn p' => ("p", [("p", p'), (p', "p")])),
+	   (id << `BAR) && ($pconstraint)] *)
 
   fun ppat () =
       alt [(id && opt (`COLON >> ($pconstraint)))
