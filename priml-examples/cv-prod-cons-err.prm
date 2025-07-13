@@ -46,12 +46,19 @@ order low < high
  *
  * increments a number and pushes it to a queue, then signals before looping
  *)
-fun prod (cv: cv[high]) (queue: int list ref) =
+(* fun prod (cv: cv[high]) (queue: int list ref) = *)
+fun prod cv queue =
     let fun loop c q n =
-        q = n :: q;
-        signal cv;
-        loop cv queue (n + 1)
-    in loop cv queue 1
+        let val _ =
+            q := n :: !q
+        in
+            cmd {
+                signal cv;
+                loop cv queue (n + 1)
+            }
+        end
+    in
+        loop cv queue 1
     end
 
 (* cons
@@ -60,18 +67,20 @@ fun prod (cv: cv[high]) (queue: int list ref) =
  * if queue is empty, waits for signal before looping;
  * otherwise pops top item & prints that it was received before looping
  *)
-fun cons (cv: cv[high]) (queue: ref int list) =
+(* fun cons (cv: cv[high]) (queue: ref int list) = *)
+fun cons cv queue =
     let fun loop c q =
         case q of
-            []    => 
+            nil    => 
                 cmd {
                     wait cv;
                     loop c q
                 }
           | x::xs =>
-                let val _ = print (cat ("Received ", cat (Int.toString x), "\n"))
-                in loop c q
-    in loop cv queue
+                loop c q
+    in
+        loop cv queue
+    end
 
 (* main
  * ---
@@ -81,7 +90,7 @@ fun cons (cv: cv[high]) (queue: ref int list) =
  *)
 main {
     cv <- newcv[high];
-    queue <- ref [];
+    queue <- ref nil;
     c <- spawn[high] { cons cv queue };
     p <- spawn[high] { prod cv queue }; (* ill-typed *)
     sync p

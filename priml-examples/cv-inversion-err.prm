@@ -28,9 +28,14 @@ priority high
 priority low
 order low < high
 
-fun foo (cv: cv[high]) (res: int ref) =
-    res := res + 1;
-    signal cv; (* ill-typed *)
+fun foo cv res =
+    let val _ =
+        res := !res + 1
+    in
+        cmd {
+            signal cv (* ill-typed *)
+        }
+    end
 
 main {
     cv <- newcv[high];
