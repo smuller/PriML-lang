@@ -1,0 +1,99 @@
+(* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * producer consumer example
+ * ---
+ *
+ * description quoted & code translated from the C-family example (Fig. 4)
+ * given in _pldi23_:
+ *
+ * > The producer-consumer example, without type errors or priority inversions
+ *
+ * ```
+ * void <High>prod(CV<Low> cv, Buffer *buf){
+ *   while(true) {
+ *     ...
+ *     append(buf, x);
+ *     signal(cv);
+ *   }
+ * }
+ * 
+ * void <High>cons(CV<High> cv, Buffer *buf){
+ *   while(true) {
+ *     if empty(buffer){
+ *       wait(cv);
+ *     }
+ *     x = pop(buf);
+ *     ...
+ *   }
+ * }
+ * 
+ * void <Low>main(){
+ *   CV<Low>cv = new CV();
+ *   Buffer *buf;
+ *   
+ *   spawn<High>(prod(cv, buf));
+ *   CV<High> cv2 = promote<High>(cv);
+ *   // Would now be ill-typed to spawn prod
+ *   spawn<High>(cons(cv, buf));
+ * }
+ * ```
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *)
+
+priority high
+priority low
+order low < high
+
+(* prod
+ * ---
+ *
+ * increments a number and pushes it to a queue, then signals before looping
+ *)
+(* fun prod (cv: cv[low]) (queue: int list ref) = *)
+fun prod cv queue =
+    let fun loop c q n =
+        let val _ =
+            q := n :: !q
+        in
+            cmd {
+                signal cv;
+                loop cv queue (n + 1)
+            }
+        end
+    in
+        loop cv queue 1
+    end
+
+(* cons
+ * ---
+ *
+ * if queue is empty, waits for signal before looping;
+ * otherwise pops top item & prints that it was received before looping
+ *)
+(* fun cons (cv: cv[high]) (queue: ref int list) = *)
+fun cons cv queue =
+    let fun loop c q =
+        case q of
+            nil    => 
+                cmd {
+                    wait cv;
+                    loop c q
+                }
+          | x::xs =>
+                loop c q
+    in
+        loop cv queue
+    end
+
+(* main
+ * ---
+ *
+ * initializes cv & queue, then spawns prod & cons threads.
+ *)
+main {
+    cv <- newcv[low];
+    queue <- ref nil;
+    p <- spawn[high] { prod cv queue };
+    cv2 <- promote[high] cv;
+    (* would now be ill-typed to spawn prod *)
+    c <- spawn[high] { cons cv2 queue };
+    sync c
+}

@@ -1,6 +1,7 @@
 *~
 primlc
 priml/c72s
+_opam/
 *.swp
 *.swo
 millet.toml

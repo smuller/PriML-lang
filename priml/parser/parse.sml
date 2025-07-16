@@ -12,7 +12,7 @@
       structure gives the default parsing context.
 
       The "import" keyword causes the target file to be read in,
-      tokenized, and then prepended to the current input. 
+      tokenized, and then prepended to the current input.
 *)
 
 (* PERF: several phrases will parse, looking for a postfix operator
@@ -23,12 +23,12 @@
 structure Parse :> PARSE =
 struct
 
-  val root = (FSUtil.chdir_excursion 
+  val root = (FSUtil.chdir_excursion
               (CommandLine.name())
               (fn _ =>
                OS.FileSys.getDir ()))
 (*               Posix.FileSys.getcwd ())) *)
-    
+
   (* if running under NJ, default back to current dir, since
      we don't want to root ourselves at the sml/nj binary! *)
   val root = if Option.isSome (StringUtil.find "smlnj" root)
@@ -38,22 +38,22 @@ struct
   (* val () = print ("The root is: " ^ root ^ "\n") *)
 
   val ROOTMARKER = "#ROOT#"
-               
-  val rootp = Params.param root 
+
+  val rootp = Params.param root
     (SOME ("-root",
            "path to humlock installation (if different " ^
            "from location of humlock binary)")) "rootp"
 
-  val include_dirs = 
-      Params.paramacc ["#ROOT#stdlib", "."]
-                     (SOME ("-I",
-                            "additional include directories", #",")) "include"
+  val include_dirs =
+   Params.paramacc ["#ROOT#stdlib", "."]
+                   (SOME ("-I",
+                          "additional include directories", #",")) "include"
 
   fun incdirs () =
     map (fn s =>
          if StringUtil.matchhead ROOTMARKER s
-         then 
-           FSUtil.dirplus (!rootp) (String.substring(s, 
+         then
+           FSUtil.dirplus (!rootp) (String.substring(s,
                                                      size ROOTMARKER,
                                                      size s - size ROOTMARKER))
          else s) (!include_dirs)
@@ -76,12 +76,12 @@ struct
 
   (* XXX idea *)
   (*
-  infixr 0 `` 
+  infixr 0 ``
   fun a `` b = a b
   fun ? s p x = p wth (fn y => (y, x)) || $(fn () => raise Parse s)
   *)
 
-  exception Impossible 
+  exception Impossible
 
   fun **(s, p) = p ## (fn i => raise Parse ("@" ^ Pos.toString i ^ ": " ^ s))
   infixr 4 **
@@ -95,33 +95,33 @@ struct
 
 
   fun !!! (p : ('a, 't) parser) : ('a * node_info, 't) parser =
-      (!! p) wth (fn (e, p) => (e, info_of_pos p))
-	  
+    (!! p) wth (fn (e, p) => (e, info_of_pos p))
+
   (* look in every include path for this file *)
   fun tryopenwith func f =
-      let
-          fun one s =
-              let val t = FSUtil.dirplus s f
-              in
-                  (* print ("Try '" ^ t ^ "'...\n"); *)
-                  (SOME (func t))
-              end
-              handle _ => NONE
-      in
-          case List.mapPartial one (incdirs()) of
-              nil => raise Parse (f ^ " not found in any include dir (" ^ 
-                                  StringUtil.delimit "," (!include_dirs) ^ 
-                                  ")")
-            | [h] => h
-            | h::_ =>
-                  let in
-                      (* XXX move to a 'warn' function *)
-                      print ("WARNING: include file " ^ f ^
-                             " found in multiple directories; " ^
-                             "choosing arbitrarily.\n");
-                      h
-                  end
-      end
+    let
+      fun one s =
+        let val t = FSUtil.dirplus s f
+        in
+            (* print ("Try '" ^ t ^ "'...\n"); *)
+            (SOME (func t))
+        end
+        handle _ => NONE
+    in
+      case List.mapPartial one (incdirs()) of
+          nil => raise Parse (f ^ " not found in any include dir (" ^
+                              StringUtil.delimit "," (!include_dirs) ^
+                              ")")
+        | [h] => h
+        | h::_ =>
+            let in
+              (* XXX move to a 'warn' function *)
+              print ("WARNING: include file " ^ f ^
+                     " found in multiple directories; " ^
+                     "choosing arbitrarily.\n");
+              h
+            end
+    end
 
   fun tryopen f = tryopenwith StreamUtil.ftostream f
 
@@ -130,15 +130,15 @@ struct
   fun ifmany f [x] = x
     | ifmany f l = f l
 
-  val id = satisfy (fn ID s => true | _ => false) 
-               wth (fn ID s => s | _ => raise Impossible)
+  val id = satisfy (fn ID s => true | _ => false)
+             wth (fn ID s => s | _ => raise Impossible)
 
   val world = id
 
   fun ptuple pl =
-      PRecord(ListUtil.mapi 
-              (fn (p, i) => 
-               (Int.toString (i+1), p)) pl)
+    PRecord(ListUtil.mapi
+            (fn (p, i) =>
+             (Int.toString (i+1), p)) pl)
 
   val number = any when (fn INT i => SOME i | _ => NONE)
 
@@ -150,83 +150,82 @@ struct
   fun rfmt () = id
 
   fun pconstraint () =
-      separate ("expected prio <= prio" **
-                     (id && (`LESSEQUAL >> id))) (`CAND)
-                   (*
-          alt [((fid G) && (`LESSEQUAL >> fid G))
-                   wth CLess,
+    separate ("expected prio <= prio" **
+              (id && (`LESSEQUAL >> id))) (`CAND)
+                 (*
+        alt [((fid G) && (`LESSEQUAL >> fid G))
+                 wth CLess,
 
-               ((call G pconstraint) && (`CAND >> (call G pconstraint)))
-                   wth CAnd
-              ] *)
+             ((call G pconstraint) && (`CAND >> (call G pconstraint)))
+                 wth CAnd
+            ] *)
 
   fun ppat () =
-      alt [(id && opt (`COLON >> ($pconstraint)))
-               wth (fn (v, SOME c) => PPConstrain (v, c)
-                   | (v, NONE) => PPVar v),
-           `LPAREN >> $ppat << `RPAREN,
-           `LPAREN -- punt "expected ppat after LPAREN"
-          ]
+    alt [(id && opt (`COLON >> ($pconstraint)))
+           wth (fn (v, SOME c) => PPConstrain (v, c)
+             | (v, NONE) => PPVar v),
+         `LPAREN >> $ppat << `RPAREN,
+         `LPAREN -- punt "expected ppat after LPAREN"
+        ]
 
-  local 
-      (* look for prodtypes separated by arrows.
-         prodtypes are apptypes separated by *.
-         apptypes are parenthesized, atomic, or applications. *)
-      fun arrowtype () = separate ($prodtype) (`ARROW) wth LU.combiner TArrow
+  local
+    (* look for prodtypes separated by arrows.
+       prodtypes are apptypes separated by *.
+       apptypes are parenthesized, atomic, or applications. *)
+    fun arrowtype () = separate ($prodtype) (`ARROW) wth LU.combiner TArrow
 
-      and arrowtypes () = separate ($arrowtype) (`COMMA)
+    and arrowtypes () = separate ($arrowtype) (`COMMA)
 
-      and prodtype () = separate ($apptype) (`TIMES) wth ifmany
-          (* create record 1:, 2:, ... *)
-             (fn l => TRec (ListUtil.mapi 
-                            (fn (t, n) => (itos (n+1), t)) l))
+    and prodtype () =
+      separate ($apptype) (`TIMES) wth ifmany
+                                         (* create record 1:, 2:, ... *)
+                                         (fn l => TRec (ListUtil.mapi
+                                                        (fn (t, n) => (itos (n+1), t)) l))
 
-      and mostatomic () =
-          (* PERF backtracking since world is id 
-             (but lookahead is at most 1) *)
-          alt [`UNIT return TRec nil,
-               number wth (TNum o Word32.toInt),
-               id wth TVar,
-               (* FIX: no more priority application *)
-               (* `FORALL >> ($ppat) << `DOT && ($apptype)
-                wth TForall, *)
+    and mostatomic () =
+      (* PERF backtracking since world is id
+         (but lookahead is at most 1) *)
+      alt [`UNIT return TRec nil,
+           number wth (TNum o Word32.toInt),
+           id wth TVar,
+           (* FIX: no more priority application *)
+           (* `FORALL >> ($ppat) << `DOT && ($apptype)
+            wth TForall, *)
 
-               (* XXX should allow specifying world var *)
-               (* (`LBRACE && `RBRACE) >> $mostatomic wth (fn t => TSham(NONE, t)), *)
-               (* don't allow empty record, because {} means shamrock. *)
-               `LBRACE >> separate (label && (`COLON >> $arrowtype)) (`COMMA) << `RBRACE wth TRec,
-               `LPAREN >> $arrowtype << `RPAREN]
+           (* XXX should allow specifying world var *)
+           (* (`LBRACE && `RBRACE) >> $mostatomic wth (fn t => TSham(NONE, t)), *)
+           (* don't allow empty record, because {} means shamrock. *)
+           `LBRACE >> separate (label && (`COLON >> $arrowtype)) (`COMMA) << `RBRACE wth TRec,
+           `LPAREN >> $arrowtype << `RPAREN]
 
-      and postfixapps t =
-          repeat id
-          wth (foldl (fn (s, b) =>
-                      TApp ([b], s)) t)
+    and postfixapps t =
+      repeat id
+      wth (foldl (fn (s, b) =>
+                  TApp ([b], s)) t)
 
-      and apptype () = 
-          alt [(`LPAREN >> $arrowtype && 
-                (`COMMA >> $arrowtypes << `RPAREN)) && id
+    and apptype () =
+      alt [(`LPAREN >> $arrowtype &&
+             (`COMMA >> $arrowtypes << `RPAREN)) && id
                (* then perhaps some more postfix applications *)
                -- (fn ((t, tt), s) => postfixapps (TApp(t :: tt, s))),
 
-               (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
-               (* $mostatomic && (`CMD >> `LSQUARE >> ($prio) << `RSQUARE)
-                wth TCmd, *)
-               (* $mostatomic && (`CMD >> `LSQUARE >> ($rfmt && $rfmt && $rfmt) << `RSQUARE)
-                wth TCmd, *)
-               $mostatomic && (`CMD >> `LSQUARE >> ($rfmt) << `RSQUARE)
-                wth TCmd,
+           (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
+           (* $mostatomic && (`CMD >> `LSQUARE >> ($prio) << `RSQUARE)
+            wth TCmd, *)
+           (* $mostatomic && (`CMD >> `LSQUARE >> ($rfmt && $rfmt && $rfmt) << `RSQUARE)
+            wth TCmd, *)
+           $mostatomic && (`CMD >> `LSQUARE >> ($rfmt) << `RSQUARE) wth TCmd,
 
-               (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
-               (* $mostatomic && (`THREAD >> `LSQUARE >> ($prio) << `RSQUARE)
-                wth TThread, *)
-               $mostatomic && (`THREAD >> `LSQUARE >> ($rfmt) << `RSQUARE)
-                wth TThread,
+           (* FIX: change "t cmd[p]" to "t cmd[rfmt]" *)
+           (* $mostatomic && (`THREAD >> `LSQUARE >> ($prio) << `RSQUARE)
+            wth TThread, *)
+           $mostatomic && (`THREAD >> `LSQUARE >> ($rfmt) << `RSQUARE) wth TThread,
 
-               (* also includes mostatomic, not applied to anything *)
-               $mostatomic -- postfixapps]
+           (* also includes mostatomic, not applied to anything *)
+           $mostatomic -- postfixapps]
   in
-      val attype = $mostatomic
-      val typ = $arrowtype
+    val attype = $mostatomic
+    val typ = $arrowtype
   end
 
   fun ttoc (INT i) = SOME (CInt i)
@@ -245,7 +244,7 @@ struct
                  || `LESSTHAN return "<" || `LESSEQUAL return "<="
 
   (* nonfix identifiers, or any identifier prefixed with op *)
-  fun fid G = expid suchthat (isnonfix G) || 
+  fun fid G = expid suchthat (isnonfix G) ||
               `OP >> `EQUALS return "=" ||
               `OP >> expid
 
@@ -277,543 +276,545 @@ struct
   val tyvars = alt [id wth LU.list,
                     `LPAREN >> separate id (`COMMA) << `RPAREN]
 
-  val datatypes = separate 
-      (id && `EQUALS &&
-       (separate0 (expid && opt (`OF >> typ)) (`BAR)) wth
+  val datatypes = separate
+    (id && `EQUALS &&
+     (separate0 (expid && opt (`OF >> typ)) (`BAR)) wth
        (fn (b, (_, c)) => (b, c))) (`AND)
 
   local
-      (* used in parsing expressions, below *)
+    (* used in parsing expressions, below *)
 
-      fun fixcomp ((_,(p,_)), (_,(q,_))) = Int.compare (p, q)
+    fun fixcomp ((_,(p,_)), (_,(q,_))) = Int.compare (p, q)
 
-      fun ifmanymark f [(x,_)] = x
-        | ifmanymark f l = f l
+    fun ifmanymark f [(x,_)] = x
+      | ifmanymark f l = f l
 
-      fun combinermark f [x] = x
-        | combinermark f ((h,l)::t) = (f ((h,l), combinermark f t), l)
-        | combinermark f nil = raise Impossible
+    fun combinermark f [x] = x
+      | combinermark f ((h,l)::t) = (f ((h,l), combinermark f t), l)
+      | combinermark f nil = raise Impossible
 
-      fun foldrmark f un nil = un
-        | foldrmark f un ((h,l)::t) = (f ((h,l), foldrmark f un t), l)
-
-
-      val stringlit = any when (fn STR s => SOME s | _ => NONE)
+    fun foldrmark f un nil = un
+      | foldrmark f un ((h,l)::t) = (f ((h,l), foldrmark f un t), l)
 
 
-      (* pattern parsing is with respect to a fixity context. (string *
-         (prec * status)) the fixity context is in sorted order by
-         precedence (lower precedences near the head of the list).
-         *)
+    val stringlit = any when (fn STR s => SOME s | _ => NONE)
 
-      fun recordbind G =
-        (label && opt (`EQUALS >> call G pat))
-        wth (fn (l, SOME p) => (l, p)
-              (* XXX only if l is also an identifier *)
-              | (l, NONE) => (l, PVar l))
 
-      and mapat G =
-          alt [`UNDERSCORE return PWild,
-               constant wth PConstant,
-               `LBRACE >> separate0 (call G recordbind) (`COMMA) << `RBRACE wth PRecord,
-               fid G wth PVar,
-               `LPAREN >> separate0 (call G pat) (`COMMA) << `RPAREN wth ifmany
-                  (fn pl => PRecord(ListUtil.mapi 
-                                    (fn (p, i) => 
-                                     (Int.toString (i+1), p)) pl))]
+    (* pattern parsing is with respect to a fixity context. (string *
+       (prec * status)) the fixity context is in sorted order by
+       precedence (lower precedences near the head of the list).
+       *)
 
-      and appat G =
-          alt [fid G && call G appat wth (fn (a, b) => PApp(a, SOME b)),
-               (`LPAREN >> call G exp << `RPAREN) && call G appat wth PWhen,
-               call G mapat]
+    fun recordbind G =
+      (label && opt (`EQUALS >> call G pat))
+      wth (fn (l, SOME p) => (l, p)
+            (* XXX only if l is also an identifier *)
+            | (l, NONE) => (l, PVar l))
 
-      and infixpat G =
-          let
-              val par =
-                  alt [expid when (LU.Alist.get op= G) 
-                         wth (fn (s,(prec, ass)) => 
-                              Opr(Infix(ass, prec, 
-                                        (fn (x,y) => 
-                                         PApp(s, SOME (PRecord[("1", x),
-                                                               ("2", y)])))))),
-                       call G appat wth Atm]
-          in
-              parsefixity par
-          end
+    and mapat G =
+      alt [`UNDERSCORE return PWild,
+           constant wth PConstant,
+           `LBRACE >> separate0 (call G recordbind) (`COMMA) << `RBRACE wth PRecord,
+           fid G wth PVar,
+           `LPAREN >> separate0 (call G pat) (`COMMA) << `RPAREN wth ifmany
+              (fn pl => PRecord(ListUtil.mapi
+                                (fn (p, i) => (Int.toString (i+1), p)) pl))]
 
-      and aspat G =
-          alt [fid G && `AS && call G aspat wth (fn (i,(_,p)) => PAs(i, p)),
-               call G infixpat]
+    and appat G =
+      alt [fid G && call G appat wth (fn (a, b) => PApp(a, SOME b)),
+           (`LPAREN >> call G exp << `RPAREN) && call G appat wth PWhen,
+           call G mapat]
 
-      and pat G =
-          call G aspat && opt (`COLON >> typ)
-               wth (fn (p, SOME t) => PConstrain(p, t)
-                     | (p, NONE) => p)
+    and infixpat G =
+      let
+        val par =
+          alt [expid when (LU.Alist.get op= G)
+                 wth (fn (s,(prec, ass)) =>
+                      Opr(Infix(ass, prec,
+                                (fn (x,y) =>
+                                 PApp(s, SOME (PRecord[("1", x),
+                                                       ("2", y)])))))),
+               call G appat wth Atm]
+      in
+        parsefixity par
+      end
 
-      (* ------------- expressions ------------- *)
+    and aspat G =
+      alt [fid G && `AS && call G aspat wth (fn (i,(_,p)) => PAs(i, p)),
+           call G infixpat]
 
-      and atomexp G =
-	  let fun mk_cmd_exp (const: 'a -> cmd_) (arg: 'a) =
-		  ECmd (const arg)
-	  in
-          alt [lid G wth Var,
-               constant wth Constant,
+    and pat G =
+      call G aspat && opt (`COLON >> typ)
+        wth (fn (p, SOME t) => PConstrain(p, t)
+              | (p, NONE) => p)
+
+    (* ------------- expressions ------------- *)
+
+    and atomexp G =
+      let fun mk_cmd_exp (const: 'a -> cmd_) (arg: 'a) =
+        ECmd (const arg)
+      in
+        alt [lid G wth Var,
+             constant wth Constant,
 (*
-               (`LETCC >> fid G) && (`IN >> separate (call G exp) (`SEMICOLON) << `END)
-               wth (fn (v, es) =>
-                    Letcc(v, combinermark Seq es)),
+             (`LETCC >> fid G) && (`IN >> separate (call G exp) (`SEMICOLON) << `END)
+             wth (fn (v, es) =>
+                  Letcc(v, combinermark Seq es)),
 *)
 
-               (* Intended only for stdlib use *)
-               `PRIMAPP >> fid G && 
-                 (opt (`LBRACE >> separate0 typ (`COMMA) << `RBRACE)) &&
-                 `LPAREN >> separate0 (call G exp) (`COMMA) << `RPAREN
-                     wth (fn (f, (ts, args)) => Primapp (f, 
-                                                         (case ts of NONE => nil | SOME l => l), 
-                                                         args)),
+             (* Intended only for stdlib use *)
+             `PRIMAPP >> fid G &&
+               (opt (`LBRACE >> separate0 typ (`COMMA) << `RBRACE)) &&
+               `LPAREN >> separate0 (call G exp) (`COMMA) << `RPAREN
+                 wth (fn (f, (ts, args)) => Primapp (f,
+                                                     (case ts of NONE => nil | SOME l => l),
+                                                     args)),
 
-               `PRIMAPP -- punt "expected ID LBRACE TYPES RBRACE LPAREN VALS RPAREN after PRIMAPP",
+             `PRIMAPP -- punt "expected ID LBRACE TYPES RBRACE LPAREN VALS RPAREN after PRIMAPP",
 
-               `LET >> "expected DECS after LET" **
-                   ((repeat (call G regulardec)) -- 
-                    (fn ds => 
-                     `IN >> "expected EXP after IN" **
-                     (separate (call G exp) (`SEMICOLON) << `END
-                      wth (fn es => #1 (foldrmark Let 
-                                        (combinermark Seq es) ds))))),
+             `LET >> "expected DECS after LET" **
+               ((repeat (call G regulardec)) --
+                (fn ds =>
+                 `IN >> "expected EXP after IN" **
+                   (separate (call G exp) (`SEMICOLON) << `END
+                    wth (fn es => #1 (foldrmark Let
+                                      (combinermark Seq es) ds))))),
 (*
-               (* text is a little tricky because it contains
-                  nested streams of tokens *)
-               (!! any) when (fn (TEXT tl, pos) =>
-                         SOME 
-                         let
-                             val l = map (fn STR s => (Constant(CString s))
-                                          |  EXP s =>
-                                          case Stream.tolist
-                                                (Parsing.transform
-                                                 (call G exp) s) of
-                                             [(e,_)] => e
-                                           | _ => raise Parse ("bad expression " ^
-                                                               "inside text"))
-                                          tl
-                         in
-                             Jointext (map (fn x => (x, pos)) l)
-                         end
-                          | _ => NONE), *)
+             (* text is a little tricky because it contains
+                nested streams of tokens *)
+             (!! any) when (fn (TEXT tl, pos) =>
+                       SOME
+                       let
+                           val l = map (fn STR s => (Constant(CString s))
+                                        |  EXP s =>
+                                        case Stream.tolist
+                                              (Parsing.transform
+                                               (call G exp) s) of
+                                           [(e,_)] => e
+                                         | _ => raise Parse ("bad expression " ^
+                                                             "inside text"))
+                                        tl
+                       in
+                           Jointext (map (fn x => (x, pos)) l)
+                       end
+                        | _ => NONE), *)
 
-               (* PERF should roll the following two into one *)
-               (`LBRACE && `BAR) >> separate0 (call G exp) (`COMMA) << (`BAR && `RBRACE) wth Vector,
+             (* PERF should roll the following two into one *)
+             (`LBRACE && `BAR) >> separate0 (call G exp) (`COMMA) << (`BAR && `RBRACE) wth Vector,
 
-               `LBRACE >> "expected (LABEL = EXP,)s after LBRACE" **
-                    (separate0 (label && (`EQUALS >> call G exp)) (`COMMA) 
-                       << `RBRACE wth Record),
+             `LBRACE >> "expected (LABEL = EXP,)s after LBRACE" **
+                  (separate0 (label && (`EQUALS >> call G exp)) (`COMMA)
+                     << `RBRACE wth Record),
 
-               (* datafile expects a string literal next *)
-               `DATAFILE >> "expected STRING LITERAL after DATAFILE" **
-                            (stringlit
-                                    wth (fn s =>
-                                         let
-                                             val dat = 
-                                               tryopenwith StringUtil.readfile s
-                                         in
-                                             Constant(CString dat)
-                                         end)),
-
-
-               (* parens can be a parenthesized expression,
-                  a tuple expression (= record),
-                  or a sequenced expression. Putting them
-                  all together makes for an efficient parser! *)
-               (`LPAREN && ` RPAREN) return (Record nil),
+             (* datafile expects a string literal next *)
+             `DATAFILE >> "expected STRING LITERAL after DATAFILE" **
+                          (stringlit
+                                  wth (fn s =>
+                                       let
+                                           val dat =
+                                             tryopenwith StringUtil.readfile s
+                                       in
+                                           Constant(CString dat)
+                                       end)),
 
 
-               `LPAREN >> (call G exp) && 
-                           opt (alt [`SEMICOLON >> 
-                                        separate (call G exp) (`SEMICOLON)
-                                        wth Util.A,
-                                     `COMMA >> separate (call G exp) (`COMMA)
-                                        wth Util.B]) << `RPAREN
-                    wth (fn (e, NONE) => #1 e
-                          | (e, SOME(Util.A el)) => 
-                                   #1 (combinermark Seq (e::el))
-                          | (e, SOME(Util.B el)) => 
-                                Record(ListUtil.mapi 
-                                        (fn (e, i) => 
-                                            (Int.toString (i + 1), e)) (e::el))),
-               (* FIX: change "cmd[p]" to "do" *)
-               (* `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd) 
-               wth (fn (p, (m, _)) => ECmd (SOME p, m)), *)
-               (* `CMD >> (call G cmd)
-                wth (fn (m, _) => ECmd m), *)
+             (* parens can be a parenthesized expression,
+                a tuple expression (= record),
+                or a sequenced expression. Putting them
+                all together makes for an efficient parser! *)
+             (`LPAREN && ` RPAREN) return (Record nil),
 
-               `CMD >> (call G cmd)
-                      wth (fn (m, _) => ECmd m),
 
-               (* FIX: no more priority application *)
-               (* (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
-                   wth (fn (p, e) => PApply (e, p)), *)
+             `LPAREN >> (call G exp) &&
+                         opt (alt [`SEMICOLON >>
+                                      separate (call G exp) (`SEMICOLON)
+                                      wth Util.A,
+                                   `COMMA >> separate (call G exp) (`COMMA)
+                                      wth Util.B]) << `RPAREN
+                  wth (fn (e, NONE) => #1 e
+                        | (e, SOME(Util.A el)) =>
+                                 #1 (combinermark Seq (e::el))
+                        | (e, SOME(Util.B el)) =>
+                              Record(ListUtil.mapi
+                                      (fn (e, i) =>
+                                          (Int.toString (i + 1), e)) (e::el))),
+             (* FIX: change "cmd[p]" to "do" *)
+             (* `CMD >> (`LSQUARE >> $prio << `RSQUARE) && (call G cmd)
+             wth (fn (p, (m, _)) => ECmd (SOME p, m)), *)
+             (* `CMD >> (call G cmd)
+              wth (fn (m, _) => ECmd m), *)
 
-               (* FIX: change "spawn[p] {m}" to "spawn[e] {m}" *)
-               (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
-                      (call G cmd)
-                      wth (mk_cmd_exp Spawn), *)
+             `CMD >> (call G cmd)
+                    wth (fn (m, _) => ECmd m),
 
-               `NEWCV >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewCV,
+             (* FIX: no more priority application *)
+             (* (`LSQUARE >> ($prio) << `RSQUARE) && !! (call G atomexp)
+                 wth (fn (p, e) => PApply (e, p)), *)
 
-               `NEWMUTEX >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewMutex,
-               
-               `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
+             (* FIX: change "spawn[p] {m}" to "spawn[e] {m}" *)
+             (* `SPAWN >> (`LSQUARE >> ($prio) << `RSQUARE) &&
+                    (call G cmd)
+                    wth (mk_cmd_exp Spawn), *)
+
+             `NEWCV >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewCV,
+
+             `NEWMUTEX >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth NewMutex,
+
+             `SPAWN >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
+                  (call G cmd)
+                  wth (mk_cmd_exp Spawn),
+
+             (* Would be nice to have this syntax without the square
+              * brackets but it'd take some refactoring.
+                   `SPAWN >> (call G exp) &&
                     (call G cmd)
                     wth (mk_cmd_exp Spawn),
+              *)
 
-               (* Would be nice to have this syntax without the square
-                * brackets but it'd take some refactoring.
-                     `SPAWN >> (call G exp) &&
-                      (call G cmd)
-                      wth (mk_cmd_exp Spawn),
-                *)
 
-               
-               `SYNC >> call G exp wth (mk_cmd_exp Sync),
+             `SYNC >> call G exp wth (mk_cmd_exp Sync),
 
-               `POLL >> call G exp wth (mk_cmd_exp Poll),
+             `POLL >> call G exp wth (mk_cmd_exp Poll),
 
-               `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
+             `CANCEL >> call G exp wth (mk_cmd_exp Cancel),
 
-               `RET >> call G exp wth (mk_cmd_exp IRet),
+             `RET >> call G exp wth (mk_cmd_exp IRet),
 
-               `CHANGE >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE) wth (mk_cmd_exp Change),
+             `CHANGE >> (`LSQUARE >> "expected prio" ** (call G exp) << `RSQUARE)
+               wth (mk_cmd_exp Change),
 
-               (* `CHANGE >> ("expected prio" ** (call G exp)) wth (mk_cmd_exp Change), *)
+             (* `CHANGE >> ("expected prio" ** (call G exp)) wth (mk_cmd_exp Change), *)
 
-               `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd) wth (mk_cmd_exp WithMutex),
-               (*
-               `WITHMUTEX >> (call G exp) && (call G cmd)
-                wth (mk_cmd_exp WithMutex)
-               *)
+             `WITHMUTEX >> (`LSQUARE >> (call G exp) << `RSQUARE) && (call G cmd)
+               wth (mk_cmd_exp WithMutex),
+             (*
+             `WITHMUTEX >> (call G exp) && (call G cmd)
+              wth (mk_cmd_exp WithMutex)
+             *)
 
-               `WAIT >> (call G exp) wth (mk_cmd_exp Wait),
+             `WAIT >> (call G exp) wth (mk_cmd_exp Wait),
 
-               `SIGNAL >> (call G exp) wth (mk_cmd_exp Signal),
+             `SIGNAL >> (call G exp) wth (mk_cmd_exp Signal),
 
-               `PROMOTE >> ((call G exp) << `TO) && (call G exp) wth (mk_cmd_exp Promote)
+             (* preferred (but broken) `promote <cv> to <priority>` syntax *)
+             (*
+             `PROMOTE >> ((call G exp) << `TO) && (`LSQUARE >> (call G exp) << `RSQUARE)
+               wth (mk_cmd_exp Promote)
+             *)
+             (* working (but lesser) `promote[<priority>] <cv>` syntax*)
+             `PROMOTE >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
+               (call G exp) wth (fn (x, y) => mk_cmd_exp Promote (y, x))
+            ]
+      end
+    and appexp G =
+      let
+        fun mkinfix (s, x as (_,l), y) =
+          (App((Var (Id s), l), (Record[("1",x),("2",y)], l), true), l)
+        fun mark ass prec f =
+          Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y), l))))
 
-              ]
-	  end
-      and appexp G =
-          let
-              fun mkinfix (s, x as (_,l), y) = 
-                  (App((Var (Id s), l), (Record[("1",x),("2",y)], l), true), l)
-              fun mark ass prec f = 
-                  Opr(Infix(ass, prec, (fn (x as (_,l), y) => (f(x,y), l))))
-
-              val par =
-                  alt [expid when (LU.Alist.get op= G)
-                         wth (fn (s,(prec, ass)) =>
-                              Opr(Infix(ass, prec, (fn (x as (_,l),y) => 
-                                                    mkinfix (s, x, y))))),
-                       `EQUALS return mark Non 1 (#1 o (fn (e1, e2) =>
+        val par =
+          alt [expid when (LU.Alist.get op= G)
+                 wth (fn (s,(prec, ass)) =>
+                      Opr(Infix(ass, prec, (fn (x as (_,l),y) =>
+                                              mkinfix (s, x, y))))),
+               `EQUALS return mark Non 1 (#1 o (fn (e1, e2) =>
                                                   mkinfix ("=", e1, e2))),
-                       `ANDALSO return mark Right ~100 Andalso,
-                       `ORELSE return mark Right ~200 Orelse,
-                       `ANDTHEN return mark Right ~300 Andthen,
-                       `OTHERWISE return mark Right ~300 Otherwise,
-                       !!!(call G atomexp) wth Atm]
-          in
-              parsefixityadj par Left (fn (a,b as (_,l)) =>
-                                       (App (a, b, false),l)) wth #1
-          end
+               `ANDALSO return mark Right ~100 Andalso,
+               `ORELSE return mark Right ~200 Orelse,
+               `ANDTHEN return mark Right ~300 Andthen,
+               `OTHERWISE return mark Right ~300 Otherwise,
+               !!!(call G atomexp) wth Atm]
+      in
+        parsefixityadj par Left (fn (a,b as (_,l)) =>
+                                 (App (a, b, false),l)) wth #1
+      end
 
-      and handlexp G =
-          !!! (call G appexp) && opt (`HANDLE && call G matching)
-                     wth (fn (a,SOME (_,m)) => Handle (a, m)
-                           | ((a,_), NONE) => a)
+    and handlexp G =
+      !!! (call G appexp) && opt (`HANDLE && call G matching)
+        wth (fn (a,SOME (_,m)) => Handle (a, m)
+              | ((a,_), NONE) => a)
 
-      and matching G = separate0 (call G pat && `DARROW && call G exp wth 
-                                  (fn (a,(_,c)) => (a,c))) (`BAR) 
+    and matching G = separate0 (call G pat && `DARROW && call G exp wth
+                                (fn (a,(_,c)) => (a,c))) (`BAR)
 
-      (* XXX use repeat to allow e : t : t : t *)
-      and constrainexp G =
-          !!! (call G handlexp) && opt (`COLON >> typ)
-                     wth (fn (a,SOME c) => Constrain (a, c)
-                           | ((a, _),NONE) => a)
+    (* XXX use repeat to allow e : t : t : t *)
+    and constrainexp G =
+      !!! (call G handlexp) && opt (`COLON >> typ)
+        wth (fn (a,SOME c) => Constrain (a, c)
+              | ((a, _),NONE) => a)
 
-      and exp G = 
-          (* can only write cases with one object, though the
-             ast allows multiple *)
-          !!! ( alt [`CASE >> "expected EXP OF MATCHING after CASE" **
+    and exp G =
+      (* can only write cases with one object, though the
+         ast allows multiple *)
+      !!! ( alt [`CASE >> "expected EXP OF MATCHING after CASE" **
                    (call G exp && `OF && call G matching
-                      wth (fn (obj,(_,pel)) => Case([obj], 
+                      wth (fn (obj,(_,pel)) => Case([obj],
                                                     map (fn (p,e) =>
                                                          ([p], e))
                                                     pel,
                                                     NONE))),
-                      (* generalize these *)
-                   `RAISE >> call G exp wth Raise,
+                 (* generalize these *)
+                 `RAISE >> call G exp wth Raise,
 (*
-                   `SAY >> 
-                      (opt (`LBRACE >> 
-                           separate (label && opt (`EQUALS >> id) 
-                                     wth (fn (l, NONE) => (l, l)
-                                           | (l, SOME v) => (l, v))) (`COMMA)
-                           << `RBRACE) 
-                        wth (fn NONE => nil
-                              | SOME l => l))
-                      && call G exp wth Say,
-                   `SAY -- punt "expected EXP after SAY",
+                 `SAY >>
+                    (opt (`LBRACE >>
+                         separate (label && opt (`EQUALS >> id)
+                                   wth (fn (l, NONE) => (l, l)
+                                         | (l, SOME v) => (l, v))) (`COMMA)
+                         << `RBRACE)
+                      wth (fn NONE => nil
+                            | SOME l => l))
+                    && call G exp wth Say,
+                 `SAY -- punt "expected EXP after SAY",
 
-                   `HOLD >> call G exp wth Hold,
-                   `HOLD -- punt "expected EXP after HOLD",
+                 `HOLD >> call G exp wth Hold,
+                 `HOLD -- punt "expected EXP after HOLD",
 
-                   (* XXX should allow specifying the world var *)
-                   `SHAM >> call G exp wth (fn e => Sham(NONE, e)),
-                   `SHAM -- punt "expected EXP after SHAM",
+                 (* XXX should allow specifying the world var *)
+                 `SHAM >> call G exp wth (fn e => Sham(NONE, e)),
+                 `SHAM -- punt "expected EXP after SHAM",
 
-                   `FROM >> (* "expected EXP GET EXP after FROM" ** *)
-                   (call G exp &&
-                    `GET && (* "expected EXP after GET" **  *) call G exp)
-                   wth (fn (addr, (_, bod)) => Get(addr, bod)),
+                 `FROM >> (* "expected EXP GET EXP after FROM" ** *)
+                 (call G exp &&
+                  `GET && (* "expected EXP after GET" **  *) call G exp)
+                 wth (fn (addr, (_, bod)) => Get(addr, bod)),
 
-                   (* XXX should instead rewrite this to a function in place
-                          so that we don't HAVE to write (#l/t e) *)
+                 (* XXX should instead rewrite this to a function in place
+                        so that we don't HAVE to write (#l/t e) *)
 *)
-                   `HASH >> label && `DIVIDE && attype && call G exp 
-                      wth (fn (i, (_, (t, e))) => Proj(i, t, e)),
+                 `HASH >> label && `DIVIDE && attype && call G exp
+                    wth (fn (i, (_, (t, e))) => Proj(i, t, e)),
 
-                   (* (`THROW >> call G exp) && (`TO >> call G exp) wth Throw, *)
+                 (* (`THROW >> call G exp) && (`TO >> call G exp) wth Throw, *)
 
-                   `IF >> "expected EXP THEN EXP ELSE EXP after IF" **
-                   (call G exp && 
-                    `THEN && "expected EXP after THEN" ** call G exp && 
-                    `ELSE && "expected EXP after ELSE" ** call G exp 
-                      wth (fn (e as (_,l),(_,(t,(_,f)))) => If (e,t,f))),
+                 `IF >> "expected EXP THEN EXP ELSE EXP after IF" **
+                   (call G exp &&
+                      `THEN && "expected EXP after THEN" ** call G exp &&
+                      `ELSE && "expected EXP after ELSE" ** call G exp
+                        wth (fn (e as (_,l),(_,(t,(_,f)))) => If (e,t,f))),
 
-                   !!!(`FN) && (separate0 (repeat1 (call G mapat) && 
-                                          (`DARROW return NONE) && 
-                                          call G exp) (`BAR))
-                      wth (fn ((_, l), s) => 
-                           let val v = namedstring "anonfn"
-                           in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l), 
-                                   (Var (Id v), l))
-                           end),
-                   call G constrainexp
+                 !!!(`FN) && (separate0 (repeat1 (call G mapat) &&
+                                         (`DARROW return NONE) &&
+                                           call G exp) (`BAR))
+                   wth (fn ((_, l), s) =>
+                          let val v = namedstring "anonfn"
+                          in Let ((Fun { inline = false, funs = [(nil, v, map flat3 s)] }, l),
+                                  (Var (Id v), l))
+                          end),
 
-                   (* FIX: no more priority application *)
-                   (* !!(`WFN) >> (repeat1 ($ppat) && repeat1 (call G mapat)
-                                        << `DARROW) &&
-                            call G exp
-                            wth (fn ((ppats, pats), e) => PFn (ppats, pats, e)) *)
-                  ])
+                 call G constrainexp
 
-      and funclause G =
-          repeat1 (call G mapat) && opt (`COLON >> typ) && `EQUALS && 
-           call G exp
-           wth (fn (pats, (to, (_, e))) => (pats, to, e))
-
-      and onefun' G =
-          expid -- (fn f => separate0 (call G funclause) 
-                    (`BAR >> expid suchthat (fn x => x = f)) wth 
-                    (fn a => (f, a)))
-
-      and onefun G =
-          alt [(`LPAREN >> separate id (`COMMA) << `RPAREN) && call G onefun' 
-                   wth (fn (tv, (f, clauses)) => (tv, f, clauses)),
-               call G onefun' wth (fn (f, clauses) => (nil, f, clauses))]
-
-      and funs G =
-          separate (call G onefun) (`AND)
-
-      and dec G = call G regortdec wth Util.A
-               || call G infixdec wth Util.B
-
-      (* after processing a dec, either use the new fixity context or
-         place the dec on the accumulator *)
-      and postdecs G (Util.A d) = call G decs -- 
-                                    (fn (G,ds) => succeed (G, d :: ds))
-        | postdecs _ (Util.B G) = call G decs
-
-      and decs G = alt [`IMPORT >> (stringlit
-                                    -- (fn s =>
-                                         let
-                                             (* XXX error messages *)
-                                             fun tokenize f = 
-                                                 Parsing.transform 
-                                                   Tokenize.token 
-                                                    (Pos.markstreamex f 
-                                                      (tryopen f))
-                                         in
-                                             push (tokenize s)
-                                              (call G decs)
-                                              (* (call G dec -- postdecs G) *)
-                                         end)),
-                        call G dec -- postdecs G,
-                        succeed (G,nil)]
-
-      and infixdec G =
-          alt [(`INFIX || `INFIXR) && opt 
-               (any when (fn INT i => 
-                          if i >= 0w0 andalso i <= 0w9
-                          then SOME i 
-                          else NONE | _ => NONE)) && expid 
-                 wth (fn (fx, (preco, i)) => 
-                      LU.Sorted.insert fixcomp G (i, (Word32.toIntX
-                                                      (Option.getOpt 
-                                                      (preco, 0w4)), 
-                                                      case fx of 
-                                                          INFIX => Left 
-                                                        | _ => Right))),
-               `NONFIX >> expid wth (fn i => List.filter 
-                                     (fn (j,_) => i <> j) G)
-                 ]
-
-      and bindword () = (`VAL return Val (* ||
-                         `PUT return Put *)
-                         (* `LETA return Leta || 
-                         `LETSHAM return Letsham *))
-
-      and regortdec G =
-          alt [(call G regulardec) wth Dec,
-               `PRIORITY >> id wth Priority,
-               `ORDER >> (fid G) && (`LESSTHAN >> fid G) wth Order,
-               `FAIRNESS >> (fid G) && (any when
-                                            (fn INT i => SOME i
-                                            | _ => NONE)) wth Fairness
-              ]
-
-      and regulardec G =
-         !!!(alt [$bindword && (call G pat suchthat irrefutable) && `EQUALS && 
-                   call G exp
-                   wth (fn (b, (pat, (_, e))) => Val (nil, pat, e)),
-                 $bindword && tyvars && (call G pat suchthat irrefutable) && 
-                   `EQUALS && call G exp
-                   wth (fn (b, (tv, (pat, (_, e)))) => Val (tv, pat, e)),
-
-                 $bindword -- punt "expected bind declaration after VAL",
-
-                 `STRUCTURE >> id && `EQUALS && call G module
-	              	  wth (fn (i, (_, ds)) => Structure (i, ds)),
-                 `STRUCTURE -- punt "expected ID after STRUCTURE", 
-
-                 `SIGNATURE >> id && `EQUALS && call G sign
-	              	  wth (fn (i, (_, ds)) => Signature (i, ds)),
-                 `SIGNATURE -- punt "expected ID after SIGNATURE",
-
-                 `DO >> "expected EXP after DO" ** 
-                   (call G exp wth Do),
-
-                 `TYPE >> id && `EQUALS && typ wth (fn (i,(_,t)) => 
-                                                    Type (nil,i,t)),
-                 `TYPE >> tyvars && id && `EQUALS && typ 
-                   wth (fn (tv,(i,(_,t))) => Type(tv,i,t)),
-                 `TYPE -- punt "expected type declaration after TYPE",
-
-                 `TAGTYPE >> id wth Tagtype,
-                 `TAGTYPE -- punt "expected ID after TAGTYPE",
-
-                 `NEWTAG >> expid && opt (`OF >> typ) && `IN && id
-                   wth (fn (i,(to,(_,ty))) => Newtag (i, to, ty)),
-                 `NEWVTAG >> expid && opt (`OF >> typ) && `IN && id
-                   wth (fn (i,(to,(_,ty))) => Newtag (i, to, ty)),
-
-                 `NEWTAG -- punt "expected ID (OF TYP) IN ID after NEWTAG",
-                 `NEWVTAG -- punt "expected ID (OF TYP) IN ID after NEWVTAG",
-
-                 `EXCEPTION >> expid && opt (`OF >> typ) wth (fn (i, to) => Exception(i, to)),
-                 `VEXCEPTION >> expid && opt (`OF >> typ) wth (fn (i, to) => Exception(i, to)),
-
-                 `EXCEPTION -- punt "expected ID (OF TYP) after EXCEPTION",
-                 `VEXCEPTION -- punt "expected ID (OF TYP) after VEXCEPTION",
-
-                 `DATATYPE >> "expected DATATYPES after DATATYPE" **
-                   alt [tyvars && datatypes wth Datatype,
-                        datatypes wth (fn d => Datatype(nil, d))],
-                 `FUN >> opt (`INLINE) && 
-                   call G funs wth (fn (inl, fs) => Fun { inline = Option.isSome inl,
-                                                          funs = fs }),
-
-		 `EXTERN >> `VAL >> id && (`COLON >> typ)
-		  wth (fn (i, t) => ExternVal ([], i, t)),
-		 `EXTERN >> `VAL >> tyvars && id && (`COLON >> typ)
-		  wth (fn (tv, (i, t)) => ExternVal (tv, i, t)),
-		 `EXTERN >> `VAL -- punt "expected external declaration",
-     
-		 `EXTERN >> `TYPE >> id
-		 wth (fn i => ExternType ([], i)),
-		 `EXTERN >> `TYPE >> tyvars && id
-		 wth (fn (tv, i) => ExternType (tv, i)),
-		 `EXTERN >> `TYPE -- punt "expected external declaration",
-		 `EXTERN -- punt "expected VAL or TYPE after EXTERN",
-	 
                  (* FIX: no more priority application *)
-                 (* `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
-                                               `RSQUARE) && (fid G)
-                  && (repeat1 (call G mapat))
-                  && (opt (`COLON >> typ)))
-                  << `EQUALS && (call G exp)
-                  wth
-                  (fn ((ppats, (v, (pats, t))), e) =>
-                      WFun (v, [ppats], pats, t, e)), *)
-
-                 `FUN -- punt "expected (INLINE) FUNS after FUN"
-(*                   `WFUN -- punt "expected id PPATS PATS EQUALS exp after WFUN" *)
+                 (* !!(`WFN) >> (repeat1 ($ppat) && repeat1 (call G mapat)
+                                      << `DARROW) &&
+                          call G exp
+                          wth (fn ((ppats, pats), e) => PFn (ppats, pats, e)) *)
                 ])
 
-      and sigdec G = 
-          !!!(alt [
-            `TYPE >> id wth (fn i => SigType (nil, i)),
-            `TYPE >> tyvars && id wth (fn (tv, i) => SigType (tv, i)),
-            `TYPE -- punt "expected ID after TYPE",
+    and funclause G =
+      repeat1 (call G mapat) && opt (`COLON >> typ) && `EQUALS &&
+        call G exp wth (fn (pats, (to, (_, e))) => (pats, to, e))
 
-            `VAL >> id && `COLON && typ wth (fn (i, (_, ty)) => SigVal (i, ty)),
-            `VAL -- punt "expected val declaration after VAL",
-            
-            call G regulardec wth (fn (dec, pos) => dec)
-          ])
+    and onefun' G =
+      expid -- (fn f => separate0 (call G funclause)
+                  (`BAR >> expid suchthat (fn x => x = f)) wth
+                  (fn a => (f, a)))
+
+    and onefun G =
+      alt [(`LPAREN >> separate id (`COMMA) << `RPAREN) && call G onefun'
+             wth (fn (tv, (f, clauses)) => (tv, f, clauses)),
+           call G onefun' wth (fn (f, clauses) => (nil, f, clauses))]
+
+    and funs G =
+      separate (call G onefun) (`AND)
+
+    and dec G = call G regortdec wth Util.A
+             || call G infixdec wth Util.B
+
+    (* after processing a dec, either use the new fixity context or
+       place the dec on the accumulator *)
+    and postdecs G (Util.A d) =
+          call G decs -- (fn (G,ds) => succeed (G, d :: ds))
+      | postdecs _ (Util.B G) = call G decs
+
+    and decs G =
+      alt [`IMPORT >> (stringlit -- (fn s =>
+                                       let
+                                           (* XXX error messages *)
+                                           fun tokenize f =
+                                               Parsing.transform
+                                                 Tokenize.token
+                                                  (Pos.markstreamex f
+                                                    (tryopen f))
+                                       in
+                                           push (tokenize s)
+                                            (call G decs)
+                                            (* (call G dec -- postdecs G) *)
+                                       end)),
+           call G dec -- postdecs G,
+           succeed (G,nil)]
+
+    and infixdec G =
+      alt [(`INFIX || `INFIXR)
+              && opt (any when (fn INT i =>
+                                  if i >= 0w0 andalso i <= 0w9
+                                  then SOME i
+                                  else NONE | _ => NONE))
+              && expid
+              wth (fn (fx, (preco, i)) =>
+                     LU.Sorted.insert fixcomp G (i,
+                                                 (Word32.toIntX
+                                                   (Option.getOpt (preco, 0w4)),
+                                                     case fx of
+                                                         INFIX => Left
+                                                       | _ => Right))),
+           `NONFIX >> expid
+             wth (fn i => List.filter (fn (j,_) => i <> j) G)
+          ]
+
+    and bindword () = (`VAL return Val (* ||
+                       `PUT return Put *)
+                       (* `LETA return Leta ||
+                       `LETSHAM return Letsham *))
+
+    and regortdec G =
+      alt [(call G regulardec) wth Dec,
+           `PRIORITY >> id wth Priority,
+           `ORDER >> (fid G) && (`LESSTHAN >> fid G) wth Order,
+           `FAIRNESS >> (fid G) && (any when
+                                        (fn INT i => SOME i
+                                        | _ => NONE)) wth Fairness
+          ]
+
+    and regulardec G =
+     !!!(alt [$bindword && (call G pat suchthat irrefutable)
+                        && `EQUALS && call G exp
+                wth (fn (b, (pat, (_, e))) => Val (nil, pat, e)),
+              $bindword && tyvars && (call G pat suchthat irrefutable)
+                        && `EQUALS && call G exp
+                wth (fn (b, (tv, (pat, (_, e)))) => Val (tv, pat, e)),
+              $bindword -- punt "expected bind declaration after VAL",
+
+              `STRUCTURE >> id && `EQUALS && call G module
+                 wth (fn (i, (_, ds)) => Structure (i, ds)),
+              `STRUCTURE -- punt "expected ID after STRUCTURE",
+
+              `SIGNATURE >> id && `EQUALS && call G sign
+                 wth (fn (i, (_, ds)) => Signature (i, ds)),
+              `SIGNATURE -- punt "expected ID after SIGNATURE",
+
+              `DO >> "expected EXP after DO" ** (call G exp wth Do),
+
+              `TYPE >> id && `EQUALS && typ wth (fn (i,(_,t)) =>
+                                                   Type (nil,i,t)),
+              `TYPE >> tyvars && id && `EQUALS && typ
+                wth (fn (tv,(i,(_,t))) => Type(tv,i,t)),
+              `TYPE -- punt "expected type declaration after TYPE",
+
+              `TAGTYPE >> id wth Tagtype,
+              `TAGTYPE -- punt "expected ID after TAGTYPE",
+
+              `NEWTAG >> expid && opt (`OF >> typ) && `IN && id
+                wth (fn (i,(to,(_,ty))) => Newtag (i, to, ty)),
+              `NEWVTAG >> expid && opt (`OF >> typ) && `IN && id
+                wth (fn (i,(to,(_,ty))) => Newtag (i, to, ty)),
+
+              `NEWTAG -- punt "expected ID (OF TYP) IN ID after NEWTAG",
+              `NEWVTAG -- punt "expected ID (OF TYP) IN ID after NEWVTAG",
+
+              `EXCEPTION >> expid && opt (`OF >> typ) wth (fn (i, to) => Exception(i, to)),
+              `VEXCEPTION >> expid && opt (`OF >> typ) wth (fn (i, to) => Exception(i, to)),
+
+              `EXCEPTION -- punt "expected ID (OF TYP) after EXCEPTION",
+              `VEXCEPTION -- punt "expected ID (OF TYP) after VEXCEPTION",
+
+              `DATATYPE >> "expected DATATYPES after DATATYPE" **
+                alt [tyvars && datatypes wth Datatype,
+                     datatypes wth (fn d => Datatype(nil, d))],
+              `FUN >> opt (`INLINE) &&
+                call G funs wth (fn (inl, fs) => Fun { inline = Option.isSome inl,
+                                                       funs = fs }),
+
+              `EXTERN >> `VAL >> id && (`COLON >> typ)
+                wth (fn (i, t) => ExternVal ([], i, t)),
+              `EXTERN >> `VAL >> tyvars && id && (`COLON >> typ)
+                wth (fn (tv, (i, t)) => ExternVal (tv, i, t)),
+              `EXTERN >> `VAL -- punt "expected external declaration",
+
+              `EXTERN >> `TYPE >> id
+                wth (fn i => ExternType ([], i)),
+              `EXTERN >> `TYPE >> tyvars && id
+                wth (fn (tv, i) => ExternType (tv, i)),
+              `EXTERN >> `TYPE -- punt "expected external declaration",
+              `EXTERN -- punt "expected VAL or TYPE after EXTERN",
+
+              (* FIX: no more priority application *)
+              (* `FUN >> ((`LSQUARE >> ((* repeat1 *) ($ppat)) <<
+                                            `RSQUARE) && (fid G)
+               && (repeat1 (call G mapat))
+               && (opt (`COLON >> typ)))
+               << `EQUALS && (call G exp)
+               wth
+               (fn ((ppats, (v, (pats, t))), e) =>
+                   WFun (v, [ppats], pats, t, e)), *)
+
+              `FUN -- punt "expected (INLINE) FUNS after FUN"
+(*                `WFUN -- punt "expected id PPATS PATS EQUALS exp after WFUN" *)
+             ])
+
+      and sigdec G =
+        !!!(alt [`TYPE >> id wth (fn i => SigType (nil, i)),
+                 `TYPE >> tyvars && id wth (fn (tv, i) => SigType (tv, i)),
+                 `TYPE -- punt "expected ID after TYPE",
+
+                 `VAL >> id && `COLON && typ wth (fn (i, (_, ty)) => SigVal (i, ty)),
+                 `VAL -- punt "expected val declaration after VAL",
+
+                 call G regulardec wth (fn (dec, pos) => dec)
+                ])
 
       and cmd G =
-          "expected LBRACE (inst;)*inst RBRACE" **
-          !!!(`LBRACE >>
-            ((repeat ((id && (`LARROW >> call G exp << `SEMICOLON)) ||
-                     (call G exp << `SEMICOLON wth (fn i => ("ign__", i))))) &&
-                 ("expected exp" ** call G exp))
-                 << `RBRACE
-                 wth IBind)
+        "expected LBRACE (inst;)*inst RBRACE" **
+        !!!(`LBRACE >>
+          ((repeat ((id && (`LARROW >> call G exp << `SEMICOLON)) ||
+                    (call G exp << `SEMICOLON wth (fn i => ("ign__", i))))) &&
+             ("expected exp" ** call G exp))
+          << `RBRACE
+          wth IBind)
 
-(*      fun export G =
-        alt [`EXPORT >> `TYPE >> alt[tyvars && id, succeed nil && id]
-             && opt(`EQUALS >> typ) wth (fn ((atv,i),to) => ExportType (atv, i, to)),
-             (* XXX should support type annotation? *)
-             `EXPORT >> `VAL >> alt[tyvars && id, succeed nil && id]
-             && opt(`EQUALS >> call G exp) wth (fn ((atv,i),eo) => ExportVal (atv, i, eo)),
-             
-             `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
+(*    fun export G =
+      alt [`EXPORT >> `TYPE >> alt[tyvars && id, succeed nil && id]
+           && opt(`EQUALS >> typ) wth (fn ((atv,i),to) => ExportType (atv, i, to)),
+           (* XXX should support type annotation? *)
+           `EXPORT >> `VAL >> alt[tyvars && id, succeed nil && id]
+           && opt(`EQUALS >> call G exp) wth (fn ((atv,i),eo) => ExportVal (atv, i, eo)),
+
+           `EXPORT -- punt "expected WORLD, TYPE, or VAL after EXPORT"]
  *)
       and module G =
         `STRUCT >> "expected DECS after STRUCT" **
-                      ((repeat (call G regulardec)) -- 
-                        (fn ds => 
-                        `END
-                          wth (fn _ => ds)))
+                    ((repeat (call G regulardec)) --
+                      (fn ds =>
+                      `END
+                        wth (fn _ => ds)))
 
       and sign G =
         `SIG >> "expected DECS after SIG" **
-                      ((repeat (call G sigdec)) --
-                        (fn ds =>
-                        `END 
-                          wth (fn _ => ds)))
+                  ((repeat (call G sigdec)) --
+                    (fn ds => `END wth (fn _ => ds)))
 
       fun prog G =
-          (call G decs --
-                (fn (G, ds) =>
-                    (`MAIN >> call G cmd) wth (fn m => Prog (ds, m))))
+        (call G decs -- (fn (G, ds) =>
+                           (`MAIN >> call G cmd) wth (fn m => Prog (ds, m))))
 (*          (decs (* (repeat (call G regortdec)) *) &&
                                    )
               wth Prog *)
 (*
       fun unit G =
         alt [`UNIT >> "expected DECS after UNIT" **
-             (call G decs -- 
-              (fn (G,ds) => 
+             (call G decs --
+              (fn (G,ds) =>
                alt
                [`IN >> "expected EXPORTS after IN" **
                (repeat (call G export) << `END
@@ -830,12 +831,12 @@ struct
 *)
 
   in
-      val pat = fn G => call G pat
-      val atpat = fn G => call G mapat
+    val pat = fn G => call G pat
+    val atpat = fn G => call G mapat
 
-      val exp = fn G => call G exp
-      val dec = fn G => call G dec
-      val prog = fn G => call G prog
+    val exp = fn G => call G exp
+    val dec = fn G => call G dec
+    val prog = fn G => call G prog
   end
 
 end
