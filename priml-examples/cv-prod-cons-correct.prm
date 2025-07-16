@@ -92,7 +92,7 @@ main {
     cv <- newcv[low];
     queue <- ref nil;
     p <- spawn[high] { prod cv queue };
-    cv2 <- promote cv to high;
+    cv2 <- promote[high] cv;
     (* would now be ill-typed to spawn prod *)
     c <- spawn[high] { cons cv2 queue };
     sync c

@@ -496,7 +496,13 @@ struct
 
                `SIGNAL >> (call G exp) wth (mk_cmd_exp Signal),
 
-               `PROMOTE >> ((call G exp) << `TO) && (call G exp) wth (mk_cmd_exp Promote)
+               (*
+               `PROMOTE >> ((call G exp) << `TO) && (`LSQUARE >> (call G exp) << `RSQUARE) wth (mk_cmd_exp Promote)
+               *)
+               `PROMOTE >> (`LSQUARE >> (call G exp) << `RSQUARE) &&
+                    (call G exp)
+                    wth (fn (x, y) => mk_cmd_exp Promote (y, x))
+
 
               ]
 	  end
