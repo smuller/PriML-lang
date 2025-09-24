@@ -75,9 +75,18 @@ struct
                           ^ (if kind = 1 then "" else "s") ^ "."))
            handle C.Absent _ => error loc ("Unbound type name " ^ str)
 
-  and elabpr ctx loc w =
-    (C.prio ctx w)
-    handle C.Absent _ => error loc ("Unbound priority variable/constant " ^ w)
+  and elabpr ctx loc (v, constraints) =
+      let fun check_prio p =
+	      if String.compare (v, p) = EQUAL then
+		  v
+	      else
+		  C.prio ctx p
+	  fun check_cons (p1, p2) =
+	      (check_prio p1, check_prio p2)
+      in
+	  ([], RConcrete (v, List.map check_cons constraints))
+      end
+      handle C.Absent p => error loc ("Unbound priority variable/constant " ^ p)
 
   and elabt ctx loc t = elabtex ctx NONE loc t
 

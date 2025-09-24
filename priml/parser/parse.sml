@@ -153,9 +153,9 @@ struct
                    wth CAnd
               ] *)
 
-  fun rfmt () = id (*
+  fun rfmt () =
       alt [id wth (fn p' => ("p", [("p", p'), (p', "p")])),
-	   (id << `BAR) && ($pconstraint)] *)
+	   (id << `BAR) && ($pconstraint)]
 
   fun ppat () =
       alt [(id && opt (`COLON >> ($pconstraint)))

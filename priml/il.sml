@@ -55,20 +55,24 @@ struct
 
     structure VM = Variable.Map
     type 'a subst = 'a VM.map
-				   
-    datatype prioset = 
-	     PSEvar of prioset ebind ref
-	     | PSSet of PrioSet.set
-	     | PSPendSub of arg_subst subst * prioset
-						  
-	 (* and pconstraint = PCons of prio * prio *)
 
-	 and arg_subst = SubstVar of var
-		       | SubstSet of prioset
-		       | DontSubst
+    type pconstraint = prio * prio
+
+    datatype rfmt =
+	     RConcrete of string * pconstraint list
+	     | RVar of int
+
+    datatype arg_subst =
+	     SubstVar of var
+	     | SubstPrio of prio
+	     | SubstSet of rfmt
+	     | DontSubst
+		 
+    type prioset = arg_subst subst list * rfmt
+    (* [r1/x]r2 means "r2 where x is subject to the constraints in r1" *)
 
     (* types : classifiers for values *)
-    and typ =
+    datatype typ =
         TVar of var
       | TRec of (label * typ) list
       (* bool true => total 

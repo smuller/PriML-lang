@@ -82,7 +82,7 @@ struct
     | subst_var_or_t_in_t s (TPrio p) = TPrio (esubstprset s p)
     | subst_var_or_t_in_t s (TMutex p) = TPrio (esubstprset s p)
 			   
-  and esubstprset s p = PSPendSub (s, p)
+  and esubstprset (s1: arg_subst subst) ((s2, r): prioset) = (s1 :: s2, r)
 
   and arrow s (b, dom, cod) =
       (b, map (fn (v, t) => (v, tsubst s t)) dom, tsubst s cod)
@@ -170,11 +170,34 @@ struct
         | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
         | PEvar _ => x
 
-  and prsubsps (s: prio subst) x : prioset =
-      case x of 
-           PSSet ps => PSSet (PrioSet.map (prsubsp s) ps)
-         | PSEvar (ref (Bound w)) => prsubsps s w
-         | _ => x
+  and prsubr (s: prio subst) (rfmt : rfmt) : rfmt =
+      case rfmt of
+	  RConcrete (v, constraints) =>
+	  let val s' = s (* XXX (s', _) = VM.remove (s, v)
+			    handle _ => s *)
+	  in
+	      RConcrete (v, List.map
+				(fn (p1, p2) => (prsubsp s' p1, prsubsp s' p2))
+				constraints)
+	  end
+	| RVar _ => rfmt
+	 
+  and prsubsps (s: prio subst) (pendsub, rfmt) : prioset =
+      let val pendsub =
+	      List.map
+		  (fn ps =>
+		       VM.map (fn SubstVar v =>
+				  (case VM.find (s, v) of
+				       SOME ww => SubstPrio ww
+				     | NONE => SubstVar v)
+			      | SubstPrio p => SubstPrio p
+			      | SubstSet r => SubstSet (prsubr s r)
+			      | DontSubst => DontSubst)
+			      ps)
+		  pendsub
+      in
+	  (pendsub, prsubr s rfmt)
+      end
 
 		    (*
   and prsubspsc s (PSSup (ps1, ps2))  = PSSup (prsubsps s ps1, prsubsps s ps2)

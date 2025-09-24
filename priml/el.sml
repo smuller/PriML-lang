@@ -14,7 +14,7 @@ struct
     | PCOr of pconstraint * pconstraint
     | PCLessEqual of exp * exp
     | PCEqual of exp * exp *)
-  type rfmt = string (*  * pconstraint list (* x :: constraints *) *)
+  type rfmt = string * pconstraint list (* x :: constraints *)
        
   type psconstraint = unit (* XXX *)
   type id = string
