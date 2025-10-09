@@ -94,7 +94,10 @@ il/print.sml
 elab/context-sig.sml
 elab/context.sml
 
-elab/pscontext.sml
+(* elab/pscontext.sml *)
+
+z3-sig.sml
+z3.sml
 
 elab/psetcstrs-sig.sml
 elab/psetcstrs.sml

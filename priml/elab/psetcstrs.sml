@@ -60,277 +60,170 @@ struct
     (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)
 
+    (* An assignment A is a map from refinement vars to concrete refinements *)
+    type assign = (string * pconstraint list) IntMap.map
+
+    (* We can substitute assignments into various things *)
+
+    fun assign_in_rfmt assign rfmt =
+	case rfmt of
+	    RConcrete x => x
+	  | RVar n =>
+	    (case IntMap.find (assign, n) of
+		 SOME x => x
+	       | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n))))
+
+    fun singleton (k, v) =
+	VM.insert (VM.empty, k, v)
+
+    fun prsubcs s pcs =
+	List.map
+	    (fn (p1, p2) => (Subst.prsubsp s p1, Subst.prsubsp s p2))
+	    pcs
+
+    (* Turn x = [v | constrs] into [x/v]constrs *)
+    fun close_rfmt assign x (xv, pcs) =
+	let val s' = singleton (Variable.namedvar xv, PVar x)
+	in
+	    prsubcs s' pcs
+	end
+	    
+    fun do_pendsubs assign (ps: arg_subst subst) (rfmt_var, rfmt_cs) =
+	VM.foldli
+	    (fn (v, SubstVar v', (rfmt_var, rfmt_cs)) =>
+		(rfmt_var, prsubcs (singleton (v, PVar v')) rfmt_cs)
+	    | (v, SubstPrio prio, (rfmt_var, rfmt_cs)) =>
+	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs)
+	    | (v, SubstSet rfmt', (rfmt_var, rfmt_cs)) =>
+	      (rfmt_var, (close_rfmt assign v (assign_in_rfmt assign rfmt')) @ rfmt_cs)
+	    | (v, DontSubst, rfmt) => rfmt
+	    )
+	    (rfmt_var, rfmt_cs)
+	    ps
+				  
+    (* Get a refinement for a prioset under assign by performing the assignments
+     * and then the pending substitutions.*)
+    fun assign_in_prioset assign (substs, rfmt) =
+	let val (v, ps) = assign_in_rfmt assign rfmt
+	    fun do_allsubs subs (v, ps) =
+		case subs of
+		    [] => (v, ps)
+		  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps))
+	in
+	    do_allsubs substs (v, ps)
+	end
+					      
     (* check if s1 is superset of s2 *)
     fun check_sup (s1, s2) =
 	PrioSet.isSubset (s2, s1)
 (*      PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty) *)
 
-    (* check if priorities in s1 is less than priorities in s2 *)
-    fun check_cons psctx ctx (s1, s2) = 
-      PrioSet.foldr 
-        (fn (p, b) => 
-          (PrioSet.foldr (fn (p', b') => 
-            (Context.checkcons psctx ctx p' p) andalso b') true s1) andalso b) 
-        true
-        s2
-
-    
-
-    fun baseps ps =
-	case ps of
-	    PSEvar (ref (Bound ps)) => baseps ps
-	  | PSSet set => PSSet set
-	  | _ => ps
-
-    fun inst_prio ctx get_set p =
-	case p of
-	    PEvar (ref (Bound p)) => inst_prio ctx get_set p
-	  | PEvar _ => PrioSet.singleton p
-	  | PVar v =>
-	    (
-	     case Context.rem ctx (V.basename v) of
-		 SOME (ctx, (Poly (_, TPrio ps), _, _)) =>
-		 inst_set ctx get_set (get_set ps)
-	       | _ => PrioSet.singleton p
+    (* The context has bindings like p : [v | constraints].
+     * Return these as a list [p/v]constraints *)
+    fun constraints_in_ctx assign ctx =
+	List.foldl
+	    (fn ((s, (Poly ({tys}, t), v, _)), cs) =>
+		case t of
+		    TPrio p =>
+		    (close_rfmt assign v (assign_in_prioset assign p)) @ cs
+		  | _ => cs
 	    )
-	  | PConst s =>
-	    (case Context.rem ctx s of
-		 SOME (ctx, (Poly (_, TPrio ps), _, _)) =>
-		 inst_set ctx get_set (get_set ps)
-	       | _ => PrioSet.singleton p
-	    )
-
-    and inst_set ctx get_set set =
-	set
-	    (* XXX
-	PrioSet.foldl
-	    (fn (p, set) => PrioSet.union (set, inst_prio ctx get_set p))
-	    PrioSet.empty
-	    set
-*)
-	(*
-	let val ps = new_psevar ()
+	    []
+	    (Context.vars ctx)
+			 
+    (* check if priorities in s1 are less than priorities in s2 *)
+    fun check_cons assign ctx (s1, s2) =
+	let val z3 = Z3.setup ctx
+	    val z3 =
+		List.foldl
+		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    z3
+		    (constraints_in_ctx assign ctx)
+	    val (rv1, rcs1) = assign_in_prioset assign s1
+	    val c1 = close_rfmt assign (Variable.namedvar "prio__s1") (rv1, rcs1)
+	    val (rv2, rcs2) = assign_in_prioset assign s2
+	    val c2 = close_rfmt assign (Variable.namedvar "prio__s2") (rv2, rcs2)
+	    val z3 =
+		List.foldl
+		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    z3
+		    (c1 @ c2)
+	    val z3 =
+		(* Add the constraint s2 < s1... *)
+		Z3.compose (z3, Z3.negate_constraint (IL.PConst "prio__s1",
+						      IL.PConst "prio__s2"))
 	in
-	    (ps,
-	     List.fold_left
-		 (fn (p, cs) =>
-		     let val (ps', cs') = inst_prio ctx p
-		     in
-			 (PSSup (Context.empty, ps, ps'))::(cs' @ cs)
-		     end
-		 )
-		 []
-		 set
-	    )
-	end*)
-	    (*
-	    *)
+	    (*... and check that the system is UNsatisfiable *)
+	    not (Z3.check z3)
+	end
 
-	    (*
-    fun inst_ps ctx (PSEvar (ref (Bound ps))) = inst_ps ctx ps
-      | inst_ps ctx (PSSet set) = inst_set ctx set
-      | inst_ps ctx ps = ps
-	    *)
+    (* check if s1 implies s2, that is, if the set of possible priorities under
+     * s1 is a subset of the set of possible priorities under s2 *)
+    fun check_sub assign ctx (s1, s2) =
+	let val z3 = Z3.setup ctx
+	    val z3 =
+		List.foldl
+		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    z3
+		    (constraints_in_ctx assign ctx)
+	    val (rv1, rcs1) = assign_in_prioset assign s1
+	    val c1 = close_rfmt assign (Variable.namedvar "prio__s") (rv1, rcs1)
+	    val (rv2, rcs2) = assign_in_prioset assign s2
+	    val c2 = close_rfmt assign (Variable.namedvar "prio__s") (rv2, rcs2)
+	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *) 
+	    val z3 =
+		List.foldl
+		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    z3
+		    c1
+	    val z3 =
+		(* Add the constraint ~(/\ c2)... *)
+		Z3.compose (z3, Z3.negate_and_constraints c2)
+	in
+	    (*... and check that the system is UNsatisfiable *)
+	    not (Z3.check z3)
+	end
 
-    
+    fun priowf ctx (IL.PEvar _) = false
+      | priowf ctx (IL.PVar v) =
+	((let val _ = Context.var ctx (Variable.show v)
+	  in true
+	  end)
+	 handle _ => false)
+      | priowf ctx (IL.PConst s) =
+	((let val _ = Context.var ctx s
+	  in true
+	  end)
+	 handle _ => false)
+	    
+    (* Check if ps is well-formed, i.e., has no unbound priority vars *)
+    fun check_wf assign ctx ps =
+	let val (rv, rcs) = assign_in_prioset assign ps
+	in
+	    List.foldl
+		(fn ((p1, p2), wf) =>
+		    wf andalso
+		    (priowf ctx p1) andalso (priowf ctx p2))
+		true
+		rcs
+	end
 
-		      (*
-    fun dosub ps =
-	sub_in_ps VM.empty ps
-
-    fun dosub_cstr cstr =
-	case cstr of
-	    PSCons (ctx, ps1, ps2) => (* PSCons (ctx, dosub ps1, dosub ps2) *)
-	    PSCons (ctx,
-		    inst_ps ctx (dosub ps1),
-		    inst_ps ctx (dosub ps2))
-	  | PSSup (ctx, ps1, ps2) =>
-	    PSSup (Context.empty,
-		   inst_ps ctx (dosub ps1),
-		   inst_ps ctx (dosub ps2))
-	  | PSWellformed (ctx, ps) => PSWellformed (ctx, dosub ps)
-		      *)
-
-    fun error_msg ctx (ps1, s1) (ps2, s2) =
+    fun error_msg ctx ps1 ps2 =
 	(case ctx of
 	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
 			 ^ ") =>"
 	   | NONE => ""
 	)
         ^ Layout.tostring (ILPrint.pstol ps1)
-        ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
+        ^ " and "
         ^ Layout.tostring (ILPrint.pstol ps2)
-        ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s2)) ^ ")"
 
-    fun error_msg_set ctx (ps1, s1) s2 =
+    fun error_msg1 ctx ps1 =
 	(case ctx of
 	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
 			 ^ ") =>"
 	   | NONE => ""
 	)
         ^ Layout.tostring (ILPrint.pstol ps1)
-	^ "(" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ") and "
-        ^ Layout.tostring (ILPrint.pstol (PSSet s2))
 
-    fun error_msg1 ctx (ps1, s1) =
-	(case ctx of
-	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
-			 ^ ") =>"
-	   | NONE => ""
-	)
-        ^ Layout.tostring (ILPrint.pstol ps1)
-        ^ " (" ^ Layout.tostring (ILPrint.pstol (PSSet s1)) ^ ")"
-		      
-    fun solve_pscstrs (psctx: pscontext) (pscstrs: psconstraint list) = 
-      let 
-        (* retrieve priority of psevar in pscontext. 
-         * If psevar is not in pscontext with empty set as the value. *)
-	  fun get_set psctx ps = 
-              case ps of 
-		  PSSet s => s
-		| PSPendSub (es, ps) =>
-		  Context.sub_in_set es (get_set psctx ps)
-		| PSEvar (ref (Bound ps)) => get_set psctx ps
-		| PSEvar (ref (Free i)) => 
-		  (case (IM.find (psctx, i)) of
-                       SOME s => s
-		    |  NONE => PrioSet.empty
-		  )
-	  fun make_sup (psctx, ps1, s2) =
-	      case ps1 of
-	          PSEvar (ref (Free i)) =>
-		  IM.insert (psctx, i, s2)
-			    (*
-		| PSEvar r =>
-		  let val ref (Free i) = new_ebind () in
-		      r := Free i;
-		      IM.insert (psctx, i, s2)
-		  end
-			    *)
-		| PSPendSub (s, ps) => make_sup (psctx, ps, s2)
-		| PSSet s1 =>
-		  raise 
-		      (PSConstraints 
-			   ("superset violated: " 
-			    ^ (error_msg_set NONE (ps1, s1) s2)))
-		| PSEvar (ref (Bound ps)) =>
-		  raise 
-		      (PSConstraints 
-			   ("superset violated: " 
-			    ^ (error_msg_set NONE (ps1, get_set psctx ps) s2)))
-
-          (* solve priority set system from PSSup (s1, s2) constraints, 
-	   * skip PSCons and SWellFormed (for now).
-           * If s1 is not the superset of s2, add every priorities in s2 to s1.
-	   *)
-          fun solve (cstr, psctx) =
-          case cstr of 
-            PSCons _ => psctx
-
-          | PSSup (ctx, ps1, ps2) =>
-	    let (*val s1 = inst_set ctx get_set (get_set ps1)
-                val s2 = inst_set ctx get_set (get_set ps2) *)
-		val s1 = get_set psctx  ps1
-		val s2 = get_set psctx ps2
-		val _ = verb (fn () => print (error_msg NONE (ps1, s1) (ps2, s2)))
-		val _ = verbprint "\n"
-		val psctx =
-		    if check_sup (s1, s2) then psctx
-		    else
-			(verbprint "make_sup\n";
-			 make_sup (psctx, ps1, PrioSet.union(s1, s2)))
-		val s1 = get_set psctx  ps1
-		val s2 = get_set psctx ps2
-		val _ = verb (fn () => print (error_msg NONE (ps1, s1) (ps2, s2)))
-		val _ = verbprint "\n"
-	    in
-		psctx
-	    end
-
-	  | PSWellformed _ => psctx (* XXX *)
-        in 
-        let val psctx' = List.foldl solve psctx pscstrs 
-        in
-          if IM.collate PrioSet.compare (psctx', psctx) = EQUAL then psctx'
-          else solve_pscstrs psctx' pscstrs
-        end
-	  end
-
-
-    (* check solutions satifying all psconstraints *)
-    fun check_pscstrs_sol (psctx: pscontext) 
-                          (pscstrs: psconstraint list) = 
-      let 
-          
-
-          (* get set solution in priority set context *)
-	  fun get_set ps = 
-              case ps of 
-		  PSSet s => s
-		| PSPendSub (es, ps) =>
-		  Context.sub_in_set es (get_set ps)
-		| PSEvar (ref (Bound ps)) => get_set ps
-		| PSEvar (ref (Free i)) => 
-		  (case (IM.find (psctx, i)) of
-                       SOME s => s
-		    |  NONE => PrioSet.empty
-		  )
-
-        (*
-          (* check if solved system has empty solution *)
-          fun check_empty psctx = 
-            if List.all (fn ps => not (PrioSet.isEmpty ps)) (PSEvarMap.listItems psctx) then ()
-            else raise (PSConstraints "empty priority set")
-        *)
-
-        (* helper function to check set constraint *)
-          fun check (PSSup (ctx, ps1, ps2)) =
-	      ()
-		  (*
-            let val s1 = inst_set ctx get_set (get_set ps1)
-                val s2 = inst_set ctx get_set (get_set ps2)
-            in
-              (if check_sup (s1, s2) then ()
-               else raise 
-                  (PSConstraints 
-                    ("superset violated: " 
-                     ^ (error_msg NONE (ps1, s1) (ps2, s2)))))
-            end
-*)
-          | check (PSCons (ctx, ps1, ps2)) =
-            let val s1 = get_set ps1
-                val s2 = get_set ps2
-            in
-              (if check_cons psctx ctx (s1, s2) then ()
-               else raise 
-                  (PSConstraints 
-                    ("priority set constraint violated: "
-                     ^ (error_msg (SOME ctx) (ps1, s1) (ps2, s2)))))
-            end
-	  | check (PSWellformed (ctx, ps)) =
-	    let val s = get_set ps
-		(* val s = inst_set ctx get_set (get_set ps) *)
-	    in
-		if PrioSet.exists
-		       (fn PEvar _ =>
-			   raise (PSConstraints "shouldn't happen")
-		       | PVar v =>
-			 ((Context.var_fail ctx (V.basename v); false)
-			  handle Context.Absent _ =>
-				 (verbprint ("not found: " ^ (Variable.basename v)); true))
-		       | PConst s => 
-			 ((Context.var_fail ctx s; false)
-			  handle Context.Absent _ => (verbprint ("not found: " ^ s); true))
-		       )
-		       s
-		then
-		    raise
-			(PSConstraints
-			     ("well-formedness constraint violated: "
-			      ^ (error_msg1 (SOME ctx) (ps, s))))
-		else ()
-	    end
-      in 
-        List.app check pscstrs 
-      end
 end

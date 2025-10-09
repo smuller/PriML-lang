@@ -211,8 +211,7 @@ struct
     val initial = Context.bindv
 		      initial
 		      botname
-		      (mono (IL.TPrio (IL.PSSet (IL.PrioSet.singleton
-						     (IL.PConst "bot")))))
+		      (mono (IL.TPrio (IL.singleton_prioset (IL.PConst "bot"))))
 		      (namedvar botname)
 
     (* also, assume some types are mobile *)

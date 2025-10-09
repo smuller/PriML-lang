@@ -382,7 +382,9 @@ struct
 
     fun delete (set, p) =
 	IL.PrioSet.filter (fn p' => not (IL.pr_eq (p, p'))) set
-	    
+
+
+			  (* XXX shouldn't need this anymore
     fun sub_set_in_set ps x set =
 	case ps of
 	    IL.PSEvar (ref (IL.Free _)) => set
@@ -420,10 +422,11 @@ struct
 	  | IL.PSSet set => IL.PSSet (sub_in_set s set)
 	  | IL.PSPendSub (sub, ps) =>
 	    sub_in_ps s (sub_in_ps sub ps)
-	    
-          (* Kind of inefficient, but we do a DFS at every check *)
-    fun checkcons psctx (ctx as C { tpcons, ...}) p1 p2 =
-	let fun checkcons checked psctx (ctx as C { tpcons, ...}) p1 p2 =
+			   *)
+
+    (* Kind of inefficient, but we do a DFS at every check *)
+    fun checkcons (ctx as C { tpcons, ...}) p1 p2 =
+	let fun checkcons checked (ctx as C { tpcons, ...}) p1 p2 =
 		(* The actual priority graph can't have cycles but 
 		 * instantiating variables can create cycles so
 		 * we still check if we've been here before.
@@ -436,35 +439,10 @@ struct
 		     (verbprint "stopping\n"; NEUTRAL)
 		else
             let
-		
-	    fun get_set psctx ps = 
-		case ps of 
-		    IL.PSSet s => s
-		  | IL.PSPendSub (es, ps) =>
-		    sub_in_set es (get_set psctx ps)
-		  | IL.PSEvar (ref (IL.Bound ps)) => get_set psctx ps
-		  | IL.PSEvar (ref (IL.Free i)) => 
-		    (case (IM.find (psctx, i)) of
-			 SOME s => s
-		       | NONE => IL.PrioSet.empty
-		    )
-	    fun inst_prio psctx ctx p =
+	    fun inst_prio ctx p =
 		case p of
-		    IL.PEvar (ref (IL.Bound p)) => inst_prio psctx ctx p
-		  | IL.PEvar _ => IL.PrioSet.singleton p
-		  | IL.PVar v =>
-		    (
-		      case rem ctx (Variable.basename v) of
-			  SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
-			  get_set psctx ps
-			| _ => IL.PrioSet.singleton p
-		    )
-		  | IL.PConst s =>
-		    (case rem ctx s of
-			 SOME (ctx, (IL.Poly (_, IL.TPrio ps), _, _)) =>
-			 get_set psctx ps
-		       | _ => IL.PrioSet.singleton p
-		    )
+		    IL.PEvar (ref (IL.Bound p)) => inst_prio ctx p
+		  | _ => IL.PrioSet.singleton p
 	    fun crossprod (l1, l2) =
 		List.concat (List.map (fn x1 => List.map (fn x2 => (x1, x2))
 							 l2) l1)
@@ -485,7 +463,7 @@ struct
 		    (* Transitivity: check all parents of p1 *)
 		    let val gs = get_greater tpcons p1
 		    in
-			efexists (fn p => checkcons checked psctx ctx p p2) gs
+			efexists (fn p => checkcons checked ctx p p2) gs
 		    end = YES
 		then YES
 		else
@@ -493,8 +471,8 @@ struct
 		     * and p2 = PVar x' and x' : prio[p1'', ..., pn''] 
 		     * check {p1', ..., pn'} x {p1'', ..., pn''} *)
 		    let val _ = verbprint "(\n"
-			val s1 = inst_prio psctx ctx p1
-			val s2 = inst_prio psctx ctx p2
+			val s1 = inst_prio ctx p1
+			val s2 = inst_prio ctx p2
 			val s1 =
 			    if IL.PrioSet.isEmpty s1 then
 				IL.PrioSet.singleton p1
@@ -509,7 +487,7 @@ struct
 			    (fn (p1, p2) =>
 				checkcons
 				    checked'
-				    psctx ctx p1 p2
+				    ctx p1 p2
 			    )
 			    (crossprod
 				 (IL.PrioSet.listItems s1,
@@ -519,15 +497,15 @@ struct
             end
 	    end)
 	in
-	    case checkcons PrioPairSet.empty psctx ctx p1 p2 of
+	    case checkcons PrioPairSet.empty ctx p1 p2 of
 		YES => true
 	      | NO => false
 	      | NEUTRAL => false
 	end
-	    
+
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
-        if checkcons IM.empty ctx p2 p1 then
+        if checkcons ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
         else
             C { cons = cons,
@@ -564,6 +542,7 @@ struct
 
     fun plabs (C { plabs, ... }) = SSU.tolist plabs
     fun pcons (C { pcons, ... }) = pcons
+    fun vars (C {vars, ... }) = S.listItemsi vars
 
     val empty = C { vars = S.empty, 
                     cons = S.empty, 
@@ -573,5 +552,5 @@ struct
                     tpcons = tpc_empty,
                     dbs = S.empty, 
                     sign = S.empty }
-
+		  
 end

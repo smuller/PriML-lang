@@ -33,11 +33,13 @@ sig
 
     val prio : context -> string -> IL.prio
 
-    val checkcons : pscontext -> context -> IL.prio -> IL.prio -> bool
+    val checkcons : context -> IL.prio -> IL.prio -> bool
 
+							 (*
     val sub_set_in_set : IL.prioset -> IL.var -> IL.PrioSet.set -> IL.PrioSet.set
     val sub_in_set : IL.arg_subst Variable.Map.map -> IL.PrioSet.set -> IL.PrioSet.set
     val sub_in_ps : IL.arg_subst Variable.Map.map -> IL.prioset -> IL.prioset
+							 *)
 
     (* has_evar ctx n
        Does the context contain the free type evar n in the type of any
@@ -74,6 +76,7 @@ sig
 
     val plabs : context -> string list
     val pcons : context -> (IL.prio * IL.prio) list
+    val vars : context -> (string * (IL.typ IL.poly * Variable.var * IL.idstatus)) list
 
     val install_ne : (unit -> IL.typ) -> unit
 end

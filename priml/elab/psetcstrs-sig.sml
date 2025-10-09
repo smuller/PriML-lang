@@ -20,13 +20,4 @@ sig
 
     val pscstr_wf   : Context.context -> IL.prioset -> psconstraint list
 
-    (* solve system of priority set constraints *)
-    val solve_pscstrs : pscontext -> psconstraint list -> pscontext
-
-    (* check psconstraints in the solved system *)
-    val check_pscstrs_sol : pscontext ->  psconstraint list -> unit
-(*
-    val dosub_cstr : psconstraint -> psconstraint
-    val dosub : IL.prioset -> IL.prioset
-*)
 end

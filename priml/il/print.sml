@@ -149,13 +149,17 @@ struct
       | prtol (PVar v) = $(V.show v)
       | prtol (PConst s) = $s
 
-    and pstol (PSEvar (ref (Bound w))) = pstol w
-      | pstol (PSEvar (ref (Free n))) = $("'ws" ^ itos n)
-      | pstol (PSSet ps) = L.listex "{" "}" "," (map prtol (PrioSet.listItems ps))
-      | pstol (PSPendSub (s, ps)) = %[L.listex "[" "]" ","
+    and pctol (p1, p2) = %[prtol p1, $" <= ", prtol p2]
+			    
+    and rfmttol (RConcrete (p, ps)) =
+	%[$"[", $p, $" | ", L.listex "" "" "," (map pctol ps)]
+      | rfmttol (RVar n) = $("'ws" ^ (Int.toString n))
+			    
+    and pstol (s, r)  = %[L.listex "[" "]" ","
 				      (map (fn (x, s) => asubst_to_l x s)
-					   (VM.listItemsi s))
-				    , pstol ps]
+					   (List.concat
+						(List.map VM.listItemsi s)))
+				    , rfmttol r]
 	
 
 				    (*
@@ -165,7 +169,7 @@ struct
     and asubst_to_l x sub =
 	case sub of
 	    SubstVar y => L.seq [$(V.show y), $"/", $(V.show x)]
-	  | SubstSet ps => L.seq [pstol ps, $"/", $(V.show x)]
+	  | SubstSet r => L.seq [rfmttol r, $"/", $(V.show x)]
 	  | DontSubst => L.seq []
 
 				     

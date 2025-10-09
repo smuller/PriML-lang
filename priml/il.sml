@@ -71,6 +71,9 @@ struct
     type prioset = arg_subst subst list * rfmt
     (* [r1/x]r2 means "r2 where x is subject to the constraints in r1" *)
 
+    fun singleton_prioset p =
+	([], RConcrete ("v", [(PConst "v", p), (p, PConst "v")]))
+
     (* types : classifiers for values *)
     datatype typ =
         TVar of var
