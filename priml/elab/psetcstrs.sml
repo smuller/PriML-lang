@@ -130,7 +130,8 @@ struct
 	    )
 	    []
 	    (Context.vars ctx)
-			 
+
+	    
     (* check if priorities in s1 are less than priorities in s2 *)
     fun check_cons assign ctx (s1, s2) =
 	let val z3 = Z3.setup ctx
@@ -208,6 +209,36 @@ struct
 		rcs
 	end
 
+    fun check assign constraint =
+	case constraint of
+	    PSSup (ctx, p1, p2) => check_sub assign ctx p2 p1
+	  | PSCons (ctx, p1, p2) => check_cons assign ctx p1 p2
+	  | PSWellFormed (ctx, p) => check_wf assign ctx p
+
+    exception Unsolvable of psconstraint
+
+    (* Weaken a constraint of the form "all priorities in p1 are less than all
+     * priorities in p2" so that it's valid *)
+    fun weaken_cons assign ctx s1 (substs2, rfmt2) =
+	case rfmt2 of
+	    RConcrete => NONE
+	  | RVar k =>
+	    let val (rv1, rcs1) = assign_in_prioset assign s1
+		val (rv2, rcs2) =
+		    case IntMap.find (assign, n) of
+			SOME x => x
+		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n))))
+		fun check_one c =
+		    (* Build back dummy refinements to reuse the
+		     * constraint checking code to check just
+		     * (A(\Gamma) *)
+		    check_cons assign ctx ([], RConcrete (rv1, rcs1))
+			       ([], RConcrete (rv2, c))
+	    in
+						    
+
+	in
+	    
     fun error_msg ctx ps1 ps2 =
 	(case ctx of
 	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
