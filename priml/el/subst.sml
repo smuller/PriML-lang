@@ -191,7 +191,7 @@ struct
 				       SOME ww => SubstPrio ww
 				     | NONE => SubstVar v)
 			      | SubstPrio p => SubstPrio p
-			      | SubstSet r => SubstSet (prsubr s r)
+			      | SubstSet r => SubstSet (prsubsps s r)
 			      | DontSubst => DontSubst)
 			      ps)
 		  pendsub

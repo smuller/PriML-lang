@@ -57,6 +57,15 @@ struct
 
     fun pscstr_wf ctx p = [PSWellformed (ctx, p)]
 
+    val next_rvar = ref 0
+
+    fun new_rvar () =
+	RVar (!next_rvar)
+	before (next_rvar := (!next_rvar) + 1)
+
+    fun new_prioset () =
+	([], new_rvar ())
+
     (* SOLVER FUNCTIONS *)
     (* priority set constraints solver *)
 
@@ -94,8 +103,8 @@ struct
 		(rfmt_var, prsubcs (singleton (v, PVar v')) rfmt_cs)
 	    | (v, SubstPrio prio, (rfmt_var, rfmt_cs)) =>
 	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs)
-	    | (v, SubstSet rfmt', (rfmt_var, rfmt_cs)) =>
-	      (rfmt_var, (close_rfmt assign v (assign_in_rfmt assign rfmt')) @ rfmt_cs)
+	    | (v, SubstSet pset, (rfmt_var, rfmt_cs)) =>
+	      (rfmt_var, (close_rfmt assign v (assign_in_prioset assign pset)) @ rfmt_cs)
 	    | (v, DontSubst, rfmt) => rfmt
 	    )
 	    (rfmt_var, rfmt_cs)
@@ -103,7 +112,7 @@ struct
 				  
     (* Get a refinement for a prioset under assign by performing the assignments
      * and then the pending substitutions.*)
-    fun assign_in_prioset assign (substs, rfmt) =
+    and assign_in_prioset assign (substs, rfmt) =
 	let val (v, ps) = assign_in_rfmt assign rfmt
 	    fun do_allsubs subs (v, ps) =
 		case subs of
@@ -113,10 +122,6 @@ struct
 	    do_allsubs substs (v, ps)
 	end
 					      
-    (* check if s1 is superset of s2 *)
-    fun check_sup (s1, s2) =
-	PrioSet.isSubset (s2, s1)
-(*      PrioSet.equal (PrioSet.difference (s2, s1), PrioSet.empty) *)
 
     (* The context has bindings like p : [v | constraints].
      * Return these as a list [p/v]constraints *)
@@ -211,33 +216,50 @@ struct
 
     fun check assign constraint =
 	case constraint of
-	    PSSup (ctx, p1, p2) => check_sub assign ctx p2 p1
-	  | PSCons (ctx, p1, p2) => check_cons assign ctx p1 p2
-	  | PSWellFormed (ctx, p) => check_wf assign ctx p
+	    PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)
+	  | PSCons (ctx, p1, p2) => check_cons assign ctx (p1, p2)
+	  | PSWellformed (ctx, p) => check_wf assign ctx p
 
     exception Unsolvable of psconstraint
 
-    (* Weaken a constraint of the form "all priorities in p1 are less than all
-     * priorities in p2" so that it's valid *)
-    fun weaken_cons assign ctx s1 (substs2, rfmt2) =
+    (* Weaken a constraint of the form "s1 ==> s2 *)
+    fun weaken_sub assign ctx (s1, (substs2, rfmt2)) =
 	case rfmt2 of
-	    RConcrete => NONE
-	  | RVar k =>
+	    RConcrete _ => NONE
+	  | RVar n =>
 	    let val (rv1, rcs1) = assign_in_prioset assign s1
 		val (rv2, rcs2) =
 		    case IntMap.find (assign, n) of
 			SOME x => x
-		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n))))
+		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n)))
 		fun check_one c =
 		    (* Build back dummy refinements to reuse the
 		     * constraint checking code to check just
-		     * (A(\Gamma) *)
-		    check_cons assign ctx ([], RConcrete (rv1, rcs1))
-			       ([], RConcrete (rv2, c))
+		     * (A(\Gamma) /\ A(s1) ==> A(c) *)
+		    check_sub assign ctx
+			      (([], RConcrete (rv1, rcs1)),
+			       ([], RConcrete (rv2, [c])))
+		val new_rcs2 = List.filter check_one rcs2
 	    in
-						    
+		SOME (IntMap.insert (assign, n, (rv2, new_rcs2)))
+	    end
 
-	in
+    fun weaken_wf assign ctx (substs, rfmt) =
+	case rfmt of
+	    RConcrete _ => NONE
+	  | RVar n => 
+	    let val (rv, rcs) =
+		    case IntMap.find (assign, n) of
+			SOME x => x
+		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n)))
+		fun check_one c =
+		    check_wf assign ctx (substs, RConcrete (rv, [c]))
+		val new_rcs =
+		    List.filter check_one rcs
+	    in
+		SOME (IntMap.insert (assign, n, (rv, new_rcs)))
+	    end
+
 	    
     fun error_msg ctx ps1 ps2 =
 	(case ctx of

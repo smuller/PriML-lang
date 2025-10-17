@@ -169,7 +169,7 @@ struct
     and asubst_to_l x sub =
 	case sub of
 	    SubstVar y => L.seq [$(V.show y), $"/", $(V.show x)]
-	  | SubstSet r => L.seq [rfmttol r, $"/", $(V.show x)]
+	  | SubstSet r => L.seq [pstol r, $"/", $(V.show x)]
 	  | DontSubst => L.seq []
 
 				     

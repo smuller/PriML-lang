@@ -25,12 +25,11 @@ struct
     val all_evars  = ref (nil : IL.typ IL.ebind ref list)
     (* FIX: delete this, no more priority evars *)
     val all_wevars = ref (nil : IL.prio IL.ebind ref list)
-    val all_psevars = ref (nil : IL.prioset IL.ebind ref list)
+    (* val all_psevars = ref (nil : IL.prioset IL.ebind ref list) *)
     fun clear_evars () = (all_evars  := nil;
-                          all_wevars := nil;
-                          all_psevars := nil)
+                          all_wevars := nil)
 
-    fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars)
+    (* fun get_psevars () = List.map (fn pseb => IL.PSEvar pseb) (!all_psevars) *)
 
     fun finalize_evars () =
       let in
@@ -57,6 +56,8 @@ struct
         all_wevars := e :: !all_wevars;
         IL.PEvar e
       end
+
+      (*
     fun new_psevar () = 
       let val e = new_ebind ()
       in
@@ -65,6 +66,7 @@ struct
         verbprint "\n";
         IL.PSEvar e
       end
+       *)
     
 
     (* actually, I think in situations where these are
@@ -125,8 +127,10 @@ struct
     fun wset r (PEvar (ref (Bound t))) = wset r t
       | wset r t = r := Bound t
 
+		   (*
     fun psset r (PSEvar (ref (Bound t))) = psset r t
       | psset r t = r := Bound t
+		    *)
 
     fun mapift (mt, _) v =
         case Variable.Map.find (mt, v) of
@@ -495,7 +499,7 @@ struct
                 else 
                     (case t2 of
                         (TPrio s) => 
-                        let val ps as PSEvar r' = new_psevar ()
+                        let val ps = new_prioset ()
                         in
                             set r (TPrio (ps))
                         end
@@ -507,7 +511,7 @@ struct
                 else 
                     (case t1 of
                         (TPrio s) => 
-                        let val ps as PSEvar r' = new_psevar ()
+                        let val ps = new_prioset ()
                         in
                             set r (TPrio (ps))
                         end

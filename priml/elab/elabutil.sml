@@ -4,7 +4,6 @@ struct
 
     exception Elaborate of string
     structure V = Variable
-    structure PSC = PSContext
     open PSetCstrs
 
     infixr 9 `
@@ -36,7 +35,8 @@ struct
         ((* print ("subbing for " ^ (Variable.show v) ^ "\n"); *)
          Subst.prsubsc ((Subst.fromlist [(v,w)]) : Subst.prio Subst.subst) c)
 	  *)
-	  
+
+      (*
     (* rename psevar in priority set *)
     fun psesubps psemap ps =  
       case ps of 
@@ -171,7 +171,7 @@ struct
         in
           snd (psesubst_rec (PSC.PSEvarMap.empty) t)
         end
-
+*)
     (* unify context location message actual expected *)
     fun unify ctx loc msg t1 t2 =
             Unify.unify ctx t1 t2

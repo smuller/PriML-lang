@@ -16,7 +16,6 @@ struct
 
   structure V = Variable
   structure C = Context
-  structure PSC = PSContext
   structure E = EL
 
   open IL
@@ -78,7 +77,7 @@ struct
   and elabpr ctx loc (v, constraints) =
       let fun check_prio p =
 	      if String.compare (v, p) = EQUAL then
-		  v
+		  PConst v
 	      else
 		  C.prio ctx p
 	  fun check_cons (p1, p2) =
@@ -86,7 +85,7 @@ struct
       in
 	  ([], RConcrete (v, List.map check_cons constraints))
       end
-      handle C.Absent p => error loc ("Unbound priority variable/constant " ^ p)
+      handle C.Absent (_, p) => error loc ("Unbound priority variable/constant " ^ p)
 
   and elabt ctx loc t = elabtex ctx NONE loc t
 
@@ -133,13 +132,13 @@ struct
 					 elabtex ctx prefix loc dom)],
                                        elabtex ctx prefix loc cod)
        | E.TCmd (t, p) => 
-           let val ps = PSSet (PrioSet.singleton (elabpr ctx loc p))
+           let val ps = elabpr ctx loc p
            in 
-               TCmd (elabtex ctx prefix loc t, (ps, Unify.new_psevar (), Unify.new_psevar ()))
+               TCmd (elabtex ctx prefix loc t, (ps, PSetCstrs.new_prioset (), PSetCstrs.new_prioset ()))
            end
-       | E.TThread (t, p) => TThread (elabtex ctx prefix loc t, PSSet (PrioSet.singleton (elabpr ctx loc p)))
-       | E.TPrio p => TPrio (PSSet (PrioSet.singleton (elabpr ctx loc p)))
-       | E.TMutex p => TMutex (PSSet (PrioSet.singleton (elabpr ctx loc p)))
+       | E.TThread (t, p) => TThread (elabtex ctx prefix loc t,  (elabpr ctx loc p))
+       | E.TPrio p => TPrio ( (elabpr ctx loc p))
+       | E.TMutex p => TMutex ( (elabpr ctx loc p))
       )
 				     
        (* | E.TForall (E.PPVar s, t) =>
@@ -287,7 +286,7 @@ struct
         (* priority constant *)
         | E.Constant (E.CPrio p) => 
             let val p' = C.prio ctx p in
-                value (Prio p', TPrio (PSSet (PrioSet.singleton p')))
+                value (Prio p', TPrio (singleton_prioset p'))
             end
 
         | E.Vector nil => 
@@ -669,11 +668,11 @@ struct
 
         | E.ECmd c =>
           let 
-              val pp = Unify.new_psevar ()
+              val pp = PSetCstrs.new_prioset ()
                   (* FIX: Ecmd has no p anymore *)
                   (* (case p of
                         SOME p => PSSet (PrioSet.singleton (elabpr ctx loc p))
-                      | NONE => Unify.new_psevar ()) *)
+                      | NONE => PSetCstrs.new_prioset ()) *)
               val (ec, t, ((* pr1, *) pr2, pr3), cc) = elabcmd ctx pp (c, loc)
 	      val cc' = ref []
 							       (*
@@ -757,12 +756,12 @@ struct
       case i of
           E.Spawn (e, c) => (* raise unimplemented *)
           let val (pe, pt) = elab ctx e
-              val psint = Unify.new_psevar ()
+              val psint = PSetCstrs.new_prioset ()
               val _ = unify ctx loc "spawn argument" pt (TPrio (psint))
 
               (* val p' = elabpr ctx loc p' *)
               val pp' = psint
-              (* val pr1' = Unify.new_psevar () (* FIX *) *)
+              (* val pr1' = PSetCstrs.new_prioset () (* FIX *) *)
               val (ec, t, ((* pr', *) pr1, pr2), cc) = elabcmd ctx pp' c
               val cc' = []
 			    (* (pscstr_gen (* pr' *) pp' pr1 pr2) 
@@ -797,7 +796,7 @@ struct
         | E.Sync e =>
           let val (ee, t) = elab ctx e
               val tint = Unify.new_evar ()
-              val psint = Unify.new_psevar ()
+              val psint = PSetCstrs.new_prioset ()
               val unified_pscstrs = ref []
               
               (* val _ = 
@@ -831,7 +830,7 @@ struct
         | E.Poll e =>
           let val (ee, t) = elab ctx e
               val tint = Unify.new_evar ()
-              val psint = Unify.new_psevar ()
+              val psint = PSetCstrs.new_prioset ()
               val unified_pscstrs = ref []
               val _ = unify ctx loc "poll argument" t (TThread (tint, psint))
               val t = ((case C.con ctx "option" of
@@ -848,7 +847,7 @@ struct
         | E.Cancel e =>
           let val (ee, t) = elab ctx e
               val tint = Unify.new_evar ()
-              val psint = Unify.new_psevar ()
+              val psint = PSetCstrs.new_prioset ()
               val unified_pscstrs = ref []
               val _ = unify ctx loc "cancel argument" t (TThread (tint, psint))
           in
@@ -861,14 +860,14 @@ struct
           end
         | E.Change e => (* raise unimplemented *)
           let val (pe', pt) = elab ctx e
-              val psint = Unify.new_psevar ()
+              val psint = PSetCstrs.new_prioset ()
               (* FIX: change unify to supertype so that end refinement 
                       is not constrained to only e's refinement *)
               val _ = unify ctx loc "change argument" (TPrio (psint)) pt
 
               (* val p' = elabpr ctx loc p' *)
               val pp' = psint
-              val pr' = Unify.new_psevar ()
+              val pr' = PSetCstrs.new_prioset ()
               (* val cc = pscstr_gen pr pr' pp' *)
           in
               (Change pe', TRec [], ((* pr, *) pr', pp'), [])
@@ -876,7 +875,7 @@ struct
         (* | E.Change p' =>
           let val p' = elabpr ctx loc p'
               val pp' = PSSet (PrioSet.singleton p')
-              val pr' = Unify.new_psevar ()
+              val pr' = PSetCstrs.new_prioset ()
               val cc = pscstr_gen pr pr' pp'
           in
               (Change p', TRec [], (pr, pr', pp'), cc)
@@ -918,9 +917,9 @@ struct
                  print "\n") *)
 
                val tint = Unify.new_evar ()
-               (* val pr1 = Unify.new_psevar () *)
-               val pr2 = Unify.new_psevar ()
-               val pr3 = Unify.new_psevar ()
+               (* val pr1 = PSetCstrs.new_prioset () *)
+               val pr2 = PSetCstrs.new_prioset ()
+               val pr3 = PSetCstrs.new_prioset ()
                val unified_pscstrs = ref []
                val _ = unify ctx loc "bind argument" t (TCmd (tint, (pr, pr2, pr3)))
                val cc = (* (pscstr_sup pr1 pr) 
@@ -955,11 +954,11 @@ struct
                  print "\n") *)
 
                val tint = Unify.new_evar ()
-               (* val pr1 = Unify.new_psevar () *)
-               val pr2 = Unify.new_psevar ()
-               val pr3 = Unify.new_psevar ()
-               val pr4 = Unify.new_psevar ()
-               val pr7 = Unify.new_psevar ()
+               (* val pr1 = PSetCstrs.new_prioset () *)
+               val pr2 = PSetCstrs.new_prioset ()
+               val pr3 = PSetCstrs.new_prioset ()
+               val pr4 = PSetCstrs.new_prioset ()
+               val pr7 = PSetCstrs.new_prioset ()
                val ctx' = C.bindv ctx s (mono tint) v 
                 (* Q: why use tint here instead of t? 
                    A: So that the variable has just the return type of the command 
@@ -2115,7 +2114,7 @@ struct
               (* (Value val, typ) *)
               val vv = Variable.namedvar s
 	      val p' = PVar vv
-	      val ps = Unify.new_psevar ()
+	      val ps = PSetCstrs.new_prioset ()
               val (ee, tt) = value (Prio p', TPrio (ps (*PSSet (PrioSet.singleton p')*)))
 
 
@@ -2170,7 +2169,7 @@ struct
       val G = C.bindplab Initial.initial "bot"
 
       val (idl, fs, G') = elabtds G dl
-      val pi = (PSSet (PrioSet.singleton (PConst "bot")))
+      val pi = singleton_prioset (PConst "bot")
       val (ec, t, ((* pi, *) pp, pf), cc) = elabcmd G' pi c
 
 (*

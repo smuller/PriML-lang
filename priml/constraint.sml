@@ -12,7 +12,7 @@ exception TyError of string
 
 fun mkpoly t = Poly ({tys = []}, t)
 
-val new_psevar = Unify.new_psevar
+val new_psevar = PSetCstrs.new_prioset
 
 fun basety (t, cs) =
     case t of
@@ -224,7 +224,7 @@ fun consval ctx v =
 	let val (t, cs) =
 	(case C.var_fail ctx (V.basename var) of
 	     (Poly (_, TPrio ps), _, _) =>
-	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
+	     (TPrio (singleton_prioset (PVar var)),
 	      [])
 	   | (Poly ({tys=tyvars}, t), _, _) =>
 	     let val ftps = List.map fresh tys
@@ -247,7 +247,7 @@ fun consval ctx v =
 	let val (t, cs) =
 	(case C.var_fail ctx (V.basename var) of
 	     (Poly (_, TPrio ps), _, _) =>
-	     (TPrio (PSSet (PrioSet.singleton (PVar var))),
+	     (TPrio (singleton_prioset (PVar var)),
 	      [])
 	   | (Poly ({tys=tyvars}, t), _, _) =>
 	     let val ftps = List.map fresh tys
@@ -269,7 +269,7 @@ fun consval ctx v =
       | MLVal _ => raise (PriorityErr "what's an mlval?")
       | Int _ => (Initial.ilint, [])
       | String _ => (Initial.ilstring, [])
-      | Prio p => (TPrio (PSSet (PrioSet.singleton p)), [])
+      | Prio p => (TPrio (singleton_prioset p), [])
       | VRecord fields =>
 	let val (ts, ccs) =
 	    List.foldl (fn ((l, v), (ts, ccs)) =>
@@ -737,7 +737,7 @@ and consdec ctx d =
 			    
       | Priority p =>
 	let val _ = verbprint ("IL prio dec " ^ (V.basename p) ^"\n")
-	    val ps = PSSet (PrioSet.singleton (PVar p))
+	    val ps = singleton_prioset (PVar p)
 	    val ctx' = C.bindv ctx (V.basename p) (mkpoly (TPrio ps)) p
 	in
 	    (ctx', [], [])
@@ -762,7 +762,7 @@ fun consprog (decs, prios, cons, fairness, maincmd) =
 	    )
 	    (Initial.initial, [])
 	    decs
-	val (_, _, _, cs') = conscmd (PSSet (PrioSet.singleton (PConst "bot")))
+	val (_, _, _, cs') = conscmd (singleton_prioset (PConst "bot"))
 				     ctx maincmd
     in
 	cs @ cs'

@@ -20,4 +20,16 @@ sig
 
     val pscstr_wf   : Context.context -> IL.prioset -> psconstraint list
 
+    val new_prioset : unit -> IL.prioset
+    val new_rvar : unit -> IL.rfmt
+
+    type assign = (string * IL.pconstraint list) IntMap.map
+    exception Unsolvable of psconstraint
+    val check_wf : assign -> Context.context -> IL.prioset -> bool
+    val check_cons : assign -> Context.context -> IL.prioset * IL.prioset -> bool
+    val check_sub : assign -> Context.context -> IL.prioset * IL.prioset -> bool
+    val check : assign -> psconstraint -> bool
+    val weaken_wf : assign -> Context.context -> IL.prioset -> assign option
+    val weaken_sub : assign -> Context.context -> IL.prioset * IL.prioset -> assign option
+
 end

@@ -3,7 +3,6 @@ struct
 
   structure V = Variable
   structure C = Context
-  structure PSC = PSContext
   structure E = EL
 
   open IL
@@ -14,28 +13,60 @@ struct
 	 
 
 (* XXX solve constraints from cc *)
-fun solve_psetcstrs pscstrs = 
-    let val psctx = IntMap.empty
-	val _ =
-	    verb (fn () =>
-	    Layout.print
-                (Layout.listex "[" "]" "," 
-			       (map PSetCstrs.psctol pscstrs), print)
-		 )
-        val psctx_sol = solve_pscstrs psctx pscstrs
-    in
-        (* check psevar solution satifies every psconstraints *)
-        check_pscstrs_sol psctx_sol pscstrs;
-	verb (fn () =>
-		 (Layout.print 
-		     (Layout.listex "[" "]" "," 
-				    (IntMap.listItems (IntMap.mapi 
-							   (fn (k, ps) => Layout.seq [Layout.str (Int.toString k), Layout.listex ": {" "} " "," (map ILPrint.prtol (PrioSet.listItems ps))]) 
-							   (psctx_sol))), 
-		      print);
-              print "\n"))
-    end
-    (*handle PSConstraints s =>
-	   (print s; raise Elaborate ("psconstraint solver: " ^ s)) *)
+  fun solve_psetcstrs pscstrs =
+      (* First separate the constraints by type *)
+      let val (wf, sup, cons) =
+	      List.foldl
+	      (fn (c, (wf, sup, cons)) =>
+		  case c of
+		      PSSup _ => (wf, c::sup, cons)
+		    | PSCons _ => (wf, sup, c::cons)
+		    | PSWellformed _ => (c::wf, sup, cons)
+	      )
+	      ([], [], [])
+	      pscstrs
+	  val assign = (* XXX TODO initial assignment *) IntMap.empty
+	  val assign =
+	      (* First solve well-formedness constraints *)
+	      List.foldl
+	      (fn (PSWellformed (ctx, p), assign) =>
+		  if check_wf assign ctx p then
+		      assign
+		  else
+		      (case weaken_wf assign ctx p of
+			   SOME assign => assign
+			 | NONE => raise (Unsolvable (PSWellformed (ctx, p)))
+		      )
+	      )
+	      assign
+	      wf
+	  fun solve_sup assign =
+	      let val unsat = List.filter
+				  (fn c => not (check assign c))
+				  sup
+	      in
+		  if List.length unsat = 0 then assign
+		  else
+		      let val assign = 
+			      List.foldl
+				  (fn (PSSup (ctx, p1, p2), assign) =>
+				      (case weaken_sub assign ctx (p2, p1) of
+					   SOME assign => assign
+					 | NONE => raise (Unsolvable (PSSup (ctx, p1, p2))))
+				  )
+				  assign
+				  unsat
+		      in
+			  (* XXX TODO optimize this with the worklist optimization from the paper *)
+			  solve_sup assign
+		      end
+	      end
+	  val assign = solve_sup assign
+      in
+	  (* Now just check the priority-lessthan constraints *)
+	  case List.filter (fn c => not (check assign c)) cons of
+	      [] => assign
+	    | c::_ => raise (Unsolvable c)
+      end
 
 end
