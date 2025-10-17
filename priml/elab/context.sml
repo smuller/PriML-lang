@@ -544,6 +544,12 @@ struct
     fun pcons (C { pcons, ... }) = pcons
     fun vars (C {vars, ... }) = S.listItemsi vars
 
+    fun prios c =
+	List.mapPartial
+	    (fn (s, (IL.Poly (_, IL.TPrio _), _, _)) => SOME s
+	    | _ => NONE)
+	    (vars c)
+
     val empty = C { vars = S.empty, 
                     cons = S.empty, 
                     mobiles = VS.empty,

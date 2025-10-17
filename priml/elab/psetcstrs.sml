@@ -121,7 +121,56 @@ struct
 	in
 	    do_allsubs substs (v, ps)
 	end
-					      
+
+    fun string_of_pconstraint assign psc =
+	(case psc of
+	     PSCons (ctx, p1, p2) =>
+	     ("(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+	      ^ (Layout.tostring (ILPrint.pstol p1)) ^ ") <= ("
+	      ^ (Layout.tostring (ILPrint.pstol p2)) ^ ")")
+	   | PSSup (ctx, p1, p2) =>
+	     ("(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+	      ^ (Layout.tostring (ILPrint.pstol p2)) ^ ") ==> ("
+	      ^ (Layout.tostring (ILPrint.pstol p1)) ^ ")")
+	   | PSWellformed (ctx, p) =>
+	     ("(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+	      ^ (Layout.tostring (ILPrint.pstol p)) ^ ")")
+	)
+	^
+	(case assign of
+	     NONE => ""
+	   | SOME assign =>
+	     (case psc of
+		  PSCons (ctx, p1, p2) =>
+		  let val (rv1, rcs1) = assign_in_prioset assign p1
+		      val (rv2, rcs2) = assign_in_prioset assign p2
+		      val ps1 = ([], RConcrete (rv1, rcs1))
+		      val ps2 = ([], RConcrete (rv2, rcs2))
+		  in
+		      "(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+		      ^ (Layout.tostring (ILPrint.pstol ps1)) ^ ") <= ("
+		      ^ (Layout.tostring (ILPrint.pstol ps2)) ^ ")"
+		  end
+		| PSSup (ctx, p1, p2) =>
+		  let val (rv1, rcs1) = assign_in_prioset assign p1
+		      val (rv2, rcs2) = assign_in_prioset assign p2
+		      val ps1 = ([], RConcrete (rv1, rcs1))
+		      val ps2 = ([], RConcrete (rv2, rcs2))
+		  in
+		      "(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+		      ^ (Layout.tostring (ILPrint.pstol ps2)) ^ ") ==> ("
+		      ^ (Layout.tostring (ILPrint.pstol ps1)) ^ ")"
+		  end
+		| PSWellformed (ctx, p) =>
+		  let val (rv, rcs) = assign_in_prioset assign p
+		      val ps = ([], RConcrete (rv, rcs))
+		  in
+		      "(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
+		      ^ (Layout.tostring (ILPrint.pstol ps)) ^ ")"
+		  end
+	     )
+	)
+	    
 
     (* The context has bindings like p : [v | constraints].
      * Return these as a list [p/v]constraints *)
@@ -139,7 +188,10 @@ struct
 	    
     (* check if priorities in s1 are less than priorities in s2 *)
     fun check_cons assign ctx (s1, s2) =
-	let val z3 = Z3.setup ctx
+	let val z3 =
+		Z3.setup
+		    (SOME (string_of_pconstraint (SOME assign) (PSCons (ctx, s1, s2))))
+		    ctx
 	    val z3 =
 		List.foldl
 		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
@@ -166,28 +218,37 @@ struct
     (* check if s1 implies s2, that is, if the set of possible priorities under
      * s1 is a subset of the set of possible priorities under s2 *)
     fun check_sub assign ctx (s1, s2) =
-	let val z3 = Z3.setup ctx
-	    val z3 =
-		List.foldl
-		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
-		    z3
-		    (constraints_in_ctx assign ctx)
-	    val (rv1, rcs1) = assign_in_prioset assign s1
+	let val (rv1, rcs1) = assign_in_prioset assign s1
 	    val c1 = close_rfmt assign (Variable.namedvar "prio__s") (rv1, rcs1)
 	    val (rv2, rcs2) = assign_in_prioset assign s2
 	    val c2 = close_rfmt assign (Variable.namedvar "prio__s") (rv2, rcs2)
-	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *) 
-	    val z3 =
-		List.foldl
-		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
-		    z3
-		    c1
-	    val z3 =
-		(* Add the constraint ~(/\ c2)... *)
-		Z3.compose (z3, Z3.negate_and_constraints c2)
+	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *)
 	in
-	    (*... and check that the system is UNsatisfiable *)
-	    not (Z3.check z3)
+	    if List.length c2 = 0 then
+		(* s2 is T, so the implication is trivially satisfied *)
+		true
+	    else
+		let val z3 =
+			Z3.setup
+			    (SOME (string_of_pconstraint (SOME assign) (PSSup (ctx, s2, s1))))
+			    ctx
+		    val z3 =
+			List.foldl
+			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+			    z3
+			    (constraints_in_ctx assign ctx)
+		    val z3 =
+			List.foldl
+			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+			    z3
+			    c1
+		    val z3 =
+			(* Add the constraint ~(/\ c2)... *)
+			Z3.compose (z3, Z3.negate_and_constraints c2)
+		in
+		    (*... and check that the system is UNsatisfiable *)
+		    not (Z3.check z3)
+		end
 	end
 
     fun priowf ctx (IL.PEvar _) = false
@@ -260,23 +321,5 @@ struct
 		SOME (IntMap.insert (assign, n, (rv, new_rcs)))
 	    end
 
-	    
-    fun error_msg ctx ps1 ps2 =
-	(case ctx of
-	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
-			 ^ ") =>"
-	   | NONE => ""
-	)
-        ^ Layout.tostring (ILPrint.pstol ps1)
-        ^ " and "
-        ^ Layout.tostring (ILPrint.pstol ps2)
-
-    fun error_msg1 ctx ps1 =
-	(case ctx of
-	     SOME ctx => " (" ^ Layout.tostring (Context.ctol ctx)
-			 ^ ") =>"
-	   | NONE => ""
-	)
-        ^ Layout.tostring (ILPrint.pstol ps1)
 
 end

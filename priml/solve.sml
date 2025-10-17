@@ -10,9 +10,60 @@ struct
   open PSetCstrs
   open Constraint
   structure P = Primop
-	 
 
-(* XXX solve constraints from cc *)
+  (* Build an initial assignment for all of the RVars that show up in a
+   * constraint, with the priorities that are in the context. *)	   
+  fun assign_of_pconstraint desig_var c =
+      let fun qualifiers_of_prios ctx ps =
+	      (* Take the cross product and then narrow it down with a
+	       * couple sanity-check filters *)
+	      let val all =
+		      List.concat
+			  (List.map
+			       (fn p1 => List.map (fn p2 => (p1, p2)) ps)
+			       ps
+			  )
+	      in
+		  List.filter
+		      (fn (p1, p2) =>
+			  if Context.checkcons ctx p2 p1 then
+			      (* If the constraint is clearly unsatisfiable,
+				 remove it *)
+			      false
+			  else
+			      (* If p1 = p2, remove the constraint *)
+			      (case IL.prcompare (p1, p2) of
+				   EQUAL => false
+				 | _ =>  true
+			      )
+		      )
+		      all
+	      end
+	  fun build_assign constraints rfmts =
+	      List.foldl
+		  (fn (RConcrete _, assign) => assign
+		  | (RVar k, assign) =>
+		    IntMap.insert (assign, k, (desig_var, constraints))
+		  )
+		  IntMap.empty
+		  rfmts
+	  fun qualifiers_of_ctx ctx =
+	      let val ctxprios = List.map PConst (Context.prios ctx)
+	      in
+		  qualifiers_of_prios
+		      ctx
+		      ((PVar (V.namedvar desig_var))::ctxprios)
+	      end
+      in
+	   case c of
+	       PSCons (ctx, (_, r1), (_, r2)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
+	     | PSSup (ctx, (_, r1), (_, r2)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
+	     | PSWellformed (ctx, (_, r)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r]
+      end
+
   fun solve_psetcstrs pscstrs =
       (* First separate the constraints by type *)
       let val (wf, sup, cons) =
@@ -25,7 +76,18 @@ struct
 	      )
 	      ([], [], [])
 	      pscstrs
-	  val assign = (* XXX TODO initial assignment *) IntMap.empty
+	  val desig_var = "__v"
+	  fun combine_assign ((dv, c1), (_, c2)) = (dv, c1 @ c2)
+	  val assign = (* initial assignment *)
+	      List.foldl
+		  (fn (c, assign) =>
+		       IntMap.unionWith
+			   combine_assign
+			   (assign_of_pconstraint desig_var c,
+			    assign)
+		  )
+		  IntMap.empty
+		  pscstrs
 	  val assign =
 	      (* First solve well-formedness constraints *)
 	      List.foldl

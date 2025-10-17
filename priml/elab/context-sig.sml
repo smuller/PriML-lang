@@ -78,5 +78,7 @@ sig
     val pcons : context -> (IL.prio * IL.prio) list
     val vars : context -> (string * (IL.typ IL.poly * Variable.var * IL.idstatus)) list
 
+    val prios : context -> string list
+
     val install_ne : (unit -> IL.typ) -> unit
 end

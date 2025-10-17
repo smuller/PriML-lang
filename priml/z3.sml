@@ -17,22 +17,28 @@ fun of_constraint (p1, p2) =
     "(assert (LT " ^ (string_of_prio p1) ^ " "
     ^ (string_of_prio p2) ^ "))\n"
 
-fun setup ctx =
+fun setup constraint ctx =
     let val orders = Context.pcons ctx
 	fun insert_into_set (p, prios) =
 	    SS.add (prios, string_of_prio p)
 	fun insert_order ((p1, p2), prios) =
 	    insert_into_set (p1, insert_into_set (p2, prios))
-	val prios =
-	    List.foldl
+	val prios = Context.prios ctx
+(*	    List.foldl
 		insert_order
 		SS.empty
 		orders
+*)
     in
-	"(declare-sort Prio 0)\n"
+	(case constraint of
+	     SOME s =>
+	     "; " ^ (String.translate (fn #"\n" => "\n; "
+				      | c => String.implode [c]) s) ^ "\n"
+	  |  NONE => "")
+	^ "(declare-sort Prio 0)\n"
 	^ "(define-fun LT ((x Prio) (y Prio)) Bool ((_ partial-order 0) x y))\n"
 	^
-	(SS.foldl
+	(List.foldl
 	     (fn (k, s) =>
 		  s ^ "(declare-const " ^ k ^ " Prio)\n"
 	     )
@@ -41,7 +47,7 @@ fun setup ctx =
 	)
 	^ "(assert (distinct"
 	^
-	(SS.foldl
+	(List.foldl
 	     (fn (k, s) =>
 		  s ^ " " ^ k
 	     )
