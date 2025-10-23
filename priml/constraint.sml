@@ -736,19 +736,22 @@ and consdec ctx d =
 	 [])
 			    
       | Priority p =>
-	let val _ = verbprint ("IL prio dec " ^ (V.basename p) ^"\n")
-	    val ps = singleton_prioset (PVar p)
-	    val ctx' = C.bindv ctx (V.basename p) (mkpoly (TPrio ps)) p
+	let val vv = Variable.namedvar p
+	      val p' = PVar vv
+	      val ps = singleton_prioset (PConst p)
+              val tt = TPrio (ps (*PSSet (PrioSet.singleton p')*))
+	      val ctx = C.bindex ctx (SOME p) (Poly ({tys = nil}, tt)) vv Normal
+              val ctx = C.bindplab ctx p
 	in
-	    (ctx', [], [])
+	    (ctx, [], [])
 	end
       | Order (p1, p2) =>
-	let val _ = verbprint ("IL order dec " ^ (V.show p1) ^ " < " ^ (V.show p2) ^ "\n")
+	let val (p1, p2) = (C.prio ctx p1, C.prio ctx p2)
 	in
-	(C.bindpcons ctx (PVar p1, PVar p2),
-	 [],
-	 []
-	)
+	    (C.bindpcons ctx (p1, p2),
+	     [],
+	     []
+	    )
 	end
     end
 

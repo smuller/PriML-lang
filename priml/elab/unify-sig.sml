@@ -6,7 +6,6 @@ sig
     val global_cstrs : PSetCstrs.psconstraint list ref
 
     val new_evar : unit -> IL.typ
-    val new_pevar : unit -> IL.prio
 
     (* reset the list of evars *)
     val clear_evars : unit -> unit

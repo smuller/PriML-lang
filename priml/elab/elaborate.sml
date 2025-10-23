@@ -75,15 +75,16 @@ struct
            handle C.Absent _ => error loc ("Unbound type name " ^ str)
 
   and elabpr ctx loc (v, constraints) =
-      let fun check_prio p =
+      let val vv = V.namedvar v
+	  fun check_prio p =
 	      if String.compare (v, p) = EQUAL then
-		  PConst v
+		  PVar vv
 	      else
 		  C.prio ctx p
 	  fun check_cons (p1, p2) =
 	      (check_prio p1, check_prio p2)
       in
-	  ([], RConcrete (v, List.map check_cons constraints))
+	  ([], RConcrete (vv, List.map check_cons constraints))
       end
       handle C.Absent (_, p) => error loc ("Unbound priority variable/constant " ^ p)
 
@@ -2117,18 +2118,16 @@ struct
 	      val ps = PSetCstrs.new_prioset ()
               val (ee, tt) = value (Prio p', TPrio (ps (*PSSet (PrioSet.singleton p')*)))
 
-
-
-              val ctx = C.bindplab ctx s
-              val ctx = C.bindex ctx (SOME s) (Poly ({tys = nil}, tt)) vv Normal 
+              val ctx = C.bindex ctx (SOME s) (Poly ({tys = nil}, tt)) vv Normal
+	      val ctx = C.bindplab ctx s
           in
-              ([Priority vv], [], ctx)
+              ([Priority s], [], ctx)
           end)
         | E.Order (s1, s2) =>
 	  (let val (_, pv1, _) = C.var ctx s1
 	       val (_, pv2, _) = C.var ctx s2
 	   in
-	       ([Order (pv1, pv2)],
+	       ([Order (s1, s2)],
 		[],
 		C.bindpcons ctx (PConst s1, PConst s2))
 	   end
@@ -2166,7 +2165,7 @@ struct
     let
       (* val () = clear_mobile () *)
       val () = Unify.clear_evars ()
-      val G = C.bindplab Initial.initial "bot"
+      val G = Initial.initial
 
       val (idl, fs, G') = elabtds G dl
       val pi = singleton_prioset (PConst "bot")

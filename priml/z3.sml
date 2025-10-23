@@ -9,21 +9,21 @@ exception Z3 of string
 
 fun string_of_prio p =
 	    case p of
-		IL.PEvar _ => raise (Z3 "leftover prio evar")
-	      | IL.PVar v => Variable.show v
+		IL.PVar v => Variable.show v
 	      | IL.PConst s => s
 
 fun of_constraint (p1, p2) =
     "(assert (LT " ^ (string_of_prio p1) ^ " "
     ^ (string_of_prio p2) ^ "))\n"
 
-fun setup constraint ctx =
+fun setup constraint ctx extra_vars =
     let val orders = Context.pcons ctx
 	fun insert_into_set (p, prios) =
 	    SS.add (prios, string_of_prio p)
 	fun insert_order ((p1, p2), prios) =
 	    insert_into_set (p1, insert_into_set (p2, prios))
-	val prios = Context.prios ctx
+	val prios = (Context.prios ctx) @ (List.map Variable.show extra_vars)
+	val plabs = Context.plabs ctx
 (*	    List.foldl
 		insert_order
 		SS.empty
@@ -52,7 +52,7 @@ fun setup constraint ctx =
 		  s ^ " " ^ k
 	     )
 	     ""
-	     prios
+	     plabs
 	)
 	^ "))\n"
 	^

@@ -52,7 +52,7 @@ struct
 	      in
 		  qualifiers_of_prios
 		      ctx
-		      ((PVar (V.namedvar desig_var))::ctxprios)
+		      ((PVar desig_var)::ctxprios)
 	      end
       in
 	   case c of
@@ -76,7 +76,7 @@ struct
 	      )
 	      ([], [], [])
 	      pscstrs
-	  val desig_var = "__v"
+	  val desig_var = V.namedvar "__v"
 	  fun combine_assign ((dv, c1), (_, c2)) = (dv, c1 @ c2)
 	  val assign = (* initial assignment *)
 	      List.foldl

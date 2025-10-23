@@ -50,12 +50,6 @@ struct
         IL.Evar e
       end
     (* FIX: delete this, no more priority evars *)
-    fun new_pevar () =
-      let val e = new_ebind ()
-      in
-        all_wevars := e :: !all_wevars;
-        IL.PEvar e
-      end
 
       (*
     fun new_psevar () = 
@@ -78,12 +72,6 @@ struct
            | (Evar (r' as ref (Free _))) => r = r'
            | _ => false)
 
-    (* FIX: delete this, no more priority evars *)
-    fun same_wevar r x =
-        (case x of
-             (PEvar (ref (Bound t))) => same_wevar r t
-           | (PEvar (r' as ref (Free _))) => r = r'
-           | _ => false)
 
     exception Unify of string
 
@@ -122,10 +110,6 @@ struct
     (* r := Bound t  with path compression. *)
     fun set r (Evar (ref (Bound t))) = set r t
       | set r t = r := Bound t
-
-    (* FIX: delete this, no more priority evars *)
-    fun wset r (PEvar (ref (Bound t))) = wset r t
-      | wset r t = r := Bound t
 
 		   (*
     fun psset r (PSEvar (ref (Bound t))) = psset r t

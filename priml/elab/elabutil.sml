@@ -363,25 +363,7 @@ struct
             { t = got ty, tl = rev (!acct) }
         end
 
-    fun polywgen ctx (w as IL.PEvar er) =
-      (case !er of
-         IL.Free n =>
-           if Context.has_wevar ctx n
-           then
-             let in
-               (* print "no polywgen: occurs\n"; *)
-               NONE
-             end
-           else
-               let
-                   val wv = V.namedvar (Nonce.nonce ()) (* "polyw" *)
-               in
-                   er := IL.Bound (IL.PVar wv);
-                   (* print "yes polywgen\n"; *)
-                   SOME wv
-               end
-       | IL.Bound w => polywgen ctx w)
-      | polywgen ctx (w as IL.PConst s) = 
+    fun polywgen ctx (w as IL.PConst s) = 
          let in
            (* print "no polywgen: const\n"; *)
            NONE

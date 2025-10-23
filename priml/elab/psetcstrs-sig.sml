@@ -23,7 +23,7 @@ sig
     val new_prioset : unit -> IL.prioset
     val new_rvar : unit -> IL.rfmt
 
-    type assign = (string * IL.pconstraint list) IntMap.map
+    type assign = (Variable.var * IL.pconstraint list) IntMap.map
     exception Unsolvable of psconstraint
     val check_wf : assign -> Context.context -> IL.prioset -> bool
     val check_cons : assign -> Context.context -> IL.prioset * IL.prioset -> bool

@@ -35,15 +35,10 @@ struct
       | Bound of 'a
 
     datatype prio =
-      PEvar of prio ebind ref
-    | PVar of var
+      PVar of var
     | PConst of string
 
-    fun prcompare (PEvar (ref (Free _)), _) = LESS
-      | prcompare (_, PEvar (ref (Free _))) = GREATER
-      | prcompare (PEvar (ref (Bound p1)), p2) = prcompare (p1, p2)
-      | prcompare (p1, PEvar (ref (Bound p2))) = prcompare (p1, p2)
-      | prcompare (PVar v1, PVar v2) = String.compare (V.show v1, V.show v2)
+    fun prcompare (PVar v1, PVar v2) = String.compare (V.show v1, V.show v2)
       | prcompare (PVar v1, PConst c2) = String.compare (V.show v1, c2)
       | prcompare (PConst c1, PVar v2) = String.compare (c1, V.show v2)
       | prcompare (PConst c1, PConst c2) = String.compare (c1, c2)
@@ -59,7 +54,7 @@ struct
     type pconstraint = prio * prio
 
     datatype rfmt =
-	     RConcrete of string * pconstraint list
+	     RConcrete of V.var * pconstraint list
 	     | RVar of int
 
 
@@ -73,7 +68,10 @@ struct
     (* [r1/x]r2 means "r2 where x is subject to the constraints in r1" *)
 
     fun singleton_prioset p =
-	([], RConcrete ("v", [(PConst "v", p), (p, PConst "v")]))
+	let val v = V.namedvar "__v"
+	in
+	    ([], RConcrete (v, [(PVar v, p), (p, PVar v)]))
+	end
 
 
 	
@@ -245,8 +243,8 @@ struct
       | ExternVal of (var * typ) poly
       | ExternType of var
 		  
-      | Priority of var
-      | Order of var * var
+      | Priority of string
+      | Order of string * string
 
     (* the kind is the number of curried arguments. 0 is kind T. *)
     withtype kind = int

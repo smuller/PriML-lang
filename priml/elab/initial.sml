@@ -187,26 +187,24 @@ struct
     val worlds = []
     (* val initialw = foldl (fn ((id, w), ctx) => Context.bindp ctx id w) Context.empty worlds *)
     (* FIX: delete priority variables *)
-    val initialw = Context.empty
+    val initial = Context.empty
     
     (* but we start with one constant, "bot" *)
     val worldlabs = [botname]
-    val initialw = foldl (fn (s, ctx) => Context.bindplab ctx s) 
-                                initialw worldlabs
 
-    val initialc = foldl (fn ((s, c, k, t), ctx) =>
-                          Context.bindc ctx s c k t) initialw cons
+    val initial = foldl (fn ((s, c, k, t), ctx) =>
+                          Context.bindc ctx s c k t) initial cons
 
     val exnname = "exn"
     val exnvar = Variable.namedvar exnname
     val ilexn = IL.TVar exnvar
 
-    val initialec = Context.bindc initialc exnname (IL.Typ ilexn) 0 IL.Extensible
+    val initial = Context.bindc initial exnname (IL.Typ ilexn) 0 IL.Extensible
 
     (* initial environment is all valid *)
     val initial = foldl (fn ((s, c, t), ctx) =>
                          Context.bindex ctx (SOME s) c (namedvar s) t)
-                        initialec vals
+                        initial vals
 
     val initial = Context.bindv
 		      initial
@@ -214,6 +212,9 @@ struct
 		      (mono (IL.TPrio (IL.singleton_prioset (IL.PConst "bot"))))
 		      (namedvar botname)
 
+    val initial = foldl (fn (s, ctx) => Context.bindplab ctx s) 
+                                initial worldlabs
+		  
     (* also, assume some types are mobile *)
 (*
     val initial = foldr (fn (v, G) => Context.bindmobile G v) initial [intvar, charvar, stringvar]

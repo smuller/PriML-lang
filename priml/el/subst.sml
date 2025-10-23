@@ -167,8 +167,6 @@ struct
                SOME ww => ww 
              | NONE => x)
 	| PConst _ => x
-        | PEvar(ref (Bound w)) => prsubsp (s: prio subst) w
-        | PEvar _ => x
 
   and prsubr (s: prio subst) (rfmt : rfmt) : rfmt =
       case rfmt of

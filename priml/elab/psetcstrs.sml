@@ -70,7 +70,7 @@ struct
     (* priority set constraints solver *)
 
     (* An assignment A is a map from refinement vars to concrete refinements *)
-    type assign = (string * pconstraint list) IntMap.map
+    type assign = (V.var * pconstraint list) IntMap.map
 
     (* We can substitute assignments into various things *)
 
@@ -91,8 +91,8 @@ struct
 	    pcs
 
     (* Turn x = [v | constrs] into [x/v]constrs *)
-    fun close_rfmt assign x (xv, pcs) =
-	let val s' = singleton (Variable.namedvar xv, PVar x)
+    fun close_rfmt assign p (xv, pcs) =
+	let val s' = singleton (xv, p)
 	in
 	    prsubcs s' pcs
 	end
@@ -104,7 +104,7 @@ struct
 	    | (v, SubstPrio prio, (rfmt_var, rfmt_cs)) =>
 	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs)
 	    | (v, SubstSet pset, (rfmt_var, rfmt_cs)) =>
-	      (rfmt_var, (close_rfmt assign v (assign_in_prioset assign pset)) @ rfmt_cs)
+	      (rfmt_var, (close_rfmt assign (PVar v) (assign_in_prioset assign pset)) @ rfmt_cs)
 	    | (v, DontSubst, rfmt) => rfmt
 	    )
 	    (rfmt_var, rfmt_cs)
@@ -179,7 +179,7 @@ struct
 	    (fn ((s, (Poly ({tys}, t), v, _)), cs) =>
 		case t of
 		    TPrio p =>
-		    (close_rfmt assign v (assign_in_prioset assign p)) @ cs
+		    (close_rfmt assign (PVar v) (assign_in_prioset assign p)) @ cs
 		  | _ => cs
 	    )
 	    []
@@ -188,19 +188,21 @@ struct
 	    
     (* check if priorities in s1 are less than priorities in s2 *)
     fun check_cons assign ctx (s1, s2) =
-	let val z3 =
+	let val (v1, v2) = (V.namedvar "prio__s1", V.namedvar "prio__s2")
+	    val z3 =
 		Z3.setup
 		    (SOME (string_of_pconstraint (SOME assign) (PSCons (ctx, s1, s2))))
 		    ctx
+		    [v1, v2]
 	    val z3 =
 		List.foldl
 		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
 		    z3
 		    (constraints_in_ctx assign ctx)
 	    val (rv1, rcs1) = assign_in_prioset assign s1
-	    val c1 = close_rfmt assign (Variable.namedvar "prio__s1") (rv1, rcs1)
+	    val c1 = close_rfmt assign (IL.PVar v1) (rv1, rcs1)
 	    val (rv2, rcs2) = assign_in_prioset assign s2
-	    val c2 = close_rfmt assign (Variable.namedvar "prio__s2") (rv2, rcs2)
+	    val c2 = close_rfmt assign (IL.PVar v2) (rv2, rcs2)
 	    val z3 =
 		List.foldl
 		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
@@ -208,8 +210,7 @@ struct
 		    (c1 @ c2)
 	    val z3 =
 		(* Add the constraint s2 < s1... *)
-		Z3.compose (z3, Z3.negate_constraint (IL.PConst "prio__s1",
-						      IL.PConst "prio__s2"))
+		Z3.compose (z3, Z3.negate_constraint (IL.PVar v1, IL.PVar v2))
 	in
 	    (*... and check that the system is UNsatisfiable *)
 	    not (Z3.check z3)
@@ -218,10 +219,11 @@ struct
     (* check if s1 implies s2, that is, if the set of possible priorities under
      * s1 is a subset of the set of possible priorities under s2 *)
     fun check_sub assign ctx (s1, s2) =
-	let val (rv1, rcs1) = assign_in_prioset assign s1
-	    val c1 = close_rfmt assign (Variable.namedvar "prio__s") (rv1, rcs1)
+	let val v = Variable.namedvar "prio__s"
+	    val (rv1, rcs1) = assign_in_prioset assign s1
+	    val c1 = close_rfmt assign (IL.PVar v) (rv1, rcs1)
 	    val (rv2, rcs2) = assign_in_prioset assign s2
-	    val c2 = close_rfmt assign (Variable.namedvar "prio__s") (rv2, rcs2)
+	    val c2 = close_rfmt assign (IL.PVar v) (rv2, rcs2)
 	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *)
 	in
 	    if List.length c2 = 0 then
@@ -232,6 +234,7 @@ struct
 			Z3.setup
 			    (SOME (string_of_pconstraint (SOME assign) (PSSup (ctx, s2, s1))))
 			    ctx
+			    [v]
 		    val z3 =
 			List.foldl
 			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
@@ -251,8 +254,7 @@ struct
 		end
 	end
 
-    fun priowf ctx (IL.PEvar _) = false
-      | priowf ctx (IL.PVar v) =
+    fun priowf ctx (IL.PVar v) =
 	((let val _ = Context.var ctx (Variable.show v)
 	  in true
 	  end)

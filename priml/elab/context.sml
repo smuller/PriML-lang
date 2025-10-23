@@ -56,12 +56,6 @@ struct
     val tpc_empty =
         S.empty
 
-    fun ground (IL.PEvar r) =
-        (case !r of
-             IL.Free _ => raise (Context "prio not constant or variable")
-           | IL.Bound x => x)
-      | ground p = p
-
     fun s_of_p (IL.PConst c) = c
       | s_of_p (IL.PVar v) = (Variable.tostring v)
       | s_of_p _ = raise (Context "prio cons not constant or variable")
@@ -178,14 +172,7 @@ struct
     fun has_wevar (C{vars, ...}) n =
       let
           open IL
-          fun hasw (PVar _) = false
-            | hasw (PConst _) = false
-            | hasw (PEvar er) =
-            case !er of
-              Free m => m = n
-            | Bound w => hasw w
-
-          and has tt =
+          fun has tt =
               (case tt of
                    TVar _ => false
                  | TRec ltl => List.exists (fn (_, t) => 
@@ -222,11 +209,21 @@ struct
         SU.exists (fn (Poly({tys}, t), _, _) => has t) vars
       end
 
-    (* Worlds may be world variables or world constants. If there is a world
+
+
+    fun varex (C {vars, ...}) sym =
+        (case S.find (vars, sym) of
+             SOME x => x
+           | NONE => absent "vars" sym
+        )
+
+    (* Priorities may be world variables or world constants. If there is a priority
        constant we assume it takes precedence. (It might be good to prevent
        the binding of a world variable when there is a constant of the same
-       name?) *)
-    fun prio (C{plabs, ...}) s =
+       name?)
+       SKM: Done *)
+    
+    fun prio (ctx as C{plabs, ...}) s =
       (* if SS.member (plabs, s)
       then IL.PConst s
       else
@@ -238,15 +235,11 @@ struct
 
       if SS.member (plabs, s)
       then IL.PConst s
-      else absent "plabs" s
-
-
-    fun varex (C {vars, ...}) sym =
-        (case S.find (vars, sym) of
-             SOME x => x
-           | NONE => absent "vars" sym
-        )
-
+      else
+	  let val (_, v, _) = varex ctx s
+	  in IL.PVar v
+	  end
+	
     fun var ctx sym =
 	(varex ctx sym)
 	handle Absent _ =>
@@ -300,6 +293,9 @@ struct
         val sym = (case sym of NONE => 
                      ML5pghUtil.newstr "bindex" | SOME s => s)
       in
+	  if SS.member (plabs, sym) then
+	      raise (Context "cannot rebind priority constants")
+	  else
         if !showbinds
         then let in
           print (sym ^ " == " ^ Variable.tostring var ^ " : ");
@@ -440,9 +436,7 @@ struct
 		else
             let
 	    fun inst_prio ctx p =
-		case p of
-		    IL.PEvar (ref (IL.Bound p)) => inst_prio ctx p
-		  | _ => IL.PrioSet.singleton p
+		IL.PrioSet.singleton p
 	    fun crossprod (l1, l2) =
 		List.concat (List.map (fn x1 => List.map (fn x2 => (x1, x2))
 							 l2) l1)
@@ -451,7 +445,7 @@ struct
         case p1 of
             IL.PConst "bot" => YES
           | _ =>
-            let val (p1, p2) = (ground p1, ground p2)
+            let val _ = ()
             in
                 if IL.pr_eq (p1, p2) then
 		    (* p1 <= p1 *)
