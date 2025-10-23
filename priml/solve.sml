@@ -103,21 +103,16 @@ struct
 	      assign
 	      wf
 	  fun solve_sup assign =
-	      let val unsat = List.filter
-				  (fn c => not (check assign c))
-				  sup
+	      let val unsat = List.filter (fn c => (not (check assign c))) sup
+		  val _ = verbprint ((Int.toString (List.length unsat)) ^ " unsat constraints\n")
 	      in
-		  if List.length unsat = 0 then assign
-		  else
-		      let val assign = 
-			      List.foldl
-				  (fn (PSSup (ctx, p1, p2), assign) =>
-				      (case weaken_sub assign ctx (p2, p1) of
-					   SOME assign => assign
-					 | NONE => raise (Unsolvable (PSSup (ctx, p1, p2))))
-				  )
-				  assign
-				  unsat
+		  case unsat of
+		      [] => assign
+		    | (PSSup (ctx, p1, p2))::unsat =>
+		      let val assign =
+			      case weaken_sub assign ctx (p2, p1) of
+				  SOME assign => assign
+				| NONE => raise (Unsolvable (PSSup (ctx, p1, p2)))
 		      in
 			  (* XXX TODO optimize this with the worklist optimization from the paper *)
 			  solve_sup assign

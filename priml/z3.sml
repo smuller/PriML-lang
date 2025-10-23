@@ -9,7 +9,7 @@ exception Z3 of string
 
 fun string_of_prio p =
 	    case p of
-		IL.PVar v => Variable.show v
+		IL.PVar v => Variable.basename v
 	      | IL.PConst s => s
 
 fun of_constraint (p1, p2) =
@@ -22,7 +22,7 @@ fun setup constraint ctx extra_vars =
 	    SS.add (prios, string_of_prio p)
 	fun insert_order ((p1, p2), prios) =
 	    insert_into_set (p1, insert_into_set (p2, prios))
-	val prios = (Context.prios ctx) @ (List.map Variable.show extra_vars)
+	val prios = (Context.prios ctx) @ (List.map Variable.basename extra_vars)
 	val plabs = Context.plabs ctx
 (*	    List.foldl
 		insert_order
@@ -57,6 +57,7 @@ fun setup constraint ctx extra_vars =
 	^ "))\n"
 	^
 	(String.concat (List.map of_constraint orders))
+	^ "\n; END SETUP\n"
     end
 
 fun compose (z1, z2) = z1 ^ z2
