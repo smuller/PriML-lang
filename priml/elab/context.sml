@@ -282,7 +282,8 @@ struct
             (if SS.member (plabs, sym) then plabs
              else SS.add(plabs, sym)),
             mobiles = mobiles,
-            pcons = pcons,
+            pcons = if String.compare (sym, "bot") = EQUAL then pcons
+		    else (IL.PConst "bot", IL.PConst sym)::pcons,
             tpcons = if sym = "bot" then tpcons
                      else (tpc_insert tpcons (IL.PConst "bot", IL.PConst sym)),
             dbs = dbs,

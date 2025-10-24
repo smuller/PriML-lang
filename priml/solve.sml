@@ -109,7 +109,8 @@ struct
 		  case unsat of
 		      [] => assign
 		    | (PSSup (ctx, p1, p2))::unsat =>
-		      let val assign =
+		      let val _ = verbprint ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
+			  val assign =
 			      case weaken_sub assign ctx (p2, p1) of
 				  SOME assign => assign
 				| NONE => raise (Unsolvable (PSSup (ctx, p1, p2)))
@@ -122,7 +123,7 @@ struct
       in
 	  (* Now just check the priority-lessthan constraints *)
 	  case List.filter (fn c => not (check assign c)) cons of
-	      [] => assign
+	      [] => (verbprint (string_of_assign assign); assign)
 	    | c::_ => raise (Unsolvable c)
       end
 

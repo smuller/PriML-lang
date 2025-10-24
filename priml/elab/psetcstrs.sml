@@ -72,6 +72,16 @@ struct
     (* An assignment A is a map from refinement vars to concrete refinements *)
     type assign = (V.var * pconstraint list) IntMap.map
 
+    fun string_of_assign assign =
+	IntMap.foldli
+	(fn (n, (v, cs), s) =>
+	    s ^ "\n"
+	    ^ "'ws" ^ (Int.toString n) ^ " : "
+	    ^ (Layout.tostring (ILPrint.pstol ([], RConcrete (v, cs))))
+	)
+	""
+	assign
+
     (* We can substitute assignments into various things *)
 
     fun assign_in_rfmt assign rfmt =
@@ -212,6 +222,7 @@ struct
 		(* Add the constraint s2 < s1... *)
 		Z3.compose (z3, Z3.negate_constraint (IL.PVar v1, IL.PVar v2))
 	in
+	    verbprint z3;
 	    (*... and check that the system is UNsatisfiable *)
 	    not (Z3.check z3)
 	end
@@ -249,6 +260,7 @@ struct
 			(* Add the constraint ~(/\ c2)... *)
 			Z3.compose (z3, Z3.negate_and_constraints c2)
 		in
+		    verbprint (z3);
 		    (*... and check that the system is UNsatisfiable *)
 		    not (Z3.check z3)
 		end
@@ -278,10 +290,13 @@ struct
 	end
 
     fun check assign constraint =
+	let val _ = print ("checking " ^ string_of_pconstraint (SOME assign) constraint)
+	in
 	case constraint of
 	    PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)
 	  | PSCons (ctx, p1, p2) => check_cons assign ctx (p1, p2)
 	  | PSWellformed (ctx, p) => check_wf assign ctx p
+	end
 
     exception Unsolvable of psconstraint
 

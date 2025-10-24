@@ -25,6 +25,10 @@ sig
 
     type assign = (Variable.var * IL.pconstraint list) IntMap.map
     exception Unsolvable of psconstraint
+
+    val string_of_assign : assign -> string
+    val string_of_pconstraint : assign option -> psconstraint -> string
+
     val check_wf : assign -> Context.context -> IL.prioset -> bool
     val check_cons : assign -> Context.context -> IL.prioset * IL.prioset -> bool
     val check_sub : assign -> Context.context -> IL.prioset * IL.prioset -> bool

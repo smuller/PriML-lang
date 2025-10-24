@@ -150,7 +150,7 @@ struct
     and pctol (p1, p2) = %[prtol p1, $" <= ", prtol p2]
 			    
     and rfmttol (RConcrete (p, ps)) =
-	%[$"[", $(V.show p), $" | ", L.listex "" "" "," (map pctol ps)]
+	%[$"[", $(V.show p), $" | ", L.listex "" "" "," (map pctol ps), $"]"]
       | rfmttol (RVar n) = $("'ws" ^ (Int.toString n))
 			    
     and pstol (s, r)  = %[L.listex "[" "]" ","

@@ -55,8 +55,8 @@ fun setup constraint ctx extra_vars =
 	     plabs
 	)
 	^ "))\n"
-	^
-	(String.concat (List.map of_constraint orders))
+	^ "; " ^ (Int.toString (List.length orders)) ^ " orderings\n"
+	^ (String.concat (List.map of_constraint orders))
 	^ "\n; END SETUP\n"
     end
 
@@ -78,14 +78,26 @@ fun negate_and_constraints ps =
     ^ ")))\n"
 
 fun check z3 =
-    let val tempfile = "z3temp.smt"
+    let val z3 = z3 ^ "(check-sat)"
+	val tempfile = "z3temp.smt"
+	val outfile = "z3out"
 	val os = TextIO.openOut tempfile
 	val _ = TextIO.output (os, z3)
 	val _ = TextIO.closeOut os
 	val z3cmd = "z3"
-	val status = OS.Process.system (z3cmd ^ " " ^ tempfile)
+	val status = OS.Process.system (z3cmd ^ " " ^ tempfile ^ " > " ^ outfile)
+	val is = TextIO.openIn outfile
+	val ret = TextIO.inputLine is
+	val _ = TextIO.closeIn is
     in
-	not (OS.Process.isSuccess status)
+	case ret of
+	    NONE => raise (Z3 "unknown Z3 return value")
+	  | SOME s =>
+	    (let val b = String.isPrefix "sat" s in
+		(if b then print "ME: sat"
+		 else print "ME: unsat");
+		b
+	     end)
     end
 
 end
