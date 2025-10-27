@@ -154,8 +154,9 @@ struct
               ] *)
 
   fun rfmt () =
-      alt [id wth (fn p' => ("p", [("p", p'), (p', "p")])),
-	   (id << `BAR) && ($pconstraint)]
+      alt [(id << "expected | after ID" ** `BAR) && ($pconstraint),
+	   id wth (fn p' => ("p", [("p", p'), (p', "p")]))
+	   ]
 
   fun ppat () =
       alt [(id && opt (`COLON >> ($pconstraint)))
@@ -192,6 +193,9 @@ struct
                (* (`LBRACE && `RBRACE) >> $mostatomic wth (fn t => TSham(NONE, t)), *)
                (* don't allow empty record, because {} means shamrock. *)
                `LBRACE >> separate (label && (`COLON >> $arrowtype)) (`COMMA) << `RBRACE wth TRec,
+	       (`PRIO >> "expected [ after PRIO" **
+		 `LSQUARE >> "expected rfmt" ** ($rfmt) << `RSQUARE)
+                   wth TPrio,
                `LPAREN >> $arrowtype << `RPAREN]
 
       and postfixapps t =
@@ -229,7 +233,6 @@ struct
   fun ttoc (INT i) = SOME (CInt i)
     | ttoc (CHAR c) = SOME (CChar c)
     | ttoc (STR s) = SOME (CString s)
-    | ttoc (PRIO p) = SOME (CPrio p)
     | ttoc _ = NONE
 
   val constant = maybe ttoc

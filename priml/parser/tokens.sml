@@ -16,7 +16,6 @@ struct
     datatype token =
         ID of string
       | STR of string
-      | PRIO of string
       | INT of IntConst.intconst
       | CHAR of char
       | FLOAT of real
@@ -110,6 +109,7 @@ struct
 
       | THREAD
       | FORALL
+      | PRIO
 
       | EXTERN
 
@@ -220,6 +220,7 @@ struct
       | eq (CMD, CMD) = true
       | eq (FORALL, FORALL) = true
       | eq (THREAD, THREAD) = true
+      | eq (PRIO, PRIO) = true
       | eq (LESSTHAN, LESSTHAN) = true
       | eq (LESSEQUAL, LESSEQUAL) = true
       | eq (MAIN, MAIN) = true

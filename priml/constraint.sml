@@ -92,16 +92,27 @@ fun supertypex ctx t1 t2 =
 		 let val cs =
 			 ListPair.map
 			     (fn ((_, dom1, cod1), (_, dom2, cod2)) =>
-				 List.concat
+				 let val ctx' =
+					 List.foldl
+					     (fn ((v, t), ctx) =>
+						 C.bindv ctx (V.basename v)
+							 (Poly ({tys = []}, t)) v
+					     )
+					     ctx
+					     dom2
+				 in
+				     List.concat
 				     (
-				      (supertypex ctx cod1 cod2)::
+				      (supertypex ctx' cod1 cod2)::
                                  (ListPair.map
 				     (fn ((_, a), (_, b)) =>
 					 supertypex ctx b a
 						    (* FIX: domain is contravariant *)
 				     )
 				     (dom1, dom2)
-			     )))
+				     ))
+				 end
+			     )
 			     (al1, al2)
 		 in
 		     List.concat cs
@@ -291,18 +302,21 @@ fun consval ctx v =
 	    (t, cs)
 	end
       | Fns fs =>
-	let val ctx =
+	let val orig_ctx = ctx
+	    val (cons_wf, ctx) =
 	    List.foldl
-		(fn (f, ctx) =>
-		    let val t =
-			    mkpoly (Arrow (false,
-					   ListPair.zip (#arg f, #dom f),
-					   #cod f))
+		(fn (f, (cons_wf, ctx)) =>
+		    let val at =
+			    Arrow (false,
+				   ListPair.zip (#arg f, #dom f),
+				   #cod f)
+			val t = mkpoly at
 		    in
-			C.bindv ctx (V.basename (#name f)) t (#name f)
+			((wf_cons orig_ctx at) @ cons_wf,
+			 C.bindv ctx (V.basename (#name f)) t (#name f))
 		    end
 		)
-		ctx
+		([], ctx)
 		fs
 	    fun consf f =
 		let val ctx' =
@@ -313,14 +327,14 @@ fun consval ctx v =
 			ctx
 			(#arg f, #dom f)
 		in
-		   cons ctx' (#body f)
+		    cons ctx' (#body f)
 		end
 	    val tscs = List.map consf fs
 	    val (ts, cs) = ListPair.unzip tscs
 	in
 	    
 	(Arrows (ListPair.map (fn (f, t) => (false, ListPair.zip (#arg f, #dom f), t)) (fs, ts)),
-	 List.concat cs
+	 cons_wf @ (List.concat cs)
 	)
 	end
       | FSel (n, fs) =>

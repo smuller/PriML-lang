@@ -539,11 +539,14 @@ struct
     fun pcons (C { pcons, ... }) = pcons
     fun vars (C {vars, ... }) = S.listItemsi vars
 
-    fun prios c =
+    fun prio_vars (C { plabs, vars, ... }) =
 	List.mapPartial
-	    (fn (s, (IL.Poly (_, IL.TPrio _), _, _)) => SOME s
+	    (fn (s, (IL.Poly (_, IL.TPrio _), v, _)) =>
+		if SS.member (plabs, s) then NONE else SOME v
 	    | _ => NONE)
-	    (vars c)
+	    (S.listItemsi vars)
+
+
 
     val empty = C { vars = S.empty, 
                     cons = S.empty, 

@@ -1,7 +1,8 @@
 priority A
 priority B
  
-(* (* CORRECT compiles *)
+ (*
+ (* CORRECT compiles *)
 main {
     
     change[if true then A else B]
@@ -16,7 +17,7 @@ main {
 }
 *)
 
-(* (* CORRECT compiles *)
+(* CORRECT compiles *)
 main {
     t <- 
         let val m = cmd { 
@@ -34,4 +35,4 @@ main {
     ret x
 
 }
-*)
+

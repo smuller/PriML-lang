@@ -101,35 +101,40 @@ struct
 	    pcs
 
     (* Turn x = [v | constrs] into [x/v]constrs *)
-    fun close_rfmt assign p (xv, pcs) =
+    fun close_rfmt assign p (xv, pcs, evs) =
 	let val s' = singleton (xv, p)
 	in
 	    prsubcs s' pcs
 	end
-	    
-    fun do_pendsubs assign (ps: arg_subst subst) (rfmt_var, rfmt_cs) =
+
+	(* This returns (and takes) an extra set of existentially quantified
+	 * variables resulting from substituting constraint sets *)
+    fun do_pendsubs assign (ps: arg_subst subst) (rfmt_var, rfmt_cs, exist_vars) =
 	VM.foldli
-	    (fn (v, SubstVar v', (rfmt_var, rfmt_cs)) =>
-		(rfmt_var, prsubcs (singleton (v, PVar v')) rfmt_cs)
-	    | (v, SubstPrio prio, (rfmt_var, rfmt_cs)) =>
-	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs)
-	    | (v, SubstSet pset, (rfmt_var, rfmt_cs)) =>
-	      (rfmt_var, (close_rfmt assign (PVar v) (assign_in_prioset assign pset)) @ rfmt_cs)
+	    (fn (v, SubstVar v', (rfmt_var, rfmt_cs, exist_vars)) =>
+		(rfmt_var, prsubcs (singleton (v, PVar v')) rfmt_cs,
+		 List.filter (fn v'' => not (V.eq (v'', v))) exist_vars)
+	    | (v, SubstPrio prio, (rfmt_var, rfmt_cs, exist_vars)) =>
+	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs,
+	      List.filter (fn v'' => not (V.eq (v'', v))) exist_vars)
+	    | (v, SubstSet pset, (rfmt_var, rfmt_cs, exist_vars)) =>
+	      (rfmt_var, (close_rfmt assign (PVar v) (assign_in_prioset assign pset)) @ rfmt_cs,
+	      v::(List.filter (fn v'' => not (V.eq (v'', v))) exist_vars))
 	    | (v, DontSubst, rfmt) => rfmt
 	    )
-	    (rfmt_var, rfmt_cs)
+	    (rfmt_var, rfmt_cs, exist_vars)
 	    ps
 				  
     (* Get a refinement for a prioset under assign by performing the assignments
      * and then the pending substitutions.*)
     and assign_in_prioset assign (substs, rfmt) =
 	let val (v, ps) = assign_in_rfmt assign rfmt
-	    fun do_allsubs subs (v, ps) =
+	    fun do_allsubs subs (v, ps, evs) =
 		case subs of
-		    [] => (v, ps)
-		  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps))
+		    [] => (v, ps, evs)
+		  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps, evs))
 	in
-	    do_allsubs substs (v, ps)
+	    do_allsubs substs (v, ps, [])
 	end
 
     fun string_of_pconstraint assign psc =
@@ -152,8 +157,8 @@ struct
 	   | SOME assign =>
 	     (case psc of
 		  PSCons (ctx, p1, p2) =>
-		  let val (rv1, rcs1) = assign_in_prioset assign p1
-		      val (rv2, rcs2) = assign_in_prioset assign p2
+		  let val (rv1, rcs1, _) = assign_in_prioset assign p1
+		      val (rv2, rcs2, _) = assign_in_prioset assign p2
 		      val ps1 = ([], RConcrete (rv1, rcs1))
 		      val ps2 = ([], RConcrete (rv2, rcs2))
 		  in
@@ -162,8 +167,8 @@ struct
 		      ^ (Layout.tostring (ILPrint.pstol ps2)) ^ ")"
 		  end
 		| PSSup (ctx, p1, p2) =>
-		  let val (rv1, rcs1) = assign_in_prioset assign p1
-		      val (rv2, rcs2) = assign_in_prioset assign p2
+		  let val (rv1, rcs1, _) = assign_in_prioset assign p1
+		      val (rv2, rcs2, _) = assign_in_prioset assign p2
 		      val ps1 = ([], RConcrete (rv1, rcs1))
 		      val ps2 = ([], RConcrete (rv2, rcs2))
 		  in
@@ -172,7 +177,7 @@ struct
 		      ^ (Layout.tostring (ILPrint.pstol ps1)) ^ ")"
 		  end
 		| PSWellformed (ctx, p) =>
-		  let val (rv, rcs) = assign_in_prioset assign p
+		  let val (rv, rcs, _) = assign_in_prioset assign p
 		      val ps = ([], RConcrete (rv, rcs))
 		  in
 		      "(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
@@ -186,33 +191,33 @@ struct
      * Return these as a list [p/v]constraints *)
     fun constraints_in_ctx assign ctx =
 	List.foldl
-	    (fn ((s, (Poly ({tys}, t), v, _)), cs) =>
-		case t of
-		    TPrio p =>
+	    (fn (v, cs) =>
+		case Context.var ctx (Variable.basename v) of
+		(Poly ({tys}, TPrio p), v, _) =>
 		    (close_rfmt assign (PVar v) (assign_in_prioset assign p)) @ cs
-		  | _ => cs
+	      | _ => cs
 	    )
 	    []
-	    (Context.vars ctx)
+	    (Context.prio_vars ctx)
 
 	    
     (* check if priorities in s1 are less than priorities in s2 *)
     fun check_cons assign ctx (s1, s2) =
 	let val (v1, v2) = (V.namedvar "prio__s1", V.namedvar "prio__s2")
+	    val (rv1, rcs1, evs1) = assign_in_prioset assign s1
+	    val c1 = close_rfmt assign (IL.PVar v1) (rv1, rcs1, evs1)
+	    val (rv2, rcs2, evs2) = assign_in_prioset assign s2
+	    val c2 = close_rfmt assign (IL.PVar v2) (rv2, rcs2, evs2)
 	    val z3 =
 		Z3.setup
 		    (SOME (string_of_pconstraint (SOME assign) (PSCons (ctx, s1, s2))))
 		    ctx
-		    [v1, v2]
+		    ([v1, v2] @ evs1 @ evs2)
 	    val z3 =
 		List.foldl
 		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
 		    z3
 		    (constraints_in_ctx assign ctx)
-	    val (rv1, rcs1) = assign_in_prioset assign s1
-	    val c1 = close_rfmt assign (IL.PVar v1) (rv1, rcs1)
-	    val (rv2, rcs2) = assign_in_prioset assign s2
-	    val c2 = close_rfmt assign (IL.PVar v2) (rv2, rcs2)
 	    val z3 =
 		List.foldl
 		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
@@ -231,10 +236,10 @@ struct
      * s1 is a subset of the set of possible priorities under s2 *)
     fun check_sub assign ctx (s1, s2) =
 	let val v = Variable.namedvar "prio__s"
-	    val (rv1, rcs1) = assign_in_prioset assign s1
-	    val c1 = close_rfmt assign (IL.PVar v) (rv1, rcs1)
-	    val (rv2, rcs2) = assign_in_prioset assign s2
-	    val c2 = close_rfmt assign (IL.PVar v) (rv2, rcs2)
+	    val (rv1, rcs1, evs1) = assign_in_prioset assign s1
+	    val c1 = close_rfmt assign (IL.PVar v) (rv1, rcs1, evs1)
+	    val (rv2, rcs2, evs2) = assign_in_prioset assign s2
+	    val c2 = close_rfmt assign (IL.PVar v) (rv2, rcs2, evs2)
 	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *)
 	in
 	    if List.length c2 = 0 then
@@ -245,12 +250,13 @@ struct
 			Z3.setup
 			    (SOME (string_of_pconstraint (SOME assign) (PSSup (ctx, s2, s1))))
 			    ctx
-			    [v]
+			    ([v] @ evs1 @ evs2)
 		    val z3 =
 			List.foldl
 			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
 			    z3
 			    (constraints_in_ctx assign ctx)
+		    val z3 = Z3.compose (z3, Z3.comment "End ctx constraints\n")
 		    val z3 =
 			List.foldl
 			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
@@ -266,36 +272,44 @@ struct
 		end
 	end
 
-    fun priowf ctx (IL.PVar v) =
-	((let val _ = Context.var ctx (Variable.show v)
+    fun priowf ctx dv (IL.PVar v) =
+	V.eq (dv, v)
+	orelse
+	((let val _ = Context.var_fail ctx (Variable.show v)
 	  in true
 	  end)
 	 handle _ => false)
-      | priowf ctx (IL.PConst s) =
-	((let val _ = Context.var ctx s
+      | priowf ctx dv (IL.PConst s) =
+	((let val _ = Context.var_fail ctx s
 	  in true
 	  end)
 	 handle _ => false)
 	    
     (* Check if ps is well-formed, i.e., has no unbound priority vars *)
     fun check_wf assign ctx ps =
-	let val (rv, rcs) = assign_in_prioset assign ps
+	let val (rv, rcs, _) = assign_in_prioset assign ps
+	    val _ = verbprint "checking "
+	    val _ = verbprint (string_of_pconstraint (SOME assign) (PSWellformed (ctx, ps)))
 	in
 	    List.foldl
 		(fn ((p1, p2), wf) =>
 		    wf andalso
-		    (priowf ctx p1) andalso (priowf ctx p2))
+		    (priowf ctx rv p1) andalso (priowf ctx rv p2))
 		true
 		rcs
 	end
 
     fun check assign constraint =
-	let val _ = print ("checking " ^ string_of_pconstraint (SOME assign) constraint)
+	let val _ = verbprint "checking "
+	    val _ = verbprint (string_of_pconstraint (SOME assign) constraint)
+		    
+	    val sat = case constraint of
+			  PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)
+			| PSCons (ctx, p1, p2) => check_cons assign ctx (p1, p2)
+			| PSWellformed (ctx, p) => check_wf assign ctx p
 	in
-	case constraint of
-	    PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)
-	  | PSCons (ctx, p1, p2) => check_cons assign ctx (p1, p2)
-	  | PSWellformed (ctx, p) => check_wf assign ctx p
+	    sat
+	    before (if sat then verbprint "SAT\n" else verbprint "UNSAT\n")
 	end
 
     exception Unsolvable of psconstraint
@@ -305,8 +319,7 @@ struct
 	case rfmt2 of
 	    RConcrete _ => NONE
 	  | RVar n =>
-	    let val (rv1, rcs1) = assign_in_prioset assign s1
-		val (rv2, rcs2) =
+	    let val (rv2, rcs2) =
 		    case IntMap.find (assign, n) of
 			SOME x => x
 		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n)))
@@ -315,11 +328,11 @@ struct
 		     * constraint checking code to check just
 		     * (A(\Gamma) /\ A(s1) ==> A(c) *)
 		    check_sub assign ctx
-			      (([], RConcrete (rv1, rcs1)),
-			       ([], RConcrete (rv2, [c])))
+			      (s1,
+			       (substs2, RConcrete (rv2, [c])))
 		val new_rcs2 = List.filter check_one rcs2
 	    in
-		SOME (IntMap.insert (assign, n, (rv2, new_rcs2)))
+		SOME (n, IntMap.insert (assign, n, (rv2, new_rcs2)))
 	    end
 
     fun weaken_wf assign ctx (substs, rfmt) =

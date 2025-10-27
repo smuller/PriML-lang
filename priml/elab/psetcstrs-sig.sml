@@ -34,6 +34,6 @@ sig
     val check_sub : assign -> Context.context -> IL.prioset * IL.prioset -> bool
     val check : assign -> psconstraint -> bool
     val weaken_wf : assign -> Context.context -> IL.prioset -> assign option
-    val weaken_sub : assign -> Context.context -> IL.prioset * IL.prioset -> assign option
+    val weaken_sub : assign -> Context.context -> IL.prioset * IL.prioset -> (int * assign) option
 
 end

@@ -7,4 +7,8 @@ sig
     val negate_and_constraints : (IL.prio * IL.prio) list -> z3
     val compose : z3 * z3 -> z3
     val check : z3 -> bool
+    val comment : string -> z3
+
+    val z3calls : int ref
+    val z3time : LargeInt.int ref
 end

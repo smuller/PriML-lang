@@ -152,9 +152,10 @@ struct
        ("<-", LARROW),
        ("<", LESSTHAN),
        ("<=", LESSEQUAL),
-       ("cand", CAND),
+       ("/\\", CAND),
        ("main", MAIN),
        ("thread", THREAD),
+       ("prio", PRIO),
        ("forall", FORALL),
 
        ("as", AS),

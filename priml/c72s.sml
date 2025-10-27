@@ -83,7 +83,12 @@ val (_, solve_time) =
 	(fn () => Solve.solve_psetcstrs pscons (* (List.map PSetCstrs.dosub_cstr pscons) *)
 	handle PSetCstrs.PSConstraints s =>
 	       (print s;
-		OS.Process.exit OS.Process.failure))
+		OS.Process.exit OS.Process.failure)
+	     | PSetCstrs.Unsolvable c =>
+	       (print "Unsatisfied priority constraint:\n";
+		print (PSetCstrs.string_of_pconstraint NONE c);
+		OS.Process.exit OS.Process.failure)
+	)
 
 val (_, gen_time) =
     withtimer
@@ -96,15 +101,6 @@ val (_, gen_time) =
 	    in
 		StringUtil.writefile "temp.ml" s
 	    end)
-					      
-val (_, ocaml_time) =
-    withtimer
-	(fn () => CompileCaml.compile "temp.ml" [] morefiles output moreopts
-		   handle CompileCaml.Compile s => (print ("primlc: " ^ s ^ "\n");
-						    OS.Process.exit OS.Process.failure)
-	)
-
-(* val _ = OS.Process.system ("rm temp.ml") *)
 
 val _ = print ("Parse and Desugar Time (us): \t"
 	       ^ (LargeInt.toString (Time.toMicroseconds parse_time))
@@ -121,6 +117,23 @@ val _ = print ("Constraint Solve Time (us): \t"
 val _ = print ("Number of Constraints: \t\t"
 	       ^ (Int.toString (List.length pscons))
 	       ^ "\n")
+val _ = print ("Number Z3 calls: \t\t"
+	       ^ (Int.toString (!Z3.z3calls))
+	       ^ "\n")
+val _ = print ("Total time in Z3 (ms):\t\t"
+	       ^ (LargeInt.toString (!Z3.z3time))
+	       ^ "\n")
+    
+val (_, ocaml_time) =
+    withtimer
+	(fn () => CompileCaml.compile "temp.ml" [] morefiles output moreopts
+		   handle CompileCaml.Compile s => (print ("primlc: " ^ s ^ "\n");
+						    OS.Process.exit OS.Process.failure)
+	)
+
+(* val _ = OS.Process.system ("rm temp.ml") *)
+
+
 val _ = print ("OCaml Generation Time (us): \t"
 	       ^ (LargeInt.toString (Time.toMicroseconds gen_time))
 	       ^ "\n")

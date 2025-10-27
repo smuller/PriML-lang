@@ -15,27 +15,16 @@ struct
    * constraint, with the priorities that are in the context. *)	   
   fun assign_of_pconstraint desig_var c =
       let fun qualifiers_of_prios ctx ps =
-	      (* Take the cross product and then narrow it down with a
-	       * couple sanity-check filters *)
 	      let val all =
-		      List.concat
-			  (List.map
-			       (fn p1 => List.map (fn p2 => (p1, p2)) ps)
-			       ps
-			  )
+		      (List.map (fn p => (PVar desig_var, p)) ps)
+		      @ (List.map (fn p => (p, PVar desig_var)) ps)
 	      in
 		  List.filter
 		      (fn (p1, p2) =>
-			  if Context.checkcons ctx p2 p1 then
-			      (* If the constraint is clearly unsatisfiable,
-				 remove it *)
-			      false
-			  else
-			      (* If p1 = p2, remove the constraint *)
-			      (case IL.prcompare (p1, p2) of
-				   EQUAL => false
-				 | _ =>  true
-			      )
+			  (case IL.prcompare (p1, p2) of
+			       EQUAL => false
+			     | _ =>  true
+			  )
 		      )
 		      all
 	      end
@@ -48,11 +37,13 @@ struct
 		  IntMap.empty
 		  rfmts
 	  fun qualifiers_of_ctx ctx =
-	      let val ctxprios = List.map PConst (Context.prios ctx)
+	      let val ctxprios =
+		      (List.map PVar (Context.prio_vars ctx))
+		      @ (List.map PConst (Context.plabs ctx))
 	      in
 		  qualifiers_of_prios
 		      ctx
-		      ((PVar desig_var)::ctxprios)
+		      ctxprios
 	      end
       in
 	   case c of
@@ -88,11 +79,12 @@ struct
 		  )
 		  IntMap.empty
 		  pscstrs
+	  val _ = verbprint "Checking wf constraints\n"
 	  val assign =
 	      (* First solve well-formedness constraints *)
 	      List.foldl
 	      (fn (PSWellformed (ctx, p), assign) =>
-		  if check_wf assign ctx p then
+		  if check assign (PSWellformed (ctx, p)) then
 		      assign
 		  else
 		      (case weaken_wf assign ctx p of
@@ -102,29 +94,40 @@ struct
 	      )
 	      assign
 	      wf
-	  fun solve_sup assign =
-	      let val unsat = List.filter (fn c => (not (check assign c))) sup
-		  val _ = verbprint ((Int.toString (List.length unsat)) ^ " unsat constraints\n")
+	  val _ = verbprint "Done with wf constraints\n"
+	  fun solve_sup assign constraints =
+	      let val unsat =
+		      List.filter (fn c => (not (check assign c))) constraints
+		  val _ =
+		      verbprint
+			  ((Int.toString (List.length unsat))
+			   ^ " unsat constraints\n")
 	      in
 		  case unsat of
 		      [] => assign
 		    | (PSSup (ctx, p1, p2))::unsat =>
 		      let val _ = verbprint ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
-			  val assign =
+			  val (changed, assign) =
 			      case weaken_sub assign ctx (p2, p1) of
 				  SOME assign => assign
-				| NONE => raise (Unsolvable (PSSup (ctx, p1, p2)))
+				| NONE => raise (PSConstraints (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
+(* Constraints to check on the next round are those that were unsat
+ * before and those whose antecedent changed *)
+			  val changed_cons =
+			      List.filter
+			      (fn (PSSup (_, _, (_, (RVar n)))) => n = changed
+				| _ => false)
+			      sup
 		      in
-			  (* XXX TODO optimize this with the worklist optimization from the paper *)
-			  solve_sup assign
+			  solve_sup assign (unsat @ changed_cons)
 		      end
 	      end
-	  val assign = solve_sup assign
+	  val assign = solve_sup assign sup
       in
 	  (* Now just check the priority-lessthan constraints *)
 	  case List.filter (fn c => not (check assign c)) cons of
 	      [] => (verbprint (string_of_assign assign); assign)
-	    | c::_ => raise (Unsolvable c)
+	    | c::_ => raise (PSConstraints (string_of_pconstraint (SOME assign) c))
       end
 
 end
