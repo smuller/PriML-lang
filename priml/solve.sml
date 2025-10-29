@@ -104,17 +104,19 @@ struct
 	      assign
 	      wf
 	  val _ = verbprint "Done with wf constraints\n"
-	  fun solve_sup assign constraints =
-	      let val unsat =
-		      List.filter (fn c => (not (check assign c))) constraints
+	  fun solve_sup assign maybe_unsat curr_sat =
+	      let val _ = verbprint "CURRENT ASSIGNMENT:\n"
+		  val _ = verbprint (string_of_assign assign)
+		  val (now_sat, still_unsat) =
+		      List.partition (fn c => check assign c) maybe_unsat
 		  val _ =
 		      verbprint
-			  ((Int.toString (List.length unsat))
+			  ((Int.toString (List.length still_unsat))
 			   ^ " unsat constraints\n")
 	      in
-		  case unsat of
+		  case still_unsat of
 		      [] => assign
-		    | (PSSup (ctx, p1, p2))::unsat =>
+		    | (PSSup (ctx, p1, p2))::rest_unsat =>
 		      let val _ = verbprint ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
 			  val (changed, assign) =
 			      case weaken_sub assign ctx (p2, p1) of
@@ -122,20 +124,20 @@ struct
 				| NONE => raise (PSConstraints (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
 (* Constraints to check on the next round are those that were unsat
  * before and those whose context or antecedent changed *)
-			  val changed_cons =
-			      List.filter
+			  val (changed_cons, unchanged_cons) =
+			      List.partition
 				  (fn (PSSup (ctx, _, (_, (RVar n)))) =>
 				      n = changed
 				      orelse Context.has_rfmtvar ctx changed
 				    | (PSSup (ctx, _, _)) =>
 				      Context.has_rfmtvar ctx changed
 				    | _ => false)
-			      sup
+			      (now_sat @ curr_sat)
 		      in
-			  solve_sup assign (unsat @ changed_cons)
+			  solve_sup assign (rest_unsat @ changed_cons) unchanged_cons
 		      end
 	      end
-	  val assign = solve_sup assign sup
+	  val assign = solve_sup assign sup []
       in
 	  (* Now just check the priority-lessthan constraints *)
 	  case List.filter (fn c => not (check assign c)) cons of

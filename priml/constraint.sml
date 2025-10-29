@@ -157,14 +157,24 @@ fun subtype ctx t1 t2 =
     handle TyError s => (print s; raise (TyError s))
     )	
 fun wf_cons ctx t =
+    let val _ =
+	    verbprint ("wf_cons " ^ (Layout.tostring (ILPrint.ttol t)) ^ "\n")
+    in
     case t of
 	TVar _ => []
       | TRec fields =>
 	List.concat (List.map (fn (_, t) => wf_cons ctx t) fields)
       | Arrow (_, dom, cod) =>
-	let val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+	let val ctx' =
+		List.foldl
+		    (fn ((arg, ty), ctx) =>
+			C.bindv ctx (V.basename arg) (mkpoly ty) arg
+		    )
+		    ctx
+		    dom
+	    val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
 	in
-	    (wf_cons ctx cod) @ (List.concat dom_cons)
+	    (wf_cons ctx' cod) @ (List.concat dom_cons)
 	end
       | Sum arms =>
 	List.concat (List.map (fn (_, ai) =>
@@ -184,9 +194,16 @@ fun wf_cons ctx t =
 	List.concat
 	    (List.map
 		 (fn (_, dom, cod) =>
-		     let val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+		     let val ctx' =
+			     List.foldl
+				 (fn ((arg, ty), ctx) =>
+				     C.bindv ctx (V.basename arg) (mkpoly ty) arg
+				 )
+				 ctx
+				 dom
+			 val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
 		     in
-			 (wf_cons ctx cod) @ (List.concat dom_cons)
+			 (wf_cons ctx' cod) @ (List.concat dom_cons)
 		     end
 		 )
 		 fns
@@ -199,8 +216,13 @@ fun wf_cons ctx t =
       | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
       | TPrio p => (pscstr_wf ctx p)
       | TMutex p => pscstr_wf ctx p
+    end
+
 
 fun fresh t =
+    let val _ =
+	    verbprint ("fresh " ^ (Layout.tostring (ILPrint.ttol t)) ^ "\n")
+    in
     case t of
 	TVar _ => t
       | TRec fields =>
@@ -229,9 +251,12 @@ fun fresh t =
       | TCmd (t, (_, _, _)) =>
 	TCmd (fresh t, (new_psevar (), new_psevar (), new_psevar ()))
       | TThread (t, _) => TThread (fresh t, new_psevar ())
-      | TPrio _ => TPrio (new_psevar ())
+      | TPrio (_, (RConcrete _)) => t
+      | TPrio (substs, RVar _) => TPrio (substs, PSetCstrs.new_rvar ())
       | TMutex _ => TMutex (new_psevar ())
-			 
+    end		 
+
+
 fun consval ctx v =
     let val _ =
 	    verb (fn () => Layout.print (Layout.mayAlign [Layout.str "consval ",
@@ -251,7 +276,8 @@ fun consval ctx v =
 		 val subst = Subst.fromlist
 				 (ListPair.zip (tyvars, ftps))
 	     in
-		 (Subst.tsubst subst t, [])
+		 (Subst.tsubst subst t,
+		  List.concat (List.map (wf_cons ctx) ftps))
 	     end
 	)
 	in
@@ -274,7 +300,8 @@ fun consval ctx v =
 		 val subst = Subst.fromlist
 				 (ListPair.zip (tyvars, ftps))
 	     in
-		 (Subst.tsubst subst t, [])
+		 (Subst.tsubst subst t,
+		  List.concat (List.map (wf_cons ctx) ftps))
 	     end
 	)
 	in
@@ -629,6 +656,7 @@ and conscmd sp ctx cmd =
 		 (t', p, ep',
 		  cs @ cs'
 		  @ (wf_cons ctx t')
+		  @ (pscstr_wf ctx p)
 		  @ (pscstr_wf ctx mp')
 		  @ (pscstr_wf ctx ep')
 		  (* @ (pscstr_eq ctx startprios sp) *)

@@ -61,7 +61,8 @@ struct
 
     fun new_rvar () =
 	RVar (!next_rvar)
-	before (next_rvar := (!next_rvar) + 1)
+	before (verbprint ("new rvar: " ^ (Int.toString (!next_rvar)) ^ "\n");
+		next_rvar := (!next_rvar) + 1)
 
     fun new_prioset () =
 	([], new_rvar ())
@@ -332,7 +333,12 @@ struct
 			       (substs2, RConcrete (rv2, [c])))
 		val new_rcs2 = List.filter check_one rcs2
 	    in
-		SOME (n, IntMap.insert (assign, n, (rv2, new_rcs2)))
+		(* Assertion: the number of qualifiers should have decreased *)
+		if List.length new_rcs2 >= List.length rcs2 then
+		    (print "Uh oh: didn't eliminate qualifiers?";
+		     raise (Unsolvable (PSSup (ctx, (substs2, rfmt2), s1))))
+		else
+		    SOME (n, IntMap.insert (assign, n, (rv2, new_rcs2)))
 	    end
 
     fun weaken_wf assign ctx (substs, rfmt) =
