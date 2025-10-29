@@ -68,7 +68,16 @@ struct
 	      ([], [], [])
 	      pscstrs
 	  val desig_var = V.namedvar "__v"
-	  fun combine_assign ((dv, c1), (_, c2)) = (dv, c1 @ c2)
+	  fun combine_assign ((dv, c1), (_, c2)) =
+	      (dv,
+	       (List.filter (fn (p1, p2) =>
+				not (List.exists
+					 (fn (p1', p2') =>
+					     IL.prcompare (p1, p1') = EQUAL
+					     andalso IL.prcompare (p2, p2') = EQUAL)
+					 c2)
+			    )
+			    c1) @ c2)
 	  val assign = (* initial assignment *)
 	      List.foldl
 		  (fn (c, assign) =>
@@ -112,11 +121,15 @@ struct
 				  SOME assign => assign
 				| NONE => raise (PSConstraints (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
 (* Constraints to check on the next round are those that were unsat
- * before and those whose antecedent changed *)
+ * before and those whose context or antecedent changed *)
 			  val changed_cons =
 			      List.filter
-			      (fn (PSSup (_, _, (_, (RVar n)))) => n = changed
-				| _ => false)
+				  (fn (PSSup (ctx, _, (_, (RVar n)))) =>
+				      n = changed
+				      orelse Context.has_rfmtvar ctx changed
+				    | (PSSup (ctx, _, _)) =>
+				      Context.has_rfmtvar ctx changed
+				    | _ => false)
 			      sup
 		      in
 			  solve_sup assign (unsat @ changed_cons)

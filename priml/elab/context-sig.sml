@@ -47,6 +47,8 @@ sig
     val has_evar  : context -> int -> bool
     (* same, but for free world evars *)
     val has_wevar : context -> int -> bool
+    (* similar, but for free refinement variables *)
+    val has_rfmtvar : context -> int -> bool
 
 
     (* context extension operations *)

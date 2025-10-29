@@ -209,7 +209,49 @@ struct
         SU.exists (fn (Poly({tys}, t), _, _) => has t) vars
       end
 
+fun has_rfmtvar (C{vars, ...}) n =
+      let
+          open IL
+	  fun has_ps (_, RConcrete _) = false
+	    | has_ps (_, RVar n') = n = n'
+          fun has tt =
+              (case tt of
+                   TVar _ => false
+                 | TRec ltl => List.exists (fn (_, t) => 
+                                            has t) ltl
+                 | Arrow (_, tl, t) =>
+                       has t orelse
+                       List.exists (fn (_, t) => has t) tl
+                 | Sum ltl => List.exists 
+                       (fn (_, Carrier { carried, ... }) => has carried
+                          | _ => false) ltl
+                 | Mu (_, vtl) => List.exists (fn (_, t) => has t) vtl
+                 | Evar _ => false
+                 | TVec t => has t
+                 | TCont t => has t
+                 | TTag (t, _) => has t
+(*
+                 | At (t, w) => has t orelse hasw w
+                 | Shamrock (_, t) => has t
+                 | TAddr w => hasw w
+*)
+                 | Arrows l =>
+                       List.exists (fn (_, tl, t) =>
+                                       has t orelse
+				       List.exists (fn (_, t) => has t) tl) l
+                 | TRef t => has t
+                 | TCmd (t, (p1, p2, p3)) =>
+		   has t orelse has_ps p1 orelse has_ps p2 orelse has_ps p3
+                 | TThread (t, p) => has t orelse has_ps p
+                 | TPrio p => has_ps p
+		 | TMutex p => has_ps p)
+                 (* | TForall (_, _, t) => has t (* FIX: delete this *) *)
 
+      in
+        SU.exists (fn (Poly({tys}, t), _, _) => has t) vars
+      end
+
+      
 
     fun varex (C {vars, ...}) sym =
         (case S.find (vars, sym) of

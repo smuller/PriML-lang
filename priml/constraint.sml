@@ -25,9 +25,10 @@ fun basety_plain t =
       | _ => t
 
 fun supertypex ctx t1 t2 =
-    let val _ =
+    let val ctxlen = List.length (Context.vars ctx)
+	val _ =
 	    verb (fn () => Layout.print (Layout.listex
-				  "supertype (" ")\n" ","
+				  ("supertype " ^ (Int.toString ctxlen) ^ " (") ")\n" ","
 				  (map ILPrint.ttol [t1, t2]),
 			      print))
     in
@@ -52,6 +53,14 @@ fun supertypex ctx t1 t2 =
 	     end
            | (Arrow (_, dom1, cod1), Arrow (_, dom2, cod2)) => 
              let
+		 val ctx' =
+		     List.foldl
+			 (fn ((v, t), ctx) =>
+			     C.bindv ctx (V.basename v)
+				     (Poly ({tys = []}, t)) v
+			 )
+			 ctx
+			 dom2
 		 val domcs = ListPair.map
 			      (fn ((_, a), (_, b)) =>
 				  supertypex ctx b a
@@ -59,7 +68,7 @@ fun supertypex ctx t1 t2 =
 			      )
                               (dom1, dom2)
 
-		 val codcs = supertypex ctx cod1 cod2
+		 val codcs = supertypex ctx' cod1 cod2
 	     in
 		 List.concat (codcs::domcs)
              end
