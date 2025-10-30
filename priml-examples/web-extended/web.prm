@@ -121,7 +121,7 @@ val time_window = 5 (* over this many seconds *)
 val hosts_par_threshold = 10 (* Hosts to process sequentially for tracking *)
 
 val request_mut = newmutex[serve_p]
-val bad_mut = newmutex[accept_p]
+val bad_mut = newmutex[high_class_p]
 
 
 fun close sock = (Unix.shutdown sock) Unix.SHUTDOWN_ALL
