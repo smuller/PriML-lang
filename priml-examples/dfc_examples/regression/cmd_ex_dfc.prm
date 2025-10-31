@@ -1,24 +1,17 @@
 priority A
 priority B
- 
- (*
- (* CORRECT compiles *)
-main {
-    
-    change[if true then A else B]
-}
-*)
-
-(* (* CORRECT compiles *)
-main {
-    td <- spawn[if true then A else B] { ret 2 };
-
-    sync td
-}
-*)
 
 (* CORRECT compiles *)
 main {
+    (* A simple change command *)
+    change[if true then A else B];
+    change[bot];
+    
+    (* recognize that bot is lower than both A and B *)
+    td <- spawn[if true then A else B] { ret 2 };
+    sync td;
+    
+    (* more complex commands with binding *)
     t <- 
         let val m = cmd { 
             change[A];

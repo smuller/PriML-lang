@@ -1,0 +1,35 @@
+priority High
+priority Med
+priority Low
+
+order Low < Med
+order Med < High
+
+fun spawn_at p c =
+    spawn[p] { c }
+
+fun spawn_at_and_sync_at_any p2 =
+    cmd {
+        td <- spawn[p2] { ret 1 };
+        sync td
+    }
+
+fun spawn_at_and_sync_at p3 =
+    cmd {
+        td <- spawn[p3] { ret 1 };
+        spawn[p3] { sync td }
+    }
+ 
+main {
+    t <- spawn_at High (ret 1);
+    sync t;
+    spawn_at_and_sync_at_any Low;
+    spawn[Low] {
+        spawn_at_and_sync_at_any Low
+    };
+    let val p1 = (if true then Low else High)
+    in
+        spawn_at_and_sync_at p1
+    end
+    
+}

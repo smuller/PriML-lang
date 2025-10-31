@@ -1,8 +1,0 @@
-priority Low
-priority High
-order Low < High
-
-main {
-  t <- spawn[High] { ret 1 };
-  spawn[Low] { sync t }
-}

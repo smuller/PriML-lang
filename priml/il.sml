@@ -73,7 +73,16 @@ struct
 	    ([], RConcrete (v, [(PVar v, p), (p, PVar v)]))
 	end
 
-
+	    (* Right now, doesn't do anything more complicated than check if the
+	     * prioset has exactly the form returned by singleton_prioset *)
+    fun is_singleton ([], RConcrete (v1, [(PVar v2, p1), (p2, PVar v3)])) =
+	if V.eq (v1, v2) andalso V.eq (v2, v3)
+	   andalso prcompare (p1, p2) = EQUAL
+	then
+	    SOME p1
+	else
+	    NONE
+      | is_singleton _ = NONE
 	
     (* types : classifiers for values *)
     datatype typ =

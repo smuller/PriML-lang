@@ -1,0 +1,17 @@
+priority low
+priority medium
+priority high
+
+order low < medium
+order medium < high
+
+fun f n =
+  let val p = if n < 5 then high else medium
+  in
+    cmd { spawn[p] { ret 1 } }
+  end
+
+main {
+  t <- f 8;
+  sync t
+}

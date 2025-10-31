@@ -2,6 +2,9 @@ priority low
 priority medium
 priority high
 
+order low < medium
+order medium < high
+
 fun f p1 p2 =
 	cmd {
 	    t1 <- spawn[p1]{ ret 42 };
@@ -13,20 +16,3 @@ main {
 	    f (if true then high else medium) low
 	}
 
-(* Shouldn't compile: p escapes scope *)
-(*
-fun f () =
-    let val r =
-	let val p = if true then low else high
-	in
-	    ref p
-	end
-    in
-	r := low
-    end
-
-main {
-	ret (f ())
-    }
-    
-*)

@@ -123,6 +123,12 @@ struct
 	      (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs,
 	       exist_vars, exist_cons)
 	    | (v, SubstSet pset, (rfmt_var, rfmt_cs, exist_vars, exist_cons)) =>
+	      (case IL.is_singleton pset of
+		   SOME prio =>
+		   (* Special case where this is secretly a SubstPrio *)
+		   (rfmt_var, prsubcs (singleton (v, prio)) rfmt_cs,
+		    exist_vars, exist_cons)
+		 | NONE => 
 	      let val (ps_v, ps_cons, ps_evars, ps_econs) =
 		      assign_in_prioset assign pset
 		  (* Alpha rename v to maintain the invariant that
@@ -133,9 +139,10 @@ struct
 		  (rfmt_var,
 		   prsubcs v_subs rfmt_cs,
 		   fresh_v::exist_vars,
-		   (close_rfmt assign (PVar v) (ps_v, ps_cons))
+		   (close_rfmt assign (PVar fresh_v) (ps_v, ps_cons))
 		   @ (prsubcs v_subs exist_cons))
 	      end
+	      )
 	    | (v, DontSubst, rfmt) => rfmt
 	    )
 	    (rfmt_var, rfmt_cs, exist_vars, exist_cons)
@@ -146,9 +153,17 @@ struct
     and assign_in_prioset assign (substs, rfmt) =
 	let val (v, ps) = assign_in_rfmt assign rfmt
 	    fun do_allsubs subs (v, ps, evs, ecs) =
-		case subs of
-		    [] => (v, ps, evs, ecs)
-		  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps, evs, ecs))
+		let val _ = verbprint (Layout.tostring (ILPrint.pstol (subs, RConcrete (v, ps @ ecs))))
+		    val _ = verbprint "\n\n"
+		    val (v', ps', evs', ecs') =
+			case subs of
+			    [] => (v, ps, evs, ecs)
+			  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps, evs, ecs))
+		in
+		    verbprint (Layout.tostring (ILPrint.pstol ([], RConcrete (v', ps' @ ecs'))));
+		    verbprint "\n\n";
+		    (v', ps', evs', ecs')
+		end
 	in
 	    do_allsubs substs (v, ps, [], [])
 	end
@@ -299,14 +314,15 @@ struct
 		end
 	end
 
-    fun priowf ctx dv (IL.PVar v) =
+    fun priowf ctx evs dv (IL.PVar v) =
 	V.eq (dv, v)
+	orelse (List.exists (fn v' => V.eq (v', v)) evs)
 	orelse
 	((let val _ = Context.var_fail ctx (Variable.show v)
 	  in true
 	  end)
 	 handle _ => false)
-      | priowf ctx dv (IL.PConst s) =
+      | priowf ctx evs dv (IL.PConst s) =
 	((let val _ = Context.var_fail ctx s
 	  in true
 	  end)
@@ -314,14 +330,14 @@ struct
 	    
     (* Check if ps is well-formed, i.e., has no unbound priority vars *)
     fun check_wf assign ctx ps =
-	let val (rv, rcs, _, _) = assign_in_prioset assign ps
+	let val (rv, rcs, evs, _) = assign_in_prioset assign ps
 	    val _ = verbprint "checking "
 	    val _ = verbprint (string_of_pconstraint (SOME assign) (PSWellformed (ctx, ps)))
 	in
 	    List.foldl
 		(fn ((p1, p2), wf) =>
 		    wf andalso
-		    (priowf ctx rv p1) andalso (priowf ctx rv p2))
+		    (priowf ctx evs rv p1) andalso (priowf ctx evs rv p2))
 		true
 		rcs
 	end
@@ -376,7 +392,7 @@ struct
 			SOME x => x
 		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n)))
 		fun check_one c =
-		    check_wf assign ctx (substs, RConcrete (rv, [c]))
+		    check assign (PSWellformed (ctx, (substs, RConcrete (rv, [c]))))
 		val new_rcs =
 		    List.filter check_one rcs
 	    in

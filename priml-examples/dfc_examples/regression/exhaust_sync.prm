@@ -1,0 +1,119 @@
+priority High
+priority Med
+priority Low
+
+order Low < Med
+order Med < High
+
+
+main {
+
+    t <- spawn[if true then High else Low] {
+        ret 1
+    };
+
+    sync t;
+    
+    t2 <- spawn[case SOME 1 of SOME _ => High | NONE => Low] {
+        ret 1
+    };
+
+    sync t2;
+    
+     t3 <- spawn[Med] {
+        ret 1
+    };
+
+    spawn[Med] {
+        x <- sync t3;
+        ret x
+    };
+    
+    t4 <- spawn[Med] {
+        ret 1
+    };
+
+    change[Med];
+    
+    x <- sync t4;
+    
+    t5 <- spawn[Med] {
+        ret 1
+    };
+
+    spawn[Low] {
+        sync t5
+    };
+    
+    t6 <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    change[let val x = true in if x then Low else Med end];
+
+    sync t6;
+    
+    t7 <- spawn[Med] {
+        change[High]
+    };
+
+    spawn[High] {
+        change[Low];
+        x <- sync t;
+        ret x
+    };
+    
+    t8 <- spawn[Low] {
+        ret 1
+    };
+
+    spawn[Med] {
+        change[Low];
+        x <- sync t8;
+        ret x
+    };
+    
+    t9 <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[Med];
+        x <- sync t9;
+        ret x
+    };
+    
+    t10 <- spawn[Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then High else Med];
+        change[Low];
+        x <- sync t10;
+        ret x
+    };
+    
+    t11 <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then High else Med];
+        change[Low];
+        x <- sync t11;
+        ret x
+    };
+    
+    t12 <- spawn[if true then High else Med] {
+        ret 1
+    };
+
+    spawn[High] {
+        change[if true then Low else Low];
+        x <- sync t12;
+        change[High];
+        ret x
+    }
+    
+}

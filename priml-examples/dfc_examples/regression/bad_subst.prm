@@ -1,0 +1,18 @@
+priority low
+priority medium
+priority high
+
+order low < medium
+order medium < high
+
+fun f p1 p2 =
+	cmd {
+	    t1 <- spawn[p1]{ ret 42 };
+	    t2 <- spawn[p2]{ sync t1 };
+	    ret p2
+	}
+
+main {
+	    f (if true then high else medium) high
+	}
+

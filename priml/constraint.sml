@@ -640,7 +640,6 @@ and conscmd sp ctx cmd =
 	     let val ctx' = C.bindv ctx (V.basename x) (mkpoly t) x
 		 val p = new_psevar ()
 		 val (t', mp', ep', cs') = conscmd endprios ctx' m
-
 		 val subst =
 		     case t of
 			 TPrio s =>
@@ -655,8 +654,12 @@ and conscmd sp ctx cmd =
 	     in
 		 (t', p, ep',
 		  cs @ cs'
+		  @ (wf_cons ctx t)
 		  @ (wf_cons ctx t')
 		  @ (pscstr_wf ctx p)
+		  @ (pscstr_wf ctx startprios)
+		  @ (pscstr_wf ctx midprios)
+		  @ (pscstr_wf ctx endprios)
 		  @ (pscstr_wf ctx mp')
 		  @ (pscstr_wf ctx ep')
 		  (* @ (pscstr_eq ctx startprios sp) *)

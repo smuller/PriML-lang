@@ -1,0 +1,27 @@
+priority High
+priority Med
+priority Low
+
+order Low < Med
+order Med < High
+
+fun spawn_at p c =
+    spawn[p] { c }
+
+fun spawn_at_and_sync_at_any p =
+    cmd {
+        td <- spawn[p] { ret 1 };
+        sync td
+    }
+
+fun spawn_at_and_sync_at p =
+    cmd {
+        td <- spawn[p] { ret 1 };
+        spawn[p] { sync td }
+    }
+    
+main {
+    spawn[High] {
+        spawn_at_and_sync_at_any Low
+    }
+}

@@ -1,0 +1,38 @@
+priority smallfib
+priority bigfib
+priority fg
+order bigfib < smallfib
+order smallfib < fg
+
+fun fib p n =       (* priority argument *)
+  let fun fib_p n =
+    if n < 2 then 
+        cmd { ret n }
+    else
+        cmd { 
+            change[p]; (* should already be at p but the type checker doesn't know that *)
+            x_thread <- spawn[p] {
+                x <- fib_p (n - 2); 
+                ret x
+            };
+            y <- fib_p (n - 1);
+            x <- sync x_thread;
+            ret (x + y)
+        }
+  in
+    fib_p n
+  end
+
+fun spawnfib n =
+        let val p = 
+            if n < 15 then smallfib else bigfib
+        in 
+        
+            cmd { spawn[p] { fib p n } }    (* pass priority as value *)
+        end
+
+main {
+    td <- spawnfib 42;
+    ret (* sync *) td
+}
+

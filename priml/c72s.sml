@@ -123,7 +123,8 @@ val _ = print ("Number Z3 calls: \t\t"
 val _ = print ("Total time in Z3 (ms):\t\t"
 	       ^ (LargeInt.toString (!Z3.z3time))
 	       ^ "\n")
-    
+
+(* XXX temporarily turn off OCaml compilation for testing
 val (_, ocaml_time) =
     withtimer
 	(fn () => CompileCaml.compile "temp.ml" [] morefiles output moreopts
@@ -140,3 +141,4 @@ val _ = print ("OCaml Generation Time (us): \t"
 val _ = print ("OCaml Compilation Time (us): \t"
 	       ^ (LargeInt.toString (Time.toMicroseconds ocaml_time))
 	       ^ "\n")
+*)
