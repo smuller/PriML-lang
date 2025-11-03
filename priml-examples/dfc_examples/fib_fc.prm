@@ -7,7 +7,7 @@ order smallfib < fg
 fun fib p n =       (* priority argument *)
   let fun fib_p n =
     if n < 2 then 
-        cmd { ret n }
+        cmd { change[p]; ret n }
     else
         cmd { 
             change[p]; (* should already be at p but the type checker doesn't know that *)
@@ -24,11 +24,11 @@ fun fib p n =       (* priority argument *)
   end
 
 fun spawnfib n =
-        let val p = 
+        let val p1 = 
             if n < 15 then smallfib else bigfib
         in 
         
-            cmd { spawn[p] { fib p n } }    (* pass priority as value *)
+            cmd { spawn[p1] { fib p1 n } }    (* pass priority as value *)
         end
 
 main {

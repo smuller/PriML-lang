@@ -185,7 +185,8 @@ fun wf_cons ctx t =
 			      arms)
       | Mu (i, typs) =>
 	List.concat (List.map (fn (_, t) => wf_cons ctx t) typs)
-      | Evar _ => []
+      | Evar (ref (Free _)) => []
+      | Evar (ref (Bound t)) => wf_cons ctx t
       | TVec t => wf_cons ctx t
       | TCont t => wf_cons ctx t
       | TRef t => wf_cons ctx t
@@ -209,10 +210,11 @@ fun wf_cons ctx t =
 		 fns
 	    )
       | TCmd (t, (p1, p2, p3)) =>
-	(pscstr_wf ctx p1)
+	(verbprint "cmd\n";
+	 (pscstr_wf ctx p1)
 	@ (pscstr_wf ctx p2)
 	@ (pscstr_wf ctx p3)
-	@ (wf_cons ctx t)
+	@ (wf_cons ctx t))
       | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
       | TPrio p => (pscstr_wf ctx p)
       | TMutex p => pscstr_wf ctx p
