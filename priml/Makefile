@@ -1,5 +1,5 @@
 all:
-	mlton -const 'Exn.keepHistory true' -mlb-path-map lib7-map c72s.mlb
+	mlton -const 'Exn.keepHistory true' -default-ann 'allowFFI true' -mlb-path-map lib7-map c72s.mlb z3ml.c
 
 clean:
 	rm -f c72s

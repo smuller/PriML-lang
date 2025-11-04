@@ -1,8 +1,6 @@
 structure Z3 :> PRIMLZ3 =
 struct
 
-structure SS = StringSet
-
 type z3 = string
 
 exception Z3 of string
@@ -20,11 +18,18 @@ fun negate_constraint (p1, p2) =
     "(assert (not (LT " ^ (string_of_prio p1) ^ " "
     ^ (string_of_prio p2) ^ ")))\n"
 
-fun comment s =
-    if !verbose then
-	"; " ^ (String.translate (fn #"\n" => "\n; "
-				   | c => String.implode [c]) s) ^ "\n"
-    else ""
+fun add_constraint (z3, (p1, p2)) =
+    z3 ^ (of_constraint (p1, p2))
+
+fun add_negated_constraint (z3, (p1, p2)) =
+    z3 ^ (negate_constraint (p1, p2))
+
+fun add_comment (z3, s) =
+    z3 ^
+    (if !verbose then
+	 "; " ^ (String.translate (fn #"\n" => "\n; "
+				    | c => String.implode [c]) s) ^ "\n"
+     else "")
     
 fun setup constraint ctx extra_vars =
     let val orders = Context.pcons ctx
@@ -53,7 +58,7 @@ fun setup constraint ctx extra_vars =
 	    
     in
 	(case constraint of
-	     SOME s => comment s
+	     SOME s => add_comment ("", s)
 	   |  NONE => "")
 	^ "(declare-sort Prio 0)\n"
 	^ "(define-fun LT ((x Prio) (y Prio)) Bool ((_ partial-order 0) x y))\n"
@@ -102,8 +107,9 @@ fun setup constraint ctx extra_vars =
 fun compose (z1, z2) = z1 ^ z2
 
 
-fun negate_and_constraints ps =
-    "(assert (not (and "
+fun add_negate_and_constraints (z3, ps) =
+    z3
+    ^ "(assert (not (and "
     ^
     String.concatWith " "
 		      (List.map (fn (p1, p2) =>

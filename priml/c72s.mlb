@@ -97,7 +97,7 @@ elab/context.sml
 (* elab/pscontext.sml *)
 
 z3-sig.sml
-z3.sml
+z3ffi.sml
 
 elab/psetcstrs-sig.sml
 elab/psetcstrs.sml

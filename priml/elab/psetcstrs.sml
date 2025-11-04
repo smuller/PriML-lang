@@ -256,19 +256,19 @@ struct
 		    ([v1, v2] @ evs1 @ evs2 @ ctx_evs)
 	    val z3 =
 		List.foldl
-		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    (fn (c, z3) => Z3.add_constraint (z3, c))
 		    z3
 		    (ctx_cs @ ecs1 @ ecs2)
 	    val z3 =
 		List.foldl
-		    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+		    (fn (c, z3) => Z3.add_constraint (z3, c))
 		    z3
 		    (c1 @ c2)
 	    val z3 =
 		(* Add the constraint s2 < s1... *)
-		Z3.compose (z3, Z3.negate_constraint (IL.PVar v1, IL.PVar v2))
+		Z3.add_negated_constraint (z3, (IL.PVar v1, IL.PVar v2))
 	in
-	    verbprint z3;
+	    (* verbprint z3; *)
 	    (*... and check that the system is UNsatisfiable *)
 	    not (Z3.check z3)
 	end
@@ -295,20 +295,20 @@ struct
 			    ([v] @ evs1 @ evs2 @ ctx_evs)
 		    val z3 =
 			List.foldl
-			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+			    (fn (c, z3) => Z3.add_constraint (z3, c))
 			    z3
 			    (ctx_ecs @ ecs1 @ ecs2)
-		    val z3 = Z3.compose (z3, Z3.comment "End ctx constraints\n")
+		    val z3 = Z3.add_comment (z3, "End ctx constraints\n")
 		    val z3 =
 			List.foldl
-			    (fn (c, z3) => Z3.compose (z3, Z3.of_constraint c))
+			    (fn (c, z3) => Z3.add_constraint (z3, c))
 			    z3
 			    c1
 		    val z3 =
 			(* Add the constraint ~(/\ c2)... *)
-			Z3.compose (z3, Z3.negate_and_constraints c2)
+			Z3.add_negate_and_constraints (z3, c2)
 		in
-		    verbprint (z3);
+		    (* verbprint (z3); *)
 		    (*... and check that the system is UNsatisfiable *)
 		    not (Z3.check z3)
 		end
