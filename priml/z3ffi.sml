@@ -50,23 +50,35 @@ fun add_negated_constraint (z3, (p1, p2)) =
 fun add_comment (z3, s) =
     z3
 
+val notleppairs = ref []
+	
 fun setup constraint ctx extra_vars =
     let val orders = Context.pcons ctx
 	val prios = (Context.prio_vars ctx) @ extra_vars
 	val plabs = Context.plabs ctx
-	val priopairs =
-	    List.concat
-	    (List.map
-		 (fn p1 => List.map (fn p2 => (IL.PConst p1, IL.PConst p2)) plabs)
-		 plabs)
 	val notleppairs =
-	    List.filter
-	    (fn (p1, p2) =>
-		not (Context.checkcons ctx p1 p2)
-	    )
-	    priopairs
+	    case !notleppairs of
+		[] => 
+		let val priopairs =
+			List.concat
+			    (List.map
+				 (fn p1 => List.map (fn p2 => (IL.PConst p1, IL.PConst p2)) plabs)
+				 plabs)
+		    val pairs =
+			List.filter
+			    (fn (p1, p2) =>
+				not (Context.checkcons ctx p1 p2)
+			    )
+			    priopairs
+		in
+		    pairs
+		    before notleppairs := pairs
+		end
+	      | pairs => (verbprint "reusing notleppairs\n"; pairs)
 	val priomap = StringMap.empty
+	val _ = verbprint "setting up context\n"
 	val z3 = Z3ML_make_context_and_solver ()
+	val _ = verbprint "done\nmaking constants\n"
 	val priomap =
 	    List.foldl
 		(fn (k, prios) =>
@@ -86,6 +98,7 @@ fun setup constraint ctx extra_vars =
 		)
 		priomap
 		plabs
+	val _ = verbprint "done\n"
 	val z3 =
 	    {z3ml = z3,
 	     prios = priomap}
@@ -93,9 +106,11 @@ fun setup constraint ctx extra_vars =
 	    Array.tabulate
 		(List.length plabs,
 		 (fn i => lookup_prio_by_string z3 (List.nth (plabs, i))))
+	val _ = verbprint "adding distinct\n";
 	val _ = Z3ML_add_distinct (#z3ml z3,
 				   plab_array,
 				   Array.length plab_array)
+	val _ = verbprint "adding one-of\n"
 	val _ = List.app
 		(fn pvar =>
 		    Z3ML_add_one_of (#z3ml z3,
@@ -103,6 +118,7 @@ fun setup constraint ctx extra_vars =
 				     plab_array,
 				     Array.length plab_array))
 		prios
+	val _ = verbprint "adding constraints\n"
 	val _ = List.app
 		    (fn c => ignore (add_constraint (z3, c)))
 		    orders
@@ -110,6 +126,7 @@ fun setup constraint ctx extra_vars =
 		    (fn c => ignore (add_negated_constraint (z3, c)))
 		    notleppairs
     in
+	verbprint "done with setup\n";
 	z3
     end
 
@@ -141,7 +158,7 @@ fun check {z3ml, prios} =
 	val endtime = Timer.checkRealTimer timer
     in
 	z3calls := (!z3calls) + 1;
-	z3time := (!z3time) + (Time.toMilliseconds endtime);
+	z3time := (!z3time) + (Time.toMicroseconds endtime);
 	res
     end
 
