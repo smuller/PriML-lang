@@ -1,0 +1,127 @@
+priority smallcomp
+priority bigcomp
+priority fg
+order bigcomp < smallcomp
+order smallcomp < fg
+
+extern val 'a List.mem : 'a -> 'a list -> bool
+extern val ('a, 'b) List.fold_left : ('b -> 'a -> 'b) -> 'b -> 'a list -> 'b
+extern val 'a List.filter : ('a -> bool) -> 'a list -> 'a list
+extern val ('a, 'b) List.map : ('a -> 'b) -> 'a list -> 'b list
+extern val 'a List.init : int -> (int -> 'a) -> 'a list
+extern val 'a List.length : 'a list -> int
+extern val Printf.printf : string -> int -> unit
+extern type in_channel
+extern val input_line : in_channel -> string
+extern val stdin : in_channel
+extern val int_of_string : string -> int
+
+fun not b =
+  if b then false else true
+
+fun andals (a, b) =
+  if a then b else false
+
+fun valid existing_queens =
+        case existing_queens of
+	  nil => true 
+	| i::nil => true
+	| i::other_queens =>
+	  andals
+	    (not (List.mem i other_queens),
+	     let val (_, good) =
+	       List.fold_left
+	        (fn (x, good) y =>
+	          (x + 1,
+	  	   andals (good, andals (y <> i + x, y <> i - x)))
+		)
+	        (1, true)
+	        other_queens
+             in good
+	     end)
+
+fun nqueens_seq existing_queens n =
+         if List.length existing_queens = n then
+	   1
+	 else
+         let val next_poss =
+	       List.filter valid (List.map (fn y => y::existing_queens)
+	          	     	           (List.init n (fn i => i)))
+	 in
+	   List.fold_left
+	      (fn res q => res + (nqueens_seq q n))
+	       0
+               next_poss
+	  end
+
+fun nqueens p n =
+  let fun nq_rec existing_queens =
+         if n - (List.length existing_queens) <= 8 then
+	   cmd { ret (nqueens_seq existing_queens n) }
+	 else
+         let val next_poss =
+	       List.filter valid (List.map (fn y => y::existing_queens)
+	          	     	           (List.init n (fn i => i)))
+	     fun touch_all n futs =
+	        case futs of
+		  nil => cmd { ret n }
+	        | f::t => cmd { v <- sync f;
+			        touch_all (n + v) t}
+	     fun spawn_list futs l =
+	       case l of
+	         nil => cmd { touch_all 0 futs }
+	       | q::rest => cmd { t <- spawn[p] { v <- nq_rec q; ret v };
+	                           spawn_list (t::futs) rest }
+	  in
+	    cmd {
+	      change[p];
+	      spawn_list nil next_poss
+	     }
+	  end
+  in
+    cmd { res <- nq_rec nil;
+          ret (Printf.printf "result: %d\n%!" res ) }
+  end
+  
+fun spawnnqueens n =
+        let val p1 = 
+            if n < 12 then smallcomp else bigcomp
+        in 
+        
+            cmd { spawn[p1] { nqueens p1 n } }    (* pass priority as value *)
+        end
+
+fun nqueensloop () =
+  let fun loop threads =
+        let val _ = Printf.printf "Enter a number greater than %d.\n%!" 0
+            val request = input_line stdin
+        in
+	  if request = "done" then
+                   cmd {ret threads}
+          else
+	       ((let val n = int_of_string request
+	         in
+		   cmd { ret (Printf.printf "Spawning nqueens(%d)\n%!" n);
+		          t <- spawnnqueens n;
+			  loop (t::threads) }
+		 end)
+		 handle _ => cmd { loop threads }
+	       )
+	end
+    in loop nil
+    end
+
+fun cleanup threads =
+    case threads of
+      nil => cmd {ret ()}
+    | h::t =>
+        cmd {sync h;
+             cleanup t }
+
+main {
+    ret (Printf.printf "spawning %d\n%!" 0);
+    loopthread <- spawn[fg] { nqueensloop () };
+    threads <- sync loopthread;
+    cleanup threads
+}
+
