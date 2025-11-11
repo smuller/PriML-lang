@@ -58,6 +58,8 @@ sig
     val bindplab : context -> string -> context
 
     val bindpcons : context -> IL.prio * IL.prio -> context
+    (* Same as bindpcons but doesn't check for cycles *)
+    val bindplecons : context -> IL.prio * IL.prio -> context
 
     (* bind an identifier to a variable and give that variable 
        the indicated type at the indicated world *)

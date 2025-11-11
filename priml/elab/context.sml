@@ -543,9 +543,9 @@ fun has_rfmtvar (C{vars, ...}) n =
 
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
-        (* XXX if checkcons ctx p2 p1 then
+        if checkcons ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
-        else *)
+        else
             C { cons = cons,
                 vars = vars,
                 mobiles = mobiles,
@@ -555,6 +555,18 @@ fun has_rfmtvar (C{vars, ...}) n =
                 dbs = dbs,
                 sign = sign
               }
+
+    fun bindplecons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
+                  (p1, p2) =
+        C { cons = cons,
+            vars = vars,
+            mobiles = mobiles,
+            pcons = (p1, p2)::pcons,
+            tpcons = (tpc_insert tpcons (p1, p2)),
+            plabs = plabs,
+            dbs = dbs,
+            sign = sign
+          }
 
     fun bindsig (C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign }) s con = 
         C { vars = vars,

@@ -14,7 +14,7 @@ fun string_of_prio p =
 	      | IL.PConst s => s
 
 fun add_constraint ((ctx, cons), (p1, p2)) =
-    (C.bindpcons ctx (p1, p2), cons)
+    (C.bindplecons ctx (p1, p2), cons)
     handle (C.Context s) => (print s; raise (C.Context s))
 
 fun add_negated_constraint ((ctx, cons), (p1, p2)) =
