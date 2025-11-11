@@ -1,3 +1,7 @@
 *~
 primlc
 priml/c72s
+*.cmi
+*.cmo
+*.ml
+*.smt

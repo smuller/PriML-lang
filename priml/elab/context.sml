@@ -499,8 +499,9 @@ fun has_rfmtvar (C{vars, ...}) n =
                 else if
 		    (* Transitivity: check all parents of p1 *)
 		    let val gs = get_greater tpcons p1
+			val checked' = PrioPairSet.add (checked, (p1, p2))
 		    in
-			efexists (fn p => checkcons checked ctx p p2) gs
+			efexists (fn p => checkcons checked' ctx p p2) gs
 		    end = YES
 		then YES
 		else
@@ -542,9 +543,9 @@ fun has_rfmtvar (C{vars, ...}) n =
 
     fun bindpcons (ctx as C { cons, vars, dbs, mobiles, pcons, tpcons, plabs, sign })
                   (p1, p2) =
-        if checkcons ctx p2 p1 then
+        (* XXX if checkcons ctx p2 p1 then
             raise (Context "cyclic ordering constraint introduced!")
-        else
+        else *)
             C { cons = cons,
                 vars = vars,
                 mobiles = mobiles,
