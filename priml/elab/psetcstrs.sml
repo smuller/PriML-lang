@@ -153,15 +153,17 @@ struct
     and assign_in_prioset assign (substs, rfmt) =
 	let val (v, ps) = assign_in_rfmt assign rfmt
 	    fun do_allsubs subs (v, ps, evs, ecs) =
-		let val _ = verbprint (Layout.tostring (ILPrint.pstol (subs, RConcrete (v, ps @ ecs))))
-		    val _ = verbprint "\n\n"
+		let val _ = verb (fn () => (print (Layout.tostring (ILPrint.pstol (subs, RConcrete (v, ps @ ecs))));
+					    print "\n\n"))
 		    val (v', ps', evs', ecs') =
 			case subs of
 			    [] => (v, ps, evs, ecs)
 			  | s::subs => do_pendsubs assign s (do_allsubs subs (v, ps, evs, ecs))
 		in
-		    verbprint (Layout.tostring (ILPrint.pstol ([], RConcrete (v', ps' @ ecs'))));
-		    verbprint "\n\n";
+		    verb
+			(fn () =>
+			     (print (Layout.tostring (ILPrint.pstol ([], RConcrete (v', ps' @ ecs'))));
+			      print "\n\n"));
 		    (v', ps', evs', ecs')
 		end
 	in
@@ -290,7 +292,8 @@ struct
 	    else
 		let val z3 =
 			Z3.setup
-			    (SOME (string_of_pconstraint (SOME assign) (PSSup (ctx, s2, s1))))
+			    NONE
+			    (* (SOME (string_of_pconstraint (SOME assign) (PSSup (ctx, s2, s1)))) *)
 			    ctx
 			    ([v] @ evs1 @ evs2 @ ctx_evs)
 		    val z3 =
@@ -331,8 +334,6 @@ struct
     (* Check if ps is well-formed, i.e., has no unbound priority vars *)
     fun check_wf assign ctx ps =
 	let val (rv, rcs, evs, _) = assign_in_prioset assign ps
-	    val _ = verbprint "checking "
-	    val _ = verbprint (string_of_pconstraint (SOME assign) (PSWellformed (ctx, ps)))
 	in
 	    List.foldl
 		(fn ((p1, p2), wf) =>
@@ -343,8 +344,9 @@ struct
 	end
 
     fun check assign constraint =
-	let val _ = verbprint "checking "
-	    val _ = verbprint (string_of_pconstraint (SOME assign) constraint)
+	let val _ = verb (fn () =>
+			     (print "checking";
+			      print (string_of_pconstraint (SOME assign) constraint)))
 		    
 	    val sat = case constraint of
 			  PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)

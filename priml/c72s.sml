@@ -105,16 +105,16 @@ val (_, gen_time) =
 val _ = print ("Parse and Desugar Time (us): \t"
 	       ^ (LargeInt.toString (Time.toMicroseconds parse_time))
 	       ^ "\n")
-val _ = print ("Hindley-Milner Time (us): \t"
+val _ = print ("HM\t"
 	       ^ (LargeInt.toString (Time.toMicroseconds hm_time))
 	       ^ "\n")
-val _ = print ("Constraint Gen Time (us): \t"
+val _ = print ("gen\t"
 	       ^ (LargeInt.toString (Time.toMicroseconds constraint_time))
 	       ^ "\n")
-val _ = print ("Constraint Solve Time (us): \t"
+val _ = print ("solve\t"
 	       ^ (LargeInt.toString (Time.toMicroseconds solve_time))
 	       ^ "\n")
-val _ = print ("Number of Constraints: \t\t"
+val _ = print ("constraints\t"
 	       ^ (Int.toString (List.length pscons))
 	       ^ "\n")
 val _ = print ("Number Z3 calls: \t\t"

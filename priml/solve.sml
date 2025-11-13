@@ -57,7 +57,8 @@ struct
 
   fun solve_psetcstrs pscstrs =
       (* First separate the constraints by type *)
-      let val (wf, sup, cons) =
+      let val solvetimer = Timer.startRealTimer ()
+	  val (wf, sup, cons) =
 	      List.foldl
 	      (fn (c, (wf, sup, cons)) =>
 		  case c of
@@ -88,6 +89,7 @@ struct
 		  )
 		  IntMap.empty
 		  pscstrs
+	  val after_init = Timer.checkRealTimer solvetimer
 	  val _ = verbprint "Checking wf constraints\n"
 	  val assign =
 	      (* First solve well-formedness constraints *)
@@ -103,10 +105,11 @@ struct
 	      )
 	      assign
 	      wf
+	  val after_wf = Timer.checkRealTimer solvetimer
 	  val _ = verbprint "Done with wf constraints\n"
 	  fun solve_sup assign maybe_unsat curr_sat =
 	      let val _ = verbprint "CURRENT ASSIGNMENT:\n"
-		  val _ = verbprint (string_of_assign assign)
+		  val _ = verb (fn () => print (string_of_assign assign))
 		  val (now_sat, still_unsat) =
 		      List.partition (fn c => check assign c) maybe_unsat
 		  val _ =
@@ -117,7 +120,7 @@ struct
 		  case still_unsat of
 		      [] => assign
 		    | (PSSup (ctx, p1, p2))::rest_unsat =>
-		      let val _ = verbprint ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
+		      let val _ = verb (fn () => print ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2)))))
 			  val (changed, assign) =
 			      case weaken_sub assign ctx (p2, p1) of
 				  SOME assign => assign
@@ -138,11 +141,29 @@ struct
 		      end
 	      end
 	  val assign = solve_sup assign sup []
+	  val after_sup = Timer.checkRealTimer solvetimer
+	  val res =
+	      (* Now just check the priority-lessthan constraints *)
+	      case List.filter (fn c => not (check assign c)) cons of
+		  [] => (verb (fn () => print (string_of_assign assign)); assign)
+		| c::_ => raise (PSConstraints (string_of_pconstraint (SOME assign) c))
+	  val after_lt = Timer.checkRealTimer solvetimer
       in
-	  (* Now just check the priority-lessthan constraints *)
-	  case List.filter (fn c => not (check assign c)) cons of
-	      [] => (verbprint (string_of_assign assign); assign)
-	    | c::_ => raise (PSConstraints (string_of_pconstraint (SOME assign) c))
+	   print ("Init time (us):\t" ^ (LargeInt.toString
+					     (Time.toMicroseconds after_init))
+		  ^ "\n");
+	   print ("WF time (us):\t" ^ (LargeInt.toString
+					   ((Time.toMicroseconds after_wf)
+					    - (Time.toMicroseconds after_init)))
+		  ^ "\n");
+	   print ("Imp time (us):\t" ^ (LargeInt.toString
+					   ((Time.toMicroseconds after_sup)
+					    - (Time.toMicroseconds after_wf)))
+		  ^ "\n");
+	   print ("LE time (us):\t" ^ (LargeInt.toString
+					   ((Time.toMicroseconds after_lt)
+					    - (Time.toMicroseconds after_sup)))
+		  ^ "\n");
+	   res
       end
-
 end
