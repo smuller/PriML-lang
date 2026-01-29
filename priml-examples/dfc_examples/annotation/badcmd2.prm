@@ -1,0 +1,15 @@
+priority Low
+priority Med
+priority High
+
+order Low < Med
+order Med < High
+
+fun sync_me (t: int thread[p | Med <= p]) : int cmd[p | High <= p and p <= High]  =
+  cmd {
+    sync t
+    }
+
+main {
+  ret 5
+}

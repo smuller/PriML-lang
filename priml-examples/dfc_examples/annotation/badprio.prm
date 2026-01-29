@@ -1,0 +1,10 @@
+priority A
+priority B
+priority C
+
+order A < C
+order B < C
+
+main {
+  ret (C : prio[p | p <= A])
+}

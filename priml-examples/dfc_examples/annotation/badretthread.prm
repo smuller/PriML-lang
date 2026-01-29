@@ -1,0 +1,13 @@
+priority Low
+priority Med
+priority High
+
+order Low < Med
+order Med < High
+
+fun id (t: int thread[p | Med <= p]) : int thread[p | High <= p] =
+  t 
+
+main {
+  ret 5
+}

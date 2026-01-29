@@ -1,0 +1,15 @@
+priority A
+priority B
+priority C
+
+order A < C
+order B < C
+
+fun join p1 p2 : prio[p | p1 <= p and p2 <= p] =
+  (if p1 = A andalso p2 = A then A
+  else if p1 = B andalso p2 = B then (B : prio[p | p <= A])
+  else A) : prio[p | p1 <= p and p2 <= p and p <= A ]
+  
+main {
+  ret (join C C)
+}
