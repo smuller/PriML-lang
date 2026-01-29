@@ -1047,6 +1047,10 @@ struct
             [([pat], to, e)] =>
               let
                   (* base case *)
+		  val e =
+		      case to of
+			  SOME t => (E.Constrain (e, t), loc)
+			| NONE => e
                   val (exp, tt) = 
                       Pattern.elaborate true elab elabt ctx loc
                          ([arg],
@@ -1063,12 +1067,13 @@ struct
                              else rexp
                            end))
               in
-              (* FIX: make arrow types of functions include argument names *)
+		  (* FIX: make arrow types of functions include argument names *)
+		  (*
                   (case to of
                        SOME t => unify ctx loc 
                                    "codomain type constraint on fun" tt
                                    (elabt ctx loc t)
-                     | _ => ());
+                     | _ => ()); *)
                   (exp, tt)
               end
           | nil => (* raise Elaborate "impossible: *no* clauses in fn" *)
@@ -1086,17 +1091,22 @@ struct
                                | _ => newstr "cur")) ` tl ` #1 ` hd clauses
 
                    (* all constraints on fun body *)
-                   val constraints =
-                       List.mapPartial #2 clauses
+                   val constraints = []
+                       (* List.mapPartial #2 clauses *)
 
-                   val columns = map (fn (pl, _, e) => (pl, e)) clauses
-
+                   val columns = map
+				     (fn (pl, to, e) =>
+					 case to of
+					     SOME t => (pl, (E.Constrain (e, t), loc))
+					   | NONE => (pl, e))
+				     clauses
+								     
                    fun buildf nil =
                        (* build the case, slapping all of the
                           body constraints on its outside *)
                        (* XXX5 
                           allow world constraints *)
-                       foldr (fn (t, e) => (E.Constrain(e, t), loc)) 
+                       foldr (fn (t, e) => (E.Constrain(e, t), loc))
                              (E.Case (map (fn a => (E.Var (E.Id a), loc)) args, 
                                       columns, NONE), loc)
                              constraints

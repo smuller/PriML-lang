@@ -152,7 +152,7 @@ struct
        ("<-", LARROW),
        ("<", LESSTHAN),
        ("<=", LESSEQUAL),
-       ("/\\", CAND),
+       ("&&", CAND),
        ("main", MAIN),
        ("thread", THREAD),
        ("prio", PRIO),

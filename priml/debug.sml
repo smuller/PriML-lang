@@ -1,4 +1,4 @@
-val verbose = ref false
+val verbose = ref true
 
 fun verb f = if !verbose then f () else ()
 

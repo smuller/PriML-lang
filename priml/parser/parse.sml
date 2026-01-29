@@ -143,21 +143,28 @@ struct
   fun prio () = id
 
   fun pconstraint () =
-      separate ("expected prio <= prio" **
-                     (id && (`LESSEQUAL >> id))) (`CAND)
-                   (*
-          alt [((fid G) && (`LESSEQUAL >> fid G))
-                   wth CLess,
-
-               ((call G pconstraint) && (`CAND >> (call G pconstraint)))
-                   wth CAnd
-              ] *)
+      "expected prio <= prio" **
+			      (id && (`LESSEQUAL >> id))
+      (*
+      alt ["expected prio <= prio"
+	       ** (id && (`LESSEQUAL >> id)) wth (fn (p1, p2) => [(p1, p2)]),
+	   "expected prio <= prio"
+		** (id && (`LESSEQUAL >> id)) && (`CAND >> ($pconstraint))
+		wth (fn ((p1, p2), t) => (p1, p2)::t)
+	    
+	  ] *)
+      (* separate ("expected prio <= prio" **
+                     (id && (`LESSEQUAL >> id))) (`CAND) *)
 
   fun rfmt () =
-      alt [(id << "expected | after ID" ** `BAR) && ($pconstraint),
+      alt [(id << "expected | after ID" ** `BAR)
+	       &&
+	       ("expected pconstraints" ** (separate ($pconstraint) (`AND))),
+						 (* ($pconstraint), *)
 	   id wth (fn p' => ("p", [("p", p'), (p', "p")]))
 	   ]
 
+	  (*
   fun ppat () =
       alt [(id && opt (`COLON >> ($pconstraint)))
                wth (fn (v, SOME c) => PPConstrain (v, c)
@@ -165,6 +172,7 @@ struct
            `LPAREN >> $ppat << `RPAREN,
            `LPAREN -- punt "expected ppat after LPAREN"
           ]
+*)
 
   local 
       (* look for prodtypes separated by arrows.
