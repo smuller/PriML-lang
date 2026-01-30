@@ -29,6 +29,7 @@ struct
       | PShl
       | PShr
       | PCmp of compare
+      | PPLe
 
     datatype primop =
       (* primitive arithmetic stuff *)

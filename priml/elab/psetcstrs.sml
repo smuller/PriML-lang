@@ -278,13 +278,22 @@ struct
     (* check if s1 implies s2, that is, if the set of possible priorities under
      * s1 is a subset of the set of possible priorities under s2 *)
     fun check_sub assign ctx (s1, s2) =
-	let val v = Variable.namedvar "prio__s"
+	let val _ = verbprint "starting check_sub\n"
+	    val v = Variable.namedvar "prio__s"
 	    val (rv1, rcs1, evs1, ecs1) = assign_in_prioset assign s1
 	    val c1 = close_rfmt assign (IL.PVar v) (rv1, rcs1)
 	    val (rv2, rcs2, evs2, ecs2) = assign_in_prioset assign s2
+	    val _ = verbprint "s2:\n"
+	    val _ = verb (fn () =>
+			     Layout.print (ILPrint.pstol ([], RConcrete (rv2, rcs2)), print))
 	    val c2 = close_rfmt assign (IL.PVar v) (rv2, rcs2)
-	    val (ctx_evs, ctx_ecs) = constraints_in_ctx assign ctx
-	    (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *)
+	    val _ = verbprint "c2:\n"
+	    val _ = verb (fn () => Layout.print
+			(Layout.listex "" "" "," (map ILPrint.pctol c2), print))
+	    val _ = verbprint "constraints in ctx\n"
+	    val (ctx_evs, ctx_ecs) = constraints_in_ctx assign ctx (* XXX *)
+  (* We want to assert ~(/\c1 => /\c2), which is the same as /\c1 /\ ~(/\c2) *)
+	    val _ = verbprint "REALLY starting check_sub\n"
 	in
 	    if List.length c2 = 0 then
 		(* s2 is T, so the implication is trivially satisfied *)
@@ -346,7 +355,7 @@ struct
     fun check assign constraint =
 	let val _ = verb (fn () =>
 			     (print "checking";
-			      print (string_of_pconstraint (SOME assign) constraint)))
+			      print (string_of_pconstraint NONE (*(SOME assign)*) constraint)))
 		    
 	    val sat = case constraint of
 			  PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)

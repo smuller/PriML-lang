@@ -394,6 +394,8 @@ struct
            | Cmd (ps, c) => L.paren (%[$"cmd[", pstol ps, $"]", $"{",ctol c, $"}"])
         (* | PFApp (e, p) => L.paren (%[$"[", prtol p, $"]", etol e]) (* FIX: delete this *) *)
 	   | NewMutex e => L.paren (%[$"newmutex[", etol e, $"]"])
+
+	   | Constrain (e, t) => %[etol e, $" : ", ttol t]
                  )
 
     and ctol c = 

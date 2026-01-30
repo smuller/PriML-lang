@@ -111,6 +111,8 @@ struct
       | FORALL
       | PRIO
 
+      | PLE
+
       | EXTERN
 
       | NEWMUTEX
@@ -226,6 +228,7 @@ struct
       | eq (MAIN, MAIN) = true
       | eq (NEWMUTEX, NEWMUTEX) = true
       | eq (WITHMUTEX, WITHMUTEX) = true
+      | eq (PLE, PLE) = true 
       | eq _ = false
 
 end

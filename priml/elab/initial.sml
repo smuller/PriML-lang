@@ -30,6 +30,8 @@ struct
     val stringvar = namedvar "string"
     val ilstring = IL.TVar stringvar
 
+    val ilprio = IL.TPrio (IL.unrestricted_prioset)
+
     val ilplus = namedvar "plus"
 
     val ilboolsum = IL.Sum[(truename, IL.NonCarrier),
@@ -97,7 +99,11 @@ struct
          ("notb", P.PNotb, [(Variable.namedvar "_", ilint)], ilint),
          (* shift (a, b) by b mod 32. *)
          ("shl", P.B P.PShl, ii, ilint),
-         ("shr", P.B P.PShr, ii, ilint)
+         ("shr", P.B P.PShr, ii, ilint),
+
+	 ("<==", P.B P.PPLe,
+	  [(Variable.namedvar "_", IL.TRec [("1", ilprio), ("2", ilprio)])],
+	  ilbool)
 
          ]
 

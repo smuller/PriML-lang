@@ -217,7 +217,8 @@ struct
        (":", COLON),
        (";", SEMICOLON),
        ("=", EQUALS),
-       ("=>", DARROW)
+       ("=>", DARROW),
+       ("<==", PLE)
        ]
 
   (* PERF could use hash table or other sub-linear search structure *)

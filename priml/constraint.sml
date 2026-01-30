@@ -622,12 +622,20 @@ and cons ctx e : typ * (psconstraint list) =
 	     cs)
 	end
       | NewMutex p =>
-	case basety (cons ctx p) of
+	(case basety (cons ctx p) of
 	    (TPrio psint, cs) =>
 	    (TMutex psint, cs)
 	  | (t, _) => (Layout.print (ILPrint.ttol t, print);
 		       Layout.print (Context.ctol ctx, print);
 		       raise (TyError "not a prio"))
+	)
+      | Constrain (e, tc) =>
+	let val (t, cs) = cons ctx e
+	    val _ = verbprint "constrain\n"
+	in
+	    (tc, (subtype ctx t tc) @ cs)
+	end
+	    
     end
 	
 and conscmd sp ctx cmd =

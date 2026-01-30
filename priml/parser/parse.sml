@@ -251,12 +251,13 @@ struct
      meaning in types *)
   val expid = id || `TIMES return "*" || `ARROW return "->"
                  || `LESSTHAN return "<" || `LESSEQUAL return "<="
+		 || `PLE return "<=="
 
   (* nonfix identifiers, or any identifier prefixed with op *)
   fun fid G = expid suchthat (isnonfix G) || 
               `OP >> `EQUALS return "=" ||
               `OP >> expid
-
+   
   fun exactid s = expid suchthat (fn ss => s = ss)
 
   (* should restrict to alphanum ids, add more *)

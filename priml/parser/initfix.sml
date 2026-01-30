@@ -9,6 +9,7 @@ struct
          (">=", (2, Parsing.Non)),
          ("<>", (2, Parsing.Non)),
          ("=", (2, Parsing.Non)),
+	 ("<==", (2, Parsing.Non)),
 
          ("::", (9, Parsing.Right)),
          ("^", (3, Parsing.Left)),

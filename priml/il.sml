@@ -67,6 +67,12 @@ struct
     type prioset = arg_subst subst list * rfmt
     (* [r1/x]r2 means "r2 where x is subject to the constraints in r1" *)
 
+    val unrestricted_prioset : prioset =
+	let val v = V.namedvar "__v"
+	in
+	    ([], RConcrete (v, []))
+	end
+					      
     fun singleton_prioset p =
 	let val v = V.namedvar "__v"
 	in
@@ -226,6 +232,10 @@ struct
      *)
 
       | NewMutex of exp
+
+      (* We need to propagate these to the IL so they can generate
+       * priority constraints *)
+      | Constrain of exp * typ
 
     and cmd =
         Bind of var * exp * cmd

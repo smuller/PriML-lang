@@ -513,7 +513,7 @@ struct
 
                in
                    unify ctx loc "constraint" tt tc;
-                   (ee, tc)
+                   (Constrain(ee, tc), tc)
                end
 
         | E.Andalso (a,b) =>
