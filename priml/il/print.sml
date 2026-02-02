@@ -350,6 +350,16 @@ struct
                  [%[$"intcase", etol e, $"of"],
                   % ` map (fn (i, e) => %[$(IntConst.toString i), $" => ", L.indent 4 ` etol e]) iel,
                   %[$"  |", $"_", $"=>"], L.indent 4 ` etol def]
+
+	   | Priocomp (conds, etrue, efalse, _) =>
+	     L.align
+		 [%[$"if",
+		    L.listex "" "" " andalso "
+			     (map (fn (p1, p2) => %[prtol p1, $"<==", prtol p2]) conds),
+		    $"then"],
+		  L.indent 4 ` etol etrue,
+		      $"else",
+		      L.indent 4 ` etol efalse]
            
            | Untag {typ, obj, target, bound, yes, no} =>
 

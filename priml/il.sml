@@ -53,6 +53,10 @@ struct
 
     type pconstraint = prio * prio
 
+    datatype priocp =
+	     PLe
+	     | PEq
+
     datatype rfmt =
 	     RConcrete of V.var * pconstraint list
 	     | RVar of int
@@ -185,7 +189,10 @@ struct
 
     and exp =
         Value of value
-      
+
+      (* just record a location in the source program *)
+      | Loc of Pos.pos * exp
+
       (* application is n-ary *)
       | App of exp * exp list
 
@@ -222,6 +229,8 @@ struct
 
       (* simpler; no inner val needs to be defined. can't be exhaustive. *)
       | Intcase of exp * (intconst * exp) list * exp * typ
+
+      | Priocomp of pconstraint list * exp * exp * typ
 
       | Inject of typ * label * exp option
       | Cmd of prioset * cmd

@@ -562,6 +562,10 @@ and cons ctx e : typ * (psconstraint list) =
 		    [] => raise (TyError "sum arm not found")
 		  | (l', arm)::t => if l = l' then arm else getarm t l
 	    val getarm = getarm constrs
+	    val _ = verbprint "ecase:\n"
+	    val _ = verb (fn () => Layout.print
+				       (ILPrint.etol ecase, print))
+	    
 	    val (tys, css) =
 		ListPair.unzip
 		    (List.map
@@ -604,7 +608,36 @@ and cons ctx e : typ * (psconstraint list) =
 	    (F, cs @ dcs @ subtycs @ (wf_cons ctx F) @ (List.concat css))
 	end
 
-	
+      | Priocomp (conds, etrue, efalse, rett) => 
+	let val (truectx, falsectx) =
+		(* If this is a priority comparison, we want to add constraints
+		 * to the context *)
+		case conds of
+		    [(p1, p2)] =>
+		    (verbprint "binding one less-equal constraint\n";
+		    (Context.bindplecons ctx (p1, p2),
+		     (* Technically this just adds p2 <= p1 when we know p2 < p1
+		      * but that just loses a little precision *)
+		     Context.bindplecons ctx (p2, p1))
+		    )
+		  | conds =>
+		    (* In the true case, add all of the conditions.
+		     * In the false case, can't add anything because we
+		     * don't know which conditions aren't true *)
+		    (List.foldl
+			 (fn ((p1, p2), ctx) =>
+			     Context.bindplecons ctx (p1, p2))
+			 ctx
+			 conds,
+		     ctx)
+	    val F = fresh rett
+	    val (ty1, cs1) = cons truectx etrue
+	    val (ty2, cs2) = cons falsectx efalse
+	    val cssup = (supertypex ctx F ty1) @ (supertypex ctx F ty2)
+	in
+	    (F, cs1 @ cs2 @ cssup @ (wf_cons ctx F))
+	end
+
       | Inject (t, label, eopt) =>
 	(case eopt of
 	     NONE => (t, [])

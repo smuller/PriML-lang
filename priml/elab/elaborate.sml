@@ -198,6 +198,33 @@ struct
 
   and value (v, t) = (Value v, t)
 
+  and prio_conds ctx (cond, loc) =
+      case cond of
+	  E.App ((E.Var (E.Id "<=="), _),
+		 (E.Record [(_, (e1 as (E.Var _, _))),
+			    (_, (e2 as (E.Var _, _)))], _),
+		 true) =>
+	  let val (p1var, p1ty) = elab ctx e1
+	      val (p2var, p2ty) = elab ctx e2
+	      val ps1 = PSetCstrs.new_prioset ()
+	      val ps2 = PSetCstrs.new_prioset ()
+	  in
+	      case (p1var, p2var) of
+		  (Value (Polyuvar {var=p1, ...}),
+		   Value (Polyuvar {var=p2, ...})) => 
+		  (unify ctx loc "first arg of <==" p1ty (TPrio ps1);
+		   unify ctx loc "second arg of <==" p2ty (TPrio ps2);
+		   [(PVar p1, PVar p2)])
+		| _ => []
+	  end
+	| E.Andalso (e1, e2) =>
+	  (case (prio_conds ctx e1, prio_conds ctx e2) of
+	       ([], _) => []
+	     | (_, []) => []
+	     | (l1, l2) => l1 @ l2
+	  )
+	| _ => []
+			 
   and elab ctx ((e, loc) : EL.exp) =
       case e of
           E.Seq (e1, e2) => 
@@ -532,10 +559,21 @@ struct
                                     (E.Seq (b, (E.Record nil, loc)), loc)), loc)
 
         | E.If (cond, tt, ff) =>
-               elab ctx
-               (E.Case ([cond],
-                        [([Initial.truepat], tt),
-                         ([Initial.falsepat], ff)], NONE), loc)
+	  (case prio_conds ctx cond of
+	       [] =>
+	       elab ctx
+		    (E.Case ([cond],
+			     [([Initial.truepat], tt),
+			      ([Initial.falsepat], ff)], NONE), loc)
+	     | conds =>
+	       let val (et, tyt) = elab ctx tt
+		   val (ef, tyf) = elab ctx ff
+	       in
+		   (unify ctx loc "branches of priority-if" tyt tyf;
+		    (Priocomp (conds, et, ef, tyt), tyt))
+	       end
+	  )
+
 
         | E.Case (es, m, default) =>
                let 

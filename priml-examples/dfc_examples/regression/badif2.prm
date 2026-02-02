@@ -1,0 +1,20 @@
+priority Low
+priority Med
+priority High
+
+fun f p1 p2 =
+  if p1 <== p2 then
+    cmd { t <- spawn[p1] { ret 1 };
+          change[p2];
+          sync t
+        }
+  else
+    cmd { t <- spawn[p2] { ret 1 };
+          change[p1];
+          sync t
+        }
+
+main {
+  f Low Med;
+  f Med Low
+}
