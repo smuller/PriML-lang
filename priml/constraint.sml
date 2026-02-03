@@ -24,7 +24,7 @@ fun basety_plain t =
 	(Evar (ref (Bound t))) => basety_plain t
       | _ => t
 
-fun supertypex ctx t1 t2 =
+fun supertypex ctx (loc: Pos.pos) (msg: string) t1 t2 =
     let val ctxlen = List.length (Context.vars ctx)
 	val _ =
 	    verb (fn () => Layout.print (Layout.listex
@@ -35,9 +35,9 @@ fun supertypex ctx t1 t2 =
         (case (t1, t2) of
              (TVar v1, TVar v2) => []
            | (TTag (t1, v1), TTag (t2, v2)) => 
-             supertypex ctx t1 t2
-           | (TVec t1, TVec t2) => supertypex ctx t1 t2
-           | (TCont t1, TCont t2) => supertypex ctx t1 t2
+             supertypex ctx loc msg t1 t2
+           | (TVec t1, TVec t2) => supertypex ctx loc msg t1 t2
+           | (TCont t1, TCont t2) => supertypex ctx loc msg t1 t2
            | (TRec lcl1, TRec lcl2) =>
              let
                  val l = ListUtil.sort 
@@ -46,7 +46,7 @@ fun supertypex ctx t1 t2 =
                              (ListUtil.byfirst String.compare) lcl2
 		 val cs = ListPair.map
 			      (fn ((_, t1), (_, t2)) =>
-				  supertypex ctx t1 t2)
+				  supertypex ctx loc msg t1 t2)
 			      (l, r)
              in
 		 List.concat cs
@@ -63,19 +63,19 @@ fun supertypex ctx t1 t2 =
 			 dom2
 		 val domcs = ListPair.map
 			      (fn ((_, a), (_, b)) =>
-				  supertypex ctx b a
+				  supertypex ctx loc msg b a
 					     (* FIX: domain is contravariant *)
 			      )
                               (dom1, dom2)
 
-		 val codcs = supertypex ctx' cod1 cod2
+		 val codcs = supertypex ctx' loc msg cod1 cod2
 	     in
 		 List.concat (codcs::domcs)
              end
-           | (TRef c1, TRef c2) => supertypex ctx c1 c2
+           | (TRef c1, TRef c2) => supertypex ctx loc msg c1 c2
            | (Mu (_, m1), Mu (_, m2)) => 
              let val cs = ListPair.map (fn ((_, t1), (_, t2)) =>
-					   supertypex ctx t1 t2)
+					   supertypex ctx loc msg t1 t2)
 				       (m1, m2)
 	     in
 		 List.concat cs
@@ -87,7 +87,7 @@ fun supertypex ctx t1 t2 =
                                       (NonCarrier, NonCarrier) => []
                                     | (Carrier { definitely_allocated = aa1, carried = tt1}, 
                                        Carrier { definitely_allocated = aa2, carried = tt2}) => 
-                                            supertypex ctx tt1 tt2
+                                            supertypex ctx loc msg tt1 tt2
                                     | _ => raise TyError "sum:carrier")
 			      (ListUtil.sort (ListUtil.byfirst String.compare) ltl1,
 			       ListUtil.sort (ListUtil.byfirst String.compare) ltl2)
@@ -112,10 +112,10 @@ fun supertypex ctx t1 t2 =
 				 in
 				     List.concat
 				     (
-				      (supertypex ctx' cod1 cod2)::
+				      (supertypex ctx' loc msg cod1 cod2)::
                                  (ListPair.map
 				     (fn ((_, a), (_, b)) =>
-					 supertypex ctx b a
+					 supertypex ctx loc msg b a
 						    (* FIX: domain is contravariant *)
 				     )
 				     (dom1, dom2)
@@ -127,18 +127,18 @@ fun supertypex ctx t1 t2 =
 		     List.concat cs
 		 end
            | (TCmd (t1, (pi1, pp1, pf1)), TCmd (t2, (pi2, pp2, pf2))) =>
-               (pscstr_sup ctx pi2 pi1) (* FIX: start refinement contravariant *)
-               @ (pscstr_sup ctx pp1 pp2)
-               @ (pscstr_sup ctx pf1 pf2)
-	       @ (supertypex ctx t1 t2)
+               (pscstr_sup ctx pi2 pi1 loc msg) (* FIX: start refinement contravariant *)
+               @ (pscstr_sup ctx pp1 pp2 loc msg)
+               @ (pscstr_sup ctx pf1 pf2 loc msg)
+	       @ (supertypex ctx loc msg t1 t2)
            | (TThread (t1, ps1), TThread (t2, ps2)) =>
-	     (pscstr_sup ctx ps1 ps2) @ (supertypex ctx t1 t2)
-           | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2
-	   | (TMutex ps1, TMutex ps2) => pscstr_sup ctx ps1 ps2
+	     (pscstr_sup ctx ps1 ps2 loc msg) @ (supertypex ctx loc msg t1 t2)
+           | (TPrio ps1, TPrio ps2) => pscstr_sup ctx ps1 ps2 loc msg
+	   | (TMutex ps1, TMutex ps2) => pscstr_sup ctx ps1 ps2 loc msg
 	   | (Evar (ref (Bound t1)), Evar (ref (Bound t2))) =>
-	     supertypex ctx t1 t2
-	   | (Evar (ref (Bound t1)), t2) => supertypex ctx t1 t2
-	   | (t1, Evar (ref (Bound t2))) => supertypex ctx t1 t2
+	     supertypex ctx loc msg t1 t2
+	   | (Evar (ref (Bound t1)), t2) => supertypex ctx loc msg t1 t2
+	   | (t1, Evar (ref (Bound t2))) => supertypex ctx loc msg t1 t2
 	   | (Evar (ref (Free _)), _) => []
 	   | (_, Evar (ref (Free _))) => []
 	   | _ => raise (TyError ("supertype unhandled case"
@@ -151,19 +151,19 @@ fun supertypex ctx t1 t2 =
 	)
     end
 
-fun subtype ctx t1 t2 =
+fun subtype ctx loc msg t1 t2 =
     (verbprint "subtype\n";
-    (supertypex ctx t2 t1)
+    (supertypex ctx loc msg t2 t1)
     handle TyError s => (print s; raise (TyError s))
     )	
-fun wf_cons ctx t =
+fun wf_cons ctx loc msg t =
     let val _ =
 	    verbprint ("wf_cons " ^ (Layout.tostring (ILPrint.ttol t)) ^ "\n")
     in
     case t of
 	TVar _ => []
       | TRec fields =>
-	List.concat (List.map (fn (_, t) => wf_cons ctx t) fields)
+	List.concat (List.map (fn (_, t) => wf_cons ctx loc msg t) fields)
       | Arrow (_, dom, cod) =>
 	let val ctx' =
 		List.foldl
@@ -172,25 +172,25 @@ fun wf_cons ctx t =
 		    )
 		    ctx
 		    dom
-	    val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+	    val dom_cons = List.map (fn (_, t) => wf_cons ctx loc msg t) dom
 	in
-	    (wf_cons ctx' cod) @ (List.concat dom_cons)
+	    (wf_cons ctx' loc msg cod) @ (List.concat dom_cons)
 	end
       | Sum arms =>
 	List.concat (List.map (fn (_, ai) =>
 				  case ai of NonCarrier => []
 					   | Carrier {carried, ...} =>
-					     wf_cons ctx carried
+					     wf_cons ctx loc msg carried
 			      )
 			      arms)
       | Mu (i, typs) =>
-	List.concat (List.map (fn (_, t) => wf_cons ctx t) typs)
+	List.concat (List.map (fn (_, t) => wf_cons ctx loc msg t) typs)
       | Evar (ref (Free _)) => []
-      | Evar (ref (Bound t)) => wf_cons ctx t
-      | TVec t => wf_cons ctx t
-      | TCont t => wf_cons ctx t
-      | TRef t => wf_cons ctx t
-      | TTag (t, _) => wf_cons ctx t
+      | Evar (ref (Bound t)) => wf_cons ctx loc msg t
+      | TVec t => wf_cons ctx loc msg t
+      | TCont t => wf_cons ctx loc msg t
+      | TRef t => wf_cons ctx loc msg t
+      | TTag (t, _) => wf_cons ctx loc msg t
       | Arrows fns =>
 	List.concat
 	    (List.map
@@ -202,22 +202,22 @@ fun wf_cons ctx t =
 				 )
 				 ctx
 				 dom
-			 val dom_cons = List.map (fn (_, t) => wf_cons ctx t) dom
+			 val dom_cons = List.map (fn (_, t) => wf_cons ctx loc msg t) dom
 		     in
-			 (wf_cons ctx' cod) @ (List.concat dom_cons)
+			 (wf_cons ctx' loc msg cod) @ (List.concat dom_cons)
 		     end
 		 )
 		 fns
 	    )
       | TCmd (t, (p1, p2, p3)) =>
 	(verbprint "cmd\n";
-	 (pscstr_wf ctx p1)
-	@ (pscstr_wf ctx p2)
-	@ (pscstr_wf ctx p3)
-	@ (wf_cons ctx t))
-      | TThread (t, p) => (pscstr_wf ctx p) @ (wf_cons ctx t)
-      | TPrio p => (pscstr_wf ctx p)
-      | TMutex p => pscstr_wf ctx p
+	 (pscstr_wf ctx p1 loc msg)
+	@ (pscstr_wf ctx p2 loc msg)
+	@ (pscstr_wf ctx p3 loc msg)
+	@ (wf_cons ctx loc msg t))
+      | TThread (t, p) => (pscstr_wf ctx p loc msg) @ (wf_cons ctx loc msg t)
+      | TPrio p => (pscstr_wf ctx p loc msg)
+      | TMutex p => pscstr_wf ctx p loc msg
     end
 
 
@@ -259,7 +259,7 @@ fun fresh t =
     end		 
 
 
-fun consval ctx v =
+fun consval ctx loc v =
     let val _ =
 	    verb (fn () => Layout.print (Layout.mayAlign [Layout.str "consval ",
 					       ILPrint.vtol v,
@@ -279,7 +279,7 @@ fun consval ctx v =
 				 (ListPair.zip (tyvars, ftps))
 	     in
 		 (Subst.tsubst subst t,
-		  List.concat (List.map (wf_cons ctx) ftps))
+		  List.concat (List.map (wf_cons ctx loc "type parameter") ftps))
 	     end
 	)
 	in
@@ -303,7 +303,7 @@ fun consval ctx v =
 				 (ListPair.zip (tyvars, ftps))
 	     in
 		 (Subst.tsubst subst t,
-		  List.concat (List.map (wf_cons ctx) ftps))
+		  List.concat (List.map (wf_cons ctx loc "type parameter") ftps))
 	     end
 	)
 	in
@@ -322,7 +322,7 @@ fun consval ctx v =
       | VRecord fields =>
 	let val (ts, ccs) =
 	    List.foldl (fn ((l, v), (ts, ccs)) =>
-			   let val (t, cs) = consval ctx v in
+			   let val (t, cs) = consval ctx loc v in
 			       ((l, t)::ts, cs @ ccs)
 			   end)
 		       ([], [])
@@ -334,7 +334,7 @@ fun consval ctx v =
       | VInject (t, cons, vopt) =>
 	let val cs =
 	    case vopt of
-		SOME v => #2 (consval ctx v)
+		SOME v => #2 (consval ctx loc v)
 	      | NONE => []
 	in
 	    (t, cs)
@@ -350,7 +350,7 @@ fun consval ctx v =
 				   #cod f)
 			val t = mkpoly at
 		    in
-			((wf_cons orig_ctx at) @ cons_wf,
+			((wf_cons orig_ctx loc "function type" at) @ cons_wf,
 			 C.bindv ctx (V.basename (#name f)) t (#name f))
 		    end
 		)
@@ -365,7 +365,7 @@ fun consval ctx v =
 			ctx
 			(#arg f, #dom f)
 		in
-		    cons ctx' (#body f)
+		    cons ctx' loc (#body f)
 		end
 	    val tscs = List.map consf fs
 	    val (ts, cs) = ListPair.unzip tscs
@@ -376,17 +376,17 @@ fun consval ctx v =
 	)
 	end
       | FSel (n, fs) =>
-	(case consval ctx fs of
+	(case consval ctx loc fs of
 	     (Arrows ts, cs) => (Arrow (List.nth (ts, n)), cs)
 	   | _ => raise (PriorityErr "FSel value is not Fns")
 	)
       | PCmd (p, t, cmd) =>
-	let val (t, midprios, endprios, cs) = conscmd p ctx cmd in
+	let val (t, midprios, endprios, cs) = conscmd p ctx loc cmd in
 	    (TCmd (t, (p, midprios, endprios)), cs)
 	end
 end
 	    
-and cons ctx e : typ * (psconstraint list) =
+and cons ctx loc e : typ * (psconstraint list) =
     let val _ =
 	    verb (fn () =>
 		     Layout.print (Layout.mayAlign [Layout.str "cons ",
@@ -394,16 +394,17 @@ and cons ctx e : typ * (psconstraint list) =
 					       Layout.str "\n"], print))
     in
     case e of
-	Value v => consval ctx v
+	Value v => consval ctx loc v
+      | Loc (loc, e) => cons ctx loc e
       | App (efun, eargs) =>
-	let val (funty, cs) = cons ctx efun
-	    val (argtys, css) = ListPair.unzip (List.map (cons ctx) eargs)
+	let val (funty, cs) = cons ctx loc efun
+	    val (argtys, css) = ListPair.unzip (List.map (cons ctx loc) eargs)
 	in
 	    case basety_plain funty of
 		Arrow (_, dom, cod) =>
 		let val subcs = ListPair.map
 				    (fn (argty, (_, party)) =>
-					subtype ctx argty party)
+					subtype ctx loc "function argument" argty party)
 				    (argtys, dom)
 		    val substs =
 			ListPair.map
@@ -432,7 +433,7 @@ and cons ctx e : typ * (psconstraint list) =
       | Record fields =>
 	let val (ts, ccs) =
 		List.foldl (fn ((l, v), (ts, ccs)) =>
-			       let val (t, cs) = cons ctx v in
+			       let val (t, cs) = cons ctx loc v in
 				   ((l, t)::ts, cs @ ccs)
 			       end)
 			   ([], [])
@@ -449,27 +450,27 @@ and cons ctx e : typ * (psconstraint list) =
 		       | _ => raise (TyError "field not found")
 		    )
 		  | _ => raise (TyError "not a record type")
-	    val (et, cs) = cons ctx e
+	    val (et, cs) = cons ctx loc e
 	in
-	    (field_t, (subtype ctx et t) @ cs)
+	    (field_t, (subtype ctx loc "tuple type" et t) @ cs)
 	end
       | Raise (t, e) =>
-	let val (_, cs) = cons ctx e in
+	let val (_, cs) = cons ctx loc e in
 	    (t, cs)
 	end
 	
       (* var bound to exn value within handler*)
       | Handle (ebody, t, evar, handler) =>
-	let val (_, cs1) = cons ctx ebody
+	let val (_, cs1) = cons ctx loc ebody
 	    val ctx' = C.bindv ctx (V.basename evar) (mkpoly Initial.ilexn) evar
-	    val (_, cs2) = cons ctx' handler
+	    val (_, cs2) = cons ctx' loc handler
 	in
 	    (t, cs1 @ cs2)
 	end
 
       | Seq (e1, e2) =>
-	let val (_, cons1) = cons ctx e1
-	    val (t2, cons2) = cons ctx e2
+	let val (_, cons1) = cons ctx loc e1
+	    val (t2, cons2) = cons ctx loc e2
 	in
 	    (t2, cons1 @ cons2)
 	end
@@ -490,8 +491,8 @@ and cons ctx e : typ * (psconstraint list) =
 	*)
 	(* This differs from the Liquid Types paper, but seems OK *)
 	(* Maybe---with the fix? *)
-	let val (ctx', subs, cs) = consdec ctx d
-	    val (F, cs') = cons ctx' ebody
+	let val (ctx', subs, cs) = consdec ctx loc d
+	    val (F, cs') = cons ctx' loc ebody
 	    val _ = verbprint "subtype let\n"
 	    val _ = verb (fn () => print ((Int.toString (List.length subs)) ^ " subs"))
 	    val t' = Subst.subst_var_or_t_in_t (Subst.fromlist subs) F
@@ -500,7 +501,7 @@ and cons ctx e : typ * (psconstraint list) =
 	end
 	
       | Unroll e =>
-	(case basety (cons ctx e) of
+	(case basety (cons ctx loc e) of
 	     (Mu (n, arms), cs) =>
 	     let val subst = Subst.fromlist
 			     (List.tabulate
@@ -518,7 +519,7 @@ and cons ctx e : typ * (psconstraint list) =
 	)
 
       | Roll (t, e) =>
-	let val (_, cs) = cons ctx e in
+	let val (_, cs) = cons ctx loc e in
 	    (t, cs)
 	end
 
@@ -540,7 +541,7 @@ and cons ctx e : typ * (psconstraint list) =
 	let
             val { worlds, tys, dom, cod } = Podata.potype po
 	    val (_, cs) = ListPair.unzip
-			      (List.map (cons ctx) eargs)
+			      (List.map (cons ctx loc) eargs)
 	in
 	    (TRec [] (* XXX *), List.concat cs)
 	end
@@ -555,7 +556,7 @@ and cons ctx e : typ * (psconstraint list) =
 		    Sum ts => ts
 		  | _ => raise (TyError "not a sum type")
 	    val F = fresh rett
-	    val (_, cs) = cons ctx ecase
+	    val (_, cs) = cons ctx loc ecase
 	    val _ = verbprint "Done checking ecase\n"
 	    fun getarm arms l =
 		case arms of
@@ -581,31 +582,31 @@ and cons ctx e : typ * (psconstraint list) =
 					       (mkpoly carried)
 					       branchvar)
 			     in
-				 cons ctx' e
+				 cons ctx' loc e
 			     end)
 			 branches)
-	    val (dty, dcs) = cons ctx def
+	    val (dty, dcs) = cons ctx loc def
 	    val _ = verbprint "Subtyping for branches"
 	    val subtycs =
 		List.concat
-		    (List.map (supertypex ctx F) (dty::tys))
+		    (List.map (supertypex ctx loc "branch type" F) (dty::tys))
 	in
-	    (F, cs @ dcs @ subtycs @ (wf_cons ctx F) @ (List.concat css))
+	    (F, cs @ dcs @ subtycs @ (wf_cons ctx loc "return type" F) @ (List.concat css))
 	end
 
       (* simpler; no inner val needs to be defined. can't be exhaustive. *)
       | Intcase (ecase, branches, def, rett) =>
 	let val F = fresh rett
-	    val (_, cs) = cons ctx ecase
+	    val (_, cs) = cons ctx loc ecase
 	    val (tys, css) =
 		ListPair.unzip
-		    (List.map (fn (_, e) => cons ctx e) branches)
-	    val (dty, dcs) = cons ctx def
+		    (List.map (fn (_, e) => cons ctx loc e) branches)
+	    val (dty, dcs) = cons ctx loc def
 	    val subtycs =
 		List.concat
-		    (List.map (supertypex ctx F) (dty::tys))
+		    (List.map (supertypex ctx loc "branch type" F) (dty::tys))
 	in
-	    (F, cs @ dcs @ subtycs @ (wf_cons ctx F) @ (List.concat css))
+	    (F, cs @ dcs @ subtycs @ (wf_cons ctx loc "return type" F) @ (List.concat css))
 	end
 
       | Priocomp (conds, etrue, efalse, rett) => 
@@ -631,31 +632,32 @@ and cons ctx e : typ * (psconstraint list) =
 			 conds,
 		     ctx)
 	    val F = fresh rett
-	    val (ty1, cs1) = cons truectx etrue
-	    val (ty2, cs2) = cons falsectx efalse
-	    val cssup = (supertypex ctx F ty1) @ (supertypex ctx F ty2)
+	    val (ty1, cs1) = cons truectx loc etrue
+	    val (ty2, cs2) = cons falsectx loc efalse
+	    val cssup = (supertypex ctx loc "branch type" F ty1)
+			@ (supertypex ctx loc "branch type" F ty2)
 	in
-	    (F, cs1 @ cs2 @ cssup @ (wf_cons ctx F))
+	    (F, cs1 @ cs2 @ cssup @ (wf_cons ctx loc "return type" F))
 	end
 
       | Inject (t, label, eopt) =>
 	(case eopt of
 	     NONE => (t, [])
 	   | SOME e =>
-	     let val (_, cs) = cons ctx e
+	     let val (_, cs) = cons ctx loc e
 	     in
 		 (t, cs)
 	     end
 	)
 	
       | Cmd (p, cmd) =>
-	let val (t, midprios, endprios, cs) = conscmd p ctx cmd
+	let val (t, midprios, endprios, cs) = conscmd p ctx loc cmd
 	in
 	    (TCmd (t, (p, midprios, endprios)),
 	     cs)
 	end
       | NewMutex p =>
-	(case basety (cons ctx p) of
+	(case basety (cons ctx loc p) of
 	    (TPrio psint, cs) =>
 	    (TMutex psint, cs)
 	  | (t, _) => (Layout.print (ILPrint.ttol t, print);
@@ -663,7 +665,7 @@ and cons ctx e : typ * (psconstraint list) =
 		       raise (TyError "not a prio"))
 	)
       | Constrain (e, tc) =>
-	let val (t, cs) = cons ctx e
+	let val (t, cs) = cons ctx loc e
 	    val _ = verbprint "constrain\n"
 	in
 	    (tc, (subtype ctx t tc) @ cs)
@@ -671,18 +673,18 @@ and cons ctx e : typ * (psconstraint list) =
 	    
     end
 	
-and conscmd sp ctx cmd =
+and conscmd sp ctx loc cmd =
     let val _ = verb (fn () => Layout.print (Layout.mayAlign [Layout.str "cons ",
 					       ILPrint.ctol cmd,
 					       Layout.str "\n"], print))
     in
     case cmd of
 	Bind (x, e, m) =>
-	(case basety (cons ctx e) of
+	(case basety (cons ctx loc e) of
 	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
 	     let val ctx' = C.bindv ctx (V.basename x) (mkpoly t) x
 		 val p = new_psevar ()
-		 val (t', mp', ep', cs') = conscmd endprios ctx' m
+		 val (t', mp', ep', cs') = conscmd endprios ctx' loc m
 		 val subst =
 		     case t of
 			 TPrio s =>
@@ -697,18 +699,18 @@ and conscmd sp ctx cmd =
 	     in
 		 (t', p, ep',
 		  cs @ cs'
-		  @ (wf_cons ctx t)
-		  @ (wf_cons ctx t')
-		  @ (pscstr_wf ctx p)
-		  @ (pscstr_wf ctx startprios)
-		  @ (pscstr_wf ctx midprios)
-		  @ (pscstr_wf ctx endprios)
-		  @ (pscstr_wf ctx mp')
-		  @ (pscstr_wf ctx ep')
+		  @ (wf_cons ctx loc "cmd return type" t)
+		  @ (wf_cons ctx loc "return type" t')
+		  @ (pscstr_wf ctx p loc "comprehensive priority of whole cmd")
+		  @ (pscstr_wf ctx startprios loc "start priority of cmd")
+		  @ (pscstr_wf ctx midprios loc "comprehensive priority of cmd")
+		  @ (pscstr_wf ctx endprios loc "end priority of cmd")
+		  @ (pscstr_wf ctx mp' loc "comprehensive priority of rest of cmd")
+		  @ (pscstr_wf ctx ep' loc "end priority of whole cmd")
 		  (* @ (pscstr_eq ctx startprios sp) *)
-		  @ (pscstr_sup ctx startprios sp)
-		  @ (pscstr_sup ctx p midprios)
-		  @ (pscstr_sup ctx p mp')
+		  @ (pscstr_sup ctx startprios sp loc "starting priority")
+		  @ (pscstr_sup ctx p midprios loc "comprehensive priority of cmd subset of whole")
+		  @ (pscstr_sup ctx p mp' "comprehensive priority of rest of cmd subset of whole")
 		 )
 	     end
 	  | _ => raise (TyError "not a cmd")

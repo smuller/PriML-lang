@@ -15,34 +15,45 @@ struct
     (* priority set constraint
       PSSup (ps1, ps2): ps1 is a super set of ps2
       PSCons (ps1, ps2): priorities in ps1 is less than or equal to priorities in ps2  *)
-    datatype psconstraint = 
+    datatype psconstraint_type = 
       PSSup of Context.context * prioset * prioset 
     | PSCons of Context.context * prioset * prioset
     | PSWellformed of Context.context * prioset
 
-    fun psctol (PSSup (_, ps1, ps2)) =
+    type psconstraint =
+	 {typ : psconstraint_type,
+	  loc : Pos.pos,
+	  msg : string}
+
+    fun type_of ({typ, ...}: psconstraint) = typ
+    fun loc_of ({loc, ...}: psconstraint) = loc
+    fun msg_of ({msg, ...}: psconstraint) = msg
+	     
+    fun psctol ({typ=PSSup (_, ps1, ps2), ...}: psconstraint) =
 	Layout.mayAlign
 	    [Layout.str "sup",
 	     Layout.paren(Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
-      | psctol (PSCons (_, ps1, ps2)) =
+      | psctol ({typ=PSCons (_, ps1, ps2), ...}: psconstraint) =
 	Layout.mayAlign
 	    [Layout.str "cons",
 	     Layout.paren (Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
-      | psctol (PSWellformed (_, ps)) =
+      | psctol ({typ=PSWellformed (_, ps), ...}: psconstraint) =
 	Layout.mayAlign
 	    [Layout.str "wf",
 	     Layout.paren (pstol ps)]
 
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
-    fun pscstr_sup ctx ws1 ws2 = [PSSup (ctx, ws1, ws2)]
+    fun pscstr_sup ctx ws1 ws2 loc msg =
+	[{typ=PSSup (ctx, ws1, ws2), loc=loc, msg=msg}]
 
     (* add constraint *)
-    fun pscstr_cons ctx ws1 ws2 = [PSCons (ctx, ws1, ws2)]
+    fun pscstr_cons ctx ws1 ws2 loc msg =
+	[{typ=PSCons (ctx, ws1, ws2), loc=loc, msg=msg}]
 
     (* add equal *)
-    fun pscstr_eq ctx ws1 ws2 = (pscstr_sup ctx ws1 ws2) 
-				@ (pscstr_sup ctx ws2 ws1)
+    fun pscstr_eq ctx ws1 ws2 loc msg = (pscstr_sup ctx ws1 ws2 loc msg) 
+				@ (pscstr_sup ctx ws2 ws1 loc msg)
 
     (* add general constraint:
     *   pi = set of initial priorities
@@ -51,11 +62,12 @@ struct
     *   general constraints: pp is superset of pi, pp is superset of pf
     * *)
     (* FIX: pp not superset of pi *)
-    fun pscstr_gen ctx pi pp pf = (pscstr_sup ctx pp pi) 
+    fun pscstr_gen ctx pi pp pf loc msg = (pscstr_sup ctx pp pi loc msg) 
 				  @
-				  (pscstr_sup ctx pp pf)
+				  (pscstr_sup ctx pp pf loc msg)
 
-    fun pscstr_wf ctx p = [PSWellformed (ctx, p)]
+    fun pscstr_wf ctx p loc msg =
+	[{typ=PSWellformed (ctx, p), loc=loc, msg=msg}]
 
     val next_rvar = ref 0
 
@@ -170,7 +182,7 @@ struct
 	    do_allsubs substs (v, ps, [], [])
 	end
 
-    fun string_of_pconstraint assign psc =
+    fun string_of_pconstraint_type assign psc =
 	(case psc of
 	     PSCons (ctx, p1, p2) =>
 	     ("(" ^ Layout.tostring (Context.ctol ctx) ^ ") |- ("
@@ -220,7 +232,9 @@ struct
 		  end
 	     )
 	)
-	    
+
+    fun string_of_pconstraint assign psc =
+	string_of_pconstraint_type assign (type_of psc)
 
     (* The context has bindings like p : [v | constraints].
      * Return these as a pair
@@ -253,7 +267,7 @@ struct
 	    val (ctx_evs, ctx_cs) = constraints_in_ctx assign ctx
 	    val z3 =
 		Z3.setup
-		    (SOME (string_of_pconstraint (SOME assign) (PSCons (ctx, s1, s2))))
+		    (SOME (string_of_pconstraint_type (SOME assign) (PSCons (ctx, s1, s2))))
 		    ctx
 		    ([v1, v2] @ evs1 @ evs2 @ ctx_evs)
 	    val z3 =
@@ -357,7 +371,7 @@ struct
 			     (print "checking";
 			      print (string_of_pconstraint NONE (*(SOME assign)*) constraint)))
 		    
-	    val sat = case constraint of
+	    val sat = case type_of constraint of
 			  PSSup (ctx, p1, p2) => check_sub assign ctx (p2, p1)
 			| PSCons (ctx, p1, p2) => check_cons assign ctx (p1, p2)
 			| PSWellformed (ctx, p) => check_wf assign ctx p
@@ -389,7 +403,7 @@ struct
 		(* Assertion: the number of qualifiers should have decreased *)
 		if List.length new_rcs2 >= List.length rcs2 then
 		    (print "Uh oh: didn't eliminate qualifiers?";
-		     raise (Unsolvable (PSSup (ctx, (substs2, rfmt2), s1))))
+		     NONE)
 		else
 		    SOME (n, IntMap.insert (assign, n, (rv2, new_rcs2)))
 	    end
@@ -403,12 +417,66 @@ struct
 			SOME x => x
 		      | NONE => raise (Context.Absent ("refinement var", "'ws" ^ (Int.toString n)))
 		fun check_one c =
-		    check assign (PSWellformed (ctx, (substs, RConcrete (rv, [c]))))
+		    check_wf assign ctx (substs, RConcrete (rv, [c]))
 		val new_rcs =
 		    List.filter check_one rcs
 	    in
 		SOME (IntMap.insert (assign, n, (rv, new_rcs)))
 	    end
 
+    (* Build an initial assignment for all of the RVars that show up in a
+     * constraint, with the priorities that are in the context. *)	   
+    fun assign_of_pconstraint desig_var c =
+      let fun qualifiers_of_prios ctx ps =
+	      let val all =
+		      (List.map (fn p => (PVar desig_var, p)) ps)
+		      @ (List.map (fn p => (p, PVar desig_var)) ps)
+	      in
+		  List.filter
+		      (fn (p1, p2) =>
+			  (case IL.prcompare (p1, p2) of
+			       EQUAL => false
+			     | _ =>  true
+			  )
+		      )
+		      all
+	      end
+	  fun build_assign constraints rfmts =
+	      List.foldl
+		  (fn (RConcrete _, assign) => assign
+		  | (RVar k, assign) =>
+		    IntMap.insert (assign, k, (desig_var, constraints))
+		  )
+		  IntMap.empty
+		  rfmts
+	  fun qualifiers_of_ctx ctx =
+	      let val ctxprios =
+		      (List.map PVar (Context.prio_vars ctx))
+		      @ (List.map PConst (Context.plabs ctx))
+	      in
+		  qualifiers_of_prios
+		      ctx
+		      ctxprios
+	      end
+      in
+	   case type_of c of
+	       PSCons (ctx, (_, r1), (_, r2)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
+	     | PSSup (ctx, (_, r1), (_, r2)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
+	     | PSWellformed (ctx, (_, r)) =>
+	       build_assign (qualifiers_of_ctx ctx) [r]
+      end
 
+    fun partition pscstrs =
+	List.foldl
+	    (fn (c, (wf, sup, cons)) =>
+		case type_of c of
+		    PSSup _ => (wf, c::sup, cons)
+		  | PSCons _ => (wf, sup, c::cons)
+		  | PSWellformed _ => (c::wf, sup, cons)
+	    )
+	    ([], [], [])
+	    pscstrs
+		
 end

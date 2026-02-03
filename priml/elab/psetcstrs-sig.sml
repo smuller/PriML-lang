@@ -4,21 +4,31 @@ sig
 
     type pscontext = IL.PrioSet.set IntMap.map
 
-    datatype psconstraint = 
+    datatype psconstraint_type = 
       PSSup of Context.context * IL.prioset * IL.prioset 
     | PSCons of Context.context * IL.prioset * IL.prioset
     | PSWellformed of Context.context * IL.prioset
 
+    type psconstraint
+
+    val type_of : psconstraint -> psconstraint_type
+    val loc_of : psconstraint -> Pos.pos
+    val msg_of : psconstraint -> string
+	     
     val psctol : psconstraint  -> Layout.layout
 
     (* add priority set constraint *)
-    val pscstr_eq   : Context.context -> IL.prioset -> IL.prioset -> psconstraint list
-    val pscstr_sup  : Context.context -> IL.prioset -> IL.prioset -> psconstraint list
-    val pscstr_cons : Context.context -> IL.prioset -> IL.prioset -> psconstraint list
-    val pscstr_gen  : Context.context -> IL.prioset -> IL.prioset -> IL.prioset -> 
-                      psconstraint list
+    val pscstr_eq   : Context.context -> IL.prioset -> IL.prioset ->
+		      Pos.pos -> string -> psconstraint list
+    val pscstr_sup  : Context.context -> IL.prioset -> IL.prioset ->
+		      Pos.pos -> string -> psconstraint list
+    val pscstr_cons : Context.context -> IL.prioset -> IL.prioset ->
+		      Pos.pos -> string -> psconstraint list
+    val pscstr_gen  : Context.context -> IL.prioset -> IL.prioset ->
+		      IL.prioset -> Pos.pos -> string -> psconstraint list
 
-    val pscstr_wf   : Context.context -> IL.prioset -> psconstraint list
+    val pscstr_wf   : Context.context -> IL.prioset ->
+		      Pos.pos -> string -> psconstraint list
 
     val new_prioset : unit -> IL.prioset
     val new_rvar : unit -> IL.rfmt
@@ -35,5 +45,10 @@ sig
     val check : assign -> psconstraint -> bool
     val weaken_wf : assign -> Context.context -> IL.prioset -> assign option
     val weaken_sub : assign -> Context.context -> IL.prioset * IL.prioset -> (int * assign) option
+
+    val assign_of_pconstraint : IL.var -> psconstraint -> assign
+
+    val partition : psconstraint list ->
+		    psconstraint list * psconstraint list * psconstraint list
 
 end

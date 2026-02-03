@@ -11,63 +11,12 @@ struct
   open Constraint
   structure P = Primop
 
-  (* Build an initial assignment for all of the RVars that show up in a
-   * constraint, with the priorities that are in the context. *)	   
-  fun assign_of_pconstraint desig_var c =
-      let fun qualifiers_of_prios ctx ps =
-	      let val all =
-		      (List.map (fn p => (PVar desig_var, p)) ps)
-		      @ (List.map (fn p => (p, PVar desig_var)) ps)
-	      in
-		  List.filter
-		      (fn (p1, p2) =>
-			  (case IL.prcompare (p1, p2) of
-			       EQUAL => false
-			     | _ =>  true
-			  )
-		      )
-		      all
-	      end
-	  fun build_assign constraints rfmts =
-	      List.foldl
-		  (fn (RConcrete _, assign) => assign
-		  | (RVar k, assign) =>
-		    IntMap.insert (assign, k, (desig_var, constraints))
-		  )
-		  IntMap.empty
-		  rfmts
-	  fun qualifiers_of_ctx ctx =
-	      let val ctxprios =
-		      (List.map PVar (Context.prio_vars ctx))
-		      @ (List.map PConst (Context.plabs ctx))
-	      in
-		  qualifiers_of_prios
-		      ctx
-		      ctxprios
-	      end
-      in
-	   case c of
-	       PSCons (ctx, (_, r1), (_, r2)) =>
-	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
-	     | PSSup (ctx, (_, r1), (_, r2)) =>
-	       build_assign (qualifiers_of_ctx ctx) [r1, r2]
-	     | PSWellformed (ctx, (_, r)) =>
-	       build_assign (qualifiers_of_ctx ctx) [r]
-      end
 
   fun solve_psetcstrs pscstrs =
       (* First separate the constraints by type *)
       let val solvetimer = Timer.startRealTimer ()
-	  val (wf, sup, cons) =
-	      List.foldl
-	      (fn (c, (wf, sup, cons)) =>
-		  case c of
-		      PSSup _ => (wf, c::sup, cons)
-		    | PSCons _ => (wf, sup, c::cons)
-		    | PSWellformed _ => (c::wf, sup, cons)
-	      )
-	      ([], [], [])
-	      pscstrs
+	  val (wf, sup, cons) = partition pscstrs
+	      
 	  val desig_var = V.namedvar "__v"
 	  fun combine_assign ((dv, c1), (_, c2)) =
 	      (dv,
