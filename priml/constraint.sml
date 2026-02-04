@@ -668,7 +668,7 @@ and cons ctx loc e : typ * (psconstraint list) =
 	let val (t, cs) = cons ctx loc e
 	    val _ = verbprint "constrain\n"
 	in
-	    (tc, (subtype ctx t tc) @ cs)
+	    (tc, (subtype ctx loc "type annotation" t tc) @ cs)
 	end
 	    
     end
@@ -679,7 +679,8 @@ and conscmd sp ctx loc cmd =
 					       Layout.str "\n"], print))
     in
     case cmd of
-	Bind (x, e, m) =>
+	CLoc (loc, cmd) => conscmd sp ctx loc cmd	    
+      | Bind (x, e, m) =>
 	(case basety (cons ctx loc e) of
 	     (TCmd (t, (startprios, midprios, endprios)), cs) =>
 	     let val ctx' = C.bindv ctx (V.basename x) (mkpoly t) x
@@ -710,26 +711,26 @@ and conscmd sp ctx loc cmd =
 		  (* @ (pscstr_eq ctx startprios sp) *)
 		  @ (pscstr_sup ctx startprios sp loc "starting priority")
 		  @ (pscstr_sup ctx p midprios loc "comprehensive priority of cmd subset of whole")
-		  @ (pscstr_sup ctx p mp' "comprehensive priority of rest of cmd subset of whole")
+		  @ (pscstr_sup ctx p mp' loc "comprehensive priority of rest of cmd subset of whole")
 		 )
 	     end
 	  | _ => raise (TyError "not a cmd")
 	)
       | Spawn (p, _, m) =>
-	(case basety (cons ctx p) of
+	(case basety (cons ctx loc p) of
 	     (TPrio psint, cs) =>
 	     let (* Don't prematurely specialize the start priority, as we
 		  * may add to it *)
 		 val spawnprio = new_psevar ()
-		 val (t, mp, ep, cs') = conscmd spawnprio ctx m
+		 val (t, mp, ep, cs') = conscmd spawnprio ctx loc m
 		 val pp' = new_psevar ()
 	     in
 		 (TThread (t, pp'),
 		  sp,
 		  sp,
 		  cs @ cs'
-		  @ (pscstr_sup ctx spawnprio psint)
-		  @ (pscstr_gen ctx psint pp' mp)
+		  @ (pscstr_sup ctx spawnprio psint loc "starting priority of thread")
+		  @ (pscstr_gen ctx psint pp' mp loc "comprehensive priority of thread")
 		 )
 	     end
 	   | (t, _) => (Layout.print (ILPrint.ttol t, print);
@@ -738,32 +739,32 @@ and conscmd sp ctx loc cmd =
 	)
 	    
       | Sync e =>
-	(case basety (cons ctx e) of
+	(case basety (cons ctx loc e) of
 	     (TThread (t, p'), cs) =>
-	     (t, sp, sp, cs @ (pscstr_cons ctx sp p'))
+	     (t, sp, sp, cs @ (pscstr_cons ctx sp p' loc "sync priority"))
 	   | _ => raise (TyError "not a thread")
 	)
 	     
       | Poll e =>
-	(case basety (cons ctx e) of
+	(case basety (cons ctx loc e) of
 	     (TThread (t, p'), cs) =>
 	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
 	)
       | Cancel e =>
-	(case basety (cons ctx e) of
+	(case basety (cons ctx loc e) of
 	     (TThread (t, p'), cs) =>
 	     (t, sp, sp, cs)
 	   | _ => raise (TyError "not a thread")
 	)
       | Ret e =>
-	let val (t, cs) = cons ctx e
+	let val (t, cs) = cons ctx loc e
 	in
 	    (t, sp, sp, cs)
 	end
 
       | Change p =>
-	(case basety (cons ctx p) of
+	(case basety (cons ctx loc p) of
 	     (TPrio ep', cs) =>
 	     (TRec [], ep', ep', cs)
 	   | _ => raise (TyError "not a priority")
@@ -772,33 +773,34 @@ and conscmd sp ctx loc cmd =
       | WithMutex (mut, c) =>
 	(* Priority protection protocol: the critical section starts at the
 	 * priority ceiling and must stay at the priority ceiling *)
-	(case basety (cons ctx mut) of
+	(case basety (cons ctx loc mut) of
 	     (TMutex pc, cs) =>
-	     let val (t, mp, ep, cs') = conscmd pc ctx c
+	     let val (t, mp, ep, cs') = conscmd pc ctx loc c
 		 val allp = new_psevar ()
 	     in
 		 (t, allp, sp,
 		  cs @ cs'
-		  @ (pscstr_cons ctx sp pc)
-		  @ (pscstr_sup ctx allp sp)
-		  @ (pscstr_sup ctx allp mp)
-		  @ (pscstr_eq ctx mp pc)
+		  @ (pscstr_cons ctx sp pc loc "priority ceiling violated")
+		  @ (pscstr_sup ctx allp sp loc "critical section comprehensive priority")
+		  @ (pscstr_sup ctx allp mp loc "critical section comprehensive priority")
+		  @ (pscstr_eq ctx mp pc loc "critical section comprehensive priority")
 		 )
 	     end
 	   | _ => raise (TyError "not a priority")
 	)
     end
 
-and consdec ctx d =
+and consdec ctx loc d =
     let val _ = verb (fn () => Layout.print (C.ctol ctx, print))
     in
     case d of
-	Do e =>
-	let val (_, cs) = cons ctx e in
+        DLoc (loc, d) => consdec ctx loc d
+      | Do e =>
+	let val (_, cs) = cons ctx loc e in
 	    (ctx, [], cs)
 	end
       | Val (Poly ({tys}, (x, t, e))) =>
-	let val (t', cs) = cons ctx e in
+	let val (t', cs) = cons ctx loc e in
 	    (C.bindv ctx (V.basename x) (Poly ({tys = tys}, t')) x,
 	     (verb (fn () => (print "collecting subs for ";
 	      print (V.basename x);
@@ -818,7 +820,7 @@ and consdec ctx d =
 		 [(x, SubstSet s)])
 	       | _ => (verbprint "dontsubst\n"; []))
 	     ,
-	     cs @ (verbprint "subtype val\n"; subtype ctx t' t before verbprint "done\n")
+	     cs @ (verbprint "subtype val\n"; subtype ctx loc "type annotation" t' t before verbprint "done\n")
 	    )
 	end
       | Tagtype a => (ctx, [], [])
@@ -858,14 +860,14 @@ fun consprog (decs, prios, cons, fairness, maincmd) =
     let val (ctx, cs) =
 	List.foldl
 	    (fn (d, (ctx, cs)) =>
-		 let val (ctx', _, cs') = consdec ctx d in
+		 let val (ctx', _, cs') = consdec ctx Pos.initpos d in
 		     (ctx', cs @ cs')
 		 end
 	    )
 	    (Initial.initial, [])
 	    decs
 	val (_, _, _, cs') = conscmd (singleton_prioset (PConst "bot"))
-				     ctx maincmd
+				     ctx Pos.initpos maincmd
     in
 	cs @ cs'
     end

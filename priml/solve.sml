@@ -43,13 +43,13 @@ struct
 	  val assign =
 	      (* First solve well-formedness constraints *)
 	      List.foldl
-	      (fn (PSWellformed (ctx, p), assign) =>
-		  if check assign (PSWellformed (ctx, p)) then
+	      (fn (c, assign) =>
+		  if check assign c then
 		      assign
 		  else
-		      (case weaken_wf assign ctx p of
-			   SOME assign => assign
-			 | NONE => raise (Unsolvable (PSWellformed (ctx, p)))
+		      (case weaken assign c of
+			   SOME (_, assign) => assign
+			 | NONE => raise (Unsolvable c)
 		      )
 	      )
 	      assign
@@ -68,23 +68,17 @@ struct
 	      in
 		  case still_unsat of
 		      [] => assign
-		    | (PSSup (ctx, p1, p2))::rest_unsat =>
-		      let val _ = verb (fn () => print ("weakening " ^ (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2)))))
+		    | const::rest_unsat =>
+		      let val _ = verb (fn () => print ("weakening " ^ (string_of_pconstraint (SOME assign) const)))
 			  val (changed, assign) =
-			      case weaken_sub assign ctx (p2, p1) of
+			      case weaken assign const of
 				  SOME assign => assign
-				| NONE => raise (PSConstraints (string_of_pconstraint (SOME assign) (PSSup (ctx, p1, p2))))
+				| NONE => raise (Unsolvable const)
 (* Constraints to check on the next round are those that were unsat
  * before and those whose context or antecedent changed *)
 			  val (changed_cons, unchanged_cons) =
-			      List.partition
-				  (fn (PSSup (ctx, _, (_, (RVar n)))) =>
-				      n = changed
-				      orelse Context.has_rfmtvar ctx changed
-				    | (PSSup (ctx, _, _)) =>
-				      Context.has_rfmtvar ctx changed
-				    | _ => false)
-			      (now_sat @ curr_sat)
+			      List.partition (depends_on_rvar changed)
+					     (now_sat @ curr_sat)
 		      in
 			  solve_sup assign (rest_unsat @ changed_cons) unchanged_cons
 		      end
@@ -95,7 +89,7 @@ struct
 	      (* Now just check the priority-lessthan constraints *)
 	      case List.filter (fn c => not (check assign c)) cons of
 		  [] => (verb (fn () => print (string_of_assign assign)); assign)
-		| c::_ => raise (PSConstraints (string_of_pconstraint (SOME assign) c))
+		| c::_ => raise (Unsolvable c)
 	  val after_lt = Timer.checkRealTimer solvetimer
       in
 	   print ("Init time (us):\t" ^ (LargeInt.toString

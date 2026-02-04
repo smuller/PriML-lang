@@ -63,6 +63,13 @@ struct
           IL.TRec(mktup 1 l)
       end
 
+  fun wrap_exp loc (e, t) =
+      (Loc (loc, e), t)
+  fun wrap_cmd loc (c, t, ps, cs) =
+      (CLoc (loc, c), t, ps, cs)
+  fun wrap_dec loc (ds, t) =
+      (List.map (fn d => DLoc (loc, d)) ds, t)
+
   fun lookupt ctx loc str =
       (case C.con ctx str of
            (0, Typ t, _) => t
@@ -228,8 +235,8 @@ struct
   and elab ctx ((e, loc) : EL.exp) =
       case e of
           E.Seq (e1, e2) => 
-              let val (e1, e1t) = elab ctx e1
-                  val (e2, e2t) = elab ctx e2
+              let val (e1, e1t) = wrap_exp loc ` elab ctx e1
+                  val (e2, e2t) = wrap_exp loc ` elab ctx e2
               in 
                 (if !sequenceunit
                  then unify ctx loc "sequence unit" e1t (IL.TRec nil)
@@ -566,11 +573,11 @@ struct
 			     [([Initial.truepat], tt),
 			      ([Initial.falsepat], ff)], NONE), loc)
 	     | conds =>
-	       let val (et, tyt) = elab ctx tt
-		   val (ef, tyf) = elab ctx ff
+	       let val (et, tyt) = wrap_exp loc ` elab ctx tt
+		   val (ef, tyf) = wrap_exp loc ` elab ctx ff
 	       in
 		   (unify ctx loc "branches of priority-if" tyt tyf;
-		    (Priocomp (conds, et, ef, tyt), tyt))
+		    wrap_exp loc ` (Priocomp (conds, et, ef, tyt), tyt))
 	       end
 	  )
 
@@ -593,9 +600,12 @@ struct
                        else rexp
                      end
 
+		 fun elabw ctx e =
+		     wrap_exp loc ` elab ctx e
+			 
                    (* force case args to be variables, if they aren't. *)
                    fun force nil nc acc =
-                            Pattern.elaborate true elab elabt nc loc
+                            Pattern.elaborate true elabw elabt nc loc
                                  (rev acc, m, def)
                      | force ((E.Var (E.Id v), _)::rest) nc acc = 
                             force rest nc (v::acc)
@@ -700,7 +710,7 @@ struct
         | E.Let (d, e) =>
                let
                    val (dd, nctx) = elabd ctx d
-                   val (ee, t) = elab nctx e
+                   val (ee, t) = wrap_exp loc ` elab nctx e
                in
                    (foldr (mk_let t) ee dd, t)
                end
@@ -725,7 +735,7 @@ struct
 			    (Layout.listex "[" "]" "," 
 					   (map PSetCstrs.psctol (!cc')), print);
 			print "\n ECmd \n"));
-              (Cmd (pp, ec), TCmd (t, ((* pr1, *) pp, pr2, pr3)))
+              wrap_exp loc ` (Cmd (pp, ec), TCmd (t, ((* pr1, *) pp, pr2, pr3)))
           end
 
         (* | E.PFn (pps, ps, e) => raise (Elaborate "Pfn unimplemented") (* FIX: delete this *) *)
@@ -947,7 +957,7 @@ struct
           (let val (_, loc) = li
                val dvar = "retval__"
                val v = V.namedvar dvar
-               val (ii, t) = elab ctx li
+               val (ii, t) = wrap_exp loc ` elab ctx li
                
                (* val _ = 
                  (print "\n bind 1 start \n";
@@ -1009,7 +1019,8 @@ struct
                        when binding the rest 
                *)
                val _ = unify ctx loc "bind argument" t (TCmd (tint, ((* pr1 *) pr, pr2, pr3)))
-               val (cmd, t', ((* pr4', *) pr5, pr6), cc) = elabbind ctx' pr4 (rest, li)
+               val (cmd, t', ((* pr4', *) pr5, pr6), cc) =
+		   wrap_cmd loc ` elabbind ctx' pr4 (rest, li)
                val cc' = []
 (*
 			     (pscstr_gen pr pr7 pr6)
@@ -1167,9 +1178,9 @@ struct
             error loc ("Pattern compilation failed: " ^ s)
 
   and elabds ctx nil = (nil, ctx)
-    | elabds ctx ((d : EL.dec) :: rest) =
+    | elabds ctx (((d, loc) : EL.dec) :: rest) =
     let 
-      val (ds, ctx) = elabd ctx d
+      val (ds, ctx) = wrap_dec loc ` elabd ctx (d, loc)
       val (rs, ctx) = elabds ctx rest
     in
       (ds @ rs, ctx)

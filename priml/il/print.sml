@@ -277,7 +277,8 @@ struct
     and etol e =
         (case e of
            (* | Char c => $("?" ^ implode [c]) *)
-             App (e1, [e2]) => L.paren(%[etol e1, etol e2])
+	     Loc (_, e) => etol e
+           | App (e1, [e2]) => L.paren(%[etol e1, etol e2])
            | App (e1, e2) => L.paren(%[etol e1, L.list (map etol e2)])
 
            | Value v => vtol v
@@ -409,8 +410,9 @@ struct
                  )
 
     and ctol c = 
-        (case c of 
-          Bind (v, e, c) => 
+        (case c of
+	  CLoc (_, c) => ctol c
+        | Bind (v, e, c) => 
               L.align 
                 [%[$(V.tostring v), $"<-", etol e, $";"], 
                  %[ctol c]]
@@ -425,7 +427,8 @@ struct
 
     and dtol d =
         (case d of
-             Do e => %[$"do", etol e]
+	     DLoc (_, d) => dtol d
+           | Do e => %[$"do", etol e]
            | Tagtype v => %[$"tagtype", $(V.tostring v)]
            | Newtag (new, t, ext) => %[$"newtag", $(V.tostring new), 
                                        $"tags", ttol t, $"in", 

@@ -17,6 +17,8 @@ sig
 	     
     val psctol : psconstraint  -> Layout.layout
 
+    val depends_on_rvar : int -> psconstraint -> bool
+				      
     (* add priority set constraint *)
     val pscstr_eq   : Context.context -> IL.prioset -> IL.prioset ->
 		      Pos.pos -> string -> psconstraint list
@@ -43,8 +45,9 @@ sig
     val check_cons : assign -> Context.context -> IL.prioset * IL.prioset -> bool
     val check_sub : assign -> Context.context -> IL.prioset * IL.prioset -> bool
     val check : assign -> psconstraint -> bool
-    val weaken_wf : assign -> Context.context -> IL.prioset -> assign option
+    val weaken_wf : assign -> Context.context -> IL.prioset -> (int * assign) option
     val weaken_sub : assign -> Context.context -> IL.prioset * IL.prioset -> (int * assign) option
+    val weaken : assign -> psconstraint -> (int * assign) option
 
     val assign_of_pconstraint : IL.var -> psconstraint -> assign
 

@@ -29,19 +29,35 @@ struct
     fun loc_of ({loc, ...}: psconstraint) = loc
     fun msg_of ({msg, ...}: psconstraint) = msg
 	     
-    fun psctol ({typ=PSSup (_, ps1, ps2), ...}: psconstraint) =
-	Layout.mayAlign
-	    [Layout.str "sup",
-	     Layout.paren(Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
-      | psctol ({typ=PSCons (_, ps1, ps2), ...}: psconstraint) =
-	Layout.mayAlign
-	    [Layout.str "cons",
-	     Layout.paren (Layout.mayAlign [pstol ps1, Layout.str ",", pstol ps2])]
-      | psctol ({typ=PSWellformed (_, ps), ...}: psconstraint) =
-	Layout.mayAlign
-	    [Layout.str "wf",
-	     Layout.paren (pstol ps)]
+    fun psctol pc =
+	let
+	    val $ = Layout.str
+	    val % = Layout.mayAlign
+	in
+	    % [$(Pos.toString (loc_of pc)),
+	       $("(" ^ (msg_of pc) ^ ")"),
+	       (case type_of pc of
+		    PSCons (_, p1, p2) =>
+		    %[$"|- (", ILPrint.pstol p1,
+		      $") <= (", ILPrint.pstol p2, $")"]
+		  | PSSup (_, p1, p2) =>
+		    %[$"|- (", ILPrint.pstol p2,
+		      $") ==> (", ILPrint.pstol p1, $")"]
+		  | PSWellformed (_, p) =>
+		    %[$"|- (", ILPrint.pstol p, $")"]
+	       )
+	      ]
+	end
 
+    fun depends_on_rvar changed const =
+	case type_of const of
+	    PSSup (ctx, _, (_, (RVar n))) =>
+	    n = changed
+	    orelse Context.has_rfmtvar ctx changed
+	  | (PSSup (ctx, _, _)) =>
+	    Context.has_rfmtvar ctx changed
+	  | _ => false
+	    
     (* PRIORITY SET CONSTRAINTS *)
     (* add superset *)
     fun pscstr_sup ctx ws1 ws2 loc msg =
@@ -421,8 +437,14 @@ struct
 		val new_rcs =
 		    List.filter check_one rcs
 	    in
-		SOME (IntMap.insert (assign, n, (rv, new_rcs)))
+		SOME (n, IntMap.insert (assign, n, (rv, new_rcs)))
 	    end
+
+    fun weaken assign c =
+	case type_of c of
+	    PSSup (ctx, p1, p2) => weaken_sub assign ctx (p2, p1)
+	  | PSWellformed (ctx, p) => weaken_wf assign ctx p
+	  | PSCons _ => NONE
 
     (* Build an initial assignment for all of the RVars that show up in a
      * constraint, with the priorities that are in the context. *)	   

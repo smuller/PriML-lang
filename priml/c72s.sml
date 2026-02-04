@@ -86,7 +86,7 @@ val (_, solve_time) =
 		OS.Process.exit OS.Process.failure)
 	     | PSetCstrs.Unsolvable c =>
 	       (print "Unsatisfied priority constraint:\n";
-		print (PSetCstrs.string_of_pconstraint NONE c);
+		Layout.print (PSetCstrs.psctol c, print);
 		OS.Process.exit OS.Process.failure)
 	)
 

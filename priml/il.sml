@@ -247,7 +247,8 @@ struct
       | Constrain of exp * typ
 
     and cmd =
-        Bind of var * exp * cmd
+	CLoc of Pos.pos * cmd
+      | Bind of var * exp * cmd
       | Spawn of exp * typ * cmd
       | Sync of exp
       | Poll of exp
@@ -257,7 +258,8 @@ struct
       | WithMutex of exp * cmd
 
     and dec =
-        Do of exp
+	DLoc of Pos.pos * dec
+      | Do of exp
         (* XXX5 cleanup: should have Val binding that takes an
            expression, then all the rest just take values for
            generalization purposes. *)
